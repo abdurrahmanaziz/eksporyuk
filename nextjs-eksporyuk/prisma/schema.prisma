@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -4055,10 +4055,8 @@ model CourseSettings {
 // OneSignal Webhook Models
 // ===========================
 
-/**
- * NotificationDeliveryLog - Log semua delivery, open, click events dari OneSignal webhooks
- * Digunakan untuk tracking notification effectiveness
- */
+// NotificationDeliveryLog - Log semua delivery, open, click events dari OneSignal webhooks
+// Digunakan untuk tracking notification effectiveness
 model NotificationDeliveryLog {
   id                    String    @id @default(cuid())
   notificationId        String    // ID dari OneSignal notification
@@ -4084,10 +4082,8 @@ model NotificationDeliveryLog {
   @@index([timestamp])
 }
 
-/**
- * ConversionEvent - Log conversion/action setelah click notifikasi
- * Menghubungkan notification click dengan actual conversion
- */
+// ConversionEvent - Log conversion/action setelah click notifikasi
+// Menghubungkan notification click dengan actual conversion
 model ConversionEvent {
   id                    String    @id @default(cuid())
   userId                String
@@ -4107,10 +4103,8 @@ model ConversionEvent {
   @@index([timestamp])
 }
 
-/**
- * NotificationConsent - GDPR compliance: track consent history
- * Untuk audit trail dan compliance
- */
+// NotificationConsent - GDPR compliance: track consent history
+// Untuk audit trail dan compliance
 model NotificationConsent {
   id                    String    @id @default(cuid())
   userId                String    @unique
@@ -4132,10 +4126,8 @@ model NotificationConsent {
   @@index([consentExpiry])
 }
 
-/**
- * OneSignalWebhookLog - Log semua webhook events untuk debugging
- * Jika ada webhook yg gagal, bisa di-retry
- */
+// OneSignalWebhookLog - Log semua webhook events untuk debugging
+// Jika ada webhook yg gagal, bisa di-retry
 model OneSignalWebhookLog {
   id                    String    @id @default(cuid())
   eventType             String    // notification.delivered, notification.opened, etc
@@ -4152,10 +4144,8 @@ model OneSignalWebhookLog {
   @@index([timestamp])
 }
 
-/**
- * Documentation - Sistem dokumentasi role-based dengan Nextra
- * Admin bisa CRUD, publish/draft, pisahkan per role
- */
+// Documentation - Sistem dokumentasi role-based dengan Nextra
+// Admin bisa CRUD, publish/draft, pisahkan per role
 model Documentation {
   id                    String            @id @default(cuid())
   slug                  String            @unique // URL slug untuk docs
@@ -4197,10 +4187,8 @@ model Documentation {
   @@index([parentId])
 }
 
-/**
- * DocumentationRevision - Version history untuk rollback
- * Setiap edit tersimpan sebagai revision
- */
+// DocumentationRevision - Version history untuk rollback
+// Setiap edit tersimpan sebagai revision
 model DocumentationRevision {
   id                    String            @id @default(cuid())
   documentationId       String

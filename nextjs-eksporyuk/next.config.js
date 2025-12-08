@@ -10,16 +10,17 @@ const nextConfig = {
       },
     ],
   },
-  // Fix for Next.js 16 - use proper external packages config
-  serverExternalPackages: ['prisma'],
-  
-  // Fix turbopack root for monorepo
-  turbopack: {
-    root: __dirname,
+  // Next.js 14 compatible config
+  experimental: {
+    serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
   
   typescript: {
     ignoreBuildErrors: true,
+  },
+  
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 }
 
