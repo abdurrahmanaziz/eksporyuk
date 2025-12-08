@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 100">
+  <rect width="340" height="100" fill="white"/>
+  
+  <!-- Red box -->
+  <rect x="10" y="15" width="70" height="70" rx="10" fill="#DC143C"/>
+  <text x="45" y="60" font-family="Arial, sans-serif" font-size="34" font-weight="bold" fill="white" text-anchor="middle">Alfa</text>
+  
+  <!-- alfamart text -->
+  <text x="95" y="52" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#DC143C">alfamart</text>
+  <text x="95" y="72" font-family="Arial, sans-serif" font-size="14" fill="#666">minimarket</text>
+</svg>

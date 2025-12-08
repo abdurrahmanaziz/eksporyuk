@@ -1,0 +1,20 @@
+{
+  "name": "eksporyuk-docs",
+  "version": "1.0.0",
+  "description": "EksporYuk Platform Documentation",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "next": "^16.0.7",
+    "nextra": "^4.6.1",
+    "nextra-theme-docs": "^4.6.1",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  }
+}

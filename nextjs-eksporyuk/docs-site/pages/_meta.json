@@ -1,0 +1,12 @@
+{
+  "index": "Beranda",
+  "roles": "Peran & Akses",
+  "features": "Fitur Platform",
+  "api": "API",
+  "admin": "Panel Admin",
+  "database": "Database",
+  "guides": "Panduan",
+  "faq": "FAQ",
+  "troubleshooting": "Troubleshooting",
+  "changelog": "Changelog"
+}

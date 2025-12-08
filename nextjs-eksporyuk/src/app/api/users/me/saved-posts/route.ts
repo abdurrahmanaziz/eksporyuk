@@ -1,0 +1,75 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth/auth-options'
+import { prisma } from '@/lib/prisma'
+
+// GET /api/users/me/saved-posts - Get user's saved posts
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get('limit') || '50')
+    const offset = parseInt(searchParams.get('offset') || '0')
+
+    const savedPosts = await prisma.savedPost.findMany({
+      where: {
+        userId: session.user.id
+      },
+      include: {
+        post: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true
+              }
+            },
+            group: {
+              select: {
+                id: true,
+                name: true,
+                slug: true
+              }
+            },
+            _count: {
+              select: {
+                likes: true,
+                comments: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: limit,
+      skip: offset
+    })
+
+    const total = await prisma.savedPost.count({
+      where: {
+        userId: session.user.id
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      savedPosts,
+      total,
+      hasMore: offset + savedPosts.length < total
+    })
+  } catch (error: any) {
+    console.error('[API] Get saved posts error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch saved posts', message: error.message },
+      { status: 500 }
+    )
+  }
+}

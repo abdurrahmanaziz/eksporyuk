@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80">
+  <rect width="200" height="80" fill="white"/>
+  <g transform="translate(15, 15)">
+    <path d="M20,10 L30,30 L10,30 Z" fill="#0066CC"/>
+    <text x="40" y="28" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#0066CC">AstraPay</text>
+  </g>
+</svg>

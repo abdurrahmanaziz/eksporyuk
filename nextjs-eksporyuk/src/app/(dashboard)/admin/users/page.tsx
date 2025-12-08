@@ -1,0 +1,679 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
+import { useRouter } from 'next/navigation'
+import {
+  Users,
+  Search,
+  Filter,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Crown,
+  UserCog,
+  Share2,
+  User,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Wallet,
+  ShoppingCart,
+  AlertTriangle,
+} from 'lucide-react'
+
+type User = {
+  id: string
+  name: string
+  email: string
+  role: string
+  createdAt: string
+  emailVerified: boolean
+  membership: {
+    name: string
+    duration: string
+    startDate: string
+    endDate: string
+    daysRemaining: number
+    isExpiringSoon: boolean
+  } | null
+  wallet: {
+    balance: number
+  } | null
+  stats: {
+    transactions: number
+  }
+}
+
+type Stats = {
+  total: number
+  byRole: {
+    admin: number
+    mentor: number
+    affiliate: number
+    memberPremium: number
+    memberFree: number
+  }
+  activeMemberships: number
+}
+
+export default function AdminUsersPage() {
+  const router = useRouter()
+  const { data: session, status } = useSession()
+  const [users, setUsers] = useState<User[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState('ALL')
+  const [membershipFilter, setMembershipFilter] = useState('ALL')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [error, setError] = useState('')
+  const [createLoading, setCreateLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'MEMBER_FREE',
+    isActive: true,
+  })
+
+  // Redirect non-admin
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    } else if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
+      router.push('/dashboard')
+    }
+  }, [status, session, router])
+
+  // Fetch users
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '20',
+      })
+
+      if (search) params.append('search', search)
+      if (roleFilter !== 'ALL') params.append('role', roleFilter)
+      if (membershipFilter !== 'ALL') params.append('membershipStatus', membershipFilter)
+
+      const res = await fetch(`/api/admin/users?${params}`)
+      if (!res.ok) {
+        if (res.status === 403) {
+          setError('Akses ditolak. Anda harus login sebagai ADMIN.')
+          router.push('/dashboard')
+          return
+        }
+        if (res.status === 401) {
+          setError('Sesi Anda telah berakhir. Silakan login kembali.')
+          router.push('/login')
+          return
+        }
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || `HTTP ${res.status}`)
+      }
+
+      const data = await res.json()
+      setUsers(data.users || [])
+      setStats(data.stats || null)
+      setTotalPages(data.pagination?.totalPages || 1)
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      const errorMsg = error instanceof Error ? error.message : 'Gagal memuat data'
+      setError(errorMsg)
+      setUsers([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
+      fetchUsers()
+    }
+  }, [status, session, page, roleFilter, membershipFilter])
+
+  // Search with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page === 1) {
+        fetchUsers()
+      } else {
+        setPage(1)
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  // Delete user
+  const handleDelete = async (userId: string) => {
+    if (!confirm('Yakin ingin menghapus user ini?')) return
+
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      })
+
+      if (!res.ok) throw new Error('Failed to delete')
+
+      fetchUsers()
+      alert('User berhasil dihapus!')
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Gagal menghapus user')
+    }
+  }
+
+  // Create user
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.name || !formData.email) {
+      alert('Nama dan email wajib diisi!')
+      return
+    }
+
+    try {
+      setCreateLoading(true)
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to create user')
+      }
+
+      const result = await res.json()
+
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        role: 'MEMBER_FREE',
+        isActive: true,
+      })
+      setShowCreateModal(false)
+      fetchUsers()
+      
+      // Show success message with generated password if available
+      if (result.generatedPassword) {
+        alert(`User berhasil dibuat!\n\nPassword yang digenerate:\n${result.generatedPassword}\n\nSimpan password ini untuk diberikan ke user.`)
+      } else {
+        alert('User berhasil dibuat!')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert(error instanceof Error ? error.message : 'Gagal membuat user')
+    } finally {
+      setCreateLoading(false)
+    }
+  }
+
+  // Role badge
+  const getRoleBadge = (role: string) => {
+    const badges: any = {
+      ADMIN: { icon: Crown, color: 'bg-purple-100 text-purple-700', label: 'Admin' },
+      MENTOR: { icon: UserCog, color: 'bg-blue-100 text-blue-700', label: 'Mentor' },
+      AFFILIATE: { icon: Share2, color: 'bg-green-100 text-green-700', label: 'Affiliate' },
+      MEMBER_PREMIUM: { icon: Crown, color: 'bg-yellow-100 text-yellow-700', label: 'Premium' },
+      MEMBER_FREE: { icon: User, color: 'bg-gray-100 text-gray-700', label: 'Free' },
+    }
+
+    const badge = badges[role] || badges.MEMBER_FREE
+    const Icon = badge.icon
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.color}`}>
+        <Icon className="w-3 h-3 mr-1" />
+        {badge.label}
+      </span>
+    )
+  }
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated' || session?.user?.role !== 'ADMIN') {
+    return null
+  }
+
+  return (
+    <ResponsivePageWrapper>
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Users className="w-8 h-8" />
+              Kelola Pengguna
+            </h1>
+            <p className="text-gray-600 mt-1">Manajemen user, role, dan membership</p>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            <Plus className="w-5 h-5" />
+            Tambah User
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Users</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              </div>
+              <Users className="w-10 h-10 text-blue-500" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Admin</p>
+                <p className="text-2xl font-bold text-purple-900">{stats.byRole.admin}</p>
+              </div>
+              <Crown className="w-10 h-10 text-purple-500" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Premium Members</p>
+                <p className="text-2xl font-bold text-yellow-900">{stats.byRole.memberPremium}</p>
+              </div>
+              <Crown className="w-10 h-10 text-yellow-500" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Active Memberships</p>
+                <p className="text-2xl font-bold text-green-900">{stats.activeMemberships}</p>
+              </div>
+              <CheckCircle className="w-10 h-10 text-green-500" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Alert */}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
+            <p className="text-red-800 font-medium">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6 border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Cari nama atau email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Role Filter */}
+          <select
+            value={roleFilter}
+            onChange={(e) => {
+              setRoleFilter(e.target.value)
+              setPage(1)
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="ALL">Semua Role</option>
+            <option value="ADMIN">Admin</option>
+            <option value="MENTOR">Mentor</option>
+            <option value="AFFILIATE">Affiliate</option>
+            <option value="MEMBER_PREMIUM">Premium</option>
+            <option value="MEMBER_FREE">Free</option>
+          </select>
+
+          {/* Membership Filter */}
+          <select
+            value={membershipFilter}
+            onChange={(e) => {
+              setMembershipFilter(e.target.value)
+              setPage(1)
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="ALL">Semua Membership</option>
+            <option value="ACTIVE">Punya Membership Aktif</option>
+            <option value="NONE">Tanpa Membership</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Users Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Membership
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Wallet
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <Users className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                    <p>Tidak ada user ditemukan</p>
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
+                            {user.name.charAt(0).toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getRoleBadge(user.role)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {user.membership ? (
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.membership.name}
+                          </div>
+                          <div className={`text-xs ${user.membership.isExpiringSoon ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                            {user.membership.isExpiringSoon && (
+                              <AlertTriangle className="w-3 h-3 inline mr-1" />
+                            )}
+                            {user.membership.daysRemaining} hari lagi
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {user.wallet ? (
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Wallet className="w-4 h-4 mr-1 text-green-600" />
+                          Rp {user.wallet.balance.toLocaleString('id-ID')}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        {user.emailVerified ? (
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <XCircle className="w-5 h-5 text-gray-400" />
+                        )}
+                        <span className="ml-2 text-sm text-gray-700">
+                          {user.emailVerified ? 'Verified' : 'Not Verified'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => router.push(`/admin/users/${user.id}`)}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                          title="Lihat Detail"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => router.push(`/admin/users/${user.id}/edit`)}
+                          className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
+                          title="Edit"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.id)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                          title="Hapus"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-700">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+
+    {/* Create User Modal */}
+    {showCreateModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Tambah User Baru</h2>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false)
+                  setFormData({
+                    name: '',
+                    email: '',
+                    password: '',
+                    role: 'MEMBER_FREE',
+                    isActive: true,
+                  })
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nama Lengkap <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Masukkan nama lengkap"
+                  required
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="user@example.com"
+                  required
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Kosongkan untuk generate otomatis"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Kosongkan untuk generate password random
+                </p>
+              </div>
+
+              {/* Role */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="MEMBER_FREE">Member Free</option>
+                  <option value="MEMBER_PREMIUM">Member Premium</option>
+                  <option value="AFFILIATE">Affiliate</option>
+                  <option value="MENTOR">Mentor</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+
+              {/* Active Status */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
+                  Aktifkan user
+                </label>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateModal(false)
+                    setFormData({
+                      name: '',
+                      email: '',
+                      password: '',
+                      role: 'MEMBER_FREE',
+                      isActive: true,
+                    })
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                  disabled={createLoading}
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={createLoading}
+                >
+                  {createLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Membuat...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Buat User
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    )}
+    </ResponsivePageWrapper>
+  )
+}

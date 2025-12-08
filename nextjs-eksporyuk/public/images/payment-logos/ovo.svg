@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 100">
+  <rect width="280" height="100" fill="white"/>
+  
+  <!-- Two circles for OO -->
+  <circle cx="35" cy="50" r="25" fill="#4D2D8B"/>
+  <circle cx="75" cy="50" r="25" fill="#4D2D8B"/>
+  
+  <!-- OVO text -->
+  <text x="115" y="62" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#4D2D8B" letter-spacing="1">OVO</text>
+</svg>

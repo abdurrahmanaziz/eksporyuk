@@ -1,0 +1,1068 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import ResponsivePageWrapper from "@/components/layout/ResponsivePageWrapper";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Save, Loader2, Bell, Package, Info, Check } from "lucide-react";
+import { toast } from "sonner";
+
+interface Course {
+  id: string;
+  title: string;
+  slug: string;
+}
+
+interface Group {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export default function EditMembershipPlanPage() {
+  const router = useRouter();
+  const params = useParams();
+  const membershipId = params.id as string;
+  
+  const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+
+    // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    price: 0,
+    duration: 30,
+    durationType: "DAYS",
+    status: "DRAFT",
+    features: [] as string[],
+    
+    // Access & Benefits
+    groupId: "",
+    courses: [] as string[],
+    products: [] as string[],
+    benefits: [] as string[],
+    
+    // Marketing
+    salesPageUrl: "",
+    buttonText: "Beli Membership",
+    formLogo: "",
+    formBanner: "",    // SEO
+    metaTitle: "",
+    metaDescription: "",
+    metaKeywords: "",
+    
+    // Settings
+    maxMembers: 0,
+    autoRenewal: true,
+    trialDays: 0,
+    isVisible: true,
+    showInGeneralCheckout: true,
+  });
+
+  const [featureInput, setFeatureInput] = useState("");
+  const [benefitInput, setBenefitInput] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, [membershipId]);
+
+  const fetchData = async () => {
+    try {
+      setLoadingData(true);
+      
+      // Fetch membership data
+      const membershipRes = await fetch(`/api/admin/membership-plans/${membershipId}`);
+      if (!membershipRes.ok) throw new Error("Failed to fetch membership data");
+      const membershipData = await membershipRes.json();
+      const membership = membershipData.plan; // API returns { plan: ... }
+      
+      // Fetch courses
+      const coursesRes = await fetch("/api/admin/courses");
+      if (coursesRes.ok) {
+        const coursesData = await coursesRes.json();
+        setCourses(coursesData.courses || []);
+      }
+      
+      // Fetch groups
+      const groupsRes = await fetch("/api/admin/groups");
+      if (groupsRes.ok) {
+        const groupsData = await groupsRes.json();
+        setGroups(groupsData.groups || []);
+      }
+
+      // Fetch products
+      const productsRes = await fetch("/api/admin/products");
+      if (productsRes.ok) {
+        const productsData = await productsRes.json();
+        setProducts(productsData.products || []);
+      }
+      
+      // Helper function to ensure array
+      const ensureArray = (value: any): any[] => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        }
+        return [];
+      };
+      
+      // Set form data
+      setFormData({
+        name: membership.name || "",
+        slug: membership.slug || "",
+        description: membership.description || "",
+        price: membership.price || 0,
+        duration: membership.duration || 30,
+        durationType: membership.durationType || "DAYS",
+        status: membership.status || "DRAFT",
+        features: ensureArray(membership.features),
+        groupId: membership.groupId || "",
+        courses: membership.membershipCourses?.map((mc: any) => mc.courseId) || [],
+        products: membership.membershipProducts?.map((mp: any) => mp.productId) || [],
+        benefits: ensureArray(membership.benefits),
+        salesPageUrl: membership.salesPageUrl || "",
+        buttonText: membership.buttonText || "Beli Membership",
+        formLogo: membership.formLogo || "",
+        formBanner: membership.formBanner || "",
+        metaTitle: membership.metaTitle || "",
+        metaDescription: membership.metaDescription || "",
+        metaKeywords: membership.metaKeywords || "",
+        maxMembers: membership.maxMembers || 0,
+        autoRenewal: membership.autoRenewal ?? true,
+        trialDays: membership.trialDays || 0,
+        isVisible: membership.isVisible ?? true,
+        showInGeneralCheckout: membership.showInGeneralCheckout ?? true,
+      });
+      
+    } catch (error: any) {
+      toast.error(error.message || "Gagal load data membership");
+      console.error("Load error:", error);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.slug) {
+      toast.error("Nama dan slug wajib diisi!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Upload logo jika ada
+      if (logoFile) {
+        const logoFormData = new FormData();
+        logoFormData.append('file', logoFile);
+        const logoRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: logoFormData,
+        });
+        if (logoRes.ok) {
+          const logoData = await logoRes.json();
+          formData.formLogo = logoData.url;
+        }
+      }
+
+      // Upload banner jika ada
+      if (bannerFile) {
+        const bannerFormData = new FormData();
+        bannerFormData.append('file', bannerFile);
+        const bannerRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: bannerFormData,
+        });
+        if (bannerRes.ok) {
+          const bannerData = await bannerRes.json();
+          formData.formBanner = bannerData.url;
+        }
+      }
+
+      const response = await fetch(`/api/admin/membership-plans/${membershipId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Gagal update membership plan");
+      }
+
+      toast.success("Membership plan berhasil diupdate!");
+      router.push("/admin/membership-plans");
+      
+    } catch (error: any) {
+      toast.error(error.message || "Terjadi kesalahan");
+      console.error("Update error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addFeature = () => {
+    if (featureInput.trim()) {
+      const currentFeatures = Array.isArray(formData.features) ? formData.features : [];
+      setFormData({
+        ...formData,
+        features: [...currentFeatures, featureInput.trim()],
+      });
+      setFeatureInput("");
+    }
+  };
+
+  const removeFeature = (index: number) => {
+    const currentFeatures = Array.isArray(formData.features) ? formData.features : [];
+    setFormData({
+      ...formData,
+      features: currentFeatures.filter((_, i) => i !== index),
+    });
+  };
+
+  const addBenefit = () => {
+    if (benefitInput.trim()) {
+      const currentBenefits = Array.isArray(formData.benefits) ? formData.benefits : [];
+      setFormData({
+        ...formData,
+        benefits: [...currentBenefits, benefitInput.trim()],
+      });
+      setBenefitInput("");
+    }
+  };
+
+  const removeBenefit = (index: number) => {
+    const currentBenefits = Array.isArray(formData.benefits) ? formData.benefits : [];
+    setFormData({
+      ...formData,
+      benefits: currentBenefits.filter((_, i) => i !== index),
+    });
+  };
+
+  const toggleCourse = (courseId: string) => {
+    const courses = formData.courses.includes(courseId)
+      ? formData.courses.filter(id => id !== courseId)
+      : [...formData.courses, courseId];
+    setFormData({ ...formData, courses });
+  };
+
+  const toggleProduct = (productId: string) => {
+    const products = formData.products.includes(productId)
+      ? formData.products.filter(id => id !== productId)
+      : [...formData.products, productId];
+    setFormData({ ...formData, products });
+  };
+
+  if (loadingData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <ResponsivePageWrapper>
+    <div className="container mx-auto py-6 px-4 max-w-6xl">
+      <div className="mb-6">
+        <Link href="/admin/membership-plans">
+          <Button variant="ghost" size="sm" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Kembali
+          </Button>
+        </Link>
+      </div>
+
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Edit Membership Plan</h1>
+        <p className="text-muted-foreground mt-1">
+          Update membership plan dengan sistem tab yang mudah
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <Tabs defaultValue="basic" className="space-y-6">
+          <TabsList className="grid grid-cols-7 w-full">
+            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+            <TabsTrigger value="pricing">Pricing</TabsTrigger>
+            <TabsTrigger value="access">Access</TabsTrigger>
+            <TabsTrigger value="benefits">Benefits</TabsTrigger>
+            <TabsTrigger value="marketing">Marketing</TabsTrigger>
+            <TabsTrigger value="seo">SEO</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          {/* Tab 1: Basic Info */}
+          <TabsContent value="basic" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Informasi Dasar</CardTitle>
+                <CardDescription>
+                  Informasi utama membership plan
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nama Membership *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      setFormData({
+                        ...formData,
+                        name,
+                        slug: generateSlug(name),
+                      });
+                    }}
+                    placeholder="Contoh: Premium Membership"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="slug">Slug *</Label>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) =>
+                      setFormData({ ...formData, slug: e.target.value })
+                    }
+                    placeholder="premium-membership"
+                    required
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    URL: /membership/{formData.slug}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Deskripsi</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    placeholder="Deskripsi lengkap membership..."
+                    rows={6}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, status: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DRAFT">Draft</SelectItem>
+                      <SelectItem value="PUBLISHED">Published</SelectItem>
+                      <SelectItem value="ARCHIVED">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 2: Pricing */}
+          <TabsContent value="pricing" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Harga & Durasi</CardTitle>
+                <CardDescription>
+                  Pengaturan harga dan durasi membership
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Harga (Rp)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        price: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    placeholder="299000"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Durasi</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={formData.duration}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          duration: parseInt(e.target.value) || 0,
+                        })
+                      }
+                      placeholder="30"
+                      disabled={formData.durationType === "LIFETIME"}
+                    />
+                    {formData.durationType === "LIFETIME" && (
+                      <p className="text-xs text-muted-foreground">
+                        Durasi otomatis unlimited untuk lifetime
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="durationType">Tipe Durasi</Label>
+                    <Select
+                      value={formData.durationType}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, durationType: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DAYS">Hari</SelectItem>
+                        <SelectItem value="MONTHS">Bulan</SelectItem>
+                        <SelectItem value="YEARS">Tahun</SelectItem>
+                        <SelectItem value="LIFETIME">Lifetime</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="trialDays">Trial Period (Hari)</Label>
+                  <Input
+                    id="trialDays"
+                    type="number"
+                    value={formData.trialDays}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        trialDays: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    placeholder="0"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    0 = tidak ada trial period
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label>Auto Renewal</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Membership akan diperpanjang otomatis
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.autoRenewal}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, autoRenewal: checked })
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 3: Access */}
+          <TabsContent value="access" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Akses & Konten</CardTitle>
+                <CardDescription>
+                  Atur akses member ke grup dan course
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="groupId">Grup Komunitas</Label>
+                  <Select
+                    value={formData.groupId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, groupId: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih grup..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="NONE">Tidak ada grup</SelectItem>
+                      {groups.map((group) => (
+                        <SelectItem key={group.id} value={group.id}>
+                          {group.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Course yang Dapat Diakses</Label>
+                  <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+                    {courses.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Tidak ada course tersedia
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {courses.map((course) => (
+                          <div
+                            key={course.id}
+                            className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md"
+                          >
+                            <Checkbox
+                              id={`course-${course.id}`}
+                              checked={formData.courses.includes(course.id)}
+                              onCheckedChange={() => toggleCourse(course.id)}
+                            />
+                            <Label
+                              htmlFor={`course-${course.id}`}
+                              className="flex-1 cursor-pointer font-normal"
+                            >
+                              {course.title}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {formData.courses.length} course dipilih
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Produk yang Dapat Diakses</Label>
+                  <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+                    {products.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Tidak ada produk tersedia
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {products.map((product) => (
+                          <div
+                            key={product.id}
+                            className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md"
+                          >
+                            <Checkbox
+                              id={`product-${product.id}`}
+                              checked={formData.products.includes(product.id)}
+                              onCheckedChange={() => toggleProduct(product.id)}
+                            />
+                            <Label
+                              htmlFor={`product-${product.id}`}
+                              className="flex-1 cursor-pointer font-normal"
+                            >
+                              {product.name}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {formData.products.length} produk dipilih
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 4: Benefits */}
+          <TabsContent value="benefits" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Fitur & Benefit</CardTitle>
+                <CardDescription>
+                  Daftar fitur dan benefit untuk member
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <Label>Features</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={featureInput}
+                      onChange={(e) => setFeatureInput(e.target.value)}
+                      placeholder="Tambah fitur..."
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addFeature())}
+                    />
+                    <Button type="button" onClick={addFeature}>
+                      Tambah
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(formData.features) && formData.features.map((feature, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="gap-1 cursor-pointer"
+                        onClick={() => removeFeature(index)}
+                      >
+                        {feature}
+                        <span className="text-xs">×</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Benefits</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={benefitInput}
+                      onChange={(e) => setBenefitInput(e.target.value)}
+                      placeholder="Tambah benefit..."
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addBenefit())}
+                    />
+                    <Button type="button" onClick={addBenefit}>
+                      Tambah
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {Array.isArray(formData.benefits) && formData.benefits.map((benefit, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 p-2 border rounded-md group"
+                      >
+                        <Check className="h-4 w-4 text-green-600" />
+                        <span className="flex-1">{benefit}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeBenefit(index)}
+                          className="opacity-0 group-hover:opacity-100"
+                        >
+                          Hapus
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 5: Marketing */}
+          <TabsContent value="marketing" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Marketing & Sales</CardTitle>
+                <CardDescription>
+                  Pengaturan sales page dan CTA
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="salesPageUrl">Sales Page URL</Label>
+                  <Input
+                    id="salesPageUrl"
+                    value={formData.salesPageUrl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, salesPageUrl: e.target.value })
+                    }
+                    placeholder="https://example.com/membership-premium"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="buttonText">Teks Tombol CTA</Label>
+                  <Input
+                    id="buttonText"
+                    value={formData.buttonText}
+                    onChange={(e) =>
+                      setFormData({ ...formData, buttonText: e.target.value })
+                    }
+                    placeholder="Beli Membership"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="logo">Logo (Optional)</Label>
+                  <Input
+                    id="logo"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setLogoFile(file);
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFormData({ ...formData, formLogo: reader.result as string });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  {formData.formLogo && (
+                    <div className="mt-2">
+                      <img src={formData.formLogo} alt="Logo preview" className="h-20 object-contain border rounded" />
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Logo akan ditampilkan di checkout page
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="banner">Banner (Optional)</Label>
+                  <Input
+                    id="banner"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setBannerFile(file);
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFormData({ ...formData, formBanner: reader.result as string });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  {formData.formBanner && (
+                    <div className="mt-2">
+                      <img src={formData.formBanner} alt="Banner preview" className="h-32 w-full object-cover border rounded" />
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Banner akan ditampilkan di checkout page
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                  </span>
+                  Automation & Smart Reminders
+                </CardTitle>
+                <CardDescription>
+                  Setup unlimited automated reminders dengan multi-channel delivery
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="p-6 border-2 border-dashed border-primary/20 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-primary/10 rounded-lg">
+                        <Info className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <h4 className="font-semibold text-base">Fitur Smart Reminder System</h4>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex items-start gap-2">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-sm">Multi-Channel Delivery</p>
+                              <p className="text-xs text-muted-foreground">Email, WhatsApp, Push, In-App</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-sm">Flexible Scheduling</p>
+                              <p className="text-xs text-muted-foreground">Hours, days, weeks after purchase/expiry</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-sm">Smart Timing</p>
+                              <p className="text-xs text-muted-foreground">Preferred time, timezone, avoid weekends</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-sm">Rich Content</p>
+                              <p className="text-xs text-muted-foreground">HTML email, CTA buttons, shortcodes</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-sm">Conditional Logic</p>
+                              <p className="text-xs text-muted-foreground">Send based on user activity status</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-sm">Analytics & Tracking</p>
+                              <p className="text-xs text-muted-foreground">Delivery, open, click rates per channel</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex gap-2">
+                        <Info className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                        <div className="space-y-1 text-sm">
+                          <p className="font-medium text-yellow-900">💡 Pro Tip untuk Reminder Automation:</p>
+                          <ul className="space-y-1 text-yellow-800 ml-2">
+                            <li>• Setup welcome email dalam 1 jam setelah pembelian</li>
+                            <li>• Follow-up di hari ke-3 untuk engagement</li>
+                            <li>• Reminder sebelum expired (7 hari, 3 hari, 1 hari)</li>
+                            <li>• Gunakan conditional logic untuk target user tidak aktif</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <Button
+                        type="button"
+                        onClick={() => router.push(`/admin/membership-plans/${membershipId}/reminders`)}
+                        className="w-full gap-2"
+                        size="lg"
+                      >
+                        <Bell className="h-5 w-5" />
+                        Kelola Smart Reminders
+                      </Button>
+                      <p className="text-xs text-center text-muted-foreground mt-2">
+                        💡 Simpan paket membership terlebih dahulu untuk mengatur reminders
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 6: SEO */}
+          <TabsContent value="seo" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>SEO Settings</CardTitle>
+                <CardDescription>
+                  Optimasi untuk mesin pencari
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="metaTitle">Meta Title</Label>
+                  <Input
+                    id="metaTitle"
+                    value={formData.metaTitle}
+                    onChange={(e) =>
+                      setFormData({ ...formData, metaTitle: e.target.value })
+                    }
+                    placeholder="Premium Membership - Akses Lengkap"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {formData.metaTitle.length}/60 karakter
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="metaDescription">Meta Description</Label>
+                  <Textarea
+                    id="metaDescription"
+                    value={formData.metaDescription}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        metaDescription: e.target.value,
+                      })
+                    }
+                    placeholder="Dapatkan akses penuh ke semua course dan grup eksklusif..."
+                    rows={3}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {formData.metaDescription.length}/160 karakter
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="metaKeywords">Meta Keywords</Label>
+                  <Input
+                    id="metaKeywords"
+                    value={formData.metaKeywords}
+                    onChange={(e) =>
+                      setFormData({ ...formData, metaKeywords: e.target.value })
+                    }
+                    placeholder="membership, premium, course, komunitas"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Pisahkan dengan koma
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 7: Settings */}
+          <TabsContent value="settings" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Advanced Settings</CardTitle>
+                <CardDescription>
+                  Pengaturan lanjutan membership
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="maxMembers">Max Members</Label>
+                  <Input
+                    id="maxMembers"
+                    type="number"
+                    value={formData.maxMembers}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxMembers: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    placeholder="0"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    0 = unlimited members
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label>Visibility</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Tampilkan membership di halaman publik
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.isVisible}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, isVisible: checked })
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label>Tampil di Checkout Umum</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Tampilkan paket ini di halaman /membership
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.showInGeneralCheckout}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, showInGeneralCheckout: checked })
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-4 mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/membership-plans")}
+            disabled={loading}
+          >
+            Batal
+          </Button>
+          <Button type="submit" disabled={loading} className="gap-2">
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Update Membership
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
+    </ResponsivePageWrapper>
+  );
+}

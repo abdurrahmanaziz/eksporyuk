@@ -1,0 +1,284 @@
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-options'
+import { prisma } from '@/lib/prisma'
+
+/**
+ * Required fields for member profile completion
+ */
+const REQUIRED_PROFILE_FIELDS = {
+  name: { label: 'Nama Lengkap', required: true },
+  avatar: { label: 'Foto Profil', required: true },
+  phone: { label: 'Nomor Telepon', required: true },
+  whatsapp: { label: 'WhatsApp', required: true },
+  province: { label: 'Provinsi', required: true },
+  city: { label: 'Kota/Kabupaten', required: true },
+}
+
+/**
+ * Check if a user has completed their profile
+ */
+export function checkProfileCompletion(user: any) {
+  const missingFields: string[] = []
+  
+  if (!user.name || user.name.trim() === '') {
+    missingFields.push('name')
+  }
+  if (!user.avatar) {
+    missingFields.push('avatar')
+  }
+  if (!user.phone) {
+    missingFields.push('phone')
+  }
+  if (!user.whatsapp) {
+    missingFields.push('whatsapp')
+  }
+  if (!user.province) {
+    missingFields.push('province')
+  }
+  if (!user.city) {
+    missingFields.push('city')
+  }
+  
+  return {
+    isComplete: missingFields.length === 0,
+    missingFields,
+    completedFields: Object.keys(REQUIRED_PROFILE_FIELDS).filter(f => !missingFields.includes(f)),
+    totalRequired: Object.keys(REQUIRED_PROFILE_FIELDS).length,
+    completedCount: Object.keys(REQUIRED_PROFILE_FIELDS).length - missingFields.length,
+  }
+}
+
+/**
+ * GET /api/member/onboarding
+ * Get onboarding progress for current member
+ */
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Get user with membership data
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        phone: true,
+        whatsapp: true,
+        province: true,
+        city: true,
+        district: true,
+        address: true,
+        bio: true,
+        profileCompleted: true,
+        userMemberships: {
+          where: {
+            isActive: true,
+            status: 'ACTIVE',
+          },
+          include: {
+            membership: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                duration: true,
+              }
+            }
+          },
+          take: 1,
+        },
+        courseEnrollments: {
+          take: 1,
+          select: { id: true }
+        },
+        groupMemberships: {
+          take: 1,
+          select: { id: true }
+        }
+      }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Check profile completion
+    const profileCheck = checkProfileCompletion(user)
+    
+    // Get active membership
+    const activeMembership = user.userMemberships[0] || null
+    
+    // Check onboarding steps
+    const hasCompletedProfile = profileCheck.isComplete
+    const hasMembership = !!activeMembership
+    const hasJoinedGroup = user.groupMemberships.length > 0
+    const hasEnrolledCourse = user.courseEnrollments.length > 0
+
+    // Calculate progress (profile is 50%, rest are bonuses)
+    const profileProgress = Math.round((profileCheck.completedCount / profileCheck.totalRequired) * 50)
+    const membershipProgress = hasMembership ? 20 : 0
+    const groupProgress = hasJoinedGroup ? 15 : 0
+    const courseProgress = hasEnrolledCourse ? 15 : 0
+    const totalProgress = Math.min(100, profileProgress + membershipProgress + groupProgress + courseProgress)
+
+    // Overall completion - profile is MANDATORY
+    const onboardingCompleted = hasCompletedProfile
+
+    // If profile completed but flag not set, update it
+    if (hasCompletedProfile && !user.profileCompleted) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { profileCompleted: true }
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        // Main flag - profile must be complete to access content
+        profileCompleted: hasCompletedProfile,
+        onboardingCompleted,
+        
+        // Profile details
+        profile: {
+          isComplete: profileCheck.isComplete,
+          missingFields: profileCheck.missingFields,
+          completedCount: profileCheck.completedCount,
+          totalRequired: profileCheck.totalRequired,
+          progress: profileProgress,
+        },
+        
+        // Onboarding steps
+        steps: {
+          profileCompleted: hasCompletedProfile,
+          hasMembership,
+          hasJoinedGroup,
+          hasEnrolledCourse,
+        },
+        
+        // Progress
+        totalProgress,
+        
+        // Membership info
+        membership: activeMembership ? {
+          id: activeMembership.id,
+          name: activeMembership.membership.name,
+          slug: activeMembership.membership.slug,
+          duration: activeMembership.membership.duration,
+          startDate: activeMembership.startDate,
+          endDate: activeMembership.endDate,
+        } : null,
+
+        // User profile data for form
+        user: {
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          phone: user.phone,
+          whatsapp: user.whatsapp,
+          province: user.province,
+          city: user.city,
+          district: user.district,
+          address: user.address,
+          bio: user.bio,
+        }
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching member onboarding data:', error)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * POST /api/member/onboarding
+ * Update member profile for onboarding completion
+ */
+export async function POST(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { name, avatar, phone, whatsapp, province, city, district, address, bio } = body
+
+    // Validate required fields
+    const errors: string[] = []
+    if (!name || name.trim() === '') errors.push('Nama lengkap wajib diisi')
+    if (!avatar) errors.push('Foto profil wajib diupload')
+    if (!phone) errors.push('Nomor telepon wajib diisi')
+    if (!whatsapp) errors.push('Nomor WhatsApp wajib diisi')
+    if (!province) errors.push('Provinsi wajib dipilih')
+    if (!city) errors.push('Kota/Kabupaten wajib dipilih')
+
+    if (errors.length > 0) {
+      return NextResponse.json(
+        { success: false, error: 'Validasi gagal', errors },
+        { status: 400 }
+      )
+    }
+
+    // Update user profile
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        name: name.trim(),
+        avatar,
+        phone,
+        whatsapp,
+        province,
+        city,
+        district: district || null,
+        address: address || null,
+        bio: bio || null,
+        profileCompleted: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        phone: true,
+        whatsapp: true,
+        province: true,
+        city: true,
+        profileCompleted: true,
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Profil berhasil dilengkapi! Sekarang Anda dapat mengakses semua fitur.',
+      user: updatedUser,
+    })
+
+  } catch (error) {
+    console.error('Error updating member profile:', error)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

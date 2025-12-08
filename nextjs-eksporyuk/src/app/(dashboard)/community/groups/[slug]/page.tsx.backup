@@ -1,0 +1,1475 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import {
+  Users,
+  Settings,
+  UserPlus,
+  LogOut,
+  Image as ImageIcon,
+  Send,
+  Heart,
+  MessageCircle,
+  Share2,
+  MoreHorizontal,
+  Lock,
+  Eye,
+  EyeOff,
+  ChevronLeft,
+  Video,
+  Link2,
+  MapPin,
+  Smile,
+  Calendar,
+  Clock,
+  ChevronRight,
+  ChevronLeft as ChevronLeftIcon,
+  Plus,
+  Rocket,
+  Trophy,
+  Target,
+  Award,
+  FileText,
+  Edit3,
+  Trash2,
+  Pin,
+  Flag,
+  MessageSquareOff,
+  Unlock,
+  Loader2,
+  Bookmark,
+  BookmarkCheck,
+} from 'lucide-react'
+import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
+import GroupSidebar from '@/components/groups/GroupSidebar'
+import RichTextEditor from '@/components/ui/RichTextEditor'
+import DashboardBanner from '@/components/banners/DashboardBanner'
+import SidebarBanner from '@/components/banners/SidebarBanner'
+import { ReactionPicker, ReactionSummary, ReactionModal } from '@/components/ui/Reactions'
+import { PollCreator, PollVote } from '@/components/ui/PollCreator'
+import { EventCreator, EventDisplay } from '@/components/ui/EventCreator'
+import CommentSection from '@/components/ui/CommentSection'
+import ReactionButton, { ReactionType } from '@/components/ui/ReactionButton'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
+import { format } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
+import MemberLocationBadge from '@/components/member/MemberLocationBadge'
+
+// Gamification components
+import QuizList from '@/components/groups/QuizList'
+import BadgeList from '@/components/groups/BadgeList'
+import ChallengeList from '@/components/groups/ChallengeList'
+import ScheduledPosts from '@/components/groups/ScheduledPosts'
+
+interface Group {
+  id: string
+  name: string
+  description: string
+  avatar: string | null
+  coverImage: string | null
+  type: 'PUBLIC' | 'PRIVATE' | 'HIDDEN'
+  owner: {
+    id: string
+    name: string
+    image: string | null
+  }
+  _count: {
+    members: number
+    posts: number
+  }
+}
+
+interface Membership {
+  role: 'OWNER' | 'ADMIN' | 'MODERATOR' | 'MEMBER'
+  joinedAt: string
+  user: {
+    id: string
+    name: string
+    email: string
+  }
+}
+
+interface Post {
+  id: string
+  content: string
+  contentFormatted?: any
+  images: string[]
+  videos: string[]
+  documents: string[]
+  linkPreview?: any
+  taggedUsers: string[]
+  pollData?: any
+  eventData?: any
+  location?: any
+  quoteStyle?: string
+  scheduledAt?: string
+  commentsEnabled: boolean
+  isPinned?: boolean
+  reactionsCount?: Record<string, number>
+  createdAt: string
+  author: {
+    id: string
+    name: string
+    image: string | null
+    role: string
+    province?: string
+    city?: string
+    locationVerified?: boolean
+  }
+  reactions?: Array<{
+    id: string
+    type: string
+    user: {
+      id: string
+      name: string
+      avatar?: string
+    }
+  }>
+  comments: Array<{
+    id: string
+    content: string
+    createdAt: string
+    user: {
+      id: string
+      name: string
+      image: string | null
+    }
+  }>
+  _count: {
+    comments: number
+    reactions: number
+  }
+}
+
+const getGroupIcon = (type: string) => {
+  switch (type) {
+    case 'PUBLIC':
+      return <Eye className="w-4 h-4" />
+    case 'PRIVATE':
+      return <Lock className="w-4 h-4" />
+    case 'HIDDEN':
+      return <EyeOff className="w-4 h-4" />
+    default:
+      return null
+  }
+}
+
+const formatDate = (dateString: string) => {
+  try {
+    return format(new Date(dateString), 'dd MMM yyyy', { locale: idLocale })
+  } catch {
+    return dateString
+  }
+}
+
+export default function GroupDetailPage() {
+  const { data: session } = useSession()
+  const params = useParams()
+  const router = useRouter()
+  const groupSlug = params?.slug as string
+
+  // Sidebar state untuk responsive layout
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const [group, setGroup] = useState<Group | null>(null)
+  const [userMembership, setUserMembership] = useState<any>(null)
+  const [posts, setPosts] = useState<Post[]>([])
+  const [events, setEvents] = useState<any[]>([])
+  const [stories, setStories] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [posting, setPosting] = useState(false)
+  const [activeTab, setActiveTab] = useState<'feed' | 'members'>('feed')
+  const [activeSection, setActiveSection] = useState<'feed' | 'quizzes' | 'challenges' | 'badges' | 'scheduled'>('feed')
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(true)
+  const [storiesScrollPosition, setStoriesScrollPosition] = useState(0)
+  const [selectedReactionModal, setSelectedReactionModal] = useState<{ postId: string; reactions: any[]; reactionsCount: Record<string, number> } | null>(null)
+
+  // Post management states
+  const [editingPost, setEditingPost] = useState<Post | null>(null)
+  const [deletingPost, setDeletingPost] = useState<string | null>(null)
+  const [reportingPost, setReportingPost] = useState<Post | null>(null)
+  const [reportReason, setReportReason] = useState('')
+  const [reportDetails, setReportDetails] = useState('')
+  const [submittingReport, setSubmittingReport] = useState(false)
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
+  const [postComments, setPostComments] = useState<Record<string, any[]>>({})
+  const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
+  const [postReactions, setPostReactions] = useState<Record<string, { currentReaction: ReactionType | null; counts: Record<string, number> }>>({})
+  const [submittingPost, setSubmittingPost] = useState(false)
+  const [editPostContent, setEditPostContent] = useState('')
+  const [savedPosts, setSavedPosts] = useState<Record<string, boolean>>({})
+  const [savingPost, setSavingPost] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    if (groupSlug) {
+      fetchGroupDetails()
+      fetchPosts()
+      fetchEvents()
+      fetchStories()
+    }
+  }, [groupSlug])
+
+  // Detect sidebar state and window size
+  useEffect(() => {
+    const checkSidebarState = () => {
+      const collapsed = localStorage.getItem('sidebarCollapsed') === 'true'
+      setSidebarCollapsed(collapsed)
+    }
+
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+
+    checkSidebarState()
+    checkMobile()
+
+    window.addEventListener('resize', checkMobile)
+    window.addEventListener('storage', checkSidebarState)
+
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('storage', checkSidebarState)
+    }
+  }, [])
+
+  const fetchGroupDetails = async () => {
+    try {
+      const res = await fetch(`/api/groups/${groupSlug}`)
+      if (res.ok) {
+        const data = await res.json()
+        setGroup(data.group)
+        setUserMembership(data.membership)
+      } else if (res.status === 404) {
+        router.push('/community/groups')
+      }
+    } catch (error) {
+      console.error('Error fetching group:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch(`/api/groups/${groupSlug}/posts`)
+      if (res.ok) {
+        const data = await res.json()
+        setPosts(data.posts)
+        
+        // Fetch reactions and save status for all posts
+        if (data.posts && data.posts.length > 0) {
+          await fetchAllReactions(data.posts.map((p: any) => p.id))
+          await fetchAllSavedStatus(data.posts.map((p: any) => p.id))
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching posts:', error)
+    }
+  }
+
+  const fetchAllReactions = async (postIds: string[]) => {
+    try {
+      const reactions: Record<string, any> = {}
+      await Promise.all(
+        postIds.map(async (postId) => {
+          try {
+            const response = await fetch(`/api/posts/${postId}/reactions`)
+            if (response.ok) {
+              const data = await response.json()
+              reactions[postId] = {
+                counts: data.counts || data.reactionsCount || {},
+                currentReaction: data.currentReaction || null,
+              }
+            }
+          } catch (err) {
+            console.error(`Error fetching reactions for post ${postId}:`, err)
+          }
+        })
+      )
+      setPostReactions(reactions)
+    } catch (error) {
+      console.error('Error fetching all reactions:', error)
+    }
+  }
+
+  const fetchAllSavedStatus = async (postIds: string[]) => {
+    try {
+      const saved: Record<string, boolean> = {}
+      await Promise.all(
+        postIds.map(async (postId) => {
+          try {
+            const response = await fetch(`/api/posts/${postId}/save`)
+            if (response.ok) {
+              const data = await response.json()
+              saved[postId] = data.isSaved || false
+            }
+          } catch (err) {
+            console.error(`Error fetching save status for post ${postId}:`, err)
+          }
+        })
+      )
+      setSavedPosts(saved)
+    } catch (error) {
+      console.error('Error fetching save status:', error)
+    }
+  }
+
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch(`/api/groups/${groupSlug}/events`)
+      if (res.ok) {
+        const data = await res.json()
+        setEvents(data.events || [])
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error)
+    }
+  }
+
+  const fetchStories = async () => {
+    try {
+      const res = await fetch(`/api/groups/${groupSlug}/stories`)
+      if (res.ok) {
+        const data = await res.json()
+        setStories(data.stories || [])
+      }
+    } catch (error) {
+      console.error('Error fetching stories:', error)
+    }
+  }
+
+  const scrollStories = (direction: 'left' | 'right') => {
+    const container = document.getElementById('stories-container')
+    if (container) {
+      const scrollAmount = 300
+      const newPosition = direction === 'left' 
+        ? storiesScrollPosition - scrollAmount 
+        : storiesScrollPosition + scrollAmount
+      container.scrollTo({ left: newPosition, behavior: 'smooth' })
+      setStoriesScrollPosition(newPosition)
+    }
+  }
+
+  const handleJoinGroup = async () => {
+    try {
+      const res = await fetch(`/api/groups/${groupSlug}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+
+      if (res.ok) {
+        fetchGroupDetails()
+      }
+    } catch (error) {
+      console.error('Error joining group:', error)
+    }
+  }
+
+  const handleLeaveGroup = async () => {
+    if (!confirm('Yakin ingin keluar dari grup ini?')) return
+
+    try {
+      const res = await fetch(`/api/groups/${groupSlug}/members`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        router.push('/community/groups')
+      }
+    } catch (error) {
+      console.error('Error leaving group:', error)
+    }
+  }
+
+  const handleCreatePost = async (postData: any) => {
+    setPosting(true)
+    try {
+      const res = await fetch(`/api/groups/${groupSlug}/posts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData),
+      })
+
+      if (res.ok) {
+        fetchPosts()
+      }
+    } catch (error) {
+      console.error('Error creating post:', error)
+    } finally {
+      setPosting(false)
+    }
+  }
+
+  const handleReact = async (postId: string, reactionType: ReactionType) => {
+    // Optimistic update
+    const previousReaction = postReactions[postId]
+    setPostReactions(prev => ({
+      ...prev,
+      [postId]: {
+        counts: {
+          ...prev[postId]?.counts,
+          [reactionType]: (prev[postId]?.counts?.[reactionType] || 0) + 1,
+        },
+        currentReaction: reactionType,
+      }
+    }))
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/reactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: reactionType }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPostReactions(prev => ({
+          ...prev,
+          [postId]: {
+            counts: data.reactionsCount || data.counts || {},
+            currentReaction: data.reaction?.type || reactionType,
+          }
+        }))
+      } else {
+        // Rollback on error
+        setPostReactions(prev => ({
+          ...prev,
+          [postId]: previousReaction || { counts: {}, currentReaction: null }
+        }))
+        toast.error('Gagal menambahkan reaksi')
+      }
+    } catch (error) {
+      console.error('Error reacting:', error)
+      setPostReactions(prev => ({
+        ...prev,
+        [postId]: previousReaction || { counts: {}, currentReaction: null }
+      }))
+      toast.error('Gagal menambahkan reaksi')
+    }
+  }
+
+  const handleRemoveReact = async (postId: string) => {
+    const previousReaction = postReactions[postId]
+    const currentType = previousReaction?.currentReaction
+    
+    if (currentType) {
+      setPostReactions(prev => ({
+        ...prev,
+        [postId]: {
+          counts: {
+            ...prev[postId]?.counts,
+            [currentType]: Math.max((prev[postId]?.counts?.[currentType] || 1) - 1, 0),
+          },
+          currentReaction: null,
+        }
+      }))
+    }
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/reactions`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPostReactions(prev => ({
+          ...prev,
+          [postId]: {
+            counts: data.reactionsCount || data.counts || {},
+            currentReaction: null,
+          }
+        }))
+      } else {
+        setPostReactions(prev => ({
+          ...prev,
+          [postId]: previousReaction || { counts: {}, currentReaction: null }
+        }))
+        toast.error('Gagal menghapus reaksi')
+      }
+    } catch (error) {
+      console.error('Error removing reaction:', error)
+      setPostReactions(prev => ({
+        ...prev,
+        [postId]: previousReaction || { counts: {}, currentReaction: null }
+      }))
+      toast.error('Gagal menghapus reaksi')
+    }
+  }
+
+  const handleSavePost = async (postId: string) => {
+    // Optimistic update
+    setSavingPost(prev => ({ ...prev, [postId]: true }))
+    const wasSaved = savedPosts[postId]
+    setSavedPosts(prev => ({ ...prev, [postId]: !wasSaved }))
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/save`, {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setSavedPosts(prev => ({ ...prev, [postId]: data.isSaved }))
+        
+        // Show immediate notification
+        if (data.isSaved) {
+          toast.success('Postingan berhasil disimpan!', {
+            description: 'Lihat semua postingan tersimpan',
+            action: {
+              label: 'Lihat Simpanan',
+              onClick: () => window.location.href = '/saved-posts'
+            },
+            duration: 5000
+          })
+        } else {
+          toast.success('Postingan dihapus dari simpanan')
+        }
+      } else {
+        // Rollback on error
+        setSavedPosts(prev => ({ ...prev, [postId]: wasSaved }))
+        toast.error('Gagal menyimpan postingan')
+      }
+    } catch (error) {
+      console.error('Error saving post:', error)
+      setSavedPosts(prev => ({ ...prev, [postId]: wasSaved }))
+      toast.error('Gagal menyimpan postingan')
+    } finally {
+      setSavingPost(prev => ({ ...prev, [postId]: false }))
+    }
+  }
+
+  const handleVotePoll = async (postId: string, optionIds: string[]) => {
+    try {
+      await fetch(`/api/posts/${postId}/poll/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ optionIds }),
+      })
+      fetchPosts()
+    } catch (error) {
+      console.error('Error voting on poll:', error)
+    }
+  }
+
+  // Post Management Functions
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post)
+    setEditPostContent(post.content)
+  }
+
+  const handleUpdatePost = async (postData: any) => {
+    if (!postData.text && (!postData.images || postData.images.length === 0)) {
+      toast.error('Konten tidak boleh kosong')
+      return false
+    }
+
+    setSubmittingPost(true)
+    try {
+      const formData = new FormData()
+      formData.append('content', postData.text || editingPost?.content || '')
+
+      if (postData.images && postData.images.length > 0) {
+        for (const image of postData.images) {
+          if (typeof image === 'string' && image.startsWith('data:')) {
+            const blob = await fetch(image).then(r => r.blob())
+            formData.append('images', blob, `image-${Date.now()}.jpg`)
+          } else if (image instanceof File) {
+            formData.append('images', image)
+          }
+        }
+      } else if (editingPost?.images) {
+        formData.append('images', JSON.stringify(editingPost.images || []))
+      }
+
+      const response = await fetch(`/api/posts/${editingPost?.id}`, {
+        method: 'PATCH',
+        body: formData,
+      })
+
+      if (response.ok) {
+        toast.success('Postingan berhasil diupdate')
+        setEditingPost(null)
+        setEditPostContent('')
+        fetchPosts()
+        return true
+      } else {
+        toast.error('Gagal mengupdate postingan')
+        return false
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan')
+      return false
+    } finally {
+      setSubmittingPost(false)
+    }
+  }
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('Yakin ingin menghapus postingan ini?')) return
+
+    setDeletingPost(postId)
+    try {
+      const response = await fetch(`/api/posts/${postId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Postingan berhasil dihapus')
+        fetchPosts()
+      } else {
+        toast.error('Gagal menghapus postingan')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan')
+    } finally {
+      setDeletingPost(null)
+    }
+  }
+
+  const handleToggleComments = async (postId: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/toggle-comments`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentsEnabled: !currentStatus }),
+      })
+
+      if (response.ok) {
+        toast.success(currentStatus ? 'Komentar dinonaktifkan' : 'Komentar diaktifkan')
+        fetchPosts()
+      } else {
+        toast.error('Gagal mengubah status komentar')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan')
+    }
+  }
+
+  const handlePinPost = async (postId: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/pin`, {
+        method: 'PATCH',
+      })
+
+      if (response.ok) {
+        toast.success(currentStatus ? 'Postingan di-unpin' : 'Postingan di-pin')
+        fetchPosts()
+      } else {
+        toast.error('Gagal mengubah status pin')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan')
+    }
+  }
+
+  const handleReportPost = async () => {
+    if (!reportReason) {
+      toast.error('Pilih alasan laporan')
+      return
+    }
+
+    setSubmittingReport(true)
+    try {
+      const response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'POST',
+          postId: reportingPost?.id,
+          reason: reportReason,
+          description: reportDetails,
+        }),
+      })
+
+      if (response.ok) {
+        toast.success('Laporan berhasil dikirim ke admin')
+        setReportingPost(null)
+        setReportReason('')
+        setReportDetails('')
+      } else {
+        toast.error('Gagal mengirim laporan')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan')
+    } finally {
+      setSubmittingReport(false)
+    }
+  }
+
+  // Comment functions
+  const toggleComments = async (postId: string) => {
+    const isExpanded = expandedComments[postId]
+    
+    if (!isExpanded && !postComments[postId]) {
+      setLoadingComments(prev => ({ ...prev, [postId]: true }))
+      
+      try {
+        const response = await fetch(`/api/posts/${postId}/comments`)
+        if (response.ok) {
+          const data = await response.json()
+          setPostComments(prev => ({ ...prev, [postId]: data.comments || [] }))
+        }
+      } catch (error) {
+        console.error('Error loading comments:', error)
+        toast.error('Gagal memuat komentar')
+      } finally {
+        setLoadingComments(prev => ({ ...prev, [postId]: false }))
+      }
+    }
+    
+    setExpandedComments(prev => ({ ...prev, [postId]: !isExpanded }))
+  }
+
+  const refreshComments = async (postId: string) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments`)
+      if (response.ok) {
+        const data = await response.json()
+        setPostComments(prev => ({ ...prev, [postId]: data.comments || [] }))
+      }
+    } catch (error) {
+      console.error('Error refreshing comments:', error)
+    }
+  }
+
+  // Reaction handlers
+  const formatRelativeTime = (date: string) => {
+    const now = new Date()
+    const past = new Date(date)
+    const diffMs = now.getTime() - past.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    
+    if (diffMins < 1) return 'Baru saja'
+    if (diffMins < 60) return `${diffMins} menit lalu`
+    
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffHours < 24) return `${diffHours} jam lalu`
+    
+    const diffDays = Math.floor(diffHours / 24)
+    if (diffDays < 7) return `${diffDays} hari lalu`
+    
+    return formatDate(date)
+  }
+
+  const handleToggleEventAttendance = async (postId: string) => {
+    try {
+      await fetch(`/api/posts/${postId}/event/attend`, {
+        method: 'POST',
+      })
+      fetchPosts()
+    } catch (error) {
+      console.error('Error toggling event attendance:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat grup...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!group) {
+    return null
+  }
+
+  const isMember = userMembership !== null
+  const isOwner = userMembership?.role === 'OWNER'
+  const isAdmin = userMembership?.role === 'ADMIN' || session?.user?.role === 'ADMIN'
+
+  return (
+    <ResponsivePageWrapper>
+      {/* Mobile Header with Hamburger */}
+      {isMobile && (
+        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+            <Link
+              href="/community/groups"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              <span className="font-medium">Grup</span>
+            </Link>
+            
+            <div className="flex items-center gap-3">
+              <h1 className="font-semibold text-gray-900 text-sm truncate max-w-[150px]">
+                {group?.name || 'Loading...'}
+              </h1>
+            </div>
+          </div>
+        )}
+        {/* Cover Image - Full Width Responsive */}
+        <div
+          className="h-48 sm:h-56 md:h-64 bg-gradient-to-r from-blue-500 to-purple-600 relative"
+          style={
+            group.coverImage
+              ? {
+                  backgroundImage: `url(${group.coverImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }
+              : undefined
+          }
+        >
+          <div className="absolute inset-0 bg-black bg-opacity-30" />
+          <div className="w-full py-4 md:py-6 relative z-10">
+            <div className="max-w-full px-4 lg:px-6">
+              <Link
+                href="/community/groups"
+                className="inline-flex items-center gap-2 text-white hover:text-gray-200"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                Kembali ke Grup
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Group Info - Full Width Responsive */}
+        <div className="w-full -mt-16 sm:-mt-18 md:-mt-20 relative z-10">
+          <div className="max-w-full px-4 lg:px-6">
+            <Card>
+              <CardContent className="p-4 sm:p-5 md:p-6">
+                <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+                {/* Avatar - Responsive Size */}
+                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-xl bg-white shadow-lg flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 flex-shrink-0">
+                  {group.avatar ? (
+                    <img
+                      src={group.avatar}
+                      alt={group.name}
+                      className="w-full h-full rounded-xl object-cover"
+                    />
+                  ) : (
+                    group.name.charAt(0).toUpperCase()
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-2xl font-bold text-gray-900">
+                          {group.name}
+                        </h1>
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                          {getGroupIcon(group.type)}
+                          {group.type}
+                        </span>
+                      </div>
+                      <p className="text-gray-600">{group.description}</p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      {isMember ? (
+                        <>
+                          {(isOwner || isAdmin) && (
+                            <Link href={`/admin/groups`}>
+                              <Button variant="outline" size="sm">
+                                <Settings className="w-4 h-4 mr-2" />
+                                Kelola
+                              </Button>
+                            </Link>
+                          )}
+                          {!isOwner && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleLeaveGroup}
+                            >
+                              <LogOut className="w-4 h-4 mr-2" />
+                              Keluar
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <Button size="sm" onClick={handleJoinGroup}>
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Gabung
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="flex gap-6 text-sm">
+                    <div>
+                      <span className="font-semibold text-gray-900">
+                        {group._count.members}
+                      </span>
+                      <span className="text-gray-600 ml-1">Member</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-900">
+                        {group._count.posts}
+                      </span>
+                      <span className="text-gray-600 ml-1">Post</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          </div>
+        </div>
+
+        {/* Content Area - Full Width Responsive */}
+        <div className="w-full py-4 sm:py-6">
+          <div className="max-w-full px-4 lg:px-6">
+            {/* Section Tabs */}
+            {isMember && (
+              <div className="mb-4 overflow-x-auto pb-1">
+                <div className="flex gap-2 min-w-max">
+                  <Button
+                    variant={activeSection === 'feed' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveSection('feed')}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Feed
+                  </Button>
+                  <Button
+                    variant={activeSection === 'quizzes' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveSection('quizzes')}
+                  >
+                    <Target className="w-4 h-4 mr-2" />
+                    Quiz
+                  </Button>
+                  <Button
+                    variant={activeSection === 'challenges' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveSection('challenges')}
+                  >
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Challenge
+                  </Button>
+                  <Button
+                    variant={activeSection === 'badges' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveSection('badges')}
+                  >
+                    <Award className="w-4 h-4 mr-2" />
+                    Badge
+                  </Button>
+                  {(isOwner || isAdmin) && (
+                    <Button
+                      variant={activeSection === 'scheduled' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setActiveSection('scheduled')}
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Terjadwal
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+            {/* Main Content - Adaptive Width */}
+            <div className="lg:col-span-2 space-y-4 md:space-y-6 order-2 lg:order-1">
+              
+              {/* Feed Section */}
+              {activeSection === 'feed' && (
+                <>
+              {/* Group Banner at Top */}
+              <div className="mb-4 sm:mb-6">
+                <DashboardBanner placement="DASHBOARD" />
+              </div>
+
+              {/* Rich Text Editor for Creating Posts - Mobile Optimized */}
+              {isMember && (
+                <div className="mb-4 sm:mb-6 max-w-full overflow-hidden">
+                  <RichTextEditor
+                    onSubmit={handleCreatePost}
+                    placeholder="Apa yang Anda pikirkan?"
+                    allowScheduling={true}
+                    allowPolls={true}
+                    allowEvents={true}
+                    allowMedia={true}
+                    allowMentions={true}
+                    allowHashtags={true}
+                    groupSlug={groupSlug}
+                    showSubmitButton={true}
+                    submitButtonText="Post"
+                  />
+                </div>
+              )}
+
+              {/* Posts Feed */}
+              <div className="space-y-4 max-w-full overflow-hidden">
+            {posts.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">
+                    Belum ada postingan di grup ini
+                  </p>
+                  {isMember && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Jadilah yang pertama membuat postingan!
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              posts.map((post) => {
+                const userReaction = post.reactions?.find(
+                  (reaction) => reaction.user.id === session?.user?.id
+                )?.type as any
+
+                return (
+                  <Card key={post.id}>
+                    <CardContent className="p-3 sm:p-4">
+                      {/* Pinned Badge */}
+                      {post.isPinned && (
+                        <div className="mb-3 flex items-center gap-2 text-sm text-blue-600 font-medium bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg">
+                          <Pin className="h-4 w-4 fill-blue-600" />
+                          <span className="font-semibold">Postingan Dipasang</span>
+                        </div>
+                      )}
+
+                      {/* Post Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex gap-3">
+                          <Avatar>
+                            <AvatarImage
+                              src={post.author.image || undefined}
+                            />
+                            <AvatarFallback>
+                              {post.author.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Link href={`/${post.author.name}`} className="font-semibold hover:text-blue-600 transition-colors">
+                                {post.author.name}
+                              </Link>
+                              {post.author.city && (
+                                <MemberLocationBadge
+                                  city={post.author.city}
+                                  province={post.author.province}
+                                  locationVerified={post.author.locationVerified}
+                                  size="sm"
+                                  showLink={true}
+                                />
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              {formatRelativeTime(post.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Post Menu Dropdown */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            {session?.user?.id === post.author.id || isAdmin || isOwner ? (
+                              // Owner/Admin actions
+                              <>
+                                {session?.user?.id === post.author.id && (
+                                  <DropdownMenuItem onClick={() => handleEditPost(post)}>
+                                    <Edit3 className="mr-2 h-4 w-4" />
+                                    Edit Postingan
+                                  </DropdownMenuItem>
+                                )}
+                                {(isAdmin || isOwner) && (
+                                  <DropdownMenuItem onClick={() => handlePinPost(post.id, post.isPinned || false)}>
+                                    <Pin className="mr-2 h-4 w-4" />
+                                    {post.isPinned ? 'Unpin' : 'Pin'} Postingan
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onClick={() => handleToggleComments(post.id, post.commentsEnabled)}>
+                                  {post.commentsEnabled ? (
+                                    <>
+                                      <MessageSquareOff className="mr-2 h-4 w-4" />
+                                      Tutup Komentar
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Unlock className="mr-2 h-4 w-4" />
+                                      Buka Komentar
+                                    </>
+                                  )}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeletePost(post.id)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Hapus Postingan
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              // Other users actions
+                              <DropdownMenuItem 
+                                onClick={() => setReportingPost(post)}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Flag className="mr-2 h-4 w-4" />
+                                Laporkan ke Admin
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Post Content */}
+                      {post.contentFormatted ? (
+                        <div
+                          className="text-gray-800 mb-3 prose max-w-none"
+                          dangerouslySetInnerHTML={{ __html: post.contentFormatted.html }}
+                        />
+                      ) : (
+                        <p className="text-gray-800 mb-3 whitespace-pre-wrap">
+                          {post.content}
+                        </p>
+                      )}
+
+                      {/* Media Display */}
+                      {post.images.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-3 max-w-full">
+                          {post.images.map((image, index) => (
+                            <img
+                              key={index}
+                              src={image}
+                              alt=""
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {post.videos.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3 max-w-full">
+                          {post.videos.map((video, index) => (
+                            <video
+                              key={index}
+                              src={video}
+                              controls
+                              className="w-full rounded-lg max-h-64"
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Link Preview */}
+                      {post.linkPreview && (
+                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-4 max-w-full overflow-hidden">
+                          <div className="flex gap-3">
+                            {post.linkPreview.image && (
+                              <img src={post.linkPreview.image} alt="" className="w-16 h-16 object-cover rounded flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm truncate">{post.linkPreview.title}</h4>
+                              <p className="text-gray-600 text-xs mt-1 line-clamp-2">{post.linkPreview.description}</p>
+                              <p className="text-blue-500 text-xs mt-1 truncate">{post.linkPreview.siteName}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Poll Display */}
+                      {post.pollData && (
+                        <div className="mb-4">
+                          <PollVote
+                            poll={{
+                              ...post.pollData,
+                              id: post.id,
+                              totalVotes: post.pollData.totalVotes || 0,
+                              userVotes: post.pollData.userVotes || [],
+                            }}
+                            onVote={(optionIds) => handleVotePoll(post.id, optionIds)}
+                            currentUserId={session?.user?.id || ''}
+                          />
+                        </div>
+                      )}
+
+                      {/* Event Display */}
+                      {post.eventData && (
+                        <div className="mb-4">
+                          <EventDisplay
+                            event={{
+                              ...post.eventData,
+                              id: post.id,
+                              attendees: post.eventData.attendees || [],
+                              userAttending: post.eventData.userAttending || false,
+                            }}
+                            onToggleAttendance={() => handleToggleEventAttendance(post.id)}
+                          />
+                        </div>
+                      )}
+
+                      {/* Reactions and Comments */}
+                      <div className="space-y-4 pt-3 border-t">
+                        <div className="flex items-center gap-6">
+                          <ReactionButton
+                            postId={post.id}
+                            currentReaction={postReactions[post.id]?.currentReaction}
+                            reactionCounts={postReactions[post.id]?.counts || {}}
+                            onReact={handleReact}
+                            onRemoveReact={handleRemoveReact}
+                            disabled={!session?.user}
+                          />
+                          <button
+                            onClick={() => toggleComments(post.id)}
+                            className={`flex items-center gap-2 transition-colors group ${
+                              post.commentsEnabled
+                                ? 'hover:text-blue-500'
+                                : 'opacity-50 cursor-not-allowed'
+                            }`}
+                            disabled={!post.commentsEnabled}
+                          >
+                            <MessageCircle className="h-5 w-5" />
+                            <span className="font-medium text-sm">{post._count.comments || 0}</span>
+                            {!post.commentsEnabled && <Lock className="h-3 w-3 ml-1" />}
+                          </button>
+                          <button
+                            onClick={() => handleSavePost(post.id)}
+                            className={`flex items-center gap-2 transition-colors ml-auto ${
+                              savedPosts[post.id]
+                                ? 'text-yellow-600 hover:text-yellow-700'
+                                : 'text-gray-600 hover:text-yellow-600'
+                            }`}
+                            disabled={savingPost[post.id]}
+                          >
+                            {savedPosts[post.id] ? (
+                              <BookmarkCheck className="h-5 w-5 fill-current" />
+                            ) : (
+                              <Bookmark className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Comment Section */}
+                        {expandedComments[post.id] && post.commentsEnabled && (
+                          <div className="pt-4 border-t">
+                            {loadingComments[post.id] ? (
+                              <div className="flex justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                              </div>
+                            ) : (
+                              <CommentSection
+                                postId={post.id}
+                                comments={postComments[post.id] || []}
+                                onRefresh={() => refreshComments(post.id)}
+                              />
+                            )}
+                          </div>
+                        )}
+
+                        {/* Comments Disabled Message */}
+                        {!post.commentsEnabled && expandedComments[post.id] && (
+                          <div className="pt-4 border-t">
+                            <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground">
+                              <Lock className="h-4 w-4" />
+                              <span className="text-sm">Komentar dinonaktifkan untuk postingan ini</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })
+            )}
+        </div>
+        
+        {/* Reaction Modal */}
+        {selectedReactionModal && (
+          <ReactionModal
+            isOpen={true}
+            onClose={() => setSelectedReactionModal(null)}
+            reactions={selectedReactionModal.reactions}
+            reactionsCount={selectedReactionModal.reactionsCount}
+          />
+        )}
+
+        {/* Edit Post Dialog */}
+        {editingPost && (
+          <Dialog open={!!editingPost} onOpenChange={(open) => !open && setEditingPost(null)}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+              <DialogHeader className="mb-4">
+                <DialogTitle className="text-xl">Edit Postingan</DialogTitle>
+                <DialogDescription className="text-base">
+                  Ubah konten, tambah gambar, video, atau media lainnya
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6 px-2">
+                <RichTextEditor
+                  placeholder="Tulis sesuatu..."
+                  initialContent={{
+                    text: editingPost.content,
+                    images: editingPost.images || [],
+                    videos: editingPost.videos || [],
+                    documents: editingPost.documents || [],
+                  }}
+                  onSubmit={handleUpdatePost}
+                  allowMedia={true}
+                  allowMentions={true}
+                  allowHashtags={true}
+                  allowPolls={false}
+                  allowEvents={false}
+                  allowScheduling={false}
+                  showSubmitButton={true}
+                  submitButtonText={submittingPost ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  submitButtonDisabled={submittingPost}
+                  toolbarPosition="bottom"
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Report Post Dialog */}
+        <Dialog open={!!reportingPost} onOpenChange={() => setReportingPost(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Laporkan Postingan</DialogTitle>
+              <DialogDescription>
+                Pilih alasan pelaporan. Tim admin akan meninjau laporan Anda.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="reason">Alasan</Label>
+                <Select value={reportReason} onValueChange={setReportReason}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih alasan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="spam">Spam</SelectItem>
+                    <SelectItem value="inappropriate">Konten Tidak Pantas</SelectItem>
+                    <SelectItem value="harassment">Pelecehan</SelectItem>
+                    <SelectItem value="misinformation">Misinformasi</SelectItem>
+                    <SelectItem value="other">Lainnya</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="details">Detail (Opsional)</Label>
+                <Textarea
+                  id="details"
+                  value={reportDetails}
+                  onChange={(e) => setReportDetails(e.target.value)}
+                  placeholder="Jelaskan lebih detail..."
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setReportingPost(null)}>
+                Batal
+              </Button>
+              <Button 
+                onClick={handleReportPost} 
+                disabled={!reportReason || submittingReport}
+              >
+                {submittingReport ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Mengirim...
+                  </>
+                ) : (
+                  'Kirim Laporan'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+                </>
+              )}
+
+              {/* Quizzes Section */}
+              {activeSection === 'quizzes' && (
+                <QuizList 
+                  groupId={group.id} 
+                  groupSlug={groupSlug}
+                  isAdmin={isOwner || isAdmin}
+                />
+              )}
+
+              {/* Challenges Section */}
+              {activeSection === 'challenges' && (
+                <ChallengeList groupId={groupSlug} />
+              )}
+
+              {/* Badges Section */}
+              {activeSection === 'badges' && (
+                <BadgeList 
+                  groupId={group.id}
+                  groupSlug={groupSlug}
+                  isAdmin={isOwner || isAdmin}
+                />
+              )}
+
+              {/* Scheduled Posts Section (Admin/Mentor Only) */}
+              {activeSection === 'scheduled' && (isOwner || isAdmin || session?.user?.role === 'MENTOR') && (
+                <ScheduledPosts 
+                  groupId={group.id}
+                  groupSlug={groupSlug}
+                  isAdmin={isOwner || isAdmin}
+                  userRole={session?.user?.role}
+                  userMembershipRole={userMembership?.role}
+                />
+              )}
+              </div>
+
+              {/* Right Sidebar - Responsive Order */}
+              <div className="lg:col-span-1 order-1 lg:order-2">
+                <div className="lg:sticky lg:top-4 space-y-4">
+                  <GroupSidebar groupId={group.id} groupSlug={groupSlug} />
+                  <SidebarBanner />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </ResponsivePageWrapper>
+  )
+}

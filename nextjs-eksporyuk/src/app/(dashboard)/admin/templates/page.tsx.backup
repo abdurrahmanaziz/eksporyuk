@@ -1,0 +1,1250 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { 
+  Mail, 
+  MessageSquare, 
+  Send, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Eye,
+  Search,
+  Filter,
+  Copy,
+  CheckCircle2
+} from 'lucide-react'
+
+// Types
+interface EmailTemplate {
+  id: string
+  name: string
+  category: string
+  roleTarget: string
+  subject: string
+  body: string
+  ctaText?: string
+  ctaLink?: string
+  variables?: any
+  metadata?: any
+  usageCount: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+interface WhatsAppTemplate {
+  id: string
+  name: string
+  category: string
+  roleTarget: string
+  message: string
+  ctaText?: string
+  ctaLink?: string
+  maxLength: number
+  variables?: any
+  metadata?: any
+  usageCount: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+// Constants
+const CATEGORIES = [
+  { value: 'ALL', label: 'Semua Kategori' },
+  { value: 'SISTEM', label: 'Sistem' },
+  { value: 'TRANSAKSIONAL', label: 'Transaksional' },
+  { value: 'KOMUNITAS', label: 'Komunitas' },
+  { value: 'MARKETING', label: 'Marketing' },
+  { value: 'ADMIN', label: 'Admin' },
+  { value: 'AFFILIATE', label: 'Affiliate' },
+  { value: 'MENTOR', label: 'Mentor' },
+  { value: 'SUPPLIER', label: 'Supplier' },
+]
+
+const ROLE_TARGETS = [
+  { value: 'ALL', label: 'Semua Role' },
+  { value: 'ADMIN', label: 'Admin' },
+  { value: 'MEMBER', label: 'Member' },
+  { value: 'AFFILIATE', label: 'Affiliate' },
+  { value: 'MENTOR', label: 'Mentor' },
+  { value: 'SUPPLIER', label: 'Supplier' },
+]
+
+const AVAILABLE_SHORTCODES = [
+  '{name}', '{email}', '{phone}', '{role}',
+  '{membership_plan}', '{expiry_date}', '{days_left}',
+  '{dashboard_link}', '{profile_link}', '{support_link}',
+  '{company_name}', '{year}', '{date}',
+  '{invoice_number}', '{amount}', '{payment_method}',
+  '{transaction_date}', '{product_name}', '{payment_link}',
+  '{commission}', '{referral_count}', '{tier_level}',
+]
+
+export default function AdminTemplatesPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  // Main tab: templates (email, whatsapp), broadcast, create-email, create-whatsapp, edit-*, view-*
+  const [mainTab, setMainTab] = useState<'templates' | 'broadcast' | 'create-email' | 'create-whatsapp' | 'edit-email' | 'edit-whatsapp' | 'view-email' | 'view-whatsapp' | 'create-campaign' | 'edit-campaign'>('templates')
+  const [templateSubTab, setTemplateSubTab] = useState<'email' | 'whatsapp'>('email')
+  
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([])
+  const [whatsappTemplates, setWhatsAppTemplates] = useState<WhatsAppTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('ALL')
+  const [selectedRoleTarget, setSelectedRoleTarget] = useState('ALL')
+  const [currentTemplate, setCurrentTemplate] = useState<any>(null)
+
+  // Check auth
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login')
+    } else if (session?.user?.role !== 'ADMIN') {
+      router.push('/dashboard')
+    }
+  }, [status, session, router])
+
+  // Load templates
+  useEffect(() => {
+    if (session?.user?.role === 'ADMIN') {
+      loadTemplates()
+    }
+  }, [session, selectedCategory, selectedRoleTarget, searchQuery])
+
+  const loadTemplates = async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        category: selectedCategory,
+        roleTarget: selectedRoleTarget,
+        search: searchQuery,
+      })
+
+      const [emailRes, whatsappRes] = await Promise.all([
+        fetch(`/api/admin/templates/email?${params}`),
+        fetch(`/api/admin/templates/whatsapp?${params}`),
+      ])
+
+      if (emailRes.ok) {
+        const emailData = await emailRes.json()
+        setEmailTemplates(emailData.templates || [])
+      }
+
+      if (whatsappRes.ok) {
+        const whatsappData = await whatsappRes.json()
+        setWhatsAppTemplates(whatsappData.templates || [])
+      }
+    } catch (error) {
+      console.error('Load templates error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreateTemplate = () => {
+    setModalMode('create')
+    setCurrentTemplate(null)
+    setShowModal(true)
+  }
+
+  const handleEditTemplate = (template: any) => {
+    setModalMode('edit')
+    setCurrentTemplate(template)
+    setShowModal(true)
+  }
+
+  const handlePreviewTemplate = (template: any) => {
+    setModalMode('preview')
+    setCurrentTemplate(template)
+    setShowModal(true)
+  }
+
+  const handleDeleteTemplate = async (id: string, type: 'email' | 'whatsapp') => {
+    if (!confirm('Apakah Anda yakin ingin menghapus template ini?')) return
+
+    try {
+      const endpoint = type === 'email' 
+        ? `/api/admin/templates/email?id=${id}`
+        : `/api/admin/templates/whatsapp?id=${id}`
+
+      const res = await fetch(endpoint, { method: 'DELETE' })
+
+      if (res.ok) {
+        alert('Template berhasil dihapus')
+        loadTemplates()
+      } else {
+        alert('Gagal menghapus template')
+      }
+    } catch (error) {
+      console.error('Delete template error:', error)
+      alert('Terjadi kesalahan')
+    }
+  }
+
+  const handleSaveTemplate = async (data: any) => {
+    try {
+      const endpoint = activeTab === 'email' 
+        ? '/api/admin/templates/email'
+        : '/api/admin/templates/whatsapp'
+
+      const method = modalMode === 'create' ? 'POST' : 'PUT'
+      const body = modalMode === 'edit' ? { ...data, id: currentTemplate.id } : data
+
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (res.ok) {
+        alert('Template berhasil disimpan')
+        setShowModal(false)
+        loadTemplates()
+      } else {
+        alert('Gagal menyimpan template')
+      }
+    } catch (error) {
+      console.error('Save template error:', error)
+      alert('Terjadi kesalahan')
+    }
+  }
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat templates...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const currentTemplates = activeTab === 'email' ? emailTemplates : whatsappTemplates
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Manajemen Template</h1>
+        <p className="text-gray-600 mt-1">
+          Kelola template email dan WhatsApp untuk notifikasi sistem
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="flex -mb-px">
+            <button
+              onClick={() => setActiveTab('email')}
+              className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'email'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Mail className="w-4 h-4 inline-block mr-2" />
+              Email Templates ({emailTemplates.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('whatsapp')}
+              className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'whatsapp'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 inline-block mr-2" />
+              WhatsApp Templates ({whatsappTemplates.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('broadcast')}
+              className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'broadcast'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Send className="w-4 h-4 inline-block mr-2" />
+              Broadcast
+            </button>
+          </nav>
+        </div>
+
+        {/* Filters & Search */}
+        {activeTab !== 'broadcast' && (
+          <div className="p-6 border-b border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Cari template..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedRoleTarget}
+                onChange={(e) => setSelectedRoleTarget(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {ROLE_TARGETS.map((role) => (
+                  <option key={role.value} value={role.value}>
+                    {role.label}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                onClick={handleCreateTemplate}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Tambah Template
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="p-6">
+          {activeTab === 'broadcast' ? (
+            <BroadcastPanel />
+          ) : (
+            <div className="space-y-4">
+              {currentTemplates.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">Tidak ada template ditemukan</p>
+                  <button
+                    onClick={handleCreateTemplate}
+                    className="mt-4 text-blue-600 hover:text-blue-700"
+                  >
+                    Buat template pertama
+                  </button>
+                </div>
+              ) : (
+                currentTemplates.map((template: any) => (
+                  <div
+                    key={template.id}
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {template.name}
+                          </h3>
+                          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                            {template.category}
+                          </span>
+                          <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
+                            {template.roleTarget}
+                          </span>
+                          {!template.isActive && (
+                            <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded">
+                              Nonaktif
+                            </span>
+                          )}
+                        </div>
+                        {activeTab === 'email' && (
+                          <p className="text-sm text-gray-600 mb-1">
+                            <strong>Subject:</strong> {template.subject}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500 line-clamp-2">
+                          {activeTab === 'email' ? template.body : template.message}
+                        </p>
+                        <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                          <span>Digunakan: {template.usageCount}x</span>
+                          <span>
+                            Dibuat: {new Date(template.createdAt).toLocaleDateString('id-ID')}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 ml-4">
+                        <button
+                          onClick={() => handlePreviewTemplate(template)}
+                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Preview"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEditTemplate(template)}
+                          className="p-2 text-gray-600 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTemplate(template.id, activeTab)}
+                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Hapus"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Template Modal (untuk create/edit) */}
+      {showModal && (activeTab === 'email' || activeTab === 'whatsapp') && (
+        <TemplateModal
+          mode={modalMode}
+          type={activeTab}
+          template={currentTemplate}
+          onClose={() => setShowModal(false)}
+          onSave={handleSaveTemplate}
+        />
+      )}
+    </div>
+  )
+}
+
+// Broadcast Panel Component
+function BroadcastPanel() {
+  const [campaigns, setCampaigns] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
+  const [currentCampaign, setCurrentCampaign] = useState<any>(null)
+  const [statusFilter, setStatusFilter] = useState('ALL')
+  const [typeFilter, setTypeFilter] = useState('ALL')
+
+  useEffect(() => {
+    loadCampaigns()
+  }, [statusFilter, typeFilter])
+
+  const loadCampaigns = async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        status: statusFilter,
+        type: typeFilter,
+      })
+      const res = await fetch(`/api/admin/broadcast?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        setCampaigns(data.campaigns || [])
+      }
+    } catch (error) {
+      console.error('Load campaigns error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreateCampaign = () => {
+    setModalMode('create')
+    setCurrentCampaign(null)
+    setShowModal(true)
+  }
+
+  const handleEditCampaign = (campaign: any) => {
+    setModalMode('edit')
+    setCurrentCampaign(campaign)
+    setShowModal(true)
+  }
+
+  const handleDeleteCampaign = async (id: string) => {
+    if (!confirm('Hapus campaign ini?')) return
+
+    try {
+      const res = await fetch(`/api/admin/broadcast?id=${id}`, {
+        method: 'DELETE',
+      })
+      if (res.ok) {
+        await loadCampaigns()
+      }
+    } catch (error) {
+      console.error('Delete campaign error:', error)
+    }
+  }
+
+  const handleSendCampaign = async (id: string) => {
+    if (!confirm('Kirim broadcast sekarang?')) return
+
+    try {
+      const res = await fetch('/api/admin/broadcast/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId: id }),
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        alert(data.message)
+        await loadCampaigns()
+      } else {
+        const error = await res.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Send campaign error:', error)
+      alert('Gagal mengirim broadcast')
+    }
+  }
+
+  const handleSaveCampaign = async (data: any) => {
+    try {
+      const url = modalMode === 'create' 
+        ? '/api/admin/broadcast'
+        : '/api/admin/broadcast'
+      
+      const payload = modalMode === 'edit' 
+        ? { ...data, id: currentCampaign.id }
+        : data
+
+      const res = await fetch(url, {
+        method: modalMode === 'create' ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (res.ok) {
+        setShowModal(false)
+        await loadCampaigns()
+      }
+    } catch (error) {
+      console.error('Save campaign error:', error)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'DRAFT': return 'bg-gray-100 text-gray-800'
+      case 'SCHEDULED': return 'bg-blue-100 text-blue-800'
+      case 'SENDING': return 'bg-yellow-100 text-yellow-800'
+      case 'COMPLETED': return 'bg-green-100 text-green-800'
+      case 'FAILED': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  return (
+    <div>
+      {/* Filters & Actions */}
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="ALL">Semua Status</option>
+          <option value="DRAFT">Draft</option>
+          <option value="SCHEDULED">Scheduled</option>
+          <option value="SENDING">Sending</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="FAILED">Failed</option>
+        </select>
+
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="ALL">Semua Tipe</option>
+          <option value="EMAIL">Email</option>
+          <option value="WHATSAPP">WhatsApp</option>
+          <option value="BOTH">Email + WhatsApp</option>
+        </select>
+
+        <button
+          onClick={handleCreateCampaign}
+          className="ml-auto flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          <Plus className="w-4 h-4" />
+          Campaign Baru
+        </button>
+      </div>
+
+      {/* Campaign List */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      ) : campaigns.length === 0 ? (
+        <div className="text-center py-12 border border-gray-200 rounded-lg">
+          <Send className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 mb-4">Belum ada broadcast campaign</p>
+          <button
+            onClick={handleCreateCampaign}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            Buat campaign pertama
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {campaigns.map((campaign) => (
+            <div
+              key={campaign.id}
+              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {campaign.name}
+                    </h3>
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(campaign.status)}`}>
+                      {campaign.status}
+                    </span>
+                    <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">
+                      {campaign.type}
+                    </span>
+                    <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
+                      {campaign.targetType}
+                    </span>
+                  </div>
+                  
+                  {campaign.emailSubject && (
+                    <p className="text-sm text-gray-600 mb-1">
+                      <strong>Subject:</strong> {campaign.emailSubject}
+                    </p>
+                  )}
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3 text-xs text-gray-500">
+                    <div>
+                      <span className="font-medium">Target:</span> {campaign.totalRecipients}
+                    </div>
+                    <div>
+                      <span className="font-medium">Sent:</span> {campaign.sentCount}
+                    </div>
+                    <div>
+                      <span className="font-medium">Delivered:</span> {campaign.deliveredCount}
+                    </div>
+                    <div>
+                      <span className="font-medium">Failed:</span> {campaign.failedCount}
+                    </div>
+                    <div>
+                      <span className="font-medium">Created:</span> {new Date(campaign.createdAt).toLocaleDateString('id-ID')}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 ml-4">
+                  {campaign.status === 'DRAFT' && (
+                    <>
+                      <button
+                        onClick={() => handleSendCampaign(campaign.id)}
+                        className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="Kirim Sekarang"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleEditCampaign(campaign)}
+                        className="p-2 text-gray-600 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                  {campaign.status !== 'SENDING' && (
+                    <button
+                      onClick={() => handleDeleteCampaign(campaign.id)}
+                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Broadcast Modal */}
+      {showModal && (
+        <BroadcastModal
+          mode={modalMode}
+          campaign={currentCampaign}
+          onClose={() => setShowModal(false)}
+          onSave={handleSaveCampaign}
+        />
+      )}
+    </div>
+  )
+}
+
+// Broadcast Modal Component
+function BroadcastModal({
+  mode,
+  campaign,
+  onClose,
+  onSave,
+}: {
+  mode: 'create' | 'edit'
+  campaign: any
+  onClose: () => void
+  onSave: (data: any) => void
+}) {
+  const [formData, setFormData] = useState({
+    name: campaign?.name || '',
+    type: campaign?.type || 'EMAIL',
+    targetType: campaign?.targetType || 'ALL',
+    targetRoles: campaign?.targetRoles || [],
+    targetMembershipIds: campaign?.targetMembershipIds || [],
+    emailSubject: campaign?.emailSubject || '',
+    emailBody: campaign?.emailBody || '',
+    emailCtaText: campaign?.emailCtaText || '',
+    emailCtaLink: campaign?.emailCtaLink || '',
+    whatsappMessage: campaign?.whatsappMessage || '',
+    whatsappCtaText: campaign?.whatsappCtaText || '',
+    whatsappCtaLink: campaign?.whatsappCtaLink || '',
+  })
+
+  const [previewAudience, setPreviewAudience] = useState<any>(null)
+  const [loadingPreview, setLoadingPreview] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSave(formData)
+  }
+
+  const handlePreviewAudience = async () => {
+    setLoadingPreview(true)
+    try {
+      const res = await fetch('/api/admin/broadcast/preview-audience', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetType: formData.targetType,
+          targetRoles: formData.targetRoles,
+          targetMembershipIds: formData.targetMembershipIds,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPreviewAudience(data.preview)
+      }
+    } catch (error) {
+      console.error('Preview audience error:', error)
+    } finally {
+      setLoadingPreview(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <form onSubmit={handleSubmit}>
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">
+              {mode === 'create' ? 'Buat' : 'Edit'} Broadcast Campaign
+            </h2>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Basic Info */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nama Campaign *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipe *
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="EMAIL">Email</option>
+                  <option value="WHATSAPP">WhatsApp</option>
+                  <option value="BOTH">Email + WhatsApp</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Target Audience *
+                </label>
+                <select
+                  value={formData.targetType}
+                  onChange={(e) => setFormData({ ...formData, targetType: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="ALL">Semua User</option>
+                  <option value="BY_ROLE">By Role</option>
+                  <option value="BY_MEMBERSHIP">By Membership</option>
+                  <option value="BY_GROUP">By Group</option>
+                  <option value="BY_COURSE">By Course</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Target Roles */}
+            {formData.targetType === 'BY_ROLE' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pilih Roles *
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['ADMIN', 'MEMBER_FREE', 'MEMBER_PRO', 'AFFILIATE', 'MENTOR', 'SUPPLIER'].map((role) => (
+                    <label key={role} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.targetRoles.includes(role)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, targetRoles: [...formData.targetRoles, role] })
+                          } else {
+                            setFormData({ ...formData, targetRoles: formData.targetRoles.filter((r: string) => r !== role) })
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm">{role}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Preview Audience */}
+            <div>
+              <button
+                type="button"
+                onClick={handlePreviewAudience}
+                disabled={loadingPreview}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+              >
+                {loadingPreview ? 'Loading...' : 'Preview Target Audience'}
+              </button>
+              {previewAudience && (
+                <div className="mt-2 p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-900 mb-1">
+                    Total Target: {previewAudience.totalUsers} users
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Email: {previewAudience.emailEnabledUsers} | WhatsApp: {previewAudience.whatsappEnabledUsers}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Email Content */}
+            {(formData.type === 'EMAIL' || formData.type === 'BOTH') && (
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">Email Content</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Subject *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.emailSubject}
+                      onChange={(e) => setFormData({ ...formData, emailSubject: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      required={formData.type === 'EMAIL' || formData.type === 'BOTH'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Body *
+                    </label>
+                    <textarea
+                      value={formData.emailBody}
+                      onChange={(e) => setFormData({ ...formData, emailBody: e.target.value })}
+                      rows={8}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      required={formData.type === 'EMAIL' || formData.type === 'BOTH'}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Shortcodes: {'{name}'}, {'{email}'}, {'{membership_plan}'}, {'{dashboard_link}'}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        CTA Text
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.emailCtaText}
+                        onChange={(e) => setFormData({ ...formData, emailCtaText: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Klik di sini"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        CTA Link
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.emailCtaLink}
+                        onChange={(e) => setFormData({ ...formData, emailCtaLink: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* WhatsApp Content */}
+            {(formData.type === 'WHATSAPP' || formData.type === 'BOTH') && (
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">WhatsApp Content</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Message *
+                    </label>
+                    <textarea
+                      value={formData.whatsappMessage}
+                      onChange={(e) => setFormData({ ...formData, whatsappMessage: e.target.value })}
+                      rows={6}
+                      maxLength={1024}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      required={formData.type === 'WHATSAPP' || formData.type === 'BOTH'}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formData.whatsappMessage.length}/1024 karakter
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        CTA Text
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.whatsappCtaText}
+                        onChange={(e) => setFormData({ ...formData, whatsappCtaText: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Klik di sini"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        CTA Link
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.whatsappCtaLink}
+                        onChange={(e) => setFormData({ ...formData, whatsappCtaLink: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              {mode === 'create' ? 'Buat Campaign' : 'Simpan Perubahan'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// Template Modal Component (simplified version)
+function TemplateModal({
+  mode,
+  type,
+  template,
+  onClose,
+  onSave,
+}: {
+  mode: 'create' | 'edit' | 'preview'
+  type: 'email' | 'whatsapp'
+  template: any
+  onClose: () => void
+  onSave: (data: any) => void
+}) {
+  const [formData, setFormData] = useState({
+    name: template?.name || '',
+    category: template?.category || 'SISTEM',
+    roleTarget: template?.roleTarget || 'ALL',
+    subject: template?.subject || '',
+    body: template?.body || '',
+    message: template?.message || '',
+    ctaText: template?.ctaText || '',
+    ctaLink: template?.ctaLink || '',
+    isActive: template?.isActive !== false,
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSave(formData)
+  }
+
+  if (mode === 'preview') {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">Preview Template</h2>
+          </div>
+          <div className="p-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nama Template
+                </label>
+                <p className="text-gray-900">{template.name}</p>
+              </div>
+              {type === 'email' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Subject
+                  </label>
+                  <p className="text-gray-900">{template.subject}</p>
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {type === 'email' ? 'Body' : 'Message'}
+                </label>
+                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <pre className="whitespace-pre-wrap text-sm">{type === 'email' ? template.body : template.message}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 border-t border-gray-200 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <form onSubmit={handleSubmit}>
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">
+              {mode === 'create' ? 'Tambah' : 'Edit'} Template {type === 'email' ? 'Email' : 'WhatsApp'}
+            </h2>
+          </div>
+
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nama Template *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Kategori *
+                </label>
+                <select
+                  required
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  {CATEGORIES.filter(c => c.value !== 'ALL').map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Target Role *
+                </label>
+                <select
+                  required
+                  value={formData.roleTarget}
+                  onChange={(e) => setFormData({ ...formData, roleTarget: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  {ROLE_TARGETS.map((role) => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={formData.isActive ? 'true' : 'false'}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'true' })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="true">Aktif</option>
+                  <option value="false">Nonaktif</option>
+                </select>
+              </div>
+            </div>
+
+            {type === 'email' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Subject Email *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.subject}
+                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: Selamat Datang di {company_name}"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {type === 'email' ? 'Body Email' : 'Pesan WhatsApp'} *
+              </label>
+              <textarea
+                required
+                rows={10}
+                value={type === 'email' ? formData.body : formData.message}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    [type === 'email' ? 'body' : 'message']: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                placeholder="Gunakan shortcodes seperti {name}, {email}, dll"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Shortcodes tersedia: {AVAILABLE_SHORTCODES.slice(0, 10).join(', ')}...
+              </p>
+              {type === 'whatsapp' && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Maksimal {formData.message?.length || 0}/1024 karakter
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  CTA Button Text (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.ctaText}
+                  onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: Lihat Dashboard"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  CTA Link (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.ctaLink}
+                  onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="{dashboard_link}"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <CheckCircle2 className="w-4 h-4 inline-block mr-2" />
+              Simpan Template
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}

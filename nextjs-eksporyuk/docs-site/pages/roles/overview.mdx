@@ -1,0 +1,133 @@
+# Ringkasan Sistem Role
+
+Platform EksporYuk menggunakan sistem **Role-Based Access Control (RBAC)** yang membagi pengguna menjadi 7 role utama. Setiap role memiliki hak akses dan fitur yang berbeda.
+
+## 🎭 7 Role Platform
+
+### 1. ADMIN
+**Pengelola Platform**
+- Akses penuh ke seluruh sistem
+- Kelola user, produk, kursus, transaksi
+- Monitoring dan analytics
+- Konfigurasi platform
+
+**Fitur Utama:**
+- Dashboard admin lengkap
+- User management
+- Product & course management
+- Financial reports
+- Integration settings
+
+### 2. FOUNDER
+**Pemilik Platform**
+- Revenue share 60% (setelah affiliate + fee 15%)
+- Wallet otomatis
+- Akses laporan keuangan
+- Monitoring performa
+
+### 3. CO_FOUNDER
+**Co-Pemilik Platform**
+- Revenue share 40% (setelah affiliate + fee 15%)
+- Wallet otomatis
+- Akses laporan keuangan
+- Monitoring performa
+
+### 4. MENTOR
+**Pembuat Konten & Kursus**
+- Buat dan kelola kursus
+- Upload materi pembelajaran
+- Kelola siswa
+- Earning dari penjualan kursus
+- Dashboard analytics
+
+**Fitur Utama:**
+- Course creation
+- Material upload
+- Student management
+- Revenue tracking
+- Certificate issuance
+
+### 5. AFFILIATE
+**Partner Marketing**
+- Generate link affiliasi
+- Short link custom
+- Tracking klik & konversi
+- Komisi otomatis
+- Dashboard performa
+
+**Fitur Utama:**
+- Link generator
+- CRM & lead management
+- Email broadcast
+- Template library
+- Commission tracking
+- Payout management
+
+### 6. MEMBER_PREMIUM
+**Anggota Premium**
+- Akses semua kursus
+- Akses grup VIP
+- Database ekspor lengkap
+- Sertifikat
+- Priority support
+
+**Fitur Utama:**
+- Full course access
+- VIP groups
+- Export database
+- Certificate download
+- Community features
+
+### 7. MEMBER_FREE
+**Anggota Gratis**
+- Akses terbatas
+- Feed komunitas
+- Event gratis
+- Upgrade kapan saja
+
+**Fitur Terbatas:**
+- Basic community access
+- Free events
+- Limited courses
+
+## 📊 Perbandingan Akses
+
+| Fitur | Admin | Founder | Mentor | Affiliate | Premium | Free |
+|-------|-------|---------|--------|-----------|---------|------|
+| Dashboard | ✅ Full | ✅ Finance | ✅ Teaching | ✅ Marketing | ✅ Learning | ✅ Basic |
+| Courses | ✅ Manage All | ❌ | ✅ Create | ❌ | ✅ Access All | ⚠️ Limited |
+| Groups | ✅ Manage All | ❌ | ✅ Create | ❌ | ✅ VIP | ✅ Public |
+| Database | ✅ Full | ✅ View | ✅ View | ❌ | ✅ View | ❌ |
+| Affiliate | ✅ Manage | ❌ | ❌ | ✅ Full | ⚠️ Apply | ⚠️ Apply |
+| Revenue | ✅ All | ✅ Share | ✅ Course | ✅ Commission | ❌ | ❌ |
+
+## 🔄 Upgrade Path
+
+```
+MEMBER_FREE → MEMBER_PREMIUM → AFFILIATE → MENTOR
+                                    ↓
+                              ADMIN (by invitation)
+```
+
+## 📝 Catatan Penting
+
+1. **Satu User, Satu Role** - Setiap user hanya bisa memiliki 1 role aktif
+2. **Role Founder/Co-Founder** - Ditentukan oleh system flag (`isFounder`, `isCoFounder`)
+3. **Upgrade Otomatis** - Pembayaran membership langsung upgrade role
+4. **Apply Affiliate** - Member bisa apply jadi affiliate (perlu approval admin)
+5. **Security** - Semua endpoint API terproteksi berdasarkan role
+
+## 🔐 Permission System
+
+Setiap role memiliki permission yang di-check di:
+- **Middleware** (`/src/middleware.ts`) - Route protection
+- **API Routes** - Session & role validation
+- **UI Components** - Conditional rendering
+
+---
+
+Lihat panduan detail per role:
+- [Admin Guide](/roles/admin)
+- [Mentor Guide](/roles/mentor)
+- [Affiliate Guide](/roles/affiliate)
+- [Member Guide](/roles/member-premium)

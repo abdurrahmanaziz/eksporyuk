@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Checkout API</title>
+</head>
+<body>
+    <h1>Test Checkout API</h1>
+    <button onclick="testCheckout()">Test Checkout</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testCheckout() {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Testing...\n';
+
+            try {
+                // Test data
+                const testData = {
+                    planId: 'cmicxql7i0002um78te3lq5be', // Paket 3 Bulan
+                    membershipSlug: 'beli-paket-3bulan',
+                    priceOption: {
+                        duration: 'THREE_MONTHS',
+                        label: 'Paket 3 Bulan',
+                        price: 360000,
+                        discount: 40
+                    },
+                    finalPrice: 360000,
+                    name: 'Test User',
+                    email: 'test@gmail.com',
+                    phone: '08123456789',
+                    whatsapp: '08123456789'
+                };
+
+                resultEl.textContent += 'Sending request...\n';
+                resultEl.textContent += JSON.stringify(testData, null, 2) + '\n\n';
+
+                const response = await fetch('/api/checkout/membership', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                resultEl.textContent += `Status: ${response.status} ${response.statusText}\n\n`;
+
+                const data = await response.json();
+                resultEl.textContent += 'Response:\n';
+                resultEl.textContent += JSON.stringify(data, null, 2);
+
+            } catch (error) {
+                resultEl.textContent += 'Error: ' + error.message;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
