@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Test PlanetScale Database Connection
+ * Test Neon PostgreSQL Database Connection
  * Run this after updating DATABASE_URL to verify connection works
  */
 
@@ -12,7 +12,7 @@ const prisma = new PrismaClient({
 })
 
 async function testConnection() {
-  console.log('🔍 Testing PlanetScale connection...\n')
+  console.log('🔍 Testing Neon PostgreSQL connection...\n')
 
   try {
     // Test 1: Raw query
@@ -48,15 +48,16 @@ async function testConnection() {
       console.error('\n💡 Possible issues:')
       console.error('  - Check your internet connection')
       console.error('  - Verify DATABASE_URL in .env file')
-      console.error('  - Make sure you copied the full connection string from PlanetScale')
-    } else if (error.message.includes('Access denied')) {
+      console.error('  - Make sure you copied the full connection string from Neon')
+      console.error('  - Neon database might be auto-paused (wait 5-10 seconds and try again)')
+    } else if (error.message.includes('password authentication failed')) {
       console.error('\n💡 Possible issues:')
       console.error('  - Wrong username/password in connection string')
-      console.error('  - Database password expired (generate new one in PlanetScale)')
-    } else if (error.message.includes('Unknown database')) {
+      console.error('  - Generate new password in Neon dashboard and update .env')
+    } else if (error.message.includes('database') && error.message.includes('does not exist')) {
       console.error('\n💡 Possible issues:')
       console.error('  - Database name mismatch')
-      console.error('  - Database not created yet in PlanetScale')
+      console.error('  - Make sure to use the database name from Neon dashboard')
     }
     
     process.exit(1)
