@@ -13,7 +13,7 @@ model User {
   username                String?                      @unique
   name                    String
   password                String?
-  role                    Role                         @default("MEMBER_FREE")
+  role                    Role                         @default(MEMBER_FREE)
   avatar                  String?
   bio                     String?
   phone                   String?
@@ -127,6 +127,12 @@ model User {
   userProducts            UserProduct[]
   userRoles               UserRole[]
   wallet                  Wallet?
+  notificationDeliveryLogs NotificationDeliveryLog[]    @relation("NotificationDeliveryLogs")
+  conversionEvents        ConversionEvent[]            @relation("ConversionEvents")
+  notificationConsent     NotificationConsent?         @relation("NotificationConsents")
+  createdDocumentations   Documentation[]              @relation("DocumentationAuthor")
+  editedDocumentations    Documentation[]              @relation("DocumentationEditor")
+  documentationRevisions  DocumentationRevision[]      @relation("DocumentationRevisionAuthor")
 
   @@index([email])
   @@index([username])
@@ -171,7 +177,7 @@ model Payout {
   id            String       @id @default(cuid())
   walletId      String
   amount        Decimal
-  status        PayoutStatus @default("PENDING")
+  status        PayoutStatus @default(PENDING)
   bankName      String?
   accountName   String?
   accountNumber String?
@@ -274,7 +280,7 @@ model AffiliateLink {
   shortCode    String?              @unique
   fullUrl      String?
   couponCode   String?
-  linkType     AffiliateLinkType    @default("CHECKOUT")
+  linkType     AffiliateLinkType    @default(CHECKOUT)
   clicks       Int                  @default(0)
   conversions  Int                  @default(0)
   isActive     Boolean              @default(true)
@@ -434,7 +440,7 @@ model Membership {
   price                   Decimal
   originalPrice           Decimal?
   discount                Int                    @default(0)
-  commissionType          CommissionType         @default("PERCENTAGE")
+  commissionType          CommissionType         @default(PERCENTAGE)
   affiliateCommissionRate Decimal                @default(30)
   features                Json
   isBestSeller            Boolean                @default(false)
@@ -463,6 +469,7 @@ model Membership {
   membershipProducts      MembershipProduct[]
   membershipReminders     MembershipReminder[]
   membershipFollowUps     MembershipFollowUp[]
+  membershipFeatures      MembershipFeatureAccess[]
   upgradeLogs             MembershipUpgradeLog[]
   userMemberships         UserMembership[]
 
@@ -509,6 +516,23 @@ model MembershipProduct {
   @@index([productId])
 }
 
+// Feature Access per Membership
+// Defines which features each membership provides
+model MembershipFeatureAccess {
+  id           String     @id @default(cuid())
+  membershipId String
+  featureKey   String     // Key from AVAILABLE_FEATURES (e.g., 'database_buyer_access')
+  enabled      Boolean    @default(true)
+  value        Json?      // Feature-specific config (e.g., { monthlyLimit: 50 })
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, featureKey])
+  @@index([membershipId])
+  @@index([featureKey])
+}
+
 model UserMembership {
   id            String       @id @default(cuid())
   userId        String
@@ -539,7 +563,7 @@ model MembershipReminder {
   membershipId    String
   title           String
   description     String?
-  triggerType     ReminderTrigger @default("AFTER_PURCHASE")
+  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
   delayAmount     Int
   delayUnit       String          @default("days")
   specificDate    DateTime?
@@ -600,12 +624,12 @@ model MembershipFollowUp {
   
   // Email content
   emailSubject String
-  emailBody    String     @db.Text
+  emailBody    String     
   emailCTA     String?
   emailCTALink String?
   
   // WhatsApp content (untuk copy-paste manual)
-  whatsappMessage String? @db.Text
+  whatsappMessage String? 
   
   // Shortcodes info
   shortcodes   Json?      // List shortcodes yang tersedia
@@ -658,7 +682,7 @@ model ReminderLog {
   reminderId   String
   userId       String
   channel      ReminderChannel
-  status       ReminderStatus     @default("PENDING")
+  status       ReminderStatus     @default(PENDING)
   scheduledAt  DateTime
   sentAt       DateTime?
   deliveredAt  DateTime?
@@ -710,7 +734,7 @@ model ProductReminder {
   productId       String
   title           String
   description     String?
-  triggerType     ReminderTrigger @default("AFTER_PURCHASE")
+  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
   delayAmount     Int
   delayUnit       String          @default("days")
   specificDate    DateTime?
@@ -763,7 +787,7 @@ model CourseReminder {
   courseId        String
   title           String
   description     String?
-  triggerType     ReminderTrigger @default("AFTER_PURCHASE")
+  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
   delayAmount     Int
   delayUnit       String          @default("days")
   specificDate    DateTime?
@@ -816,7 +840,7 @@ model EventReminder {
   eventId         String
   title           String
   description     String?
-  triggerType     ReminderTrigger @default("BEFORE_EXPIRY")
+  triggerType     ReminderTrigger @default(BEFORE_EXPIRY)
   delayAmount     Int
   delayUnit       String          @default("days")
   specificDate    DateTime?
@@ -898,16 +922,16 @@ model Product {
   reminders               Json?
   category                String?
   tags                    Json?
-  productType             ProductType          @default("DIGITAL")
-  productStatus           ProductStatus        @default("DRAFT")
-  accessLevel             AccessLevel          @default("PUBLIC")
+  productType             ProductType          @default(DIGITAL)
+  productStatus           ProductStatus        @default(DRAFT)
+  accessLevel             AccessLevel          @default(PUBLIC)
   eventDate               DateTime?
   eventEndDate            DateTime?
   eventDuration           Int?
   eventUrl                String?
   meetingId               String?
   meetingPassword         String?
-  eventVisibility         EventVisibility      @default("PUBLIC")
+  eventVisibility         EventVisibility      @default(PUBLIC)
   eventPassword           String?
   maxParticipants         Int?
   reminderSent7Days       Boolean              @default(false)
@@ -919,7 +943,7 @@ model Product {
   upsaleTargetMemberships String?
   upsaleDiscount          Int                  @default(0)
   upsaleMessage           String?
-  commissionType          CommissionType       @default("PERCENTAGE")
+  commissionType          CommissionType       @default(PERCENTAGE)
   affiliateCommissionRate Decimal              @default(30)
   mentorCommission        Decimal              @default(30)
   groupId                 String?
@@ -1035,9 +1059,11 @@ model Course {
   price                   Decimal
   originalPrice           Decimal?
   mentorCommissionPercent Float                  @default(50)
+  commissionType          CommissionType         @default(PERCENTAGE)
+  affiliateCommissionRate Decimal                @default(30)
   duration                Int?
   level                   String?
-  status                  CourseStatus           @default("DRAFT")
+  status                  CourseStatus           @default(DRAFT)
   isPublished             Boolean                @default(false)
   publishedAt             DateTime?
   submittedForReviewAt    DateTime?
@@ -1046,7 +1072,7 @@ model Course {
   approvedAt              DateTime?
   rejectedAt              DateTime?
   rejectionReason         String?
-  monetizationType        CourseMonetizationType @default("FREE")
+  monetizationType        CourseMonetizationType @default(FREE)
   groupId                 String?
   reminders               Json?
   enrollmentCount         Int                    @default(0)
@@ -1060,6 +1086,7 @@ model Course {
   autoAddToList           Boolean                @default(true)
   affiliateOnly           Boolean                @default(false)
   isAffiliateTraining     Boolean                @default(false)
+  isAffiliateMaterial     Boolean                @default(false)
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
   bioCTAs                 AffiliateBioCTA[]
@@ -1185,7 +1212,7 @@ model Group {
   description       String
   avatar            String?
   coverImage        String?
-  type              GroupType          @default("PUBLIC")
+  type              GroupType          @default(PUBLIC)
   ownerId           String
   bannedWords       Json?
   requireApproval   Boolean            @default(false)
@@ -1231,7 +1258,7 @@ model GroupMember {
   id       String    @id @default(cuid())
   groupId  String
   userId   String
-  role     GroupRole @default("MEMBER")
+  role     GroupRole @default(MEMBER)
   joinedAt DateTime  @default(now())
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -1245,7 +1272,7 @@ model Post {
   id               String         @id @default(cuid())
   authorId         String
   groupId          String?
-  type             PostType       @default("POST")
+  type             PostType       @default(POST)
   content          String
   contentFormatted Json?
   images           Json?
@@ -1262,7 +1289,7 @@ model Post {
   isScheduled      Boolean        @default(false)
   scheduledAt      DateTime?
   commentsEnabled  Boolean        @default(true)
-  approvalStatus   ApprovalStatus @default("APPROVED")
+  approvalStatus   ApprovalStatus @default(APPROVED)
   likesCount       Int            @default(0)
   commentsCount    Int            @default(0)
   sharesCount      Int            @default(0)
@@ -1329,7 +1356,7 @@ model PostReaction {
   id        String       @id @default(cuid())
   postId    String
   userId    String
-  type      ReactionType @default("LIKE")
+  type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
   post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1343,7 +1370,7 @@ model CommentReaction {
   id        String       @id @default(cuid())
   commentId String
   userId    String
-  type      ReactionType @default("LIKE")
+  type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
   comment   PostComment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1393,6 +1420,7 @@ model Event {
   creator         User            @relation("EventCreator", fields: [creatorId], references: [id])
   rsvps           EventRSVP[]
   eventReminders  EventReminder[]
+  transactions    Transaction[]
   notifications   Notification[]
 
   @@index([creatorId])
@@ -1406,11 +1434,14 @@ model EventRSVP {
   userId        String
   status        String   @default("GOING")
   attended      Boolean  @default(false)
+  isPaid        Boolean  @default(false)
+  paidAt        DateTime?
   transactionId String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
 
   @@unique([eventId, userId])
   @@index([eventId])
@@ -1421,7 +1452,7 @@ model Transaction {
   id                  String               @id @default(cuid())
   userId              String
   type                TransactionType
-  status              TransactionStatus    @default("PENDING")
+  status              TransactionStatus    @default(PENDING)
   amount              Decimal
   customerName        String?
   customerEmail       String?
@@ -1429,6 +1460,7 @@ model Transaction {
   customerWhatsapp    String?
   productId           String?
   courseId            String?
+  eventId             String?
   description         String?
   reference           String?
   originalAmount      Decimal?
@@ -1457,13 +1489,16 @@ model Transaction {
   coupon              Coupon?              @relation(fields: [couponId], references: [id])
   course              Course?              @relation(fields: [courseId], references: [id])
   product             Product?             @relation(fields: [productId], references: [id])
+  event               Event?               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user                User                 @relation(fields: [userId], references: [id])
   membership          UserMembership?
   userProduct         UserProduct?
+  eventRsvps          EventRSVP[]
 
   @@index([userId])
   @@index([status])
   @@index([type])
+  @@index([eventId])
   @@index([createdAt])
 }
 
@@ -1484,6 +1519,7 @@ model Coupon {
   membershipIds           Json?
   courseIds               Json?
   isAffiliateEnabled      Boolean       @default(false)
+  isForRenewal            Boolean       @default(false)  // Kupon untuk perpanjangan membership
   maxGeneratePerAffiliate Int?
   maxUsagePerCoupon       Int?
   basedOnCouponId         String?
@@ -1516,7 +1552,7 @@ model Follow {
 
 model ChatRoom {
   id            String            @id @default(cuid())
-  type          ChatRoomType      @default("DIRECT")
+  type          ChatRoomType      @default(DIRECT)
   name          String?
   avatar        String?
   user1Id       String?
@@ -2144,7 +2180,7 @@ model DocumentDownloadLog {
   downloadedAt    DateTime           @default(now())
   ipAddress       String?
   userAgent       String?
-  status          DownloadStatus     @default("SUCCESS")
+  status          DownloadStatus     @default(SUCCESS)
   adminVerified   Boolean            @default(false)
   notes           String?
   document        MembershipDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
@@ -2290,6 +2326,74 @@ model Settings {
   checkoutSecondaryColor          String?  @default("#1e40af")
   checkoutSuccessColor            String?  @default("#22c55e")
   checkoutWarningColor            String?  @default("#eab308")
+  
+  // ===========================
+  // Platform Feature Settings
+  // ===========================
+  
+  // Global Features
+  featureGroupEnabled             Boolean  @default(true)
+  featureFeedEnabled              Boolean  @default(true)
+  featureCommentEnabled           Boolean  @default(true)
+  featureLikeEnabled              Boolean  @default(true)
+  featureShareEnabled             Boolean  @default(true)
+  featureChatEnabled              Boolean  @default(true)
+  featureNotificationEnabled      Boolean  @default(true)
+  
+  // Affiliate Features
+  featureAffiliateEnabled         Boolean  @default(true)
+  featureAffiliateShortLink       Boolean  @default(true)
+  featureAffiliateLeaderboard     Boolean  @default(true)
+  featureAffiliateChallenge       Boolean  @default(true)
+  featureAffiliateTraining        Boolean  @default(true)
+  featureAffiliateReward          Boolean  @default(true)
+  featureAffiliateWithdraw        Boolean  @default(true)
+  featureAffiliateStatistics      Boolean  @default(true)
+  featureAffiliateMarketingKit    Boolean  @default(true)
+  
+  // Course Features
+  featureCourseEnabled            Boolean  @default(true)
+  featureCourseEnrollment         Boolean  @default(true)
+  featureCourseCertificate        Boolean  @default(true)
+  featureCourseProgress           Boolean  @default(true)
+  featureCourseQuiz               Boolean  @default(true)
+  
+  // Supplier Features  
+  featureSupplierEnabled          Boolean  @default(true)
+  featureSupplierCatalog          Boolean  @default(true)
+  featureSupplierSampleRequest    Boolean  @default(true)
+  featureSupplierDirectOrder      Boolean  @default(true)
+  
+  // Transaction Features
+  featureCheckoutEnabled          Boolean  @default(true)
+  featureCouponEnabled            Boolean  @default(true)
+  featureFlashSaleEnabled         Boolean  @default(true)
+  
+  // Member Premium Features
+  featureMemberPremiumClass       Boolean  @default(true)
+  featureMemberPremiumGroup       Boolean  @default(true)
+  featureMemberPremiumSupplier    Boolean  @default(true)
+  featureMemberPremiumDownload    Boolean  @default(true)
+  featureMemberPremiumCertificate Boolean  @default(true)
+  
+  // Member Free Features
+  featureMemberFreeClass          Boolean  @default(true)
+  featureMemberFreeGroup          Boolean  @default(true)
+  featureMemberFreeCatalog        Boolean  @default(true)
+  
+  // Mentor Features
+  featureMentorCreateCourse       Boolean  @default(true)
+  featureMentorCreateMaterial     Boolean  @default(true)
+  featureMentorCreateGroup        Boolean  @default(true)
+  featureMentorEditCourse         Boolean  @default(true)
+  featureMentorAnalytics          Boolean  @default(true)
+  featureMentorManageStudents     Boolean  @default(true)
+  
+  // Notification Channels
+  notificationEmailEnabled        Boolean  @default(true)
+  notificationWhatsappEnabled     Boolean  @default(true)
+  notificationPushEnabled         Boolean  @default(true)
+  notificationInAppEnabled        Boolean  @default(true)
 }
 
 model IntegrationConfig {
@@ -2351,7 +2455,7 @@ model Quiz {
 model QuizQuestion {
   id            String       @id @default(cuid())
   quizId        String
-  type          QuestionType @default("MULTIPLE_CHOICE")
+  type          QuestionType @default(MULTIPLE_CHOICE)
   question      String
   explanation   String?
   points        Int          @default(1)
@@ -2437,7 +2541,7 @@ model AssignmentSubmission {
   content      String?
   fileUrl      String?
   fileName     String?
-  status       SubmissionStatus @default("SUBMITTED")
+  status       SubmissionStatus @default(SUBMITTED)
   score        Int?
   feedback     String?
   gradedBy     String?
@@ -3042,7 +3146,7 @@ model Report {
   commentId    String?
   userId       String?
   groupId      String?
-  status       ReportStatus @default("PENDING")
+  status       ReportStatus @default(PENDING)
   reviewedById String?
   reviewedAt   DateTime?
   reviewNote   String?
@@ -3146,15 +3250,17 @@ model EmailVerificationToken {
 }
 
 model SupplierPackage {
-  id            String               @id @default(cuid())
-  name          String
-  slug          String               @unique
-  type          SupplierPackageType
-  duration      SupplierDuration
-  price         Decimal
-  originalPrice Decimal?
-  features      Json
-  description   String?
+  id                      String               @id @default(cuid())
+  name                    String
+  slug                    String               @unique
+  type                    SupplierPackageType
+  duration                SupplierDuration
+  price                   Decimal
+  originalPrice           Decimal?
+  commissionType          CommissionType       @default(PERCENTAGE)
+  affiliateCommissionRate Decimal              @default(30)
+  features                Json
+  description             String?
   isActive      Boolean              @default(true)
   displayOrder  Int                  @default(0)
   createdAt     DateTime             @default(now())
@@ -3247,7 +3353,7 @@ model SupplierProduct {
   documents    Json?
   category     String?
   tags         String?
-  status       SupplierProductStatus @default("DRAFT")
+  status       SupplierProductStatus @default(DRAFT)
   price        String?
   minOrder     String?
   viewCount    Int                   @default(0)
@@ -3300,7 +3406,7 @@ model GroupQuizQuestion {
   id           String            @id @default(cuid())
   quizId       String
   question     String
-  questionType QuestionType      @default("MULTIPLE_CHOICE")
+  questionType QuestionType      @default(MULTIPLE_CHOICE)
   options      Json
   explanation  String?
   points       Int               @default(1)
@@ -3357,7 +3463,7 @@ model BadgeDefinition {
   description String
   icon        String
   color       String        @default("#3B82F6")
-  category    BadgeCategory @default("PARTICIPATION")
+  category    BadgeCategory @default(PARTICIPATION)
   conditions  Json?
   points      Int           @default(0)
   isActive    Boolean       @default(true)
@@ -3472,7 +3578,7 @@ model ScheduledPost {
   images           Json?
   videos           Json?
   documents        Json?
-  type             PostType @default("POST")
+  type             PostType @default(POST)
   scheduledAt      DateTime
   timezone         String   @default("Asia/Jakarta")
   status           String   @default("PENDING")
@@ -3532,8 +3638,8 @@ model Banner {
   targetRoles       Json
   targetMemberships Json?
   targetProvinces   Json?
-  placement         BannerPlacement @default("DASHBOARD")
-  displayType       BannerType      @default("CAROUSEL")
+  placement         BannerPlacement @default(DASHBOARD)
+  displayType       BannerType      @default(CAROUSEL)
   backgroundColor   String?         @default("#3B82F6")
   textColor         String?         @default("#FFFFFF")
   buttonColor       String?         @default("#FFFFFF")
@@ -3654,6 +3760,7 @@ enum AffiliateLinkType {
   SALESPAGE_INTERNAL
   SALESPAGE_EXTERNAL
   CHECKOUT
+  CHECKOUT_PRO
 }
 
 enum EventType {
@@ -3716,6 +3823,7 @@ enum NotificationType {
   COURSE_DISCUSSION
   COURSE_ENROLLED
   EVENT_REMINDER
+  EVENT_REGISTERED
   TRANSACTION
   TRANSACTION_SUCCESS
   FOLLOWER
@@ -3897,3 +4005,207 @@ enum DocumentCategory {
   LETTER
   OTHER
 }
+
+enum DocumentationCategory {
+  ROLES
+  FEATURES
+  API
+  ADMIN
+  DATABASE
+  GUIDES
+  FAQ
+  TROUBLESHOOTING
+  GLOSSARY
+  GETTING_STARTED
+}
+
+enum DocumentationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model CourseSettings {
+  id                           String   @id @default(cuid())
+  defaultMentorCommission      Float    @default(50)
+  defaultAffiliateCommission   Float    @default(30)
+  minWithdrawalAmount          Decimal  @default(50000)
+  withdrawalProcessingDays     Int      @default(3)
+  maxWithdrawalPerDay          Decimal  @default(10000000)
+  withdrawalMethods            Json?
+  autoApproveCourses           Boolean  @default(false)
+  autoApproveEnrollments       Boolean  @default(true)
+  defaultCourseVisibility      String   @default("PUBLIC")
+  requireCertificateCompletion Boolean  @default(true)
+  certificateMinScore          Int      @default(80)
+  enableAffiliateProgram       Boolean  @default(true)
+  enableMentorProgram          Boolean  @default(true)
+  // Mentor Permissions
+  mentorCanCreateGroup         Boolean  @default(true)
+  mentorCanCreateCourse        Boolean  @default(true)
+  mentorCanCreateMaterial      Boolean  @default(true)
+  mentorCanEditOwnCourse       Boolean  @default(true)
+  mentorCanDeleteOwnCourse     Boolean  @default(false)
+  mentorCanViewAnalytics       Boolean  @default(true)
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+}
+
+// ===========================
+// OneSignal Webhook Models
+// ===========================
+
+// NotificationDeliveryLog - Log semua delivery, open, click events dari OneSignal webhooks
+// Digunakan untuk tracking notification effectiveness
+model NotificationDeliveryLog {
+  id                    String    @id @default(cuid())
+  notificationId        String    // ID dari OneSignal notification
+  playerId              String    // Player ID yang menerima notifikasi
+  userId                String?   // User ID (jika bisa di-link)
+  status                String    @default("delivered") // delivered, opened, clicked, bounced
+  platform              String?   // web, iOS, Android
+  openedAt              DateTime? // Waktu notifikasi dibuka
+  clickedAt             DateTime? // Waktu notifikasi diklik
+  clickUrl              String?   // URL yang diklik (jika applicable)
+  ipAddress             String?   // IP address untuk audit
+  userAgent             String?   // User agent browser
+  bounceReason          String?   // Alasan bounce (jika bounced)
+  timestamp             DateTime  @default(now()) // Waktu event terjadi
+  
+  // Relations
+  user                  User?     @relation("NotificationDeliveryLogs", fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([notificationId])
+  @@index([playerId])
+  @@index([userId])
+  @@index([status])
+  @@index([timestamp])
+}
+
+// ConversionEvent - Log conversion/action setelah click notifikasi
+// Menghubungkan notification click dengan actual conversion
+model ConversionEvent {
+  id                    String    @id @default(cuid())
+  userId                String
+  notificationId        String?   // ID OneSignal notification yang trigger conversion
+  conversionType        String    // purchase, enrollment, view, signup, etc
+  conversionValue       Decimal?  // Value dari conversion (e.g. harga produk)
+  conversionUrl         String?   // URL yang diakses saat conversion
+  metadata              Json?     // Additional metadata (product_id, course_id, etc)
+  timestamp             DateTime  @default(now())
+  
+  // Relations
+  user                  User      @relation("ConversionEvents", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([notificationId])
+  @@index([conversionType])
+  @@index([timestamp])
+}
+
+// NotificationConsent - GDPR compliance: track consent history
+// Untuk audit trail dan compliance
+model NotificationConsent {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  consentGiven          Boolean   @default(true)
+  channels              Json      // { email: true, push: true, sms: false, inapp: true }
+  purpose               String    @default("marketing") // marketing, transactional, both
+  ipAddress             String?   // IP saat consent diberikan
+  userAgent             String?   // Browser/device info
+  consentTimestamp      DateTime  @default(now())
+  consentExpiry         DateTime  // Kapan consent expire (biasanya 1 tahun)
+  revocationTimestamp   DateTime? // Kapan user revoke consent
+  revocationReason      String?   // Alasan revoke
+  
+  // Relations
+  user                  User      @relation("NotificationConsents", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([consentTimestamp])
+  @@index([consentExpiry])
+}
+
+// OneSignalWebhookLog - Log semua webhook events untuk debugging
+// Jika ada webhook yg gagal, bisa di-retry
+model OneSignalWebhookLog {
+  id                    String    @id @default(cuid())
+  eventType             String    // notification.delivered, notification.opened, etc
+  payload               Json      // Raw webhook payload
+  processingStatus      String    @default("pending") // pending, success, failed
+  errorMessage          String?   // Error message jika failed
+  retryCount            Int       @default(0)
+  lastRetryAt           DateTime?
+  processedAt           DateTime?
+  timestamp             DateTime  @default(now())
+  
+  @@index([eventType])
+  @@index([processingStatus])
+  @@index([timestamp])
+}
+
+// Documentation - Sistem dokumentasi role-based dengan Nextra
+// Admin bisa CRUD, publish/draft, pisahkan per role
+model Documentation {
+  id                    String            @id @default(cuid())
+  slug                  String            @unique // URL slug untuk docs
+  title                 String            // Judul dokumentasi
+  content               String            // MDX content (Markdown + JSX)
+  excerpt               String?           // Ringkasan singkat
+  category              DocumentationCategory // Kategori utama
+  targetRoles           Json              // Array roles: ["ADMIN", "AFFILIATE", "MENTOR"]
+  status                DocumentationStatus @default(DRAFT) // DRAFT, PUBLISHED, ARCHIVED
+  isPublic              Boolean           @default(false) // Akses publik atau hanya login
+  icon                  String?           // Icon untuk sidebar
+  order                 Int               @default(0) // Urutan di sidebar
+  parentId              String?           // Untuk nested docs (parent-child)
+  metaTitle             String?           // SEO title
+  metaDescription       String?           // SEO description
+  keywords              String?           // SEO keywords
+  featuredImage         String?           // Gambar preview
+  publishedAt           DateTime?         // Waktu publish
+  archivedAt            DateTime?         // Waktu archived
+  viewCount             Int               @default(0) // Tracking views
+  authorId              String            // Admin yang buat
+  lastEditedById        String?           // Admin terakhir edit
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  
+  // Relations
+  author                User              @relation("DocumentationAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  lastEditedBy          User?             @relation("DocumentationEditor", fields: [lastEditedById], references: [id], onDelete: SetNull)
+  parent                Documentation?    @relation("DocumentationHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children              Documentation[]   @relation("DocumentationHierarchy")
+  revisions             DocumentationRevision[] @relation("DocumentationRevisions")
+  
+  @@index([slug])
+  @@index([category])
+  @@index([status])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([order])
+  @@index([parentId])
+}
+
+// DocumentationRevision - Version history untuk rollback
+// Setiap edit tersimpan sebagai revision
+model DocumentationRevision {
+  id                    String            @id @default(cuid())
+  documentationId       String
+  content               String            // Snapshot content saat itu
+  title                 String            // Snapshot title
+  excerpt               String?
+  changedById           String            // Admin yang bikin revision ini
+  changeNote            String?           // Catatan perubahan
+  version               Int               // Version number (auto increment)
+  createdAt             DateTime          @default(now())
+  
+  // Relations
+  documentation         Documentation     @relation("DocumentationRevisions", fields: [documentationId], references: [id], onDelete: Cascade)
+  changedBy             User              @relation("DocumentationRevisionAuthor", fields: [changedById], references: [id], onDelete: Restrict)
+  
+  @@index([documentationId])
+  @@index([changedById])
+  @@index([version])
+}
+
