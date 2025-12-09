@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { apiCache, CACHE_KEYS, CACHE_TTL } from '@/lib/api-cache'
 
 // GET /api/settings - Get current settings (public for website display)
 export async function GET() {
   try {
+    // Check cache first
+    const cached = apiCache.get(CACHE_KEYS.SETTINGS)
+    if (cached) {
+      return NextResponse.json(cached)
+    }
+
     // Get or create default settings
     let settings = await prisma.settings.findUnique({
       where: { id: 1 },
@@ -55,7 +62,7 @@ export async function GET() {
 
     if (!settings) {
       // Return default settings if none exist
-      return NextResponse.json({
+      const defaultSettings = {
         siteTitle: 'Eksporyuk',
         siteDescription: 'Platform Ekspor Indonesia',
         siteLogo: null,
@@ -96,9 +103,13 @@ export async function GET() {
         revenueEnabled: true,
         affiliateCommissionEnabled: true,
         mentorCommissionEnabled: true,
-      })
+      }
+      apiCache.set(CACHE_KEYS.SETTINGS, defaultSettings, CACHE_TTL.LONG)
+      return NextResponse.json(defaultSettings)
     }
 
+    // Cache settings for 1 minute
+    apiCache.set(CACHE_KEYS.SETTINGS, settings, CACHE_TTL.LONG)
     return NextResponse.json(settings)
   } catch (error) {
     console.error('Settings fetch error:', error)
@@ -152,6 +163,9 @@ export async function POST(request: NextRequest) {
         mentorCommissionEnabled: mentorCommissionEnabled ?? true
       }
     })
+
+    // Invalidate cache on update
+    apiCache.delete(CACHE_KEYS.SETTINGS)
 
     return NextResponse.json(settings)
   } catch (error) {

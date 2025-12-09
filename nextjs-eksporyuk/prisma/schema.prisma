@@ -2408,6 +2408,60 @@ model IntegrationConfig {
   updatedAt    DateTime  @updatedAt
 }
 
+// Sales Page / Landing Page Settings
+model SalesPageSettings {
+  id                   String   @id @default(cuid())
+  
+  // Hero Section
+  heroTitle            String?  @default("Belajar Ekspor Mudah dan Praktis di Komunitas")
+  heroHighlight        String?  @default("Mudah dan Praktis")
+  heroDescription      String?  @default("Dibimbing langsung oleh praktisi ekspor berpengalaman. Mulai dari persiapan dokumen, mencari buyer, hingga pengiriman barang ke luar negeri.")
+  heroBadgeText        String?  @default("7,000+ Calon Eksportir Bergabung")
+  heroCtaText          String?  @default("Mulai Belajar Sekarang")
+  heroCtaSecondaryText String?  @default("Lihat Fitur")
+  
+  // Navbar
+  navbarLogo           String?
+  navbarLogoText       String?  @default("Eksporyuk")
+  navbarCtaText        String?  @default("Gabung Komunitas")
+  
+  // Features Section
+  featuresTitle        String?  @default("Semua yang Anda Butuhkan untuk Sukses Ekspor")
+  featuresSubtitle     String?  @default("Platform lengkap untuk belajar dan praktik ekspor dengan bimbingan mentor berpengalaman")
+  featuresData         Json?    // Array of {icon, title, description}
+  
+  // Pricing Section
+  pricingTitle         String?  @default("Pilih Paket Membership Anda")
+  pricingSubtitle      String?  @default("Investasi terbaik untuk masa depan bisnis ekspor Anda")
+  pricingShowFromDb    Boolean  @default(true) // Jika true, ambil dari membership table
+  pricingCustomData    Json?    // Array of {duration, price, features[], popular}
+  
+  // Testimonials Section
+  testimonialsTitle    String?  @default("Apa Kata Mereka?")
+  testimonialsSubtitle String?  @default("Kisah sukses dari member yang telah berhasil ekspor")
+  testimonialsData     Json?    // Array of {name, role, content, avatar}
+  
+  // FAQ Section
+  faqTitle             String?  @default("Pertanyaan yang Sering Ditanyakan")
+  faqData              Json?    // Array of {question, answer}
+  
+  // CTA Section
+  ctaTitle             String?  @default("Siap Memulai Perjalanan Ekspor Anda?")
+  ctaDescription       String?  @default("Bergabung sekarang dan dapatkan akses ke materi ekslusif serta bimbingan dari mentor berpengalaman.")
+  ctaButtonText        String?  @default("Gabung Komunitas Sekarang!")
+  ctaStats             Json?    // Array of {value, label}
+  
+  // Footer
+  footerDescription    String?  @default("Platform edukasi ekspor #1 di Indonesia untuk membantu UMKM go international.")
+  footerEmail          String?  @default("info@eksporyuk.com")
+  footerPhone          String?  @default("+62 812-3456-7890")
+  footerAddress        String?
+  footerSocialLinks    Json?    // {instagram, facebook, linkedin, youtube, tiktok}
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
 model FollowUpTemplate {
   id            String   @id @default(cuid())
   name          String

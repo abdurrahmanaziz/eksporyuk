@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,6 +31,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAdminStats, useXenditBalance } from '@/hooks/use-api'
 
 interface DashboardStats {
   users: {
@@ -79,59 +79,10 @@ interface DashboardStats {
 
 export default function AdminPage() {
   const { data: session } = useSession()
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
   
-  // Xendit balance state
-  const [xenditBalance, setXenditBalance] = useState<any>(null)
-  const [xenditLoading, setXenditLoading] = useState(true)
-  const [xenditError, setXenditError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch('/api/admin/dashboard/stats')
-        if (res.ok) {
-          const data = await res.json()
-          setStats(data)
-        }
-      } catch (error) {
-        console.error('Error fetching stats:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    const fetchXenditBalance = async () => {
-      try {
-        setXenditLoading(true)
-        setXenditError(null)
-        const res = await fetch('/api/admin/xendit/balance')
-        const data = await res.json()
-
-        if (data.success) {
-          setXenditBalance(data.data)
-        } else {
-          setXenditError(data.message || 'Gagal mengambil balance')
-        }
-      } catch (error) {
-        console.error('Error fetching Xendit balance:', error)
-        setXenditError('Gagal mengambil balance')
-      } finally {
-        setXenditLoading(false)
-      }
-    }
-
-    fetchStats()
-    fetchXenditBalance()
-    
-    // Refresh stats every 30 seconds
-    const interval = setInterval(() => {
-      fetchStats()
-      fetchXenditBalance()
-    }, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  // Use React Query hooks for cached, auto-refreshing data
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useAdminStats()
+  const { data: xenditBalance, isLoading: xenditLoading, error: xenditError, refetch: refetchXendit } = useXenditBalance()
 
   if (!session) {
     return (
@@ -188,7 +139,7 @@ export default function AdminPage() {
               <Users className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {statsLoading ? (
                 <Skeleton className="h-8 w-24" />
               ) : (
                 <>
@@ -212,7 +163,7 @@ export default function AdminPage() {
               <DollarSign className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {statsLoading ? (
                 <Skeleton className="h-8 w-32" />
               ) : (
                 <>
@@ -236,7 +187,7 @@ export default function AdminPage() {
               <Crown className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {statsLoading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
                 <>
@@ -259,7 +210,7 @@ export default function AdminPage() {
               <ShoppingCart className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {statsLoading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
                 <>
@@ -363,7 +314,7 @@ export default function AdminPage() {
               <BookOpen className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {statsLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
                 <>
@@ -393,7 +344,7 @@ export default function AdminPage() {
               <MessageSquare className="h-4 w-4 text-pink-500" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {statsLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
                 <>
@@ -423,7 +374,7 @@ export default function AdminPage() {
               <Link2 className="h-4 w-4 text-cyan-500" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {statsLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
                 <>
@@ -453,7 +404,7 @@ export default function AdminPage() {
               <Bell className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {statsLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
                 <>

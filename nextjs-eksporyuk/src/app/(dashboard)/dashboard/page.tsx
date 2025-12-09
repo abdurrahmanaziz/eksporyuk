@@ -1,7 +1,8 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { getRoleTheme } from '@/lib/role-themes'
 import EmailVerificationBanner from '@/components/EmailVerificationBanner'
@@ -16,6 +17,7 @@ import TrialReminderBanner from '@/components/member/TrialReminderBanner'
 import FreeUserDashboard from '@/components/member/FreeUserDashboard'
 import MembershipExpiryBanner from '@/components/member/MembershipExpiryBanner'
 import PremiumMemberDashboard from '@/components/dashboard/PremiumMemberDashboard'
+import { DashboardStatsSkeleton } from '@/components/ui/loading-skeletons'
 import {
   Users,
   DollarSign,
@@ -39,11 +41,22 @@ import {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
-  const [stats, setStats] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [emailVerified, setEmailVerified] = useState(false)
   const [profileCompleted, setProfileCompleted] = useState(false)
+
+  // Use React Query for cached stats
+  const { data: stats, isLoading: loading } = useQuery({
+    queryKey: ['dashboard', 'stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/dashboard/stats')
+      if (!response.ok) throw new Error('Failed to fetch stats')
+      return response.json()
+    },
+    enabled: status === 'authenticated',
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 60000, // Refresh every minute
+  })
 
   const theme = session?.user?.role ? getRoleTheme(session.user.role) : getRoleTheme('MEMBER_FREE')
   
@@ -58,23 +71,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      fetchStats()
       // Set initial email verified state from session
       setEmailVerified(session?.user?.emailVerified || isAdmin)
     }
   }, [status, session, isAdmin])
-
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('/api/dashboard/stats')
-      const data = await response.json()
-      setStats(data)
-    } catch (error) {
-      console.error('Error fetching stats:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Callback when email is verified
   const handleEmailVerified = () => {

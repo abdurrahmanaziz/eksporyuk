@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import {
@@ -30,6 +30,8 @@ import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { toast } from 'sonner'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
+import { useAdminAnalytics } from '@/hooks/use-api'
+import { AnalyticsPageSkeleton } from '@/components/ui/loading-skeletons'
 
 interface AnalyticsData {
   overview: {
@@ -56,41 +58,10 @@ interface AnalyticsData {
 export default function AdminAnalyticsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [period, setPeriod] = useState('7d')
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
-
-  // Redirect non-admin users
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    } else if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
-      router.push('/dashboard')
-    }
-  }, [status, session, router])
-
-  const fetchAnalytics = useCallback(async () => {
-    try {
-      setRefreshing(true)
-      const res = await fetch(`/api/admin/analytics?period=${period}`)
-      if (!res.ok) throw new Error('Failed to fetch analytics')
-      const data = await res.json()
-      setAnalytics(data)
-    } catch (error) {
-      console.error('Error fetching analytics:', error)
-      toast.error('Gagal memuat data analitik')
-    } finally {
-      setLoading(false)
-      setRefreshing(false)
-    }
-  }, [period])
-
-  useEffect(() => {
-    if (session?.user?.role === 'ADMIN') {
-      fetchAnalytics()
-    }
-  }, [session, fetchAnalytics])
+  
+  // Use React Query for cached analytics with auto-refresh
+  const { data: analytics, isLoading, refetch } = useAdminAnalytics(period)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -111,12 +82,10 @@ export default function AdminAnalyticsPage() {
     )
   }
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || isLoading) {
     return (
       <ResponsivePageWrapper>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <AnalyticsPageSkeleton />
       </ResponsivePageWrapper>
     )
   }
@@ -147,8 +116,8 @@ export default function AdminAnalyticsPage() {
                   <SelectItem value="1y">1 Tahun</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon" onClick={fetchAnalytics} disabled={refreshing}>
-                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
               <Button variant="outline">
                 <Download className="h-4 w-4 mr-2" />

@@ -1,72 +1,78 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// GET - Fetch checkout color settings
+// GET - Fetch checkout color settings (using existing settings fields)
 export async function GET() {
+  // Default colors - avoid database call if not needed
+  const defaultColors = {
+    primary: '#3b82f6', // blue-500
+    secondary: '#1e40af', // blue-700
+    accent: '#60a5fa', // blue-400
+    success: '#22c55e', // green-500
+    warning: '#eab308', // yellow-500
+  }
+
   try {
-    const settings = await prisma.setting.findFirst({
+    const settings = await prisma.settings.findUnique({
+      where: { id: 1 },
       select: {
-        checkoutPrimaryColor: true,
-        checkoutSecondaryColor: true,
-        checkoutAccentColor: true,
-        checkoutSuccessColor: true,
-        checkoutWarningColor: true,
+        primaryColor: true,
+        secondaryColor: true,
+        buttonSuccessBg: true,
+        buttonDangerBg: true,
       }
     })
 
-    // Default colors jika belum ada di database
-    const colors = {
-      primary: settings?.checkoutPrimaryColor || '#3b82f6', // blue-500
-      secondary: settings?.checkoutSecondaryColor || '#1e40af', // blue-700
-      accent: settings?.checkoutAccentColor || '#60a5fa', // blue-400
-      success: settings?.checkoutSuccessColor || '#22c55e', // green-500
-      warning: settings?.checkoutWarningColor || '#eab308', // yellow-500
+    if (settings) {
+      return NextResponse.json({ 
+        colors: {
+          primary: settings.primaryColor || defaultColors.primary,
+          secondary: settings.secondaryColor || defaultColors.secondary,
+          accent: defaultColors.accent,
+          success: settings.buttonSuccessBg || defaultColors.success,
+          warning: settings.buttonDangerBg || defaultColors.warning,
+        }
+      })
     }
 
-    return NextResponse.json({ colors })
+    return NextResponse.json({ colors: defaultColors })
   } catch (error) {
-    console.error('Error fetching checkout colors:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch checkout colors' },
-      { status: 500 }
-    )
+    // If database error, return defaults silently
+    return NextResponse.json({ colors: defaultColors })
   }
 }
 
-// POST - Update checkout color settings
+// POST - Update checkout color settings (using existing fields)
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { primary, secondary, accent, success, warning } = body
+    const { primary, secondary, success, warning } = body
 
-    // Update or create settings
-    const settings = await prisma.setting.upsert({
+    // Update using existing settings fields
+    const settings = await prisma.settings.upsert({
       where: { id: 1 },
       update: {
-        checkoutPrimaryColor: primary,
-        checkoutSecondaryColor: secondary,
-        checkoutAccentColor: accent,
-        checkoutSuccessColor: success,
-        checkoutWarningColor: warning,
+        primaryColor: primary,
+        secondaryColor: secondary,
+        buttonSuccessBg: success,
+        buttonDangerBg: warning,
       },
       create: {
         id: 1,
-        checkoutPrimaryColor: primary,
-        checkoutSecondaryColor: secondary,
-        checkoutAccentColor: accent,
-        checkoutSuccessColor: success,
-        checkoutWarningColor: warning,
+        primaryColor: primary,
+        secondaryColor: secondary,
+        buttonSuccessBg: success,
+        buttonDangerBg: warning,
       }
     })
 
     return NextResponse.json({ 
       success: true,
       colors: {
-        primary: settings.checkoutPrimaryColor,
-        secondary: settings.checkoutSecondaryColor,
-        accent: settings.checkoutAccentColor,
-        success: settings.checkoutSuccessColor,
-        warning: settings.checkoutWarningColor,
+        primary: settings.primaryColor,
+        secondary: settings.secondaryColor,
+        success: settings.buttonSuccessBg,
+        warning: settings.buttonDangerBg,
       }
     })
   } catch (error) {

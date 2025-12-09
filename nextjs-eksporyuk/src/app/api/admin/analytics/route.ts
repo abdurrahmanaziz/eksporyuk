@@ -241,7 +241,7 @@ export async function GET(request: Request) {
       timestamp: transaction.createdAt.toISOString(),
     }))
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       overview: {
         totalUsers,
         newUsersToday,
@@ -262,6 +262,11 @@ export async function GET(request: Request) {
       topCourses: topCoursesWithNames,
       recentActivity: activityLog,
     })
+    
+    // Cache response for 30 seconds (stale-while-revalidate for 60s)
+    response.headers.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60')
+    
+    return response
   } catch (error) {
     console.error('Analytics error:', error)
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 })

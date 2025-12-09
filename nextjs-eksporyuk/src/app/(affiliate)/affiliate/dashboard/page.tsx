@@ -1,7 +1,8 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { getRoleTheme } from '@/lib/role-themes'
 import Link from 'next/link'
@@ -71,37 +72,60 @@ interface AffiliateStats {
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [stats, setStats] = useState<AffiliateStats | null>(null)
-  const [challenges, setChallenges] = useState<Challenge[]>([])
-  const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
   const theme = session?.user?.role ? getRoleTheme(session.user.role) : getRoleTheme('AFFILIATE')
 
+  // Use React Query for cached data fetching
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['affiliate', 'dashboard-stats'],
+    queryFn: async () => {
+      const [statsRes, dashboardRes] = await Promise.all([
+        fetch('/api/affiliate/stats'),
+        fetch('/api/dashboard/stats')
+      ])
+      
+      const stats = await statsRes.json()
+      const dashboard = await dashboardRes.json()
+      
+      return {
+        ...stats,
+        recentClicks: dashboard.affiliate?.recentClicks || 0,
+        recentConversions: dashboard.affiliate?.recentConversions || 0,
+        recentEarnings: dashboard.affiliate?.recentEarnings || 0,
+        tier: dashboard.affiliate?.tier || 1,
+        commissionRate: Number(dashboard.affiliate?.commissionRate) || 10,
+        affiliateCode: dashboard.affiliate?.affiliateCode || '',
+        shortLink: dashboard.affiliate?.shortLink || '',
+      }
+    },
+    enabled: status === 'authenticated',
+    staleTime: 30 * 1000,
+    refetchInterval: 60000,
+    refetchOnWindowFocus: true, // Refresh when user returns
+  })
+
+  const { data: challengesData } = useQuery({
+    queryKey: ['affiliate', 'challenges', 'active'],
+    queryFn: async () => {
+      const response = await fetch('/api/affiliate/challenges?status=active&limit=3')
+      const data = await response.json()
+      return data.challenges || []
+    },
+    enabled: status === 'authenticated',
+    staleTime: 60 * 1000,
+  })
+
+  // Check welcome status on mount
   useEffect(() => {
     if (status === 'authenticated') {
       checkWelcomeStatus()
-      fetchStats()
-      fetchChallenges()
     }
   }, [status])
 
-  useEffect(() => {
-    // Refresh data when window gains focus (user returns from training/other pages)
-    const handleFocus = () => {
-      if (status === 'authenticated') {
-        checkWelcomeStatus()
-        fetchStats()
-        fetchChallenges()
-      }
-    }
-    
-    window.addEventListener('focus', handleFocus)
-    
-    return () => {
-      window.removeEventListener('focus', handleFocus)
-    }
-  }, [status])
+  const stats = statsData as AffiliateStats | null
+  const challenges = challengesData || []
+  const loading = statsLoading
 
   const checkWelcomeStatus = async () => {
     try {
@@ -109,53 +133,11 @@ export default function DashboardPage() {
       const data = await response.json()
       
       if (data.success && data.data?.needsWelcome) {
-        // Redirect to welcome page if first time after approval
         router.push('/affiliate/welcome')
         return
       }
     } catch (error) {
       console.error('Error checking welcome status:', error)
-    }
-  }
-
-  const fetchStats = async () => {
-    try {
-      // Fetch from both endpoints for complete data
-      const [statsRes, dashboardRes] = await Promise.all([
-        fetch('/api/affiliate/stats'),
-        fetch('/api/dashboard/stats')
-      ])
-      
-      const statsData = await statsRes.json()
-      const dashboardData = await dashboardRes.json()
-      
-      // Merge data
-      setStats({
-        ...statsData,
-        recentClicks: dashboardData.affiliate?.recentClicks || 0,
-        recentConversions: dashboardData.affiliate?.recentConversions || 0,
-        recentEarnings: dashboardData.affiliate?.recentEarnings || 0,
-        tier: dashboardData.affiliate?.tier || 1,
-        commissionRate: Number(dashboardData.affiliate?.commissionRate) || 10,
-        affiliateCode: dashboardData.affiliate?.affiliateCode || '',
-        shortLink: dashboardData.affiliate?.shortLink || '',
-      })
-    } catch (error) {
-      console.error('Error fetching stats:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchChallenges = async () => {
-    try {
-      const response = await fetch('/api/affiliate/challenges?status=active&limit=3')
-      const data = await response.json()
-      if (data.challenges) {
-        setChallenges(data.challenges)
-      }
-    } catch (error) {
-      console.error('Error fetching challenges:', error)
     }
   }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { apiCache, CACHE_KEYS, CACHE_TTL } from '@/lib/api-cache'
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,6 +10,14 @@ export async function GET(req: NextRequest) {
 
     if (!session?.user || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check cache first
+    const cached = apiCache.get(CACHE_KEYS.ADMIN_STATS)
+    if (cached) {
+      const response = NextResponse.json(cached)
+      response.headers.set('X-Cache', 'HIT')
+      return response
     }
 
     const now = new Date()
@@ -107,7 +116,7 @@ export async function GET(req: NextRequest) {
       ? ((Number(revenueThisMonth._sum.amount || 0) / Number(totalRevenue._sum.amount)) * 100).toFixed(1)
       : '0'
 
-    return NextResponse.json({
+    const data = {
       users: {
         total: totalUsers,
         active: activeUsers,
@@ -148,7 +157,16 @@ export async function GET(req: NextRequest) {
       moderation: {
         pendingReports: pendingReports
       }
-    })
+    }
+    
+    // Cache for 30 seconds (will be served instantly from cache)
+    apiCache.set(CACHE_KEYS.ADMIN_STATS, data, CACHE_TTL.SHORT)
+    
+    const response = NextResponse.json(data)
+    response.headers.set('X-Cache', 'MISS')
+    response.headers.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60')
+    
+    return response
   } catch (error) {
     console.error('[Admin Dashboard] Error fetching stats:', error)
     return NextResponse.json({ error: 'Failed to fetch statistics' }, { status: 500 })
