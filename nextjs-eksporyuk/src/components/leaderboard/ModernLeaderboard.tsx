@@ -18,9 +18,11 @@ interface LeaderboardEntry {
 interface LeaderboardData {
   allTime: LeaderboardEntry[]
   weekly: LeaderboardEntry[]
+  monthly?: LeaderboardEntry[]
   currentUserRank?: {
     allTime?: number
     weekly?: number
+    monthly?: number
   }
   currentMonth?: string
 }
@@ -238,6 +240,19 @@ const LeaderboardItem = ({
   currentUserId?: string
 }) => {
   const isCurrentUser = entry.userId === currentUserId
+  
+  // Bright colors for ranks 4+
+  const brightColors = [
+    'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-500/30',
+    'bg-gradient-to-r from-emerald-500/20 to-green-500/20 border-emerald-500/30',
+    'bg-gradient-to-r from-pink-500/20 to-rose-500/20 border-pink-500/30',
+    'bg-gradient-to-r from-orange-500/20 to-amber-500/20 border-orange-500/30',
+    'bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 border-purple-500/30',
+    'bg-gradient-to-r from-lime-500/20 to-green-500/20 border-lime-500/30',
+    'bg-gradient-to-r from-sky-500/20 to-cyan-500/20 border-sky-500/30',
+  ]
+  
+  const colorIndex = (entry.rank - 4) % brightColors.length
 
   return (
     <motion.div
@@ -245,16 +260,16 @@ const LeaderboardItem = ({
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
       className={cn(
-        'flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-2xl',
+        'flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-2xl border',
         isCurrentUser 
-          ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30'
-          : 'bg-white/5 hover:bg-white/10 transition-colors'
+          ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
+          : brightColors[colorIndex]
       )}
     >
       {/* Rank */}
       <div className={cn(
         'w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base font-bold',
-        isCurrentUser ? 'bg-yellow-500 text-white' : 'bg-white/10 text-white/60'
+        isCurrentUser ? 'bg-yellow-500 text-white' : 'bg-white/20 text-white'
       )}>
         {entry.rank}
       </div>
@@ -296,11 +311,13 @@ const UserRankBanner = ({
 }: { 
   rank?: number
   total: number
-  tab: 'weekly' | 'allTime'
+  tab: 'weekly' | 'monthly' | 'allTime'
 }) => {
   if (!rank) return null
 
   const percentile = Math.round((1 - rank / total) * 100)
+  
+  const tabLabel = tab === 'weekly' ? 'minggu ini' : tab === 'monthly' ? 'bulan ini' : 'sepanjang masa'
   
   return (
     <motion.div
@@ -317,7 +334,7 @@ const UserRankBanner = ({
             #{rank} <span className="text-white/60 font-normal">dari {total} affiliate</span>
           </p>
           <p className="text-xs text-white/50">
-            Kamu lebih baik dari {percentile}% affiliate {tab === 'weekly' ? 'minggu ini' : 'sepanjang masa'}!
+            Kamu lebih baik dari {percentile}% affiliate {tabLabel}!
           </p>
         </div>
         <div className="text-right">
@@ -337,15 +354,26 @@ export default function ModernLeaderboard({
   onRefresh,
   isLoading = false
 }: ModernLeaderboardProps) {
-  const [activeTab, setActiveTab] = useState<'weekly' | 'allTime'>('weekly')
+  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'allTime'>('weekly')
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   
-  const currentData = activeTab === 'weekly' ? data.weekly : data.allTime
+  const months = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ]
+  
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
+  
+  const currentData = activeTab === 'weekly' ? data.weekly : activeTab === 'monthly' ? data.monthly || [] : data.allTime
   const topThree = currentData.filter(e => e.rank <= 3)
   const restOfList = currentData.filter(e => e.rank > 3)
 
   // Get current user rank
   const currentUserRank = activeTab === 'weekly' 
     ? data.currentUserRank?.weekly 
+    : activeTab === 'monthly'
+    ? data.currentUserRank?.monthly
     : data.currentUserRank?.allTime
 
   return (
@@ -378,33 +406,79 @@ export default function ModernLeaderboard({
         </div>
 
         {/* Tabs */}
-        <div className="flex justify-center mb-4">
-          <div className="bg-white/10 rounded-full p-1 inline-flex">
-            <button
-              onClick={() => setActiveTab('weekly')}
-              className={cn(
-                'px-5 md:px-8 py-2 rounded-full text-sm font-semibold transition-all duration-300',
-                activeTab === 'weekly'
-                  ? 'bg-white text-violet-600 shadow-lg'
-                  : 'text-white/70 hover:text-white'
-              )}
-            >
-              Mingguan
-            </button>
-            {showAllTime && (
+        <div className="flex flex-col gap-3 mb-4">
+          <div className="flex justify-center">
+            <div className="bg-white/10 rounded-full p-1 inline-flex">
               <button
-                onClick={() => setActiveTab('allTime')}
+                onClick={() => setActiveTab('weekly')}
                 className={cn(
-                  'px-5 md:px-8 py-2 rounded-full text-sm font-semibold transition-all duration-300',
-                  activeTab === 'allTime'
+                  'px-4 md:px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300',
+                  activeTab === 'weekly'
                     ? 'bg-white text-violet-600 shadow-lg'
                     : 'text-white/70 hover:text-white'
                 )}
               >
-                Sepanjang Masa
+                Mingguan
               </button>
-            )}
+              <button
+                onClick={() => setActiveTab('monthly')}
+                className={cn(
+                  'px-4 md:px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300',
+                  activeTab === 'monthly'
+                    ? 'bg-white text-violet-600 shadow-lg'
+                    : 'text-white/70 hover:text-white'
+                )}
+              >
+                Bulanan
+              </button>
+              {showAllTime && (
+                <button
+                  onClick={() => setActiveTab('allTime')}
+                  className={cn(
+                    'px-4 md:px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300',
+                    activeTab === 'allTime'
+                      ? 'bg-white text-violet-600 shadow-lg'
+                      : 'text-white/70 hover:text-white'
+                  )}
+                >
+                  Sepanjang Masa
+                </button>
+              )}
+            </div>
           </div>
+          
+          {/* Month & Year Dropdown - Show only on Monthly tab */}
+          {activeTab === 'monthly' && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-center gap-2"
+            >
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="bg-white/10 text-white border border-white/20 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
+              >
+                {months.map((month, idx) => (
+                  <option key={idx} value={idx} className="bg-violet-600 text-white">
+                    {month}
+                  </option>
+                ))}
+              </select>
+              
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="bg-white/10 text-white border border-white/20 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
+              >
+                {years.map((year) => (
+                  <option key={year} value={year} className="bg-violet-600 text-white">
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </motion.div>
+          )}
         </div>
 
         {/* User rank banner (for affiliate) */}

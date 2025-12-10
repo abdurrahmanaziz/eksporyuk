@@ -16,9 +16,11 @@ interface LeaderboardEntry {
 interface LeaderboardData {
   allTime: LeaderboardEntry[]
   weekly: LeaderboardEntry[]
+  monthly: LeaderboardEntry[]
   currentUserRank?: {
     allTime?: number
     weekly?: number
+    monthly?: number
   }
 }
 
@@ -27,6 +29,7 @@ export default function AffiliateLeaderboardPage() {
   const [data, setData] = useState<LeaderboardData>({
     allTime: [],
     weekly: [],
+    monthly: [],
     currentUserRank: undefined
   })
   const [isLoading, setIsLoading] = useState(true)

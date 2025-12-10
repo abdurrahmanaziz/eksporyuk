@@ -15,12 +15,14 @@ interface LeaderboardEntry {
 interface LeaderboardData {
   allTime: LeaderboardEntry[]
   weekly: LeaderboardEntry[]
+  monthly: LeaderboardEntry[]
 }
 
 export default function AdminLeaderboardPage() {
   const [data, setData] = useState<LeaderboardData>({
     allTime: [],
-    weekly: []
+    weekly: [],
+    monthly: []
   })
   const [isLoading, setIsLoading] = useState(true)
 
