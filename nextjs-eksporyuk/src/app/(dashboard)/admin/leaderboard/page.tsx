@@ -29,11 +29,20 @@ export default function AdminLeaderboardPage() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/admin/affiliates/leaderboard/modern')
+      // Add cache busting to ensure fresh data
+      const timestamp = Date.now()
+      const response = await fetch(`/api/admin/affiliates/leaderboard/modern?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
       
       if (response.ok) {
         const result = await response.json()
         setData(result)
+        console.log('✅ Leaderboard data updated:', new Date().toLocaleTimeString('id-ID'))
       }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error)

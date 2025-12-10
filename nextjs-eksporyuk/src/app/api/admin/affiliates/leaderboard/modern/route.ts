@@ -37,10 +37,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    const startTime = Date.now()
+    console.log('🔄 Fetching fresh leaderboard data from database...')
+
     const weekStart = getWeekStart()
     const monthStart = getMonthStart()
 
-    // Get all time leaderboard - REALTIME from AffiliateProfile
+    // Get all time leaderboard - REALTIME from AffiliateProfile (same as /admin/affiliates)
     const allTimeAffiliates = await prisma.affiliateProfile.findMany({
       where: {
         totalEarnings: { gt: 0 }
@@ -59,6 +62,8 @@ export async function GET() {
       },
       take: 10
     })
+
+    console.log(`✅ All time data: ${allTimeAffiliates.length} affiliates (Top: ${allTimeAffiliates[0]?.user?.name} - Rp ${allTimeAffiliates[0]?.totalEarnings?.toLocaleString('id-ID')})`)
 
     // Get weekly conversions
     const weeklyConversions = await prisma.affiliateConversion.groupBy({
@@ -179,11 +184,25 @@ export async function GET() {
       }
     }).filter(m => m.userId)
 
-    return NextResponse.json({
-      allTime,
-      weekly,
-      monthly
-    })
+    const endTime = Date.now()
+    console.log(`✅ Leaderboard data fetched in ${endTime - startTime}ms`)
+    console.log(`📊 All Time: ${allTime.length}, Weekly: ${weekly.length}, Monthly: ${monthly.length}`)
+
+    return NextResponse.json(
+      {
+        allTime,
+        weekly,
+        monthly,
+        timestamp: new Date().toISOString()
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      }
+    )
 
   } catch (error) {
     console.error('Error fetching modern leaderboard:', error)

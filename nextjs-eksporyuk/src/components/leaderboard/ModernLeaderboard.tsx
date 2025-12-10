@@ -25,6 +25,7 @@ interface LeaderboardData {
     monthly?: number
   }
   currentMonth?: string
+  timestamp?: string
 }
 
 interface ModernLeaderboardProps {
@@ -394,14 +395,21 @@ export default function ModernLeaderboard({
           
           {/* Refresh indicator */}
           {onRefresh && (
-            <motion.button
-              onClick={onRefresh}
-              disabled={isLoading}
-              className="text-xs text-white/50 hover:text-white/80 transition-colors flex items-center gap-1 mx-auto"
-            >
-              <Clock className={cn('w-3 h-3', isLoading && 'animate-spin')} />
-              {isLoading ? 'Memperbarui...' : 'Update otomatis 30 detik'}
-            </motion.button>
+            <div className="flex flex-col items-center gap-1">
+              <motion.button
+                onClick={onRefresh}
+                disabled={isLoading}
+                className="text-xs text-white/50 hover:text-white/80 transition-colors flex items-center gap-1"
+              >
+                <Clock className={cn('w-3 h-3', isLoading && 'animate-spin')} />
+                {isLoading ? 'Memperbarui...' : 'Update otomatis 30 detik'}
+              </motion.button>
+              {data.timestamp && (
+                <span className="text-[10px] text-white/30">
+                  Data terakhir: {new Date(data.timestamp).toLocaleTimeString('id-ID')}
+                </span>
+              )}
+            </div>
           )}
         </div>
 

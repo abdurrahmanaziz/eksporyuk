@@ -33,6 +33,9 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const startTime = Date.now()
+    console.log('🔄 Affiliate leaderboard: Fetching fresh data from database...')
+
     const weekStart = getWeekStart()
     const monthStart = getMonthStart()
     const currentUserId = session.user.id
@@ -173,19 +176,33 @@ export async function GET() {
     const totalWeeklyAffiliates = allWeeklyConversions.length
     const totalMonthlyAffiliates = allMonthlyConversions.length
 
-    return NextResponse.json({
-      allTime: [], // Not shown to affiliates
-      weekly,
-      monthly,
-      currentUserRank: {
-        weekly: weeklyRank,
-        monthly: monthlyRank
+    const endTime = Date.now()
+    console.log(`✅ Affiliate leaderboard fetched in ${endTime - startTime}ms`)
+    console.log(`📊 Weekly: ${weekly.length}, Monthly: ${monthly.length}, User rank: W${weeklyRank || 'N/A'} M${monthlyRank || 'N/A'}`)
+
+    return NextResponse.json(
+      {
+        allTime: [], // Not shown to affiliates
+        weekly,
+        monthly,
+        currentUserRank: {
+          weekly: weeklyRank,
+          monthly: monthlyRank
+        },
+        totalAffiliates: {
+          weekly: totalWeeklyAffiliates,
+          monthly: totalMonthlyAffiliates
+        },
+        timestamp: new Date().toISOString()
       },
-      totalAffiliates: {
-        weekly: totalWeeklyAffiliates,
-        monthly: totalMonthlyAffiliates
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       }
-    })
+    )
 
   } catch (error) {
     console.error('Error fetching affiliate leaderboard:', error)
