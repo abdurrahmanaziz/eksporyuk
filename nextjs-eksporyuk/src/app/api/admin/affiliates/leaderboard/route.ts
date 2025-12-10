@@ -15,13 +15,17 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || '30d'
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 500)
+    const sortBy = searchParams.get('sortBy') || 'totalEarnings'
 
     // Calculate date filter based on period
     const now = new Date()
     let startDate: Date
 
     switch (period) {
+      case '1d':
+        startDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000)
+        break
       case '7d':
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
         break
@@ -30,6 +34,12 @@ export async function GET(request: NextRequest) {
         break
       case '90d':
         startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+        break
+      case '180d':
+        startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)
+        break
+      case '365d':
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
         break
       case 'all':
       default:
@@ -74,7 +84,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [
+      orderBy: sortBy === 'createdAt' ? { createdAt: 'desc' } : [
         { totalEarnings: 'desc' },
         { totalConversions: 'desc' },
         { createdAt: 'desc' },
@@ -88,7 +98,7 @@ export async function GET(request: NextRequest) {
     const totalConversions = affiliates.reduce((sum, aff) => sum + aff.totalConversions, 0)
 
     // Transform data for leaderboard
-    const leaderboard = affiliates.map((affiliate, index) => {
+    let leaderboard = affiliates.map((affiliate, index) => {
       const periodClicks = affiliate.links.reduce((sum, link) => sum + link.clicks, 0)
       const periodConversions = affiliate.links.reduce((sum, link) => sum + link.conversions, 0)
       const periodSales = affiliate.conversions.reduce((sum, conv) => sum + conv.amount, 0)
@@ -115,12 +125,54 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Sort leaderboard based on sortBy parameter
+    leaderboard.sort((a, b) => {
+      let aValue: number, bValue: number
+
+      switch (sortBy) {
+        case 'totalEarnings':
+          aValue = a.totalEarnings
+          bValue = b.totalEarnings
+          break
+        case 'totalSales':
+          aValue = a.totalSales
+          bValue = b.totalSales
+          break
+        case 'totalConversions':
+          aValue = a.totalConversions
+          bValue = b.totalConversions
+          break
+        case 'conversionRate':
+          aValue = a.conversionRate
+          bValue = b.conversionRate
+          break
+        case 'avgOrderValue':
+          aValue = a.avgOrderValue
+          bValue = b.avgOrderValue
+          break
+        case 'createdAt':
+          return new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime()
+        default:
+          aValue = a.totalEarnings
+          bValue = b.totalEarnings
+      }
+
+      return bValue - aValue // Descending order
+    })
+
+    // Re-assign ranks after sorting
+    leaderboard = leaderboard.map((entry, index) => ({
+      ...entry,
+      rank: index + 1
+    }))
+
     return NextResponse.json({
       leaderboard,
       totalAffiliates,
       totalRevenue,
       totalConversions,
       period,
+      sortBy,
     })
 
   } catch (error) {

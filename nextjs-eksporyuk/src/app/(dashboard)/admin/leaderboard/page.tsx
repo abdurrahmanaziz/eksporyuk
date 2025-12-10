@@ -46,6 +46,7 @@ interface LeaderboardData {
   totalRevenue: number
   totalConversions: number
   period: string
+  sortBy: string
 }
 
 export default function AdminLeaderboardPage() {
@@ -53,19 +54,19 @@ export default function AdminLeaderboardPage() {
   const [data, setData] = useState<LeaderboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState('30d')
-  const [limit, setLimit] = useState(50)
+  const [sortBy, setSortBy] = useState('totalEarnings')
   const theme = getRoleTheme('ADMIN')
 
   useEffect(() => {
     if (session?.user?.role === 'ADMIN') {
       fetchLeaderboard()
     }
-  }, [session, period, limit])
+  }, [session, period, limit, sortBy])
 
   const fetchLeaderboard = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/affiliates/leaderboard?period=${period}&limit=${limit}`)
+      const response = await fetch(`/api/admin/affiliates/leaderboard?period=${period}&limit=${limit}&sortBy=${sortBy}`)
       if (response.ok) {
         const result = await response.json()
         setData(result)
@@ -190,32 +191,60 @@ export default function AdminLeaderboardPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Periode</label>
               <select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="7d">7 Hari</option>
-                <option value="30d">30 Hari</option>
-                <option value="90d">90 Hari</option>
+                <option value="1d">Hari Ini</option>
+                <option value="7d">7 Hari Terakhir</option>
+                <option value="30d">30 Hari Terakhir</option>
+                <option value="90d">3 Bulan Terakhir</option>
+                <option value="180d">6 Bulan Terakhir</option>
+                <option value="365d">1 Tahun Terakhir</option>
                 <option value="all">Semua Waktu</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Limit</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah Tampilan</label>
               <select
                 value={limit}
                 onChange={(e) => setLimit(Number(e.target.value))}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value={10}>Top 10</option>
                 <option value={25}>Top 25</option>
                 <option value={50}>Top 50</option>
                 <option value={100}>Top 100</option>
+                <option value={500}>Top 500</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Urutkan Berdasarkan</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="totalEarnings">Total Komisi</option>
+                <option value="totalSales">Total Penjualan</option>
+                <option value="totalConversions">Total Konversi</option>
+                <option value="conversionRate">Tingkat Konversi</option>
+                <option value="avgOrderValue">Rata-rata Order</option>
+                <option value="createdAt">Tanggal Bergabung</option>
+              </select>
+            </div>
+            <div>
+              <button
+                onClick={fetchLeaderboard}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Filter className="w-4 h-4" />
+                Terapkan Filter
+              </button>
             </div>
           </div>
         </div>
