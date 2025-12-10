@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import ModernLeaderboard from '@/components/leaderboard/ModernLeaderboard'
+import Head from 'next/head'
 
 interface LeaderboardEntry {
   rank: number
@@ -62,11 +63,18 @@ export default function AdminLeaderboardPage() {
   }, [fetchData])
 
   return (
-    <ModernLeaderboard 
-      data={data}
-      showAllTime={true} // Admin can see both tabs
-      onRefresh={fetchData}
-      isLoading={isLoading}
-    />
+    <>
+      <Head>
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+      </Head>
+      <ModernLeaderboard 
+        data={data}
+        showAllTime={true} // Admin can see all time tab - default active
+        onRefresh={fetchData}
+        isLoading={isLoading}
+      />
+    </>
   )
 }
