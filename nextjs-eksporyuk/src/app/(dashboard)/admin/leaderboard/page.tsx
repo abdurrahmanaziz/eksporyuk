@@ -43,6 +43,8 @@ export default function AdminLeaderboardPage() {
         const result = await response.json()
         setData(result)
         console.log('✅ Leaderboard data updated:', new Date().toLocaleTimeString('id-ID'))
+        console.log('📊 All Time Top 3:', result.allTime.slice(0, 3).map((a: any) => `${a.name} (Rp ${a.points.toLocaleString('id-ID')})`))
+        console.log('📊 Weekly Top 3:', result.weekly.slice(0, 3).map((a: any) => `${a.name} (Rp ${a.points.toLocaleString('id-ID')})`))
       }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error)

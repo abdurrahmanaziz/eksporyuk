@@ -355,7 +355,8 @@ export default function ModernLeaderboard({
   onRefresh,
   isLoading = false
 }: ModernLeaderboardProps) {
-  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'allTime'>('weekly')
+  // Default to 'allTime' for admin (showAllTime=true), 'weekly' for affiliate
+  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'allTime'>(showAllTime ? 'allTime' : 'weekly')
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   
@@ -369,6 +370,16 @@ export default function ModernLeaderboard({
   const currentData = activeTab === 'weekly' ? data.weekly : activeTab === 'monthly' ? data.monthly || [] : data.allTime
   const topThree = currentData.filter(e => e.rank <= 3)
   const restOfList = currentData.filter(e => e.rank > 3)
+
+  // Log data when component mounts or data changes
+  useEffect(() => {
+    console.log('🎯 Current Active Tab:', activeTab)
+    console.log('📊 Data counts - All Time:', data.allTime?.length, 'Weekly:', data.weekly?.length, 'Monthly:', data.monthly?.length)
+    console.log('👥 Current Data showing:', currentData.length, 'entries')
+    if (currentData.length > 0) {
+      console.log('🏆 Top 3:', currentData.slice(0, 3).map(e => `${e.rank}. ${e.name} (Rp ${e.points.toLocaleString('id-ID')})`))
+    }
+  }, [activeTab, data, currentData])
 
   // Get current user rank
   const currentUserRank = activeTab === 'weekly' 
