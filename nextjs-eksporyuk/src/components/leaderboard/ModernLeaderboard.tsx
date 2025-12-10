@@ -355,10 +355,25 @@ export default function ModernLeaderboard({
   onRefresh,
   isLoading = false
 }: ModernLeaderboardProps) {
-  // Default to 'allTime' for admin (showAllTime=true), 'weekly' for affiliate
-  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'allTime'>(showAllTime ? 'allTime' : 'weekly')
+  // IMPORTANT: Default tab based on showAllTime prop
+  // Admin (showAllTime=true) → starts with 'allTime'
+  // Affiliate (showAllTime=false) → starts with 'weekly'
+  const defaultTab = showAllTime ? 'allTime' : 'weekly'
+  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'allTime'>(defaultTab)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  
+  // Force correct tab on mount
+  useEffect(() => {
+    console.log('🚀 ModernLeaderboard MOUNTED')
+    console.log('📋 showAllTime prop:', showAllTime)
+    console.log('🎯 Default Tab:', defaultTab)
+    console.log('🎯 Initial Active Tab:', activeTab)
+    if (activeTab !== defaultTab) {
+      console.warn('⚠️ Tab mismatch! Forcing to:', defaultTab)
+      setActiveTab(defaultTab)
+    }
+  }, []) // Only run on mount
   
   const months = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -403,6 +418,11 @@ export default function ModernLeaderboard({
               Leaderboard
             </h1>
           </motion.div>
+          
+          {/* Debug indicator - temporary */}
+          <div className="text-[10px] text-white/30 mb-1">
+            Active: {activeTab} | ShowAllTime: {showAllTime ? 'true' : 'false'}
+          </div>
           
           {/* Refresh indicator */}
           {onRefresh && (
