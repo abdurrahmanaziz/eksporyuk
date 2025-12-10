@@ -55,6 +55,7 @@ export default function AdminLeaderboardPage() {
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState('30d')
   const [sortBy, setSortBy] = useState('totalEarnings')
+  const [limit, setLimit] = useState(10)
   const theme = getRoleTheme('ADMIN')
 
   useEffect(() => {
@@ -164,7 +165,7 @@ export default function AdminLeaderboardPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Trophy className={`w-8 h-8 ${theme.primaryColor}`} />
+              <Trophy className={`w-8 h-8 ${theme.primary}`} />
               <h1 className="text-3xl font-bold text-gray-900">Affiliate Leaderboard</h1>
             </div>
             <div className="flex gap-3">

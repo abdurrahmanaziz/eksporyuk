@@ -100,7 +100,7 @@ export default function AffiliateLeaderboardPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <Trophy className={`w-8 h-8 ${theme.primaryColor}`} />
+            <Trophy className={`w-8 h-8 ${theme.primary}`} />
             <h1 className="text-3xl font-bold text-gray-900">Affiliate Leaderboard</h1>
           </div>
           <p className="text-gray-600">
