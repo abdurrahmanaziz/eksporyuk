@@ -24,6 +24,9 @@ import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 interface Transaction {
   id: string
   amount: number
+  originalAmount: number | null
+  discountAmount: number | null
+  affiliateShare: number | null
   status: string
   type: string
   paymentMethod: string | null
@@ -35,6 +38,7 @@ interface Transaction {
   user?: {
     name: string
     email: string
+    memberCode: string | null
   }
   membership?: {
     membership: {
@@ -47,6 +51,20 @@ interface Transaction {
   course?: {
     title: string
   }
+  coupon?: {
+    code: string
+  } | null
+  affiliateConversion?: {
+    commissionAmount: number
+    commissionRate: number
+    paidOut: boolean
+    affiliate: {
+      user: {
+        name: string
+        memberCode: string | null
+      }
+    }
+  } | null
 }
 
 interface Stats {
@@ -54,6 +72,12 @@ interface Stats {
   totalRevenue: number
   totalTransactions: number
   averageOrderValue: number
+  totalCommissions: number
+  pendingCommissions: number
+  successTransactions: number
+  failedTransactions: number
+  pendingTransactions: number
+  totalDiscount: number
 }
 
 export default function AdminTransactionsPage() {
@@ -65,6 +89,12 @@ export default function AdminTransactionsPage() {
     totalRevenue: 0,
     totalTransactions: 0,
     averageOrderValue: 0,
+    totalCommissions: 0,
+    pendingCommissions: 0,
+    successTransactions: 0,
+    failedTransactions: 0,
+    pendingTransactions: 0,
+    totalDiscount: 0,
   })
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -122,6 +152,12 @@ export default function AdminTransactionsPage() {
         totalRevenue: data?.totalRevenue ?? 0,
         totalTransactions: data?.totalTransactions ?? 0,
         averageOrderValue: data?.averageOrderValue ?? 0,
+        totalCommissions: data?.totalCommissions ?? 0,
+        pendingCommissions: data?.pendingCommissions ?? 0,
+        successTransactions: data?.successTransactions ?? 0,
+        failedTransactions: data?.failedTransactions ?? 0,
+        pendingTransactions: data?.pendingTransactions ?? 0,
+        totalDiscount: data?.totalDiscount ?? 0,
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -239,58 +275,76 @@ export default function AdminTransactionsPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-white"
-                style={{ backgroundColor: theme.primary }}
-              >
-                <DollarSign className="w-6 h-6" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white">
+                <DollarSign className="w-5 h-5" />
               </div>
+              <p className="text-xs text-gray-500">Revenue</p>
             </div>
-            <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-lg font-bold text-gray-900">
               {formatCurrency(stats.totalRevenue)}
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-white"
-                style={{ backgroundColor: theme.secondary }}
-              >
-                <ShoppingCart className="w-6 h-6" />
+          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center text-white">
+                <CheckCircle className="w-5 h-5" />
               </div>
+              <p className="text-xs text-gray-500">Sukses</p>
             </div>
-            <p className="text-sm text-gray-600 mb-1">Total Penjualan</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.totalSales.toLocaleString()}
+            <p className="text-lg font-bold text-green-600">
+              {stats.successTransactions}
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-500 flex items-center justify-center text-white">
-                <CreditCard className="w-6 h-6" />
+          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-yellow-500 flex items-center justify-center text-white">
+                <Clock className="w-5 h-5" />
               </div>
+              <p className="text-xs text-gray-500">Pending</p>
             </div>
-            <p className="text-sm text-gray-600 mb-1">Total Transaksi</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.totalTransactions.toLocaleString()}
+            <p className="text-lg font-bold text-yellow-600">
+              {stats.pendingTransactions}
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center text-white">
-                <TrendingUp className="w-6 h-6" />
+          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-red-500 flex items-center justify-center text-white">
+                <XCircle className="w-5 h-5" />
               </div>
+              <p className="text-xs text-gray-500">Gagal</p>
             </div>
-            <p className="text-sm text-gray-600 mb-1">Rata-rata Order</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {formatCurrency(stats.averageOrderValue)}
+            <p className="text-lg font-bold text-red-600">
+              {stats.failedTransactions}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center text-white">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <p className="text-xs text-gray-500">Komisi Aff</p>
+            </div>
+            <p className="text-lg font-bold text-purple-600">
+              {formatCurrency(stats.totalCommissions)}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <p className="text-xs text-gray-500">Diskon</p>
+            </div>
+            <p className="text-lg font-bold text-orange-600">
+              {formatCurrency(stats.totalDiscount)}
             </p>
           </div>
         </div>
@@ -378,28 +432,31 @@ export default function AdminTransactionsPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Invoice
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Member ID
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Produk
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Tipe
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Harga Asli
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Jumlah
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Diskon
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Metode
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Final
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Affiliate
+                </th>
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Tanggal
                 </th>
               </tr>
@@ -407,58 +464,87 @@ export default function AdminTransactionsPage() {
             <tbody className="divide-y divide-gray-200">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     Tidak ada transaksi ditemukan
                   </td>
                 </tr>
               ) : (
                 filteredTransactions.map((tx) => (
                   <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-mono font-semibold text-gray-900">
-                        {tx.invoiceNumber || tx.id.slice(0, 8).toUpperCase()}
-                      </p>
+                    <td className="px-4 py-4">
+                      {tx.user?.memberCode ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+                          {tx.user.memberCode}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {tx.customerName || tx.user?.name || 'N/A'}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {tx.customerEmail || tx.user?.email || 'N/A'}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-gray-400" />
-                        <p className="text-sm text-gray-900">
-                          {tx.membership?.membership?.name || tx.product?.name || tx.course?.title || 'N/A'}
+                    <td className="px-4 py-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {tx.customerName || tx.user?.name || 'N/A'}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {tx.customerEmail || tx.user?.email || ''}
                         </p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {tx.type || 'N/A'}
-                      </span>
+                    <td className="px-4 py-4">
+                      <div>
+                        <p className="text-sm text-gray-900">
+                          {tx.membership?.membership?.name || tx.product?.name || tx.course?.title || 'N/A'}
+                        </p>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                          {tx.type || 'N/A'}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-semibold text-gray-900">
+                    <td className="px-4 py-4">
+                      <p className="text-sm text-gray-600">
+                        {formatCurrency(tx.originalAmount || tx.amount)}
+                      </p>
+                    </td>
+                    <td className="px-4 py-4">
+                      {tx.discountAmount && tx.discountAmount > 0 ? (
+                        <div>
+                          <p className="text-sm font-medium text-red-600">
+                            -{formatCurrency(tx.discountAmount)}
+                          </p>
+                          {tx.coupon && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700">
+                              {tx.coupon.code}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <p className="text-sm font-bold text-green-600">
                         {formatCurrency(tx.amount)}
                       </p>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-gray-600">
-                        {tx.paymentMethod || 'N/A'}
-                      </p>
+                    <td className="px-4 py-4">
+                      {tx.affiliateConversion ? (
+                        <div>
+                          <p className="text-xs text-gray-600">{tx.affiliateConversion.affiliate.user.name}</p>
+                          <p className="text-sm font-medium text-blue-600">
+                            {formatCurrency(tx.affiliateConversion.commissionAmount)}
+                          </p>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs ${tx.affiliateConversion.paidOut ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {tx.affiliateConversion.paidOut ? 'Paid' : 'Pending'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       {getStatusBadge(tx.status)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <p className="text-sm text-gray-600">
                         {formatDate(tx.createdAt)}
                       </p>

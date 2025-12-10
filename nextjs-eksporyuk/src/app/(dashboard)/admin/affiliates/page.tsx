@@ -47,6 +47,7 @@ interface AffiliateStats {
   activeAffiliates: number
   pendingApproval: number
   totalEarnings: number
+  totalSales: number
   pendingPayouts: number
   totalPayouts: number
 }
@@ -66,6 +67,7 @@ interface Affiliate {
   totalClicks: number
   totalConversions: number
   totalEarnings: number
+  totalSales: number
   isActive: boolean
   approvedAt?: string
   createdAt: string
@@ -276,7 +278,7 @@ export default function AffiliatesManagementPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
@@ -312,7 +314,24 @@ export default function AffiliatesManagementPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Total Earnings
+                Total Omset
+              </CardTitle>
+              <TrendingUp className="w-4 h-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">
+                {formatCurrency(stats.totalSales || 0)}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Total penjualan via affiliate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Total Komisi
               </CardTitle>
               <DollarSign className="w-4 h-4 text-green-600" />
             </CardHeader>
@@ -321,7 +340,7 @@ export default function AffiliatesManagementPage() {
                 {formatCurrency(stats.totalEarnings)}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Komisi dihasilkan
+                Dari semua penjualan affiliate
               </p>
             </CardContent>
           </Card>
@@ -329,16 +348,33 @@ export default function AffiliatesManagementPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Pending Payout
+                Saldo Pending
               </CardTitle>
-              <TrendingUp className="w-4 h-4 text-purple-600" />
+              <Wallet className="w-4 h-4 text-purple-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">
                 {formatCurrency(stats.pendingPayouts)}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Menunggu pencairan
+                Siap untuk ditarik
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Total Payout
+              </CardTitle>
+              <ArrowDownRight className="w-4 h-4 text-indigo-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-indigo-600">
+                {formatCurrency(stats.totalPayouts)}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Sudah dicairkan
               </p>
             </CardContent>
           </Card>
@@ -384,145 +420,78 @@ export default function AffiliatesManagementPage() {
         </CardContent>
       </Card>
 
-      {/* Affiliates Table */}
+      {/* Affiliates Table - Compact Design */}
       <Card>
         <CardHeader>
           <CardTitle>Daftar Affiliate</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[600px]">
               <thead>
-                <tr className="border-b">
+                <tr className="border-b bg-gray-50/50">
                   <th className="text-left p-4 font-medium text-gray-600">Affiliate</th>
                   <th className="text-left p-4 font-medium text-gray-600">Kode</th>
-                  <th className="text-left p-4 font-medium text-gray-600">Status</th>
-                  <th className="text-right p-4 font-medium text-gray-600">Klik</th>
-                  <th className="text-right p-4 font-medium text-gray-600">Konversi</th>
-                  <th className="text-right p-4 font-medium text-gray-600">Earnings</th>
-                  <th className="text-right p-4 font-medium text-gray-600">Saldo</th>
-                  <th className="text-center p-4 font-medium text-gray-600">Aksi</th>
+                  <th className="text-center p-4 font-medium text-gray-600">Status</th>
+                  <th className="text-right p-4 font-medium text-gray-600">Total Komisi</th>
+                  <th className="text-center p-4 font-medium text-gray-600 w-24">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {affiliates.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center p-8 text-gray-500">
+                    <td colSpan={5} className="text-center p-8 text-gray-500">
                       Tidak ada data affiliate
                     </td>
                   </tr>
                 ) : (
                   affiliates.map((affiliate) => (
-                    <tr key={affiliate.id} className="border-b hover:bg-gray-50">
+                    <tr key={affiliate.id} className="border-b hover:bg-gray-50/50 transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                             {affiliate.user.name.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <div className="font-medium">{affiliate.user.name}</div>
-                            <div className="text-sm text-gray-500">{affiliate.user.email}</div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm truncate max-w-[180px]">{affiliate.user.name}</div>
+                            <div className="text-xs text-gray-500 truncate max-w-[180px]">{affiliate.user.email}</div>
                           </div>
                         </div>
                       </td>
                       <td className="p-4">
-                        <div className="font-mono text-sm">{affiliate.affiliateCode}</div>
-                        {affiliate.shortLinkUsername && (
-                          <div className="text-xs text-gray-500">@{affiliate.shortLinkUsername}</div>
-                        )}
+                        <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{affiliate.affiliateCode}</span>
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 text-center">
                         {!affiliate.approvedAt ? (
-                          <Badge className="bg-orange-100 text-orange-700 border-orange-200">Pending</Badge>
+                          <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs">Pending</Badge>
                         ) : affiliate.isActive ? (
-                          <Badge className="bg-green-100 text-green-700 border-green-200">Aktif</Badge>
+                          <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">Aktif</Badge>
                         ) : (
-                          <Badge variant="secondary">Tidak Aktif</Badge>
+                          <Badge variant="secondary" className="text-xs">Nonaktif</Badge>
                         )}
                       </td>
                       <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <ArrowUpRight className="w-3 h-3 text-blue-600" />
-                          <span className="font-medium">{affiliate.totalClicks}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <CheckCircle className="w-3 h-3 text-green-600" />
-                          <span className="font-medium text-green-600">
-                            {affiliate.totalConversions}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="font-medium text-green-600">
+                        <div className="font-semibold text-green-600 text-sm">
                           {formatCurrency(Number(affiliate.totalEarnings))}
                         </div>
-                      </td>
-                      <td className="p-4 text-right">
-                        {affiliate.wallet ? (
-                          <div>
-                            <div className="font-medium">
-                              {formatCurrency(Number(affiliate.wallet.balance))}
-                            </div>
-                            {affiliate.wallet.balancePending > 0 && (
-                              <div className="text-xs text-orange-600">
-                                +{formatCurrency(Number(affiliate.wallet.balancePending))} pending
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                        <div className="text-xs text-gray-500">
+                          {affiliate.totalConversions} transaksi
+                        </div>
                       </td>
                       <td className="p-4">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center">
                           <Button
                             size="sm"
-                            variant="ghost"
+                            variant="outline"
                             onClick={() => {
                               setSelectedAffiliate(affiliate)
                               setShowDetailModal(true)
                             }}
+                            className="text-xs h-8"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3 h-3 mr-1" />
+                            Detail
                           </Button>
-                          
-                          {!affiliate.approvedAt ? (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                onClick={() => {
-                                  setSelectedAffiliate(affiliate)
-                                  setShowApproveModal(true)
-                                }}
-                              >
-                                <UserCheck className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => {
-                                  setSelectedAffiliate(affiliate)
-                                  setShowRejectModal(true)
-                                }}
-                              >
-                                <UserX className="w-4 h-4" />
-                              </Button>
-                            </>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className={affiliate.isActive ? "text-red-600 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}
-                              onClick={() => handleToggleStatus(affiliate)}
-                            >
-                              {affiliate.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                            </Button>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -534,126 +503,164 @@ export default function AffiliatesManagementPage() {
         </CardContent>
       </Card>
 
-      {/* Detail Modal */}
+      {/* Detail Modal - Enhanced with Actions */}
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Detail Affiliate</DialogTitle>
-            <DialogDescription>
-              Informasi lengkap affiliate dan performa
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
           {selectedAffiliate && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Nama</label>
-                  <p className="mt-1">{selectedAffiliate.user.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Email</label>
-                  <p className="mt-1">{selectedAffiliate.user.email}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Kode Affiliate</label>
-                  <p className="mt-1 font-mono">{selectedAffiliate.affiliateCode}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Short Link</label>
-                  <p className="mt-1">
-                    {selectedAffiliate.shortLinkUsername || '-'}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Status</label>
-                  <p className="mt-1">
-                    {!selectedAffiliate.approvedAt ? (
-                      <Badge className="bg-orange-100 text-orange-700">Pending</Badge>
-                    ) : selectedAffiliate.isActive ? (
-                      <Badge className="bg-green-100 text-green-700">Aktif</Badge>
-                    ) : (
-                      <Badge variant="secondary">Tidak Aktif</Badge>
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-semibold mb-3">Statistik Performa</h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <div className="text-sm text-gray-600">Total Klik</div>
-                    <div className="text-2xl font-bold text-blue-600">
-                      {selectedAffiliate.totalClicks}
+            <div className="space-y-0">
+              {/* Header with gradient */}
+              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white font-bold text-2xl shrink-0 border-2 border-white/30">
+                    {selectedAffiliate.user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-xl">{selectedAffiliate.user.name}</h3>
+                    <p className="text-white/80 text-sm">{selectedAffiliate.user.email}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="font-mono text-xs bg-white/20 px-2 py-1 rounded">{selectedAffiliate.affiliateCode}</span>
+                      {selectedAffiliate.shortLinkUsername && (
+                        <span className="text-xs text-white/70">@{selectedAffiliate.shortLinkUsername}</span>
+                      )}
                     </div>
                   </div>
-                  <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="text-sm text-gray-600">Konversi</div>
-                    <div className="text-2xl font-bold text-green-600">
-                      {selectedAffiliate.totalConversions}
-                    </div>
-                  </div>
-                  <div className="bg-purple-50 p-3 rounded-lg">
-                    <div className="text-sm text-gray-600">Total Earnings</div>
-                    <div className="text-lg font-bold text-purple-600">
-                      {formatCurrency(Number(selectedAffiliate.totalEarnings))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {selectedAffiliate.wallet && (
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3">Informasi Wallet</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-gray-600">Saldo Tersedia</label>
-                      <p className="text-lg font-bold text-green-600">
-                        {formatCurrency(Number(selectedAffiliate.wallet.balance))}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-gray-600">Saldo Pending</label>
-                      <p className="text-lg font-bold text-orange-600">
-                        {formatCurrency(Number(selectedAffiliate.wallet.balancePending))}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-gray-600">Total Payout</label>
-                      <p className="text-lg font-medium">
-                        {formatCurrency(Number(selectedAffiliate.wallet.totalPayout))}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-gray-600">Total Earnings</label>
-                      <p className="text-lg font-medium">
-                        {formatCurrency(Number(selectedAffiliate.wallet.totalEarnings))}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="border-t pt-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <label className="text-gray-600">Bergabung</label>
-                    <p>{formatDate(selectedAffiliate.createdAt)}</p>
+                    {!selectedAffiliate.approvedAt ? (
+                      <Badge className="bg-orange-200 text-orange-800 border-0">Pending</Badge>
+                    ) : selectedAffiliate.isActive ? (
+                      <Badge className="bg-green-200 text-green-800 border-0">Aktif</Badge>
+                    ) : (
+                      <Badge className="bg-gray-200 text-gray-800 border-0">Nonaktif</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-5">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-xl text-center border border-blue-100">
+                    <ArrowUpRight className="w-5 h-5 text-blue-600 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-blue-600">{selectedAffiliate.totalClicks}</div>
+                    <div className="text-xs text-blue-600/70 font-medium">Total Klik</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100/50 p-4 rounded-xl text-center border border-green-100">
+                    <CheckCircle className="w-5 h-5 text-green-600 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-green-600">{selectedAffiliate.totalConversions}</div>
+                    <div className="text-xs text-green-600/70 font-medium">Konversi</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 p-4 rounded-xl text-center border border-indigo-100">
+                    <DollarSign className="w-5 h-5 text-indigo-600 mx-auto mb-2" />
+                    <div className="text-base font-bold text-indigo-600">{formatCurrency(Number(selectedAffiliate.totalSales || 0))}</div>
+                    <div className="text-xs text-indigo-600/70 font-medium">Total Omset</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 p-4 rounded-xl text-center border border-purple-100">
+                    <Wallet className="w-5 h-5 text-purple-600 mx-auto mb-2" />
+                    <div className="text-base font-bold text-purple-600">{formatCurrency(Number(selectedAffiliate.totalEarnings))}</div>
+                    <div className="text-xs text-purple-600/70 font-medium">Total Komisi</div>
+                  </div>
+                </div>
+
+                {/* Wallet Info */}
+                {selectedAffiliate.wallet && (
+                  <div className="bg-gray-50 rounded-xl p-5">
+                    <h4 className="font-semibold mb-4 flex items-center gap-2 text-gray-700">
+                      <Wallet className="w-4 h-4" /> Informasi Wallet
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="text-xs text-gray-400 uppercase tracking-wide">Saldo Tersedia</label>
+                        <p className="text-lg font-bold text-green-600 mt-1">
+                          {formatCurrency(Number(selectedAffiliate.wallet.balance))}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="text-xs text-gray-400 uppercase tracking-wide">Saldo Pending</label>
+                        <p className="text-lg font-bold text-orange-500 mt-1">
+                          {formatCurrency(Number(selectedAffiliate.wallet.balancePending))}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="text-xs text-gray-400 uppercase tracking-wide">Total Payout</label>
+                        <p className="font-semibold text-gray-700 mt-1">{formatCurrency(Number(selectedAffiliate.wallet.totalPayout))}</p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="text-xs text-gray-400 uppercase tracking-wide">Total Earnings</label>
+                        <p className="font-semibold text-gray-700 mt-1">{formatCurrency(Number(selectedAffiliate.wallet.totalEarnings))}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Date Info */}
+                <div className="flex justify-center gap-6 text-sm text-gray-500 py-3 border-y">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>Bergabung: {formatDate(selectedAffiliate.createdAt)}</span>
                   </div>
                   {selectedAffiliate.approvedAt && (
-                    <div>
-                      <label className="text-gray-600">Disetujui</label>
-                      <p>{formatDate(selectedAffiliate.approvedAt)}</p>
+                    <div className="flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <span>Disetujui: {formatDate(selectedAffiliate.approvedAt)}</span>
                     </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-2">
+                  {!selectedAffiliate.approvedAt ? (
+                    <>
+                      <Button
+                        onClick={() => {
+                          setShowDetailModal(false)
+                          setShowApproveModal(true)
+                        }}
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 flex-1 h-11"
+                      >
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Setujui Affiliate
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          setShowDetailModal(false)
+                          setShowRejectModal(true)
+                        }}
+                        className="flex-1 h-11"
+                      >
+                        <UserX className="w-4 h-4 mr-2" />
+                        Tolak
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant={selectedAffiliate.isActive ? "destructive" : "default"}
+                      onClick={() => {
+                        handleToggleStatus(selectedAffiliate)
+                        setShowDetailModal(false)
+                      }}
+                      className={`w-full h-11 ${!selectedAffiliate.isActive ? "bg-gradient-to-r from-green-600 to-emerald-600" : ""}`}
+                    >
+                      {selectedAffiliate.isActive ? (
+                        <>
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Nonaktifkan Affiliate
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Aktifkan Affiliate
+                        </>
+                      )}
+                    </Button>
                   )}
                 </div>
               </div>
             </div>
           )}
         </DialogContent>
-      </Dialog>
-
-      {/* Approve Modal */}
+      </Dialog>      {/* Approve Modal */}
       <Dialog open={showApproveModal} onOpenChange={setShowApproveModal}>
         <DialogContent>
           <DialogHeader>

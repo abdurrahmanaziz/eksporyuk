@@ -165,9 +165,11 @@ export async function PATCH(
       isBestSeller,
       isPopular,
       isActive,
+      status,
       salesPageUrl,
       features,
-      membershipFeatures // New: Feature access configurations
+      membershipFeatures, // Legacy: Feature access configurations as objects
+      featureAccess // New: Feature access as array of string keys
     } = body
 
     // Check if plan exists
@@ -214,6 +216,7 @@ export async function PATCH(
     if (isBestSeller !== undefined) updateData.isBestSeller = isBestSeller
     if (isPopular !== undefined) updateData.isPopular = isPopular
     if (isActive !== undefined) updateData.isActive = isActive
+    if (status !== undefined) updateData.status = status
     if (salesPageUrl !== undefined) updateData.salesPageUrl = salesPageUrl?.trim() || null
     if (features !== undefined) updateData.features = features
 
@@ -233,22 +236,38 @@ export async function PATCH(
       }
     })
 
-    // Update membership feature access if provided
-    if (membershipFeatures !== undefined && Array.isArray(membershipFeatures)) {
+    // Update membership feature access if provided (supports both formats)
+    const featuresToUpdate = featureAccess || membershipFeatures
+    if (featuresToUpdate !== undefined && Array.isArray(featuresToUpdate)) {
       // Delete existing features
       await prisma.membershipFeatureAccess.deleteMany({
         where: { membershipId: id }
       })
       
       // Create new features
-      if (membershipFeatures.length > 0) {
-        await prisma.membershipFeatureAccess.createMany({
-          data: membershipFeatures.map((f: any) => ({
+      if (featuresToUpdate.length > 0) {
+        // Handle both string array and object array formats
+        const featureData = featuresToUpdate.map((f: any) => {
+          // If string, convert to object
+          if (typeof f === 'string') {
+            return {
+              membershipId: id,
+              featureKey: f,
+              enabled: true,
+              value: null
+            }
+          }
+          // If object, use as is
+          return {
             membershipId: id,
             featureKey: f.featureKey,
             enabled: f.enabled !== false,
             value: f.value || null
-          }))
+          }
+        })
+        
+        await prisma.membershipFeatureAccess.createMany({
+          data: featureData
         })
       }
     }

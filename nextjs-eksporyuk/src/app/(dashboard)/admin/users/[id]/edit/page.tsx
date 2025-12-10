@@ -1,19 +1,20 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import {
   ArrowLeft, User, Mail, Phone, Crown, UserCog, Share2, Shield, Save, Loader2,
   CheckCircle, XCircle, Wallet, Users, AlertTriangle, ToggleLeft, ToggleRight,
-  Key, Lock, Ban, RefreshCw, Copy, Eye, EyeOff, Plus, Minus, AlertCircle
+  Key, Lock, Ban, RefreshCw, Copy, Eye, EyeOff, Plus, Minus, AlertCircle,
+  Package, ArrowUpRight
 } from 'lucide-react'
 
 type UserRole = { id: string; role: string; createdAt: string }
 
 type UserDetail = {
-  id: string; name: string; email: string; phone: string | null; whatsapp: string | null
+  id: string; memberCode: string | null; name: string; email: string; phone: string | null; whatsapp: string | null
   role: string; avatar: string | null; bio: string | null; emailVerified: boolean
   isActive: boolean; isSuspended: boolean; suspendReason: string | null
   suspendedAt: string | null; suspendedBy: string | null; isFounder: boolean
@@ -35,8 +36,9 @@ const ROLES = [
   { value: 'MEMBER_FREE', label: 'Member Free', icon: User, color: 'text-gray-600', bgColor: 'bg-gray-50' }
 ]
 
-export default function AdminUserEditPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params)
+export default function AdminUserEditPage() {
+  const params = useParams()
+  const userId = params.id as string
   const router = useRouter()
   const { data: session, status } = useSession()
   const [user, setUser] = useState<UserDetail | null>(null)
@@ -70,7 +72,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
   const fetchUser = async () => {
     try {
       setLoading(true); setError('')
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}`)
+      const res = await fetch(`/api/admin/users/${userId}`)
       if (!res.ok) {
         if (res.status === 404) { setError('User tidak ditemukan'); return }
         throw new Error('Failed to fetch user')
@@ -92,12 +94,12 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role === 'ADMIN') fetchUser()
-  }, [status, session, resolvedParams.id])
+  }, [status, session, userId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true); setError(''); setSuccess('')
     try {
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}`, {
+      const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
@@ -125,7 +127,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
   const handleResetPassword = async () => {
     setPasswordLoading(true)
     try {
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}/reset-password`, { method: 'POST' })
+      const res = await fetch(`/api/admin/users/${userId}/reset-password`, { method: 'POST' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setGeneratedPassword(data.newPassword)
@@ -139,7 +141,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
     if (!newPassword || newPassword.length < 6) { setError('Password minimal 6 karakter'); return }
     setPasswordLoading(true)
     try {
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}/set-password`, {
+      const res = await fetch(`/api/admin/users/${userId}/set-password`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword })
       })
@@ -156,7 +158,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
     if (action === 'suspend' && !suspendReason) { setError('Alasan suspend harus diisi'); return }
     setSuspendLoading(true)
     try {
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}/suspend`, {
+      const res = await fetch(`/api/admin/users/${userId}/suspend`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, reason: suspendReason })
       })
@@ -173,7 +175,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
     if (!selectedRole) { setError('Pilih role terlebih dahulu'); return }
     setRoleLoading(true)
     try {
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}/change-role`, {
+      const res = await fetch(`/api/admin/users/${userId}/change-role`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: selectedRole, action: roleAction })
       })
@@ -190,7 +192,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
     const newValue = !formData.affiliateMenuEnabled
     setFormData({ ...formData, affiliateMenuEnabled: newValue })
     try {
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}`, {
+      const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, affiliateMenuEnabled: newValue })
       })
@@ -252,7 +254,12 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
                 {user.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold text-gray-900">Edit User: {user.name}</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-2xl font-bold text-gray-900">Edit User: {user.name}</h1>
+                  <span className="px-3 py-1.5 text-sm font-mono font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full shadow-lg animate-pulse">
+                    ID: {user.memberCode || 'NO-CODE'}
+                  </span>
+                </div>
                 <p className="text-gray-500">{user.email}</p>
               </div>
               {user.isSuspended && (
@@ -562,6 +569,42 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
                   <div className="flex justify-between"><span className="text-gray-500">Bergabung</span>
                     <span className="text-sm">{new Date(user.createdAt).toLocaleDateString('id-ID')}</span></div>
                 </div>
+              </div>
+
+              {/* Kelola Paket Membership Card */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border border-purple-200 p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                    <Package className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Kelola Paket</h3>
+                    <p className="text-sm text-gray-600">Upgrade atau ganti membership</p>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl border border-purple-200 p-4 mb-4">
+                  <p className="text-sm text-gray-600 mb-1">Membership Aktif</p>
+                  {user._count.userMemberships > 0 ? (
+                    <p className="font-semibold text-purple-700">{user._count.userMemberships} paket aktif</p>
+                  ) : (
+                    <p className="text-gray-500 italic">Belum ada membership</p>
+                  )}
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={() => router.push(`/admin/users/${userId}/memberships`)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition font-medium"
+                >
+                  <Crown className="w-5 h-5" />
+                  Kelola Paket Membership
+                  <ArrowUpRight className="w-4 h-4" />
+                </button>
+                
+                <p className="mt-3 text-xs text-purple-700 text-center">
+                  Upgrade ke Premium 6 Bulan, 12 Bulan, atau Lifetime
+                </p>
               </div>
             </div>
           </div>

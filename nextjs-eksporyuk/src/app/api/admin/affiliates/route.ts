@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: [
-          { approvedAt: 'asc' }, // Pending first
+          { totalEarnings: 'desc' }, // Highest earners first
           { createdAt: 'desc' },
         ],
         skip,
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       prisma.affiliateProfile.count({ where }),
     ])
 
-    // 5. Get wallet data for each affiliate
+    // 5. Get wallet data for each affiliate (use data from AffiliateProfile)
     const affiliatesWithWallet = await Promise.all(
       affiliates.map(async (affiliate) => {
         const wallet = await prisma.wallet.findUnique({
@@ -101,9 +101,11 @@ export async function GET(request: NextRequest) {
           },
         })
 
+        // Use data from AffiliateProfile (already synced from WordPress)
         return {
           ...affiliate,
           wallet,
+          // Keep totalEarnings and totalConversions from AffiliateProfile
         }
       })
     )
@@ -141,7 +143,7 @@ async function calculateAffiliateStats() {
     totalAffiliates,
     activeAffiliates,
     pendingApproval,
-    totalEarningsData,
+    affiliateEarningsData,
     pendingPayoutsData,
     totalPayoutsData,
   ] = await Promise.all([
@@ -151,7 +153,6 @@ async function calculateAffiliateStats() {
     // Active affiliates (approved and active)
     prisma.affiliateProfile.count({
       where: {
-        approvedAt: { not: null },
         isActive: true,
       },
     }),
@@ -159,14 +160,15 @@ async function calculateAffiliateStats() {
     // Pending approval
     prisma.affiliateProfile.count({
       where: {
-        approvedAt: null,
+        isActive: false,
       },
     }),
     
-    // Total earnings (sum of all affiliate conversions)
-    prisma.affiliateConversion.aggregate({
+    // Total earnings from AffiliateProfile (synced from WordPress)
+    prisma.affiliateProfile.aggregate({
       _sum: {
-        commissionAmount: true,
+        totalEarnings: true,
+        totalSales: true,
       },
     }),
     
@@ -200,7 +202,8 @@ async function calculateAffiliateStats() {
     totalAffiliates,
     activeAffiliates,
     pendingApproval,
-    totalEarnings: Number(totalEarningsData._sum.commissionAmount || 0),
+    totalEarnings: Number(affiliateEarningsData._sum.totalEarnings || 0),
+    totalSales: Number(affiliateEarningsData._sum.totalSales || 0),
     pendingPayouts: Number(pendingPayoutsData._sum.balance || 0),
     totalPayouts: Number(totalPayoutsData._sum.amount || 0),
   }

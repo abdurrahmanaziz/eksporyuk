@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
@@ -65,8 +65,8 @@ interface Event {
   soldCount?: number
 }
 
-export default function EventDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = use(params)
+export default function EventDetailPage({ params }: { params: { slug: string } }) {
+  const resolvedParams = params
   const router = useRouter()
   const { data: session } = useSession()
   const [event, setEvent] = useState<Event | null>(null)

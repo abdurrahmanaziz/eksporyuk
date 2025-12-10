@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
@@ -315,8 +315,8 @@ const channelIcons: Record<string, React.ReactNode> = {
   'IN_APP': <MessageSquare className="h-4 w-4" />,
 }
 
-export default function CourseRemindersPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params)
+export default function CourseRemindersPage({ params }: { params: { id: string } }) {
+  const resolvedParams = params
   const router = useRouter()
   const [course, setCourse] = useState<Course | null>(null)
   const [reminders, setReminders] = useState<CourseReminder[]>([])

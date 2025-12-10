@@ -22,6 +22,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import MailketingListSelector from '@/components/admin/MailketingListSelector'
 
+type MembershipStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+
 interface MembershipPlan {
   id: string
   name: string
@@ -35,6 +37,7 @@ interface MembershipPlan {
   followUpMessages: any
   affiliateCommission: number
   isActive: boolean
+  status: MembershipStatus
   _count: {
     userMemberships: number
     membershipGroups: number
@@ -152,6 +155,11 @@ export default function MembershipPlansPage() {
       const response = await fetch('/api/admin/membership-plans')
       if (response.ok) {
         const data = await response.json()
+        // Debug: Log status field for each plan
+        console.log('=== Plans Status Debug ===')
+        data.plans?.forEach((p: any) => {
+          console.log(`${p.name}: status=${p.status}`)
+        })
         setPlans(data.plans || [])
       } else {
         toast.error('Gagal memuat paket membership')
@@ -701,8 +709,14 @@ export default function MembershipPlansPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge className={plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                      {plan.isActive ? 'AKTIF' : 'NONAKTIF'}
+                    <Badge className={
+                      (plan.status || 'PUBLISHED') === 'PUBLISHED' ? 'bg-green-100 text-green-800 border border-green-300' :
+                      (plan.status || 'PUBLISHED') === 'DRAFT' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                      'bg-gray-100 text-gray-800 border border-gray-300'
+                    }>
+                      {(plan.status || 'PUBLISHED') === 'PUBLISHED' ? '✅ PUBLISHED' :
+                       (plan.status || 'PUBLISHED') === 'DRAFT' ? '📝 DRAFT' :
+                       '📦 ARCHIVED'}
                     </Badge>
                   </TableCell>
                   <TableCell>

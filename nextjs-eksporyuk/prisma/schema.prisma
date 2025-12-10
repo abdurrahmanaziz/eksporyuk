@@ -10,6 +10,7 @@ datasource db {
 
 model User {
   id                      String                       @id @default(cuid())
+  memberCode              String?                      @unique // Format: EY0001, EY0002, dst
   email                   String                       @unique
   username                String?                      @unique
   name                    String
@@ -226,6 +227,7 @@ model AffiliateProfile {
   commissionRate        Decimal                      @default(10)
   totalClicks           Int                          @default(0)
   totalConversions      Int                          @default(0)
+  totalSales            Decimal                      @default(0) // Total omset dari sales
   totalEarnings         Decimal                      @default(0)
   isActive              Boolean                      @default(true)
   applicationStatus     String                       @default("PENDING")
@@ -448,6 +450,7 @@ model Membership {
   isPopular               Boolean                @default(false)
   isMostPopular           Boolean                @default(false)
   isActive                Boolean                @default(true)
+  status                  MembershipStatus       @default(PUBLISHED)
   salesPageUrl            String?
   alternativeUrl          String?
   reminders               Json?
@@ -476,6 +479,7 @@ model Membership {
 
   @@index([duration])
   @@index([isActive])
+  @@index([status])
 }
 
 model MembershipGroup {
@@ -3794,6 +3798,12 @@ enum MembershipDuration {
   LIFETIME
 }
 
+enum MembershipStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 enum TransactionStatus {
   PENDING
   SUCCESS
@@ -4262,5 +4272,21 @@ model DocumentationRevision {
   @@index([documentationId])
   @@index([changedById])
   @@index([version])
+}
+
+// PasswordResetToken - Token untuk reset password flow
+// Digunakan saat forgot password dan reset password
+model PasswordResetToken {
+  id              String    @id @default(cuid())
+  email           String
+  token           String    @unique
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+  used            Boolean   @default(false)
+  usedAt          DateTime?
+  
+  @@index([email])
+  @@index([token])
+  @@index([expiresAt])
 }
 

@@ -24,10 +24,55 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Loader2, Bell, Package, Info, Check } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Bell, Package, Info, Check, Database, MessageCircle, FileText, Users, Wallet, GraduationCap, BarChart3, Megaphone, Calendar, Globe, Shield, Zap } from "lucide-react";
 import { toast } from "sonner";
+
+// Feature definitions for membership
+const MEMBERSHIP_FEATURE_OPTIONS = [
+  // Keuangan
+  { key: 'wallet_access', name: 'Akses Dompet', description: 'Akses fitur dompet digital & withdrawal', category: 'Keuangan', icon: Wallet },
+  { key: 'revenue_share', name: 'Bagi Hasil', description: 'Aktifkan bagi hasil revenue', category: 'Keuangan', icon: Wallet },
+  
+  // Pendidikan
+  { key: 'course_access', name: 'Akses Kursus', description: 'Akses kursus dengan sertifikat', category: 'Pendidikan', icon: GraduationCap },
+  { key: 'webinar_access', name: 'Akses Webinar', description: 'Akses webinar live & recording', category: 'Pendidikan', icon: GraduationCap },
+  { key: 'mentoring_access', name: 'Akses Mentoring', description: 'Sesi mentoring 1-on-1', category: 'Pendidikan', icon: GraduationCap },
+  { key: 'certificate_access', name: 'Akses Sertifikat', description: 'Download sertifikat', category: 'Pendidikan', icon: GraduationCap },
+  
+  // Database Ekspor
+  { key: 'database_buyer', name: 'Database Buyer', description: 'Akses database buyer/importir', category: 'Database', icon: Database },
+  { key: 'database_supplier', name: 'Database Supplier', description: 'Akses database supplier', category: 'Database', icon: Database },
+  { key: 'database_forwarder', name: 'Database Forwarder', description: 'Akses database forwarder', category: 'Database', icon: Database },
+  { key: 'database_export', name: 'Export Database', description: 'Export database ke CSV/Excel', category: 'Database', icon: Database },
+  
+  // Komunitas & Chat
+  { key: 'chat_access', name: 'Akses Chat', description: 'Akses chat DM & grup', category: 'Komunitas', icon: MessageCircle },
+  { key: 'community_access', name: 'Akses Komunitas', description: 'Akses feed, post, komentar', category: 'Komunitas', icon: Users },
+  { key: 'group_access', name: 'Akses Grup', description: 'Akses grup private/public', category: 'Komunitas', icon: Users },
+  { key: 'member_directory', name: 'Direktori Member', description: 'Akses direktori member', category: 'Komunitas', icon: Users },
+  
+  // Dokumen
+  { key: 'document_templates', name: 'Template Dokumen', description: 'Akses template dokumen ekspor', category: 'Dokumen', icon: FileText },
+  { key: 'document_generator', name: 'Generator Dokumen', description: 'Generate dokumen dengan auto-fill', category: 'Dokumen', icon: FileText },
+  
+  // Marketing & Affiliate
+  { key: 'affiliate_access', name: 'Akses Affiliate', description: 'Jadi affiliate & dapat komisi', category: 'Marketing', icon: Megaphone },
+  { key: 'marketing_kit', name: 'Kit Marketing', description: 'Akses banner, copy, assets', category: 'Marketing', icon: Megaphone },
+  
+  // Event
+  { key: 'event_access', name: 'Akses Event', description: 'Akses semua event', category: 'Event', icon: Calendar },
+  
+  // Analitik
+  { key: 'analytics_access', name: 'Akses Analitik', description: 'Dashboard analitik & laporan', category: 'Analitik', icon: BarChart3 },
+  
+  // Fitur Lanjutan
+  { key: 'priority_support', name: 'Support Prioritas', description: 'Dukungan prioritas', category: 'Premium', icon: Shield },
+  { key: 'early_access', name: 'Akses Awal', description: 'Akses fitur beta', category: 'Premium', icon: Zap },
+  { key: 'premium_content', name: 'Konten Premium', description: 'Akses konten eksklusif', category: 'Premium', icon: Zap },
+];
+
+const FEATURE_CATEGORIES = ['Keuangan', 'Pendidikan', 'Database', 'Komunitas', 'Dokumen', 'Marketing', 'Event', 'Analitik', 'Premium'];
 
 interface Course {
   id: string;
@@ -57,6 +102,7 @@ export default function EditMembershipPlanPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [selectedFeatureAccess, setSelectedFeatureAccess] = useState<string[]>([]);
 
     // Form state
   const [formData, setFormData] = useState({
@@ -89,6 +135,7 @@ export default function EditMembershipPlanPage() {
     autoRenewal: true,
     trialDays: 0,
     isVisible: true,
+    isActive: true, // For Draft/Active status - this is the main status field
     showInGeneralCheckout: true,
   });
 
@@ -172,8 +219,15 @@ export default function EditMembershipPlanPage() {
         autoRenewal: membership.autoRenewal ?? true,
         trialDays: membership.trialDays || 0,
         isVisible: membership.isVisible ?? true,
+        isActive: membership.isActive ?? true,
         showInGeneralCheckout: membership.showInGeneralCheckout ?? true,
       });
+      
+      // Load enabled feature access
+      const enabledFeatures = membership.membershipFeatures
+        ?.filter((f: any) => f.enabled)
+        ?.map((f: any) => f.featureKey) || [];
+      setSelectedFeatureAccess(enabledFeatures);
       
     } catch (error: any) {
       toast.error(error.message || "Gagal load data membership");
@@ -232,7 +286,10 @@ export default function EditMembershipPlanPage() {
       const response = await fetch(`/api/admin/membership-plans/${membershipId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          featureAccess: selectedFeatureAccess, // Include selected feature access
+        }),
       });
 
       const data = await response.json();
@@ -288,6 +345,27 @@ export default function EditMembershipPlanPage() {
       ...formData,
       benefits: currentBenefits.filter((_, i) => i !== index),
     });
+  };
+
+  const toggleFeatureAccess = (featureKey: string) => {
+    setSelectedFeatureAccess(prev => 
+      prev.includes(featureKey)
+        ? prev.filter(k => k !== featureKey)
+        : [...prev, featureKey]
+    );
+  };
+
+  const selectAllFeaturesInCategory = (category: string) => {
+    const categoryFeatures = MEMBERSHIP_FEATURE_OPTIONS
+      .filter(f => f.category === category)
+      .map(f => f.key);
+    const allSelected = categoryFeatures.every(f => selectedFeatureAccess.includes(f));
+    
+    if (allSelected) {
+      setSelectedFeatureAccess(prev => prev.filter(f => !categoryFeatures.includes(f)));
+    } else {
+      setSelectedFeatureAccess(prev => [...new Set([...prev, ...categoryFeatures])]);
+    }
   };
 
   const toggleCourse = (courseId: string) => {
@@ -573,12 +651,15 @@ export default function EditMembershipPlanPage() {
                         {courses.map((course) => (
                           <div
                             key={course.id}
-                            className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md"
+                            className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md cursor-pointer"
+                            onClick={() => toggleCourse(course.id)}
                           >
-                            <Checkbox
+                            <input
+                              type="checkbox"
                               id={`course-${course.id}`}
                               checked={formData.courses.includes(course.id)}
-                              onCheckedChange={() => toggleCourse(course.id)}
+                              onChange={() => {}}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                             />
                             <Label
                               htmlFor={`course-${course.id}`}
@@ -608,12 +689,15 @@ export default function EditMembershipPlanPage() {
                         {products.map((product) => (
                           <div
                             key={product.id}
-                            className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md"
+                            className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md cursor-pointer"
+                            onClick={() => toggleProduct(product.id)}
                           >
-                            <Checkbox
+                            <input
+                              type="checkbox"
                               id={`product-${product.id}`}
                               checked={formData.products.includes(product.id)}
-                              onCheckedChange={() => toggleProduct(product.id)}
+                              onChange={() => {}}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                             />
                             <Label
                               htmlFor={`product-${product.id}`}
@@ -636,16 +720,118 @@ export default function EditMembershipPlanPage() {
 
           {/* Tab 4: Benefits */}
           <TabsContent value="benefits" className="space-y-4">
+            {/* Feature Access Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Fitur & Benefit</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Akses Fitur Membership
+                </CardTitle>
                 <CardDescription>
-                  Daftar fitur dan benefit untuk member
+                  Pilih fitur yang tersedia untuk member paket ini. Fitur yang dicentang akan otomatis aktif saat member bergabung.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-blue-800">
+                      {selectedFeatureAccess.length} dari {MEMBERSHIP_FEATURE_OPTIONS.length} fitur dipilih
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedFeatureAccess(MEMBERSHIP_FEATURE_OPTIONS.map(f => f.key))}
+                    >
+                      Pilih Semua
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedFeatureAccess([])}
+                    >
+                      Hapus Semua
+                    </Button>
+                  </div>
+                </div>
+
+                {FEATURE_CATEGORIES.map((category) => {
+                  const categoryFeatures = MEMBERSHIP_FEATURE_OPTIONS.filter(f => f.category === category);
+                  const selectedCount = categoryFeatures.filter(f => selectedFeatureAccess.includes(f.key)).length;
+                  
+                  return (
+                    <div key={category} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold text-sm">{category}</h4>
+                          <Badge variant="secondary" className="text-xs">
+                            {selectedCount}/{categoryFeatures.length}
+                          </Badge>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-7"
+                          onClick={() => selectAllFeaturesInCategory(category)}
+                        >
+                          {selectedCount === categoryFeatures.length ? 'Hapus Semua' : 'Pilih Semua'}
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {categoryFeatures.map((feature) => {
+                          const IconComponent = feature.icon;
+                          const isSelected = selectedFeatureAccess.includes(feature.key);
+                          return (
+                            <div
+                              key={feature.key}
+                              className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                isSelected 
+                                  ? 'bg-green-50 border-green-300 shadow-sm' 
+                                  : 'bg-white border-gray-200 hover:bg-gray-50'
+                              }`}
+                              onClick={() => toggleFeatureAccess(feature.key)}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {}}
+                                className="mt-1 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <IconComponent className={`h-4 w-4 ${isSelected ? 'text-green-600' : 'text-gray-400'}`} />
+                                  <span className={`font-medium text-sm ${isSelected ? 'text-green-800' : 'text-gray-700'}`}>
+                                    {feature.name}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-0.5">{feature.description}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+            {/* Text Features & Benefits Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Fitur & Benefit Teks</CardTitle>
+                <CardDescription>
+                  Tambahkan fitur dan benefit dalam bentuk teks untuk ditampilkan di halaman checkout
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-3">
-                  <Label>Features</Label>
+                  <Label>Features (Teks)</Label>
                   <div className="flex gap-2">
                     <Input
                       value={featureInput}
@@ -673,7 +859,7 @@ export default function EditMembershipPlanPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Benefits</Label>
+                  <Label>Benefits (Teks)</Label>
                   <div className="flex gap-2">
                     <Input
                       value={benefitInput}
@@ -976,6 +1162,83 @@ export default function EditMembershipPlanPage() {
 
           {/* Tab 7: Settings */}
           <TabsContent value="settings" className="space-y-4">
+            {/* Status Card - Most Important */}
+            <Card className={`border-2 ${
+              formData.status === 'PUBLISHED' ? 'border-green-500 bg-green-50' : 
+              formData.status === 'DRAFT' ? 'border-yellow-500 bg-yellow-50' :
+              'border-gray-500 bg-gray-50'
+            }`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {formData.status === 'PUBLISHED' ? (
+                    <>
+                      <Check className="h-5 w-5 text-green-600" />
+                      <span className="text-green-700">Status: PUBLISHED</span>
+                    </>
+                  ) : formData.status === 'DRAFT' ? (
+                    <>
+                      <Info className="h-5 w-5 text-yellow-600" />
+                      <span className="text-yellow-700">Status: DRAFT</span>
+                    </>
+                  ) : (
+                    <>
+                      <Info className="h-5 w-5 text-gray-600" />
+                      <span className="text-gray-700">Status: ARCHIVED</span>
+                    </>
+                  )}
+                </CardTitle>
+                <CardDescription className={
+                  formData.status === 'PUBLISHED' ? 'text-green-600' : 
+                  formData.status === 'DRAFT' ? 'text-yellow-600' :
+                  'text-gray-600'
+                }>
+                  {formData.status === 'PUBLISHED' 
+                    ? 'Membership ini aktif dan bisa diakses oleh user di halaman checkout'
+                    : formData.status === 'DRAFT'
+                    ? 'Membership ini dalam mode draft dan tidak akan tampil di halaman publik'
+                    : 'Membership ini diarsipkan dan tidak akan tampil di halaman publik'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Status Membership</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, status: value, isActive: value === 'PUBLISHED' })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Pilih status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DRAFT">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                          DRAFT - Tidak tampil di checkout
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="PUBLISHED">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                          PUBLISHED - Aktif dan tampil di checkout
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="ARCHIVED">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-gray-500"></span>
+                          ARCHIVED - Diarsipkan (tidak tampil)
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Hanya membership dengan status PUBLISHED yang akan tampil di halaman checkout publik
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Advanced Settings</CardTitle>
@@ -1001,21 +1264,6 @@ export default function EditMembershipPlanPage() {
                   <p className="text-sm text-muted-foreground">
                     0 = unlimited members
                   </p>
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label>Visibility</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Tampilkan membership di halaman publik
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.isVisible}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, isVisible: checked })
-                    }
-                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 border rounded-lg">

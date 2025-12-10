@@ -29,6 +29,7 @@ export async function GET(
       where: { id },
       select: {
         id: true,
+        memberCode: true,
         name: true,
         email: true,
         phone: true,

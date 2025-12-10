@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
@@ -60,8 +60,8 @@ interface Event {
   };
 }
 
-export default function CommunityEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
+export default function CommunityEventDetailPage({ params }: { params: { id: string } }) {
+  const resolvedParams = params;
   const { data: session } = useSession();
   const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);

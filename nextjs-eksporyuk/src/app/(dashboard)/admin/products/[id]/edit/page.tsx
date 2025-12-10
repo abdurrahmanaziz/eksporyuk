@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
@@ -87,8 +87,8 @@ interface Group {
   slug: string
 }
 
-export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params)
+export default function EditProductPage({ params }: { params: { id: string } }) {
+  const resolvedParams = params
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

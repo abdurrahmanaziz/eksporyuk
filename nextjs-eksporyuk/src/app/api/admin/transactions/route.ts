@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
           select: {
             name: true,
             email: true,
+            memberCode: true,
           },
         },
         membership: {
@@ -67,6 +68,25 @@ export async function GET(request: NextRequest) {
         course: {
           select: {
             title: true,
+          },
+        },
+        coupon: {
+          select: {
+            code: true,
+          },
+        },
+        affiliateConversion: {
+          include: {
+            affiliate: {
+              include: {
+                user: {
+                  select: {
+                    name: true,
+                    memberCode: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

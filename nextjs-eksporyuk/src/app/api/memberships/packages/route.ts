@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const memberships = await prisma.membership.findMany({
       where: includeInactive ? {} : { 
         isActive: true,
+        status: 'PUBLISHED', // Only show PUBLISHED memberships in public checkout
         NOT: {
           slug: 'pro' // Exclude "Paket Pro" - ini hanya untuk admin/redirect
         }

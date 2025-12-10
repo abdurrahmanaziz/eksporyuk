@@ -19,6 +19,23 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 type LessonFile = {
   id: string
@@ -68,6 +85,77 @@ type Course = {
   isAffiliateTraining?: boolean
   isAffiliateMaterial?: boolean
   modules: Module[]
+}
+
+// Sortable Lesson Item Component
+interface SortableLessonProps {
+  lesson: Lesson
+  lessonIndex: number
+  module: Module
+  onEdit: (module: Module, lesson: Lesson) => void
+  onDelete: (moduleId: string, lessonId: string) => void
+}
+
+function SortableLessonItem({ lesson, lessonIndex, module, onEdit, onDelete }: SortableLessonProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lesson.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 bg-background ${isDragging ? 'shadow-lg ring-2 ring-primary' : ''}`}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing touch-none"
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <PlayCircle className="h-5 w-5 text-primary" />
+        <div>
+          <div className="font-medium">
+            Lesson {lessonIndex + 1}: {lesson.title}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {formatDuration(lesson.duration)}
+            {lesson.isFree && <Badge variant="outline" className="ml-2">Gratis</Badge>}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onEdit(module, lesson)}
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => onDelete(module.id, lesson.id)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
 }
 
 // Helper functions for duration conversion
@@ -403,6 +491,71 @@ export default function AdminCourseDetailPage() {
       }
     } catch (error) {
       console.error('Delete lesson error:', error)
+      toast.error('Terjadi kesalahan')
+    }
+  }
+
+  // DnD Kit sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  // Handle lesson reorder via drag and drop
+  const handleLessonDragEnd = async (event: DragEndEvent, moduleId: string) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id) return
+
+    const module = modules.find(m => m.id === moduleId)
+    if (!module) return
+
+    const oldIndex = module.lessons.findIndex(l => l.id === active.id)
+    const newIndex = module.lessons.findIndex(l => l.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) return
+
+    // Optimistically update UI
+    const newLessons = arrayMove(module.lessons, oldIndex, newIndex)
+    const updatedModules = modules.map(m => 
+      m.id === moduleId 
+        ? { ...m, lessons: newLessons.map((l, idx) => ({ ...l, order: idx + 1 })) }
+        : m
+    )
+    setModules(updatedModules)
+
+    // Save to server
+    try {
+      const lessonOrders = newLessons.map((lesson, index) => ({
+        id: lesson.id,
+        order: index + 1
+      }))
+
+      const res = await fetch(
+        `/api/admin/courses/${courseId}/modules/${moduleId}/lessons/reorder`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessons: lessonOrders })
+        }
+      )
+
+      if (res.ok) {
+        toast.success('Urutan lesson berhasil diupdate')
+      } else {
+        // Revert on error
+        await fetchCourse()
+        toast.error('Gagal mengupdate urutan lesson')
+      }
+    } catch (error) {
+      console.error('Reorder lessons error:', error)
+      await fetchCourse()
       toast.error('Terjadi kesalahan')
     }
   }
@@ -985,47 +1138,32 @@ export default function AdminCourseDetailPage() {
                           Belum ada lesson. Klik "+ Lesson" untuk menambahkan.
                         </p>
                       ) : (
-                        <div className="space-y-2">
-                          {module.lessons.map((lesson, lessonIndex) => (
-                            <div
-                              key={lesson.id}
-                              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                            >
-                              <div className="flex items-center gap-3">
-                                <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                                <PlayCircle className="h-5 w-5 text-primary" />
-                                <div>
-                                  <div className="font-medium">
-                                    Lesson {lessonIndex + 1}: {lesson.title}
-                                  </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {formatDuration(lesson.duration)}
-                                    {lesson.isFree && <Badge variant="outline" className="ml-2">Gratis</Badge>}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedModule(module)
-                                    setEditingLesson(lesson)
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={(event) => handleLessonDragEnd(event, module.id)}
+                        >
+                          <SortableContext
+                            items={module.lessons.map(l => l.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="space-y-2">
+                              {module.lessons.map((lesson, lessonIndex) => (
+                                <SortableLessonItem
+                                  key={lesson.id}
+                                  lesson={lesson}
+                                  lessonIndex={lessonIndex}
+                                  module={module}
+                                  onEdit={(mod, les) => {
+                                    setSelectedModule(mod)
+                                    setEditingLesson(les)
                                   }}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeleteLesson(module.id, lesson.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
+                                  onDelete={handleDeleteLesson}
+                                />
+                              ))}
                             </div>
-                          ))}
-                        </div>
+                          </SortableContext>
+                        </DndContext>
                       )}
                     </CardContent>
                   </Card>

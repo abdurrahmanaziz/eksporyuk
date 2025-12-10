@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import bcryptjs from 'bcryptjs'
+import { getNextMemberCode } from '@/lib/member-code'
 
 // GET - Fetch all users with filters
 export async function GET(request: NextRequest) {
@@ -50,11 +51,12 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {};
 
-    // Search by name or email
+    // Search by name or email or memberCode
     if (search) {
       where.OR = [
         { name: { contains: search } },
         { email: { contains: search } },
+        { memberCode: { contains: search.toUpperCase() } },
       ];
     }
 
@@ -140,6 +142,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: user.id,
+        memberCode: user.memberCode,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -223,6 +226,9 @@ export async function POST(request: Request) {
     const validRoles = ['ADMIN', 'MENTOR', 'AFFILIATE', 'MEMBER_PREMIUM', 'MEMBER_FREE']
     const userRole = role && validRoles.includes(role) ? role : 'MEMBER_FREE'
 
+    // Generate member code
+    const memberCode = await getNextMemberCode()
+
     // Create user
     const newUser = await prisma.user.create({
       data: {
@@ -231,6 +237,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         role: userRole,
         isActive: isActive !== undefined ? isActive : true,
+        memberCode,
       },
     })
 

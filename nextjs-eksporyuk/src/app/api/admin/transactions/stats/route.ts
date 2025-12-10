@@ -48,6 +48,34 @@ export async function GET(request: NextRequest) {
     // Total transactions (all statuses)
     const totalTransactions = await prisma.transaction.count({ where })
 
+    // Transaction counts by status
+    const successTransactions = await prisma.transaction.count({
+      where: { ...where, status: 'SUCCESS' },
+    })
+    const failedTransactions = await prisma.transaction.count({
+      where: { ...where, status: 'FAILED' },
+    })
+    const pendingTransactions = await prisma.transaction.count({
+      where: { ...where, status: 'PENDING' },
+    })
+
+    // Total discounts given
+    const discountData = await prisma.transaction.aggregate({
+      where: { ...where, status: 'SUCCESS' },
+      _sum: { discountAmount: true },
+    })
+
+    // Total affiliate commissions
+    const commissionData = await prisma.affiliateConversion.aggregate({
+      _sum: { commissionAmount: true },
+    })
+    
+    // Pending affiliate commissions (not paid out)
+    const pendingCommissionData = await prisma.affiliateConversion.aggregate({
+      where: { paidOut: false },
+      _sum: { commissionAmount: true },
+    })
+
     // Average order value
     const averageOrderValue =
       totalSales > 0 ? Number(revenueData._sum.amount || 0) / totalSales : 0
@@ -57,6 +85,12 @@ export async function GET(request: NextRequest) {
       totalRevenue: Number(revenueData._sum.amount || 0),
       totalTransactions,
       averageOrderValue: Math.round(averageOrderValue),
+      successTransactions,
+      failedTransactions,
+      pendingTransactions,
+      totalDiscount: Number(discountData._sum.discountAmount || 0),
+      totalCommissions: Number(commissionData._sum.commissionAmount || 0),
+      pendingCommissions: Number(pendingCommissionData._sum.commissionAmount || 0),
     })
   } catch (error) {
     console.error('Error fetching transaction stats:', error)

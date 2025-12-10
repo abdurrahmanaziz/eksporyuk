@@ -1,0 +1,1754 @@
+{
+  "courses": [
+    {
+      "wp_id": 8692,
+      "title": "KELAS WEBSITE EKSPOR",
+      "slug": "kelas-website-ekspor",
+      "description": "",
+      "thumbnail": "https://member.eksporyuk.com/wp-content/uploads/2025/02/Kelas-Website-Ekspor.png",
+      "price": 0,
+      "level": "BEGINNER",
+      "modules": [
+        {
+          "wp_id": 8822,
+          "title": "Kelas Website Ekspor",
+          "description": null,
+          "order": 1,
+          "lessons": [
+            {
+              "wp_id": 11942,
+              "title": "Cara Akses Hosting di Domosquare & Aktivasi SSL (New 2024)",
+              "content": "<p><strong>FREE HOSTING 3 BULAN.</strong></p><p>Kerjasama EKSPOR YUK x DOMOSQUARE</p><p>Order hosting disini bebas pilihan khusus member ekspor yuk.</p><p>Free 3 bulan pertama, setelah bisa bayar per 3 bulan.</p><p>Order disini <a href=\"https://www.domosquare.com/partner/eksporyuk/\" target=\"_blank\" rel=\"noopener\">https://www.domosquare.com/partner/eksporyuk/</a></p><p>Semoga bermanfaat 😊</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=OuLkQ4qox1w",
+              "duration": 4,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8840,
+              "title": "Cara Klaim Hosting Free 3 bulan di Domosquare (New)",
+              "content": "<p><strong>FREE HOSTING 3 BULAN.</strong></p><p>Kerjasama EKSPOR YUK x DOMOSQUARE</p><p>Order hosting disini bebas pilihan khusus member ekspor yuk.</p><p>Free 3 bulan pertama, setelah bisa bayar per 3 bulan.</p><p>Order disini <a href=\"https://www.domosquare.com/partner/eksporyuk/\" target=\"_blank\" rel=\"noopener\">https://www.domosquare.com/partner/eksporyuk/</a></p><p>Semoga bermanfaat 😊</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=dBF2GXK4Nng",
+              "duration": 9,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8838,
+              "title": "Istilah Dalam Website Ekspor",
+              "content": "<p>Dalam Video ini anda akan belajar tentang <strong>Istilah Dalam Website Ekspor</strong></p><p><strong>Seperti :</strong> Wordpress, plugin, themes dll</p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=6YA4_MNhXsM",
+              "duration": 11,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8837,
+              "title": "Cara Integrasi Email gmail dan Email Bisnis (Comingsoon)",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": null,
+              "duration": 0,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8836,
+              "title": "Cara Membuat Menu Website",
+              "content": "<p>Dalam Video ini anda akan belajar tentang <strong>Cara Membuat Menu Website</strong></p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=x6qlRthPdIc",
+              "duration": 11,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8835,
+              "title": "Cara Setting Tampilan Website dengan Plugin SEO",
+              "content": "<p>Dalam Video ini anda akan belajar tentang <strong>Cara Setting Tampilan Website dengan Plugin SEO</strong></p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=JGPEoX7rf2w",
+              "duration": 6,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8834,
+              "title": "Desain Halaman Website",
+              "content": "<p>Dalam Video ini anda akan belajar tentang Desain Halaman Website</p><p>Klik COMPLETE setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=sWMpEyf8wuM",
+              "duration": 52,
+              "order": 7,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8833,
+              "title": "Pengenalan Fiture Elementor",
+              "content": "<p>Dalam Video ini anda akan belajar tentang Pengenalan Fiture Elementor</p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=9sdwcVy_v8s",
+              "duration": 6,
+              "order": 8,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8832,
+              "title": "Membuat Halaman dan Setting Halaman",
+              "content": "<p>Dalam Video ini anda akan belajar tentang Membuat Halaman dan Setting Halaman</p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=dB-Z4u2lhU0",
+              "duration": 4,
+              "order": 9,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8831,
+              "title": "Install Plugin",
+              "content": "<p>Dalam Video ini anda akan belajar tentang Install Plugin</p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=J_9vmLurNoY",
+              "duration": 8,
+              "order": 10,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8830,
+              "title": "Install Themes",
+              "content": "<p>Dalam Video ini anda akan belajar tentang Install Themes</p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=pQOXMpBcuOc",
+              "duration": 4,
+              "order": 11,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8829,
+              "title": "Setting Wordpress",
+              "content": "<p>Dalam Video ini anda akan belajar tentang Setting Wordpress</p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=Uca5Dkqzagk",
+              "duration": 2,
+              "order": 12,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8828,
+              "title": "Install Wordpress",
+              "content": "<p>Dalam Video ini anda akan belajar tentang Install Wordpress</p><p>Klik <strong>COMPLETE</strong> setelah menyeselesaikan video pembelajaran</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=_2G_K3bWsiI",
+              "duration": 6,
+              "order": 13,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8827,
+              "title": "Persiapan Konten Website",
+              "content": "<p>Dalam video ini anda akan belajar tentang persiapan konten website apa saja yang di perlukan ketika memmbuat website ekspor.</p><p>Refrensi Cari Gambar HD :</p><p><a data-mce-href=\"https://www.pexels.com\" href=\"https://www.pexels.com\">https://www.pexels.com</a><br><a data-mce-href=\"https://pixabay.com/id\" href=\"https://pixabay.com/id\">https://pixabay.com/id</a><br><a data-mce-href=\"https://unsplash.com\" href=\"https://unsplash.com\">https://unsplash.com</a></p><p>Membuat Katalog logo dll.</p><p><a data-mce-href=\"https://www.canva.com\" href=\"https://www.canva.com\">https://www.canva.com</a></p><p>Klik <strong>COMPLATE</strong> Untuk melanjutkan materi.</p>",
+              "videoUrl": "https://youtu.be/2NPjQToQbMw",
+              "duration": 6,
+              "order": 14,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8826,
+              "title": "Cara Membuat Email Bisnis",
+              "content": "<p>Dalam Video ini, anda akan belajar untuk membuat email bisnis atau email perusahaan, fungsinya ketika anda mengirim email ke buyer, bukan menggunakan email gmail tapi menggunakan email bisnis atau email perusahaan.&nbsp;</p><p>Klik <strong>COMPLATE</strong> Untuk melanjutkan materi.</p>",
+              "videoUrl": "https://youtu.be/OnV81PGmsnk",
+              "duration": 4,
+              "order": 15,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8825,
+              "title": "Cara Mengatur PHP dn Cpanel",
+              "content": "<p>Dalam Video ini anda akan belajar tentang mengatur PHP pada cpanel/hosting.</p><p>Fungsi ini agar antara, wordpress, themes, plugin dan sistem bisa berjalan semua, karena menggunakan PHP terbaru.</p><p>Klik <strong>COMPLATE</strong> Untuk melanjutkan materi.</p>",
+              "videoUrl": "https://youtu.be/veiT8-bhyVQ",
+              "duration": 3,
+              "order": 16,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 8824,
+              "title": "Cara Integrasi Hosting dan Domain + Pasang SSL",
+              "content": "<p>Dalam Video ini anda akan belajar Integrasi anatara Dewabiz dan Domainer.&nbsp;</p><p>Nameserver Dewabiz : ns1.dewabiz.com dan ns2.dewabiz.com (Jika tidak bisa terhubung, silahkan hbungi admin dewabiz untuk update terbarunya)<br><br>Klik <strong>COMPLATE</strong> Untuk melanjutkan materi.</p>",
+              "videoUrl": "https://youtu.be/NoxRtPEcZvY",
+              "duration": 5,
+              "order": 17,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 10948,
+          "title": "Zoom Praktek Website Ekspor",
+          "description": null,
+          "order": 2,
+          "lessons": [
+            {
+              "wp_id": 10949,
+              "title": "Zoom Pembuatan Website dengan AI. Ahad 23 Juni 2024 Dengan Coach Abdurrahman Aziz",
+              "content": "<p><strong>Berikut Prompt Website Ekspor:</strong><br /><br /><strong><a href=\"https://docs.google.com/document/d/1yTQVJRVx9V5oORjpOh-hEvn-oPaDddSTc5s_uXjMos0/edit?usp=sharing\" target=\"_blank\" rel=\"noopener\">LIHAT DISINI</a></strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=_zxc5kIIIsM",
+              "duration": 103,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wp_id": 1678,
+      "title": "KELAS BIMBINGAN EKSPOR YUK",
+      "slug": "kelas-eksporyuk",
+      "description": "",
+      "thumbnail": "https://member.eksporyuk.com/wp-content/uploads/2025/02/Kelas-Bimbingan-Ekspor-Yuk.png",
+      "price": 0,
+      "level": "BEGINNER",
+      "modules": [
+        {
+          "wp_id": 1681,
+          "title": "Modul 1 : Pengenalan Tentang Ekspor",
+          "description": null,
+          "order": 1,
+          "lessons": [
+            {
+              "wp_id": 4985,
+              "title": "Type Type Eksportir (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=FhUyzboSYSQ",
+              "duration": 4,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1721,
+              "title": "Alur Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Alur Ekspor</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/cA_Y8uJoOl8",
+              "duration": 4,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1720,
+              "title": "Ekspor itu Mudah",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Ekspor itu Mudah</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/Pr23QKWu4dE",
+              "duration": 7,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1719,
+              "title": "Mindset Eksportir",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Mindset Eksportir</p><p><strong>Setelah Belajar Silahkan KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/qGs0f6KlGWE",
+              "duration": 4,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1718,
+              "title": "Kenapa Harus Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Alasan Kenapa Harus Ekspor</p><p><strong>Setelah Belajar Silahkan KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/u8Xuql3KStw",
+              "duration": 3,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1717,
+              "title": "Welcome to Dunia Kontaineran",
+              "content": "<div class=\"x1e56ztr\"><span class=\"x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen xo1l8bm xzsf02u\">Salam Sahabat Eksportir. Selamat datang di Ecourse Yuk Ekspor Yuk.</span></div><div><br></div><div class=\"x1e56ztr\"><span class=\"x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen xo1l8bm xzsf02u\">E Course yang akan membahas langkah langkah untuk memulai ekspor dari awal hingga nanti anda berhasil ekspor.</span></div><div><br></div><div class=\"x1e56ztr\"><span class=\"x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen xo1l8bm xzsf02u\">Materi di sajikan secara runtut ya. Silahkan action dengan urutan materi yang sudah kami sajikan.</span></div><div><br></div><p>Setelah Belajar Silahkan KLIK COMPLETE</p>",
+              "videoUrl": "https://youtu.be/Ns7JgUhyd9E",
+              "duration": 1,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 1682,
+          "title": "Modul 2 : Demand & Komoditas",
+          "description": null,
+          "order": 2,
+          "lessons": [
+            {
+              "wp_id": 13499,
+              "title": "Menentukan Negara Tujuan Ekspor Part 2",
+              "content": "<p><em>Di video ini kamu akan mempelajari cara menentukan Negara Tujuan Ekspor Part 2</em><br /><br />Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/VEjYKsWEhsQ",
+              "duration": 3,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4998,
+              "title": "Kategori Komoditas komoditas Ekspor (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=3eVuSRyt30c",
+              "duration": 4,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4997,
+              "title": "Cara Mengetahui HS Code & Regulasi Ekspor (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=5jXCLImjZzk",
+              "duration": 4,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4996,
+              "title": "Memahami HS Code (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=DWPDeVoYQM4",
+              "duration": 4,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4995,
+              "title": "Menentukan Spesifikasi komoditas Ekspor (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=0DcUUgSLp1I",
+              "duration": 3,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4994,
+              "title": "Memahami Product Knowledge dari komoditas yang mau di Ekspor (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=PYpXjmbJ9cQ",
+              "duration": 6,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4993,
+              "title": "Cara lain mencari demand jika tidak ada di trademap (New)",
+              "content": "<p><br>Setelah Belajar Klik<strong> Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=mWTCKJDPVSQ",
+              "duration": 6,
+              "order": 7,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1725,
+              "title": "Menentukan Negara Tujuan Ekspor (NTE)",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Menentukan Negara Tujuan Ekspor (NTE)</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/6YzHGY-hDfM",
+              "duration": 6,
+              "order": 8,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1724,
+              "title": "Jenis Komoditas Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Jenis Komoditas Ekspor</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/c2fiiE10jiQ",
+              "duration": 5,
+              "order": 9,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1723,
+              "title": "Cara Menentukan Komoditas",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Cara Menentukan Komoditas</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/k7fK8XaV7nE",
+              "duration": 6,
+              "order": 10,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1722,
+              "title": "Cara Mengetahui Demand",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Cara Mengetahui Demand</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/sV4XhwQDp20",
+              "duration": 8,
+              "order": 11,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 1683,
+          "title": "Modul 3 : Suplier",
+          "description": null,
+          "order": 3,
+          "lessons": [
+            {
+              "wp_id": 5000,
+              "title": "Kontrak Kerja dengan Suplier dan List pertanyaan ke Suplier (New)",
+              "content": "<p>Silahkan Download Filenya :</p><p>Kontrak Kerja Supplier : <a data-mce-href=\"https://drive.google.com/file/d/18Jp-cwd3s3Ldv-OCAbFRWDyPjIOmt6XY/view?usp=sharing\" href=\"https://drive.google.com/file/d/18Jp-cwd3s3Ldv-OCAbFRWDyPjIOmt6XY/view?usp=sharing\">DOWNLOAD DISINI</a></p><p> List Pertanyaan Ke Supplier :&nbsp;<a data-mce-href=\"https://docs.google.com/document/d/1wJGYxKMbhBi3vKImnfSiN0C7FqB0RFuT/edit?usp=share_link&amp;ouid=111406767983622599476&amp;rtpof=true&amp;sd=true\" href=\"https://docs.google.com/document/d/1wJGYxKMbhBi3vKImnfSiN0C7FqB0RFuT/edit?usp=share_link&amp;ouid=111406767983622599476&amp;rtpof=true&amp;sd=true\">DOWNLOAD DISINI</a></p><p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=YrE1vk-Gh3Q",
+              "duration": 5,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1730,
+              "title": "Menentukan Packaging yang Baik",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Menentukan <em>Packaging yang Baik</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/u_VzgPmNVKQ",
+              "duration": 4,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1729,
+              "title": "Metode Pembayaran dengan Suplier",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Metode Pembayaran dengan Suplier</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/CBA0kD8zEjw",
+              "duration": 4,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1728,
+              "title": "Sample Produk Suplier",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Sample Produk Suplier</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/9ab-hKtZMTo",
+              "duration": 3,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1727,
+              "title": "Tips Mencari Suplier",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Tips Mencari Suplier</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/QvAZHn29mWE",
+              "duration": 5,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1726,
+              "title": "Mencari Suplier Komoditas",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Mencari Suplier Komoditas</em></p><p>Setelah Belajar Silahkan KLIK COMPLETE</p>",
+              "videoUrl": "https://youtu.be/-MZl5yFxHKA",
+              "duration": 5,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 1684,
+          "title": "Modul 4 : Senjata Perang",
+          "description": null,
+          "order": 4,
+          "lessons": [
+            {
+              "wp_id": 16728,
+              "title": "Cara Mendapatkan NPWP Badan Hukum (MATERI UPDATE MEI 2025)",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Cara Mendapatkan NPWP Badan Hukum (MATERI UPDATE MEI 2025)</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/Fe2vaFYw2ZY",
+              "duration": 3,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 16727,
+              "title": "Cara Menghitung Harga Jual Ekspor (MATERI UPDATE MEI 2025)",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Cara Menghitung Harga Jual (MATERI UPDATE MEI 2025)</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/bDcPLBJGwBk",
+              "duration": 9,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 16726,
+              "title": "Mendaftar Akun CEISA (MATERI UPDATE MEI 2025)",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Cara Mendaftar Akun CEISA (MATERI UPDATE MEI 2025)</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/iUZXWJVY5kY",
+              "duration": 3,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13505,
+              "title": "PO dan LOI",
+              "content": "<p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/TRPvPCrT6dE",
+              "duration": 2,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13504,
+              "title": "Membuat Izin Ekspor",
+              "content": "<p>Video Ini akan membahas Cara Membuat Izin Ekspor</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/WE9iyX_kAJ4",
+              "duration": 3,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13502,
+              "title": "Validasi Harga Jual Ekspor Part 3",
+              "content": "<p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/ODehDaD1LJY",
+              "duration": 4,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13500,
+              "title": "Validasi Harga Jual Ekspor Part 2",
+              "content": "<p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/qaVwSUcT4zE",
+              "duration": 0,
+              "order": 7,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 10610,
+              "title": "Contoh Compro, Catalog & Quotation Letter",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Contoh Compro, Catalog &amp; Quotation Letter</em></p><p><a href=\"https://drive.google.com/drive/folders/1erjRkCF1Ie9-FyZeW350srot-SJ9mXkD?usp=sharing\">Download Compro dan Catalog</a></p><p><a href=\"https://drive.google.com/drive/folders/1n_ntQOM1kEBKwM9zH-QlSeAAmxCxYwPz?usp=drive_link\">Download Quotation Letter</a></p><p>Setelah Belajar Silahkan <strong>KLIK</strong> <strong>COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/vL-puaYeZeo",
+              "duration": 9,
+              "order": 8,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5014,
+              "title": "Cara Membuat Perusahaan Perorangan dan NIB (Materi Update 2023)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=jrmD3eU4nJM",
+              "duration": 3,
+              "order": 9,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5002,
+              "title": "Tips dalam menghitung harga Jual Ekspor (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=kfNgrj2eZF4",
+              "duration": 4,
+              "order": 10,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5001,
+              "title": "Menghitung Harga Jual V.2",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=t9-dzzbd-xA",
+              "duration": 6,
+              "order": 11,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1839,
+              "title": "Undername",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Undername</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=Hl9GQwk2-Ug",
+              "duration": 4,
+              "order": 12,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1746,
+              "title": "Cara Membuat Email Perusahaan",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Cara Membuat Email Perusahaan</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/0mtYUjuDA60",
+              "duration": 3,
+              "order": 13,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1745,
+              "title": "Cara Membuat Website Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Cara Membuat Website Ekspor</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/rAO8UTbxYLs",
+              "duration": 11,
+              "order": 14,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1742,
+              "title": "Email Perusahaan",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Email Perusahaan</em></p><p>Setelah Belajar Silahkan<strong> KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/ovLaDY0Zpa8",
+              "duration": 3,
+              "order": 15,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1741,
+              "title": "Website Perusahaan",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Website Perusahaan</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/BsdhUDdqGfA",
+              "duration": 4,
+              "order": 16,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1740,
+              "title": "Rekening Perusahaan",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Rekening Perusahaan</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/q-puji1VpcU",
+              "duration": 5,
+              "order": 17,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1739,
+              "title": "Legalitas Usaha Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang<em> Legalitas Usaha Ekspor</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/TZrqxfbHl7Q",
+              "duration": 4,
+              "order": 18,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1738,
+              "title": "Quotation Letter",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Quotation Letter</em></p><p><a data-mce-href=\"https://drive.google.com/drive/folders/1n_ntQOM1kEBKwM9zH-QlSeAAmxCxYwPz?fbclid=IwAR39BuVf9Zb6V7V3Q0LJL44d1VbJP3hBsVX61R-Xr2Lci2ARrTdnmT35GUI\" href=\"https://drive.google.com/drive/folders/1n_ntQOM1kEBKwM9zH-QlSeAAmxCxYwPz?fbclid=IwAR39BuVf9Zb6V7V3Q0LJL44d1VbJP3hBsVX61R-Xr2Lci2ARrTdnmT35GUI\">Download File Disini</a></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/2XzH9RSyBmc",
+              "duration": 2,
+              "order": 19,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1737,
+              "title": "Company Profile dan Katalog Produk",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Company Profile dan Katalog Produk</em></p><p><a data-mce-href=\"https://drive.google.com/drive/folders/1erjRkCF1Ie9-FyZeW350srot-SJ9mXkD?usp=sharing\" href=\"https://drive.google.com/drive/folders/1erjRkCF1Ie9-FyZeW350srot-SJ9mXkD?usp=sharing\">Download Compro dan Catalog</a></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/V5PUr6MFWWo",
+              "duration": 4,
+              "order": 20,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1736,
+              "title": "Validasi harga jual Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Validasi harga jual</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/K4tYZUGmNX8",
+              "duration": 9,
+              "order": 21,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1731,
+              "title": "Macam-macam Harga Jual Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Macam-macam Harga Jual Ekspor</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/WDh3Wl1V1OM",
+              "duration": 5,
+              "order": 22,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 1685,
+          "title": "Modul 5 : Payment",
+          "description": null,
+          "order": 5,
+          "lessons": [
+            {
+              "wp_id": 5016,
+              "title": "Tipe Tipe L/C (Materi Update 2023)",
+              "content": "<p>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=GlgXD-SGiJw",
+              "duration": 5,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5015,
+              "title": "Payment yang aman bagi Eksportir (Materi Update 2023)",
+              "content": "<p>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=TMX5EwJ8wUY",
+              "duration": 5,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1790,
+              "title": "Contoh Proforma Invoice 3",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Contoh Proforma Invoice 3</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/UcaHb9Uxopg",
+              "duration": 5,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1772,
+              "title": "Kesalahan Eksportir Pemula",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Kesalahan Eksportir Pemula</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/tkXhGToNUhI",
+              "duration": 6,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1770,
+              "title": "Jenis jenis L/C",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Jenis jenis L/C</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/1UHJ-S-yJH8",
+              "duration": 2,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1768,
+              "title": "Macam Sistem Pembayaran Dalam Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Macam Sistem Pembayaran Dalam Ekspor</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/FLM66zgwdz8",
+              "duration": 5,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 1686,
+          "title": "Modul 6 : Buyer",
+          "description": null,
+          "order": 6,
+          "lessons": [
+            {
+              "wp_id": 16731,
+              "title": "Cara Mencari Buyer Via Gmaps (MATERI UPDATE MEI 2025)",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang Cara Mencari Buyer Via Gmaps (MATERI UPDATE MEI 2025)</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/SSAEEgNZZ-k",
+              "duration": 7,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 16730,
+              "title": "Cara Mencari Buyer dengan Qwen AI (MATERI UPDATE MEI 2025)",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Cara Mencari Buyer dengan Qwen AI (MATERI UPDATE MEI 2025)</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/A3al0lx__s0",
+              "duration": 4,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 16729,
+              "title": "Template Email ke Buyer (MATERI UPDATE MEI 2025)",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Template Email ke Buyer (MATERI UPDATE MEI 2025)</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/7BrJ0OzVeN4",
+              "duration": 4,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 16725,
+              "title": "Mencari Buyer Menggunakan Linkedin (MATERI UPDATE MEI 2025)",
+              "content": "",
+              "videoUrl": "https://youtu.be/j3rnSEjhhtc",
+              "duration": 3,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13532,
+              "title": "Vallidasi Buyer Menggunakan NBD LTD",
+              "content": "<p>Vallidasi Buyer Menggunakan NBD LTD</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/8gMRj17KaD8",
+              "duration": 4,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13531,
+              "title": "Membuat Surat Penawaran Menggunakan AI",
+              "content": "<p>Membuat Surat Penawaran Menggunakan AI</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/uKqCAZyHY7g",
+              "duration": 3,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13530,
+              "title": "Mencari Email dengan HUNTER IO",
+              "content": "<p>Mencari Email dengan HUNTER IO</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/DX_YgEAAVfA",
+              "duration": 3,
+              "order": 7,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13529,
+              "title": "Mencari Buyer dengan WEB TRADESNS",
+              "content": "<p>Mencari Buyer dengan WEB TRADESNS</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/VbRlQBHcV7w",
+              "duration": 4,
+              "order": 8,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13528,
+              "title": "Mencari Buyer dengan SKRAPP IO",
+              "content": "<p>Mencari Buyer dengan SKRAPP IO</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p><p> </p>",
+              "videoUrl": "https://youtu.be/JKG_er-7OWE",
+              "duration": 4,
+              "order": 9,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13526,
+              "title": "Mencari Buyer dengan WEB LUSHA",
+              "content": "<p>Mencari Buyer dengan WEB LUSHA</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/lIWSD1GHUvg",
+              "duration": 0,
+              "order": 10,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13525,
+              "title": "Mencai Buyer dengan MONICA AI",
+              "content": "<p>Mencai Buyer dengan MONICA AI</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/TDj04DtjkWw",
+              "duration": 5,
+              "order": 11,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13521,
+              "title": "Mencari Buyer dengan Menduplikasi WEB",
+              "content": "<p>Mencari Buyer dengan Menduplikasi WEB</p>",
+              "videoUrl": "https://youtu.be/pY8Vef8KzCk",
+              "duration": 4,
+              "order": 12,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13519,
+              "title": "Mencari Buyer dan Validasi Buyer dengan IMPORTYETI",
+              "content": "<p>Mencari Buyer dan Validasi Buyer dengan IMPORTYETI</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/mJYXDihVxvo",
+              "duration": 5,
+              "order": 13,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13518,
+              "title": "Mencari Buyer Menggunakan WEB EN 52WMB",
+              "content": "<p>Mencari Buyer Menggunakan WEB EN 52WMB</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/qkb6UuHTUT0",
+              "duration": 5,
+              "order": 14,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13517,
+              "title": "Mencari Buyer Menggunakan TRADEATLAS",
+              "content": "<p>Mencari Buyer Menggunakan TRADEATLAS</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/bsSUREGpTfI",
+              "duration": 5,
+              "order": 15,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13516,
+              "title": "Mencari Buyer Menggunakan Gemini AI",
+              "content": "<p>Mencari Buyer Menggunakan Gemini AI</p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/A3XhdOb3LZs",
+              "duration": 5,
+              "order": 16,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13515,
+              "title": "Mencari Buyer Lewat Bisnis Matching INA EXPORT",
+              "content": "<p>Mencari Buyer Lewat Bisnis Matching INA EXPORT klik link <a href=\"https://www.inaexport.id/\" target=\"_blank\" rel=\"noopener\">https://www.inaexport.id/</a></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/Ia8NPjoSw34",
+              "duration": 2,
+              "order": 17,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 13506,
+              "title": "Mencari Buyer Menggunakan INA EXPORT",
+              "content": "<p>Mencari Buyer Menggunakan Ina Export klik link disini <a href=\"https://www.inaexport.id/\" target=\"_blank\" rel=\"noopener\">https://www.inaexport.id/</a></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/z5jryli2c-U",
+              "duration": 5,
+              "order": 18,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5017,
+              "title": "Cara Mendapatkan Buyer Luar Negeri (Materi Update 2023)",
+              "content": "<p>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=8S7e9oyjH9c",
+              "duration": 3,
+              "order": 19,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5008,
+              "title": "Mengenal Shipping Instruction (New)",
+              "content": "<p>File Shipping Instruction Silahkan Download <a data-mce-href=\"https://docs.google.com/spreadsheets/d/1_BXyVs1XunktO7kmc4SeNlXa_Tj3s5Dv/edit?usp=share_link&amp;ouid=111406767983622599476&amp;rtpof=true&amp;sd=true\" href=\"https://docs.google.com/spreadsheets/d/1_BXyVs1XunktO7kmc4SeNlXa_Tj3s5Dv/edit?usp=share_link&amp;ouid=111406767983622599476&amp;rtpof=true&amp;sd=true\">DISINI</a></p><p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=4yBcyuCXTeE",
+              "duration": 5,
+              "order": 20,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5007,
+              "title": "Mengetahui Buyer Scam dan Solusinya (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=DuPPF_5VoOs",
+              "duration": 4,
+              "order": 21,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5006,
+              "title": "Cara mendapatkan buyer Luar Negeri melalui Alibaba (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=tbYblm-pZLQ",
+              "duration": 6,
+              "order": 22,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5005,
+              "title": "Cara mendapatkan buyer luar negeri melalui ITPC (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=JbRKJQYiY4s",
+              "duration": 5,
+              "order": 23,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5003,
+              "title": "Cara Mendapatkan Buyer Luar Negeri menggunakan data base Buyer Ekspor Yuk (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=XA1rMwzmSw4",
+              "duration": 3,
+              "order": 24,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1838,
+              "title": "Contoh Proforma Invoice",
+              "content": "<p>Dalam Video ini, anda akan belajar tentang <em>Contoh Proforma Invoice</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=UcaHb9Uxopg",
+              "duration": 5,
+              "order": 25,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1793,
+              "title": "SOP Ekspor",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>SOP Ekspor</em></p><p>Download File <a data-mce-href=\"https://drive.google.com/file/d/1efrUYfTwEiqDX5k0_9Zc3buNjKUErOPF/view?usp=sharing\" href=\"https://drive.google.com/file/d/1efrUYfTwEiqDX5k0_9Zc3buNjKUErOPF/view?usp=sharing\">SOP EKSPOR</a></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/CYAGIho3S_g",
+              "duration": 4,
+              "order": 26,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1792,
+              "title": "FCL & LCL",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang<em> FCL &amp; LCL</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/Gc2Gfm0fsIQ",
+              "duration": 4,
+              "order": 27,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1791,
+              "title": "Contoh Commercial Invoice & Packing List",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Contoh Commercial Invoice &amp; Packing List&nbsp;</em></p><p><a data-mce-href=\"https://drive.google.com/drive/folders/1n_ntQOM1kEBKwM9zH-QlSeAAmxCxYwPz?usp=sharing\" href=\"https://drive.google.com/drive/folders/1n_ntQOM1kEBKwM9zH-QlSeAAmxCxYwPz?usp=sharing\">Download Contoh File Disini</a></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/atIRfJSjpMA",
+              "duration": 6,
+              "order": 28,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1780,
+              "title": "Membuat FCO / Kontrak Penjualan",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Membuat FCO / Kontrak Penjualan</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/ZI2Yi7ArjSA",
+              "duration": 5,
+              "order": 29,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1779,
+              "title": "Tips Mendapatkan Down Payment",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang&nbsp;<em>Tips Mendapatkan Down Payment</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/T8jhKvCSpL0",
+              "duration": 6,
+              "order": 30,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1778,
+              "title": "Buyer Minta Sample Produk",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Buyer Minta Sample Produk</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/Uz3B0-OlaKE",
+              "duration": 4,
+              "order": 31,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1777,
+              "title": "Email Marketing",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Email Marketing</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/6N6J_l7paq0",
+              "duration": 6,
+              "order": 32,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1776,
+              "title": "Whatsapp Marketing",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Whatsapp Marketing</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/xtKaU9rO0dA",
+              "duration": 7,
+              "order": 33,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1775,
+              "title": "Cara Mendapatkan Buyer Melalui Google",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Cara Mendapatkan Buyer Melalui Google</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/Mg0F8XZ1i9Y",
+              "duration": 6,
+              "order": 34,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1774,
+              "title": "Cara Mendapatkan Buyer Melalui Web B2B",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Cara Mendapatkan Buyer Melalui Web B2B</em></p><p>Setelah Belajar Silahkan<strong> KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/z1mR7x-WUOk",
+              "duration": 9,
+              "order": 35,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 1687,
+          "title": "Modul 7 : Forwarder",
+          "description": null,
+          "order": 7,
+          "lessons": [
+            {
+              "wp_id": 5012,
+              "title": "Contoh Dokumen dokumen Ekspor (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=eIqsQzUfEgM",
+              "duration": 3,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5011,
+              "title": "Alur Setelah deal dengan Buyer (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=RbpcL9ZOCts",
+              "duration": 10,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5010,
+              "title": "Tips Eksportir Pemula (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=SlFXS0pRKGo",
+              "duration": 6,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5009,
+              "title": "Mengenal Certificate of Origin (New)",
+              "content": "<p><br>Setelah Belajar Klik <strong>Complate </strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=7c9sEsOlC0w",
+              "duration": 6,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1788,
+              "title": "Kendala Eksportir Pemula & Solusinya",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Kendala Eksportir Pemula &amp; Solusinya</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/vaRV732yy2A",
+              "duration": 8,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1787,
+              "title": "Menghitung Daya Muat Kontainer",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Menghitung Daya Muat Kontainer</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/z9BeFnXTStQ",
+              "duration": 6,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1786,
+              "title": "Macam-macam Kontainer",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Macam-macam Kontainer</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/r1E5GJoxFp4",
+              "duration": 4,
+              "order": 7,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1785,
+              "title": "Jenis-jenis Kontainer",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Jenis-jenis Kontainer</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/z_8zAeaGufU",
+              "duration": 5,
+              "order": 8,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1784,
+              "title": "Tips Memilih Forwarder",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Tips Memilih Forwarder</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/pFZml4XyjVo",
+              "duration": 6,
+              "order": 9,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1783,
+              "title": "Dokumen yang Diurus Forwarder",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Dokumen yang Diurus Forwarder</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/CBD29AkJLcw",
+              "duration": 5,
+              "order": 10,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1782,
+              "title": "Dokumen yang harus Disiapkan Eksportir",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Dokumen yang harus Disiapkan Eksportir</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/uQ9c-oTZkaY",
+              "duration": 3,
+              "order": 11,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1781,
+              "title": "Apa Itu Forwarder",
+              "content": "<p>Dalam Video ini, kamu akan belajar tentang <em>Apa Itu Forwarder</em></p><p>Setelah Belajar Silahkan <strong>KLIK COMPLETE</strong></p>",
+              "videoUrl": "https://youtu.be/HBgvYRdVbpE",
+              "duration": 7,
+              "order": 12,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 1799,
+          "title": "Zoominar Bulanan",
+          "description": "Video Berisi Zoominar Pendampingan Setiap Bulan",
+          "order": 8,
+          "lessons": [
+            {
+              "wp_id": 15094,
+              "title": "Pentingnya Registrasi Akun CEISA 4.0 di Beacukai Oleh Coach FINO",
+              "content": "<p>Chat Langsung di DM Komunitas @FIFAZR</p>",
+              "videoUrl": "https://youtu.be/37mMbcJoXp4",
+              "duration": 45,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 15047,
+              "title": "Teknik Komunikasi Bisnis Ekspor 29 Desember 2024 Bersama Bapak Kusria Arifino",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=eUJtBtuASXc",
+              "duration": 84,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 15045,
+              "title": "Ekspor dan Harmonisasi Perpajakan, Sabtu 20 September 2024 Bersama Coach Fino",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=vbQMFFOcvDk",
+              "duration": 81,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 15044,
+              "title": "Cara mengekspor produk makanan dan minuman ke Amerika Serikat (menurut Aturan US FDA) 21 November 2024 Bersama Bapak Agus Setiawan",
+              "content": "",
+              "videoUrl": "https://youtu.be/Zbq-sVzdZJg",
+              "duration": 88,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 12709,
+              "title": "Zoom Bimbingan Peluang Ekspor Pinang Ke India By Sayuti Nur dari Aceh. Ahad, 25 Agustus 2024",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=viJjEmnpDWc",
+              "duration": 58,
+              "order": 5,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 12708,
+              "title": "Zoom Bimbingan cara Mencari Buyer Ekspor Dengan AI Dengan Coach UTS. Sabtu, 24 Agustus 2024",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=9D2JZ6D3Kzc",
+              "duration": 83,
+              "order": 6,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 12130,
+              "title": "Zoominar Pendampingan : Tips membuat harga jual ekspor, shipping dan validasi harga jual di negara tujuan ekspor. Bersama Coach UTS. Sabtu. 27 Juli 2024",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=ABh3NG-Ex0Q",
+              "duration": 96,
+              "order": 7,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 11941,
+              "title": "Zoominar Bimbingan Bongkar Senjata Perang Dengan AI (Company Profile & Katalog Produk), Sabtu, 20 Juli 2024",
+              "content": "<p>Cek persiapan List disini : <a href=\"https://dynalist.io/d/j7MgxS1XDNhO2qhC2kSoGHQ1\" target=\"_blank\" rel=\"noopener\">https://dynalist.io/d/j7MgxS1XDNhO2qhC2kSoGHQ1</a><br /><br />Cek Prompt Disini : <a href=\"https://docs.google.com/document/d/1Nl2zaOEGQ9G109dz8Wx9CuMBpaqaPFDPoAoEha551o8/edit?usp=sharing\" target=\"_blank\" rel=\"noopener\">https://docs.google.com/document/d/1Nl2zaOEGQ9G109dz8Wx9CuMBpaqaPFDPoAoEha551o8/edit?usp=sharing</a></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=sE0Pge7POeM",
+              "duration": 93,
+              "order": 8,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 11576,
+              "title": "Zoom Pendampingan dengan Dinas Karantina Indonesia 12 Okt 2023",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=660yHf0cYT4",
+              "duration": 84,
+              "order": 9,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 11575,
+              "title": "Zoom Pendampingan Member Ekspor Yuk Tema : Pendanaan Ekspor 2024 11 Feb 2024",
+              "content": "<p>Berikut Contoh RAB : <a href=\"https://docs.google.com/spreadsheets/d/17MvglYJCxuxddGH5CSm6JnodP56c3bhf9LiqK5ACm1o/edit?usp=sharing\" target=\"_blank\" rel=\"noopener\">Download Disini</a></p><p> </p><p><strong>Langkah Edit  file :</strong></p><ol><li>Masuk ke menu File</li><li>Lalu BUAT SALINAN</li><li>Isi nama sesuai yang anda inginkan.</li><li>Lalu file bisa anda edit sendiri sesuai produk anda</li></ol>",
+              "videoUrl": "https://www.youtube.com/watch?v=EkV3zxligys",
+              "duration": 104,
+              "order": 10,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 11574,
+              "title": "Pendampingan Member dengan Bank BJB Bandung 18 Feb 2024",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=9L5Y4T8rpkM",
+              "duration": 93,
+              "order": 11,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 11572,
+              "title": "Zoominar Dengan Dinas Karantina Indonesia Soekarno Hatta 23 Nov 2023",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=VTpMRInZp8M",
+              "duration": 124,
+              "order": 12,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 11566,
+              "title": "Zoominar Pendampingan : Tips Ekspor Untuk Pemula Bersama Coach UTS. Ahad 19 Mei 2024",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=4UwM4E3N7ko",
+              "duration": 104,
+              "order": 13,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 10950,
+              "title": "Zoom Pembuatan Website dengan AI. Ahad 23 Juni 2024 Dengan Coach Abdurrahman Aziz",
+              "content": "<p><strong>Berikut Prompt Website Ekspor:</strong><br /><br /><strong><a href=\"https://docs.google.com/document/d/1yTQVJRVx9V5oORjpOh-hEvn-oPaDddSTc5s_uXjMos0/edit?usp=sharing\" target=\"_blank\" rel=\"noopener\">LIHAT DISINI</a></strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=_zxc5kIIIsM",
+              "duration": 103,
+              "order": 14,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 10406,
+              "title": "Zoominar Tips Cari Harga Kontainer dalam Sekali Klik 08 Juni 2024 Dengan KontaineranID",
+              "content": "<p><strong>Info terkait KontaineranID</strong><br /><a href=\"https://kontaineran.id\" target=\"_blank\" rel=\"noopener\">https://kontaineran.id</a></p><p><strong>Admin KontaineranID :</strong></p><p><a href=\"https://wa.me/85161636112\" target=\"_blank\" rel=\"noopener\">085161636112</a></p><p><strong>Kontak Mas Syarif :</strong></p><p><a href=\"mailto:syarifhidayat@kontaineran.id\" target=\"_blank\" rel=\"noopener\">syarifhidayat@kontaineran.id</a></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=U2Ppo8TAh2s",
+              "duration": 80,
+              "order": 15,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 7905,
+              "title": "Zoominar Bersama Pak Wahyu Sadono 23 September 2023",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=c8AbTc4iZmc",
+              "duration": 103,
+              "order": 16,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 7687,
+              "title": "Zoominar Disperindag Jateng x Abang Express 08 September 2023",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=6660cR0wu2g",
+              "duration": 91,
+              "order": 17,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 7435,
+              "title": "Sharing Ekspor Dari Bapak Masrur Arif Closing Cincau Hitam Kering | TT 100% Ke Rekening Pribadi | 18 Maret 2023",
+              "content": "<p>Sharing Ekspor Dari Bapak Masrur Arif Closing Cincau Hitam Kering | TT 100% Ke Rekening Pribadi | 18 Maret 2023</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=FkPymRTNg-Q",
+              "duration": 66,
+              "order": 18,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 7164,
+              "title": "Pendampingan dengan Kepala ITPC SYDNEY Bapak Christhophorus Barutu 23 Agustus 2023",
+              "content": "<p>Membahas Cara Ekspor dan Cari Buyer ke Negara Australia Bersama Kepala ITPC SYDNEY Bapak Christhophorus Barutu 23 Agustus 2023</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=islpOe0dHFI",
+              "duration": 127,
+              "order": 19,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 7109,
+              "title": "Zoominar : Bea Cukai Jayapura x Abang Express 16 Agustus 2023 Tema : Mengenal dan Memanfaatkan Klinik Ekspor Untuk UMKM",
+              "content": "<p>Zoominar Pendampingan Dengan Bea Cukai Jayapura x Abang Express 16 Agustus 2023 Tema : Mengenal dan Memanfaatkan Klinik Ekspor Untuk UMKM</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=9FHTNj5qozg",
+              "duration": 98,
+              "order": 20,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 6539,
+              "title": "Zoominar: Bea Cukai Gresik dan Abang Express membahas Klinik Ekspor untuk membantu UMKM dalam Ekspor 28 Juli 2023",
+              "content": "<p>Zoominar: Bea Cukai Gresik dan Abang Express membahas Klinik Ekspor untuk membantu UMKM dalam Ekspor</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=skr7cLO9ilE",
+              "duration": 124,
+              "order": 21,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 6404,
+              "title": "Zoominar Bersama Abang Express X Bea Cukai Sumut. Tema : Abang Express Solusi EKspor Untuk Para Pelaku Bisnis UMKM 21 Juli 2023",
+              "content": "<p>Zoominar Bersama Abang Express X Bea Cukai Sumut. Tema : Abang Express Solusi EKspor Untuk Para Pelaku Bisnis UMKM 21 Juli 2023 </p>",
+              "videoUrl": "https://www.youtube.com/watch?v=f6GnnkAzYEY",
+              "duration": 110,
+              "order": 22,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 6141,
+              "title": "Zoominar pendampingan Bersama Coach UTS. dengan Tema : Mencari Regulasi dan harga ekspor negera tujuan 24 Juni 2023",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=k9-WemN4aM4",
+              "duration": 93,
+              "order": 23,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5885,
+              "title": "Zoominar Tema : Potensi Ekspor di Australia Bersama Bpk. Haris dari Atdag Canberra 13 Juni 2023",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=aOZ0QxbXuQI",
+              "duration": 74,
+              "order": 24,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5666,
+              "title": "Zoomianr Tema : HS CODE bersama Atdag Canberra Bapak Agung Haris Setiawan 27 Mei 2023",
+              "content": "<p>Hubungi Bapak Haris di Instagram Atdag Canberra <a data-mce-href=\"https://www.instagram.com/atdag_canberra\" href=\"https://www.instagram.com/atdag_canberra\">https://www.instagram.com/atdag_canberra</a></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=IiqDOksRfqc",
+              "duration": 37,
+              "order": 25,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5573,
+              "title": "Praktek Cara Buat Website Ekspor Simpel dan Mudah Sabtu 20 Mei 2023 by Abdurrahman Aziz",
+              "content": "<p>Silahkan download File hasil Praktek disini : <a data-mce-href=\"https://drive.google.com/file/d/1CFgGoYigvMAcqqjPEw_bGaLtd7RyQS39/view?usp=sharing\" href=\"https://drive.google.com/file/d/1CFgGoYigvMAcqqjPEw_bGaLtd7RyQS39/view?usp=sharing\">DOWNLOAD FILE</a></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=8MlhHzy04lc",
+              "duration": 113,
+              "order": 26,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 5114,
+              "title": "Zoominar Tentang Ekspor Makanan dan Minuman ke Malaysia Oleh Bapak Mustofa (25 Maret 2023)",
+              "content": "<p>Dalam video ini, anda akan belajar tentang ekspor makanan dan minuman ke Malaysia.</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=19E9wnZvwvw",
+              "duration": 70,
+              "order": 27,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4984,
+              "title": "Zoominar Pendampingan Pertama 24 Feb 2023 Bersama Forwader LPI",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=Q5llMWmpFkI",
+              "duration": 78,
+              "order": 28,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4951,
+              "title": "Zoominar Tentang Alur Setelah Deal Dengan Buyer Bersama Coach UTS ( 27 Feb 2023 )",
+              "content": "<p>Dalam Video ini membahas <strong>ALUR SETELAH DEAL DENGAN BUYER</strong></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=w7iPEWV00_w",
+              "duration": 111,
+              "order": 29,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4419,
+              "title": "Zoominar Kedua Sabtu 27 Januari 2023 Bersama Atdag Canberra",
+              "content": "<p><br></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=cIMFpToIzMM",
+              "duration": 81,
+              "order": 30,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 4175,
+              "title": "Zoominar Pertama 14 Januari 2023 Tema : Pembiayaan Ekspor by Goorita",
+              "content": "<p><br></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=67vThv6cJkM",
+              "duration": 98,
+              "order": 31,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 3606,
+              "title": "Zoominar Kedua 17 Desember 2022 Bersama Bapak Wahyu Sadono",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=pzu8RGgZm7E",
+              "duration": 109,
+              "order": 32,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 3314,
+              "title": "Zoominar Bersama Coach Abdurrahman Aziz Penjelasan Aplikasi EYA",
+              "content": "<p>Yang mau Order Bisa langsung order disini : <a data-mce-href=\"https://member.eksporyuk.com/product/aplikasi-eya/\" href=\"https://member.eksporyuk.com/product/aplikasi-eya/\">KLIK DISINI</a></p><p>Masukan kode kupon <strong>EYA</strong> untuk dapatkan Diskon,</p><p>Terimakasih</p>",
+              "videoUrl": "https://youtu.be/s2wyAd2zLF8",
+              "duration": 72,
+              "order": 33,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 2930,
+              "title": "Zoominar Bersama Coach UTS Pendampingan 19 November 2022",
+              "content": "<p>Zoominar Pertama di bulan november ini kita akan membahas : &nbsp;<em><strong>Pembahasan tentang ITPC ATDAG dan tanya jawab ekspor</strong></em></p><p>Klik <strong>COMPLETE</strong> setelah selesali belajar</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=7LT_LIVqP3Q",
+              "duration": 131,
+              "order": 34,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 2565,
+              "title": "Zoominar Pendampingan 29 Oktober 2022",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": "https://www.youtube.com/watch?v=28Pnw9Z2BqA",
+              "duration": 85,
+              "order": 35,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 2562,
+              "title": "Rekaman Zoominar Member Ekspor Yuk 10 Juni 2022",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": "https://youtu.be/wCv0EHejgNA",
+              "duration": 91,
+              "order": 36,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 2561,
+              "title": "Rekaman Zoominar Member Ekspor Yuk 14 Mei 2022",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": "https://youtu.be/1kTxNmkxieI",
+              "duration": 100,
+              "order": 37,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1847,
+              "title": "Insight Komoditas Cuan Ekspor",
+              "content": "<p>Dalama Video ini, anda akan belajar tentang <em>Insight Komoditas Cuan Ekspor</em></p><p><strong>Klik Complate</strong> Setelah Belajar Video</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=lnhUbRH0jnM",
+              "duration": 60,
+              "order": 38,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1846,
+              "title": "Zoominar Manggis & Briket",
+              "content": "<p>Dalama Video ini, anda akan belajar tentang <em>Zoominar Manggis &amp; Briket</em></p><p><strong>Klik Complate</strong> Setelah Belajar Video</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=A8hwkat8f8g",
+              "duration": 93,
+              "order": 39,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1845,
+              "title": "Zoominar Ekspor Daun Pisang",
+              "content": "<p>Dalama Video ini, anda akan belajar tentang <em>Zoominar Ekspor Daun Pisang</em></p><p><strong>Klik Complate</strong> Setelah Belajar Video</p>",
+              "videoUrl": "https://www.youtube.com/watch?v=7V7V223oW94",
+              "duration": 78,
+              "order": 40,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1803,
+              "title": "Zoominar SOP Ekspor",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": "https://youtu.be/yjAc502K9_g",
+              "duration": 119,
+              "order": 41,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1802,
+              "title": "Zoominar Invoice & Packing List",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": "https://youtu.be/l5svVnmTwjw",
+              "duration": 115,
+              "order": 42,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1801,
+              "title": "Zoominar Ekspor Yuk x Goorita",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": "https://youtu.be/ZvtlzAFFeSs",
+              "duration": 94,
+              "order": 43,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 1800,
+              "title": "Zoominar 21 April 2022",
+              "content": "<p><br data-mce-bogus=\"1\"></p>",
+              "videoUrl": "https://youtu.be/p1oO5OmooFg",
+              "duration": 95,
+              "order": 44,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        },
+        {
+          "wp_id": 21519,
+          "title": "Zoom Mingguan",
+          "description": null,
+          "order": 9,
+          "lessons": [
+            {
+              "wp_id": 22248,
+              "title": "Q&A Zoom 3 Desember 2025 | Coach UTS",
+              "content": "",
+              "videoUrl": "https://youtu.be/OdEkBIlT1rc",
+              "duration": 80,
+              "order": 1,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 22188,
+              "title": "Q&A Minggu ke-4 Tanggal 26 Nov 2025 | Coach Rizqi",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=gRSm5OSV7zg",
+              "duration": 65,
+              "order": 2,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 22183,
+              "title": "Zoom Materi CAD-DP-DA Bersama Coach UTS",
+              "content": "",
+              "videoUrl": "https://www.youtube.com/watch?v=fQ3pxOf2JAo",
+              "duration": 91,
+              "order": 3,
+              "isFree": false,
+              "files": []
+            },
+            {
+              "wp_id": 21520,
+              "title": "Q&A Zoom Mingguan Member 3 Nov 2025 | Coach UTS",
+              "content": "",
+              "videoUrl": "https://youtu.be/AG0CRhf6gv0",
+              "duration": 61,
+              "order": 4,
+              "isFree": false,
+              "files": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

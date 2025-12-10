@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import {
   ArrowLeft,
@@ -23,6 +23,8 @@ import {
   AlertTriangle,
   ToggleLeft,
   ToggleRight,
+  Package,
+  ArrowUpRight,
 } from 'lucide-react'
 
 type UserDetail = {
@@ -71,8 +73,9 @@ const ROLES = [
   { value: 'MEMBER_FREE', label: 'Member Free', icon: User, color: 'text-gray-600' },
 ]
 
-export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params)
+export default function AdminUserDetailPage() {
+  const params = useParams()
+  const userId = params.id as string
   const router = useRouter()
   const { data: session, status } = useSession()
   const [user, setUser] = useState<UserDetail | null>(null)
@@ -108,7 +111,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     try {
       setLoading(true)
       setError('')
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}`)
+      const res = await fetch(`/api/admin/users/${userId}`)
       
       if (!res.ok) {
         if (res.status === 404) {
@@ -143,7 +146,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
       fetchUser()
     }
-  }, [status, session, resolvedParams.id])
+  }, [status, session, userId])
 
   // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,7 +156,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     setSuccess('')
 
     try {
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}`, {
+      const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -180,7 +183,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     setFormData({ ...formData, affiliateMenuEnabled: newValue })
     
     try {
-      const res = await fetch(`/api/admin/users/${resolvedParams.id}`, {
+      const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, affiliateMenuEnabled: newValue }),
@@ -570,6 +573,42 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                   <span className="text-sm">{new Date(user.createdAt).toLocaleDateString('id-ID')}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Kelola Paket Membership Card */}
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow border border-purple-200 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                  <Package className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Kelola Paket</h3>
+                  <p className="text-sm text-gray-600">Upgrade atau ganti membership</p>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg border border-purple-200 p-4 mb-4">
+                <p className="text-sm text-gray-600 mb-1">Membership Aktif</p>
+                {user._count.userMemberships > 0 ? (
+                  <p className="font-semibold text-purple-700">{user._count.userMemberships} paket aktif</p>
+                ) : (
+                  <p className="text-gray-500 italic">Belum ada membership</p>
+                )}
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => router.push(`/admin/users/${userId}/memberships`)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium"
+              >
+                <Crown className="w-5 h-5" />
+                Kelola Paket Membership
+                <ArrowUpRight className="w-4 h-4" />
+              </button>
+              
+              <p className="mt-3 text-xs text-purple-700 text-center">
+                Upgrade ke Premium 6 Bulan, 12 Bulan, atau Lifetime
+              </p>
             </div>
           </div>
         </div>

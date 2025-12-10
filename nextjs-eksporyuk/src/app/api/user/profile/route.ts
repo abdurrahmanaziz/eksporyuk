@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       where: { id: session.user.id },
       select: {
         id: true,
+        memberCode: true,
         name: true,
         email: true,
         username: true,

@@ -333,6 +333,223 @@ class MailketingService {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   }
+
+  /**
+   * Send password reset email via Mailketing
+   */
+  async sendPasswordResetEmail({
+    email,
+    name,
+    resetLink
+  }: {
+    email: string
+    name: string
+    resetLink: string
+  }): Promise<void> {
+    try {
+      if (!this.isValidEmail(email)) {
+        throw new Error('Invalid email address')
+      }
+
+      const appName = process.env.NEXT_PUBLIC_APP_NAME || 'EksporYuk'
+
+      // Email template untuk reset password
+      const htmlTemplate = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center; color: white; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 30px 0; }
+            .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px; color: #856404; }
+            .footer { color: #666; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0; font-size: 24px;">🔐 Reset Password</h1>
+            </div>
+            
+            <div class="content">
+              <p>Halo <strong>${name}</strong>,</p>
+              
+              <p>Kami menerima permintaan untuk mereset password akun Anda di ${appName}.</p>
+              
+              <p style="text-align: center;">
+                <a href="${resetLink}" class="button">Reset Password</a>
+              </p>
+              
+              <p style="color: #666; font-size: 14px; margin: 20px 0;">
+                Atau copy link berikut ke browser Anda:<br/>
+                <code style="background: white; border: 1px solid #ddd; padding: 10px; display: inline-block; word-break: break-all; font-size: 12px;">${resetLink}</code>
+              </p>
+              
+              <div class="warning">
+                <p style="margin: 0;"><strong>⚠️ Penting:</strong></p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                  <li>Link ini berlaku selama 1 jam</li>
+                  <li>Jangan bagikan link ini kepada siapapun</li>
+                  <li>Jika Anda tidak meminta reset password, abaikan email ini</li>
+                </ul>
+              </div>
+              
+              <div class="footer">
+                <p>Salam,<br/><strong>Tim ${appName}</strong></p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+      // Jika API key ada, kirim via Mailketing API
+      if (this.mailketingApiKey) {
+        const response = await fetch(`${this.mailketingApiUrl}/emails/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.mailketingApiKey}`
+          },
+          body: JSON.stringify({
+            to: email,
+            subject: `🔐 Reset Password - ${appName}`,
+            html: htmlTemplate,
+            type: 'PASSWORD_RESET',
+            tags: ['password-reset', 'authentication']
+          })
+        })
+
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(`Mailketing API error: ${error.message}`)
+        }
+
+        console.log(`✅ [MAILKETING] Password reset email sent to ${email}`)
+      } else {
+        // Fallback: Log untuk development
+        console.log(`📧 [DEVELOPMENT] Password reset email would be sent to ${email}`)
+        console.log(`Reset link: ${resetLink}`)
+      }
+    } catch (error) {
+      console.error(`❌ [MAILKETING] Failed to send password reset email:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * Send password reset confirmation email via Mailketing
+   */
+  async sendPasswordResetConfirmationEmail({
+    email,
+    name
+  }: {
+    email: string
+    name: string
+  }): Promise<void> {
+    try {
+      if (!this.isValidEmail(email)) {
+        throw new Error('Invalid email address')
+      }
+
+      const appName = process.env.NEXT_PUBLIC_APP_NAME || 'EksporYuk'
+      const loginUrl = `${process.env.NEXTAUTH_URL}/login`
+
+      const htmlTemplate = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center; color: white; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 30px 0; }
+            .info-box { background: white; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 5px; }
+            .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px; color: #856404; }
+            .footer { color: #666; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0; font-size: 24px;">✅ Password Berhasil Direset</h1>
+            </div>
+            
+            <div class="content">
+              <p>Halo <strong>${name}</strong>,</p>
+              
+              <p>Password akun Anda telah berhasil direset pada tanggal hari ini.</p>
+              
+              <div class="info-box">
+                <p style="margin: 0;"><strong>📅 Tanggal & Waktu:</strong><br/>
+                ${new Date().toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</p>
+              </div>
+              
+              <p>Sekarang Anda dapat login dengan password baru Anda.</p>
+              
+              <p style="text-align: center;">
+                <a href="${loginUrl}" class="button">Login Sekarang</a>
+              </p>
+              
+              <div class="warning">
+                <p style="margin: 0;"><strong>⚠️ Jika Anda tidak melakukan perubahan ini:</strong></p>
+                <p style="margin: 5px 0;">Segera hubungi tim support kami untuk mengamankan akun Anda.</p>
+              </div>
+              
+              <div class="footer">
+                <p>Salam,<br/><strong>Tim ${appName}</strong></p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+      if (this.mailketingApiKey) {
+        const response = await fetch(`${this.mailketingApiUrl}/emails/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.mailketingApiKey}`
+          },
+          body: JSON.stringify({
+            to: email,
+            subject: `✅ Password Berhasil Direset - ${appName}`,
+            html: htmlTemplate,
+            type: 'PASSWORD_RESET_CONFIRMATION',
+            tags: ['password-reset', 'confirmation']
+          })
+        })
+
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(`Mailketing API error: ${error.message}`)
+        }
+
+        console.log(`✅ [MAILKETING] Password reset confirmation sent to ${email}`)
+      } else {
+        console.log(`📧 [DEVELOPMENT] Password reset confirmation would be sent to ${email}`)
+      }
+    } catch (error) {
+      console.error(`❌ [MAILKETING] Failed to send password reset confirmation:`, error)
+      throw error
+    }
+  }
 }
 
 export const mailketingService = new MailketingService()

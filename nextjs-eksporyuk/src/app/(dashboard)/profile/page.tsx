@@ -39,6 +39,7 @@ import Link from 'next/link'
 
 interface ProfileData {
   id: string
+  memberCode: string | null
   name: string
   email: string
   username: string | null
@@ -676,7 +677,14 @@ export default function ProfilePage() {
               />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-bold">{profile.name}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold">{profile.name}</h3>
+                {profile.memberCode && (
+                  <span className="px-2 py-0.5 text-xs font-mono font-bold bg-orange-100 text-orange-700 rounded">
+                    {profile.memberCode}
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">{profile.email}</p>
               {profile.username && (
                 <div className="flex items-center gap-2 mt-2">

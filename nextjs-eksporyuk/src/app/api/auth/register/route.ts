@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { createVerificationToken, sendVerificationEmail, isValidGmailEmail } from '@/lib/email-verification'
 import { mailketing } from '@/lib/integrations/mailketing'
+import { getNextMemberCode } from '@/lib/member-code'
 
 export async function POST(request: NextRequest) {
   try {
@@ -75,6 +76,9 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    // Generate member code
+    const memberCode = await getNextMemberCode()
+
     // Create user with wallet
     const user = await prisma.user.create({
       data: {
@@ -85,6 +89,7 @@ export async function POST(request: NextRequest) {
         whatsapp: userWhatsapp,
         role: 'MEMBER_FREE',
         emailVerified: false, // Set to false initially
+        memberCode, // Auto-generated EY0001, EY0002, dst
         wallet: {
           create: {
             balance: 0,
@@ -99,6 +104,7 @@ export async function POST(request: NextRequest) {
         whatsapp: true,
         role: true,
         emailVerified: true,
+        memberCode: true,
         createdAt: true,
       },
     })

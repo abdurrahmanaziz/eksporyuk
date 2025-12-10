@@ -26,6 +26,7 @@ import {
 
 type User = {
   id: string
+  memberCode: string | null
   name: string
   email: string
   role: string
@@ -385,22 +386,25 @@ export default function AdminUsersPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Member ID
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Membership
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Wallet
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
@@ -408,7 +412,7 @@ export default function AdminUsersPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     <Users className="w-12 h-12 mx-auto mb-2 text-gray-400" />
                     <p>Tidak ada user ditemukan</p>
                   </td>
@@ -416,23 +420,32 @@ export default function AdminUsersPage() {
               ) : (
                 users.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      {user.memberCode ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm">
+                          {user.memberCode}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
                             {user.name.charAt(0).toUpperCase()}
                           </div>
                         </div>
-                        <div className="ml-4">
+                        <div className="ml-3">
                           <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-xs text-gray-500">{user.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       {getRoleBadge(user.role)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       {user.membership ? (
                         <div>
                           <div className="text-sm font-medium text-gray-900">
@@ -449,7 +462,7 @@ export default function AdminUsersPage() {
                         <span className="text-sm text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       {user.wallet ? (
                         <div className="flex items-center text-sm text-gray-900">
                           <Wallet className="w-4 h-4 mr-1 text-green-600" />
@@ -459,7 +472,7 @@ export default function AdminUsersPage() {
                         <span className="text-sm text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {user.emailVerified ? (
                           <CheckCircle className="w-5 h-5 text-green-500" />
@@ -471,14 +484,21 @@ export default function AdminUsersPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => router.push(`/admin/users/${user.id}`)}
                           className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
                           title="Lihat Detail"
                         >
                           <Eye className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => router.push(`/admin/users/${user.id}/memberships`)}
+                          className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50"
+                          title="Kelola Membership"
+                        >
+                          <Crown className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => router.push(`/admin/users/${user.id}/edit`)}

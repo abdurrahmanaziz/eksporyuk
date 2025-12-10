@@ -29,6 +29,7 @@ export async function GET(
         salesPageUrl: true,
         affiliateCommissionRate: true,
         isActive: true,
+        status: true, // DRAFT, PUBLISHED, ARCHIVED
         reminders: true, // Contains followUpMessages
         _count: {
           select: {
@@ -56,6 +57,15 @@ export async function GET(
       console.log(`[API] Error: Plan is not active: ${slug}`)
       return NextResponse.json(
         { error: 'Membership plan is not active' },
+        { status: 403 }
+      )
+    }
+
+    // Check if plan status is PUBLISHED (required for public checkout)
+    if (plan.status !== 'PUBLISHED') {
+      console.log(`[API] Error: Plan status is not PUBLISHED: ${slug}, status: ${plan.status}`)
+      return NextResponse.json(
+        { error: `Membership plan is ${plan.status === 'DRAFT' ? 'still in draft' : 'archived'}` },
         { status: 403 }
       )
     }

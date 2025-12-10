@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { use } from 'react'
+// // import { use } from 'react'
 
 interface Click {
   id: string
@@ -31,9 +31,9 @@ interface LinkStats {
 export default function ShortLinkStatsPage({ 
   params 
 }: { 
-  params: Promise<{ id: string }> 
+  params: { id: string } 
 }) {
-  const resolvedParams = use(params)
+  const resolvedParams = params
   const router = useRouter()
   const [stats, setStats] = useState<LinkStats | null>(null)
   const [loading, setLoading] = useState(true)
