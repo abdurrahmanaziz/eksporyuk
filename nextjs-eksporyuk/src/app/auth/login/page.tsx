@@ -33,14 +33,17 @@ function LoginForm() {
       if (token) setCsrfToken(token)
     })
     
-    // Debug: Check available providers
+    // Debug: Check available providers from NextAuth
     fetch('/api/auth/providers')
       .then(res => res.json())
       .then(providers => {
         console.log('[LOGIN] Available providers:', providers)
-        const hasGoogle = providers.some((p: any) => p.id === 'google' || p.name === 'Google')
+        // NextAuth returns object with provider IDs as keys, e.g. { google: {...}, credentials: {...} }
+        const hasGoogle = providers && typeof providers === 'object' && 'google' in providers
         console.log('[LOGIN] Google provider available:', hasGoogle)
-        if (!hasGoogle) {
+        if (hasGoogle) {
+          console.log('[LOGIN] Google provider config:', providers.google)
+        } else {
           console.warn('[LOGIN] ⚠️ Google provider not found in NextAuth providers!')
         }
       })
