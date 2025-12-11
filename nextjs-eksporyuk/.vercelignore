@@ -1,0 +1,14 @@
+# Build artifacts (Vercel will build)
+.next/
+node_modules/
+.env*
+!.env.example
+
+# Development files
+*.log
+.DS_Store
+coverage/
+
+# Cache
+.turbo/
+.cache/
