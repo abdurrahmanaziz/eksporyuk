@@ -387,11 +387,11 @@ function MembershipCheckoutContent() {
     : 0
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Membership Details */}
-          <div className="lg:col-span-2 space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="space-y-6">
+          {/* Membership Details */}
+          <div className="space-y-6">
             {/* Membership Card */}
             <Card>
               <CardHeader>
