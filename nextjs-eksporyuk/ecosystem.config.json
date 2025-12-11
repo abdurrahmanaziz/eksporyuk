@@ -10,7 +10,9 @@
     "max_memory_restart": "1G",
     "env": {
       "NODE_ENV": "production",
-      "PORT": 3000
+      "PORT": 3000,
+      "GOOGLE_CLIENT_ID": "805480551537-b89th9psujgarmr8atcj140j9q353eb.apps.googleusercontent.com",
+      "GOOGLE_CLIENT_SECRET": "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"
     },
     "error_file": "/home/eksporyuk/.pm2/logs/eksporyuk-error.log",
     "out_file": "/home/eksporyuk/.pm2/logs/eksporyuk-out.log",
