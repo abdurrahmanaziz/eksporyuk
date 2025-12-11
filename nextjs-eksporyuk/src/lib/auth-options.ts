@@ -80,12 +80,22 @@ const providers: any[] = [
 
 // Add Google provider only if credentials are configured
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  console.log('[AUTH-OPTIONS] Google OAuth enabled - Client ID:', process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + '...')
   providers.push(
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     })
   )
+} else {
+  console.log('[AUTH-OPTIONS] Google OAuth NOT enabled - Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET')
 }
 console.log('[AUTH-OPTIONS] Total providers configured:', providers.length)
 
@@ -108,6 +118,8 @@ export const authOptions: NextAuthOptions = {
   providers,
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('[AUTH] signIn callback - provider:', account?.provider, 'email:', user.email)
+      
       // Handle Google OAuth sign in
       if (account?.provider === 'google' && user.email) {
         try {
@@ -115,10 +127,22 @@ export const authOptions: NextAuthOptions = {
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email }
           })
+          
+          console.log('[AUTH] Google signIn - existing user:', !!existingUser)
 
           if (!existingUser) {
             // Create new user from Google OAuth
-            const username = user.email.split('@')[0]
+            const baseUsername = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')
+            let username = baseUsername
+            let counter = 1
+            
+            // Ensure unique username
+            while (await prisma.user.findUnique({ where: { username } })) {
+              username = `${baseUsername}${counter}`
+              counter++
+            }
+            
+            console.log('[AUTH] Creating new Google user:', user.email, 'username:', username)
             
             await prisma.user.create({
               data: {
@@ -127,18 +151,34 @@ export const authOptions: NextAuthOptions = {
                 username: username,
                 avatar: user.image,
                 role: 'MEMBER_FREE',
+                isActive: true,
                 // No password for OAuth users
               }
             })
-          } else if (!existingUser.avatar && user.image) {
+            console.log('[AUTH] New Google user created successfully')
+          } else {
+            // Check if user is suspended
+            if (existingUser.isSuspended) {
+              console.log('[AUTH] Google user is suspended:', existingUser.suspendReason)
+              return false // Block sign in
+            }
+            
+            // Check if user is active
+            if (!existingUser.isActive) {
+              console.log('[AUTH] Google user is not active')
+              return false // Block sign in
+            }
+            
             // Update avatar if user exists but doesn't have one
-            await prisma.user.update({
-              where: { email: user.email },
-              data: { avatar: user.image }
-            })
+            if (!existingUser.avatar && user.image) {
+              await prisma.user.update({
+                where: { email: user.email },
+                data: { avatar: user.image }
+              })
+            }
           }
         } catch (error) {
-          console.error('Error creating/updating Google user:', error)
+          console.error('[AUTH] Error creating/updating Google user:', error)
           // Still allow sign in even if database operation fails
         }
       }
