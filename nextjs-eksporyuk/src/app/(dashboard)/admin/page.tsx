@@ -268,7 +268,7 @@ export default function AdminPage() {
                 <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
                 <div>
                   <p className="text-amber-800 font-medium">Tidak dapat mengambil balance</p>
-                  <p className="text-amber-700 text-sm">{xenditError}</p>
+                  <p className="text-amber-700 text-sm">{xenditError instanceof Error ? xenditError.message : String(xenditError)}</p>
                 </div>
               </div>
             ) : xenditBalance ? (
