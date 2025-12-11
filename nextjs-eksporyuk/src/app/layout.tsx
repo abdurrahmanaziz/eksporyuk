@@ -14,6 +14,8 @@ const poppins = Poppins({
   subsets: ["latin"],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-poppins',
+  display: 'swap', // Optimal font loading
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -27,8 +29,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
-      <body className={poppins.className}>
+    <html lang="id" className={poppins.variable}>
+      <head>
+        {/* Ensure CSS is loaded first */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html { font-family: var(--font-poppins), system-ui, sans-serif; }
+            * { box-sizing: border-box; }
+            body { margin: 0; padding: 0; }
+          `
+        }} />
+      </head>
+      <body className={`${poppins.className} font-sans antialiased`}>
         <ReactQueryProvider>
           <AuthProvider>
             <OneSignalProvider />

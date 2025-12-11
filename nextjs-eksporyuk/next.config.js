@@ -14,8 +14,12 @@ const nextConfig = {
   // Next.js 14 compatible config
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
-    optimizeCss: true,
-    cssChunking: 'loose',
+    // optimizeCss: true,
+    // cssChunking: 'loose',
+    // Fix for turbopack root detection
+    turbo: {
+      root: __dirname,
+    },
   },
   
   typescript: {
@@ -66,5 +70,7 @@ const nextConfig = {
     ]
   },
 }
+
+module.exports = nextConfig
 
 module.exports = nextConfig
