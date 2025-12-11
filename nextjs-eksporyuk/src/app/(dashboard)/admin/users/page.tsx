@@ -256,20 +256,22 @@ export default function AdminUsersPage() {
 
   return (
     <ResponsivePageWrapper>
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border-0">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-8 h-8" />
-              Kelola Pengguna
-            </h1>
-            <p className="text-gray-600 mt-1">Manajemen user, role, dan membership</p>
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+              <Users className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kelola Pengguna</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Manajemen user, role, dan membership</p>
+            </div>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
           >
             <Plus className="w-5 h-5" />
             Tambah User
@@ -279,44 +281,56 @@ export default function AdminUsersPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 rounded-xl">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
+            <div className="p-5 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
               </div>
-              <Users className="w-10 h-10 text-blue-500" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Users</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.total}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Admin</p>
-                <p className="text-2xl font-bold text-purple-900">{stats.byRole.admin}</p>
+          <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 rounded-xl">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-purple-600/20 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
+            <div className="p-5 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-md">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
               </div>
-              <Crown className="w-10 h-10 text-purple-500" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">Admin</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.byRole.admin}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Premium Members</p>
-                <p className="text-2xl font-bold text-yellow-900">{stats.byRole.memberPremium}</p>
+          <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 rounded-xl">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-yellow-400/20 to-yellow-600/20 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
+            <div className="p-5 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-md">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
               </div>
-              <Crown className="w-10 h-10 text-yellow-500" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">Premium Members</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.byRole.memberPremium}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Active Memberships</p>
-                <p className="text-2xl font-bold text-green-900">{stats.activeMemberships}</p>
+          <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 rounded-xl">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400/20 to-green-600/20 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
+            <div className="p-5 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-md">
+                  <CheckCircle className="w-5 h-5 text-white" />
+                </div>
               </div>
-              <CheckCircle className="w-10 h-10 text-green-500" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">Active Memberships</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.activeMemberships}</p>
             </div>
           </div>
         </div>
@@ -324,26 +338,28 @@ export default function AdminUsersPage() {
 
       {/* Error Alert */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950 dark:to-rose-950 border border-red-200 dark:border-red-800 rounded-xl p-4 shadow-md">
           <div className="flex items-center">
-            <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
-            <p className="text-red-800 font-medium">{typeof error === 'string' ? error : String(error)}</p>
+            <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg mr-3">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <p className="text-red-800 dark:text-red-300 font-medium">{typeof error === 'string' ? error : String(error)}</p>
           </div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6 border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 border-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Cari nama atau email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-11 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
             />
           </div>
 
@@ -371,7 +387,7 @@ export default function AdminUsersPage() {
               setMembershipFilter(e.target.value)
               setPage(1)
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
           >
             <option value="ALL">Semua Membership</option>
             <option value="ACTIVE">Punya Membership Aktif</option>
@@ -381,64 +397,64 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border-0">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Member ID
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Membership
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Wallet
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    <Users className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                    <p>Tidak ada user ditemukan</p>
+                  <td colSpan={7} className="px-6 py-16 text-center">
+                    <Users className="w-16 h-16 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">Tidak ada user ditemukan</p>
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                     <td className="px-4 py-4 whitespace-nowrap">
                       {user.memberCode ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md">
                           {user.memberCode}
                         </span>
                       ) : (
-                        <span className="text-gray-400 text-xs">-</span>
+                        <span className="text-gray-400 dark:text-gray-600 text-xs">-</span>
                       )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
+                        <div className="flex-shrink-0 h-11 w-11">
+                          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold shadow-md">
                             {user.name.charAt(0).toUpperCase()}
                           </div>
                         </div>
-                        <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                          <div className="text-xs text-gray-500">{user.email}</div>
+                        <div className="ml-3.5">
+                          <div className="text-sm font-semibold text-gray-900 dark:text-white">{user.name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
                         </div>
                       </div>
                     </td>
@@ -485,17 +501,17 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => router.push(`/admin/users/${user.id}`)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                          className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                           title="Lihat Detail"
                         >
-                          <Eye className="w-5 h-5" />
+                          <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => router.push(`/admin/users/${user.id}/memberships`)}
-                          className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50"
+                          className="p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
                           title="Kelola Membership"
                         >
                           <Crown className="w-5 h-5" />
@@ -512,7 +528,7 @@ export default function AdminUsersPage() {
                           className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
                           title="Hapus"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -526,21 +542,21 @@ export default function AdminUsersPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
+        <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Previous
           </button>
-          <span className="text-sm text-gray-700">
-            Page {page} of {totalPages}
+          <span className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 px-4 py-2 rounded-lg">
+            Page <span className="font-semibold">{page}</span> of <span className="font-semibold">{totalPages}</span>
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
           </button>
@@ -550,11 +566,16 @@ export default function AdminUsersPage() {
 
     {/* Create User Modal */}
     {showCreateModal && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border-0">
           <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Tambah User Baru</h2>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md">
+                  <Plus className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tambah User Baru</h2>
+              </div>
               <button
                 onClick={() => {
                   setShowCreateModal(false)
@@ -566,23 +587,23 @@ export default function AdminUsersPage() {
                     isActive: true,
                   })
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <XCircle className="w-6 h-6" />
+                <XCircle className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateUser} className="space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Nama Lengkap <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                   placeholder="Masukkan nama lengkap"
                   required
                 />
@@ -590,14 +611,14 @@ export default function AdminUsersPage() {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                   placeholder="user@example.com"
                   required
                 />
@@ -605,30 +626,30 @@ export default function AdminUsersPage() {
 
               {/* Password */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Password
                 </label>
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                   placeholder="Kosongkan untuk generate otomatis"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
                   Kosongkan untuk generate password random
                 </p>
               </div>
 
               {/* Role */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Role
                 </label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                 >
                   <option value="MEMBER_FREE">Member Free</option>
                   <option value="MEMBER_PREMIUM">Member Premium</option>
@@ -647,7 +668,7 @@ export default function AdminUsersPage() {
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
+                <label htmlFor="isActive" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                   Aktifkan user
                 </label>
               </div>
@@ -666,14 +687,14 @@ export default function AdminUsersPage() {
                       isActive: true,
                     })
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                  className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   disabled={createLoading}
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   disabled={createLoading}
                 >
                   {createLoading ? (
