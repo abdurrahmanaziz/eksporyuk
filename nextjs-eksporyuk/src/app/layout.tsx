@@ -31,39 +31,8 @@ export default function RootLayout({
   return (
     <html lang="id" className={poppins.variable}>
       <head>
-        {/* Critical CSS loading */}
-        <link rel="stylesheet" href="/critical.css" />
-        
-        {/* Ensure CSS is loaded first */}
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-          as="style"
-          onLoad="this.onload=null;this.rel='stylesheet'"
-        />
-        <noscript>
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-          />
-        </noscript>
-        
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            /* Immediate font loading */
-            html, body { 
-              font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-              margin: 0;
-              padding: 0;
-            }
-            * { box-sizing: border-box; }
-            
-            /* Emergency fallback if CSS doesn't load */
-            .min-h-screen { min-height: 100vh; }
-            .bg-white { background-color: #ffffff; }
-            .font-poppins { font-family: 'Poppins', sans-serif !important; }
-          `
-        }} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${poppins.className} font-sans antialiased`}>
         <ReactQueryProvider>
