@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { redirect } from 'next/navigation'
 import { getRoleTheme } from '@/lib/role-themes'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
+import SettingsNav from '@/components/admin/SettingsNav'
 import {
   Settings as SettingsIcon,
   Upload,
@@ -254,6 +255,9 @@ export default function AdminSettingsPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Pengaturan Website</h1>
         <p className="text-gray-600">Konfigurasi tampilan dan informasi umum website</p>
       </div>
+
+      {/* Settings Navigation */}
+      <SettingsNav />
 
       {/* Settings Sections */}
       <div className="max-w-4xl space-y-6">

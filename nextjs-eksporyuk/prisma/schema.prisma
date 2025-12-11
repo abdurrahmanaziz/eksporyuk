@@ -5,7 +5,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -2278,9 +2277,10 @@ model Settings {
   siteDescription                 String?  @default("Platform Ekspor Indonesia")
   siteLogo                        String?
   siteFavicon                     String?
-  primaryColor                    String?  @default("#3B82F6")
-  secondaryColor                  String?  @default("#1F2937")
-  buttonPrimaryBg                 String?  @default("#3B82F6")
+  primaryColor                    String?  @default("#0066CC")
+  secondaryColor                  String?  @default("#0052CC")
+  accentColor                     String?  @default("#3399FF")
+  buttonPrimaryBg                 String?  @default("#0066CC")
   buttonPrimaryText               String?  @default("#FFFFFF")
   buttonSecondaryBg               String?  @default("#6B7280")
   buttonSecondaryText             String?  @default("#FFFFFF")
