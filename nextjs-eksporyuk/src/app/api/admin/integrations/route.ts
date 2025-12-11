@@ -141,12 +141,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate Google OAuth config
-    if (service === 'google') {
+    if (service === 'google_oauth' || service === 'google') {
       const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL } = config
 
-      if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_CALLBACK_URL) {
+      if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
         return NextResponse.json(
-          { error: 'Client ID, Client Secret, dan Callback URL harus diisi' },
+          { error: 'Client ID dan Client Secret harus diisi' },
           { status: 400 }
         )
       }
@@ -159,18 +159,20 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Validate Callback URL format
-      if (!GOOGLE_CALLBACK_URL.includes('/auth/callback/google') && !GOOGLE_CALLBACK_URL.includes('/api/auth/callback/google')) {
-        return NextResponse.json(
-          { error: 'Callback URL harus berakhir dengan /api/auth/callback/google atau /auth/callback/google' },
-          { status: 400 }
-        )
-      }
+      // Validate Callback URL format if provided
+      if (GOOGLE_CALLBACK_URL) {
+        if (!GOOGLE_CALLBACK_URL.includes('/auth/callback/google') && !GOOGLE_CALLBACK_URL.includes('/api/auth/callback/google')) {
+          return NextResponse.json(
+            { error: 'Callback URL harus berakhir dengan /api/auth/callback/google' },
+            { status: 400 }
+          )
+        }
 
-      // Validate Callback URL matches NEXTAUTH_URL
-      const nextAuthUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-      if (!GOOGLE_CALLBACK_URL.startsWith(nextAuthUrl)) {
-        console.warn(`⚠️ Warning: Callback URL (${GOOGLE_CALLBACK_URL}) doesn't match NEXTAUTH_URL (${nextAuthUrl})`)
+        // Validate Callback URL matches NEXTAUTH_URL
+        const nextAuthUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+        if (!GOOGLE_CALLBACK_URL.startsWith(nextAuthUrl)) {
+          console.warn(`⚠️ Warning: Callback URL (${GOOGLE_CALLBACK_URL}) doesn't match NEXTAUTH_URL (${nextAuthUrl})`)
+        }
       }
 
       console.log('✅ Google OAuth configuration validated successfully')
@@ -203,6 +205,7 @@ export async function POST(request: NextRequest) {
       onesignal: ['ONESIGNAL_APP_ID', 'ONESIGNAL_API_KEY'],
       pusher: ['PUSHER_APP_ID', 'PUSHER_KEY', 'PUSHER_SECRET', 'PUSHER_CLUSTER'],
       google: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_CALLBACK_URL'],
+      google_oauth: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_CALLBACK_URL'],
     }
 
     const envVars = serviceEnvMap[service] || []
