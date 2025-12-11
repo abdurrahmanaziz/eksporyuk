@@ -13,23 +13,28 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    /* Ekspor Yuk Brand Colors */
+    --primary: 210 100% 40%;           /* #0066CC - Ekspor Yuk Blue */
+    --primary-foreground: 0 0% 100%;   /* White text on blue */
+    --secondary: 210 100% 35%;         /* #0052CC - Darker blue */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 210 100% 60%;            /* #3399FF - Light blue */
+    --accent-foreground: 0 0% 100%;
+    
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 210 100% 40%;              /* Match primary blue */
     --radius: 0.5rem;
-    --button-primary-bg: #3B82F6;
+    
+    /* Button colors - all use brand blue */
+    --button-primary-bg: #0066CC;
     --button-primary-text: #FFFFFF;
-    --button-secondary-bg: #6B7280;
+    --button-secondary-bg: #0052CC;
     --button-secondary-text: #FFFFFF;
     --button-success-bg: #10B981;
     --button-success-text: #FFFFFF;
@@ -169,7 +174,7 @@ nav {
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #2563eb, #9333ea);
+  background: linear-gradient(135deg, #0066CC, #0052CC);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -181,7 +186,7 @@ nav {
 .nav-logo-text {
   font-size: 1.25rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #2563eb, #9333ea);
+  background: linear-gradient(135deg, #0066CC, #0052CC);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -205,7 +210,7 @@ nav {
 }
 
 .nav-link:hover {
-  color: #2563eb;
+  color: #0066CC;
 }
 
 .nav-actions {
@@ -235,11 +240,11 @@ nav {
 }
 
 .btn-ghost:hover {
-  color: #2563eb;
+  color: #0066CC;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #2563eb, #9333ea);
+  background: linear-gradient(135deg, #0066CC, #0052CC);
   color: white;
   padding: 0.625rem 1.25rem;
   box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.25);
@@ -323,7 +328,7 @@ nav {
 }
 
 .hero-highlight {
-  background: linear-gradient(135deg, #2563eb, #9333ea);
+  background: linear-gradient(135deg, #0066CC, #0052CC);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -360,7 +365,7 @@ nav {
 
 .btn-hero-primary {
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #2563eb, #9333ea);
+  background: linear-gradient(135deg, #0066CC, #0052CC);
   color: white;
   font-weight: 600;
   border-radius: 0.75rem;
@@ -388,7 +393,7 @@ nav {
 }
 
 .btn-hero-secondary:hover {
-  border-color: #3b82f6;
+  border-color: #0066CC;
   box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
 
@@ -586,7 +591,7 @@ nav {
 }
 
 .pricing-card.popular {
-  border-color: #3b82f6;
+  border-color: #0066CC;
   transform: scale(1.05);
   box-shadow: 0 20px 40px 0 rgba(59, 130, 246, 0.15);
 }
@@ -596,7 +601,7 @@ nav {
   position: absolute;
   top: 1rem;
   right: -2rem;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #0066CC, #0052CC);
   color: white;
   padding: 0.5rem 3rem;
   font-size: 0.75rem;
@@ -623,7 +628,7 @@ nav {
 .pricing-price {
   font-size: 3rem;
   font-weight: 700;
-  color: #3b82f6;
+  color: #0066CC;
   margin-bottom: 0.5rem;
 }
 
@@ -662,7 +667,7 @@ nav {
 .pricing-cta {
   width: 100%;
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #0066CC, #0052CC);
   color: white;
   border: none;
   border-radius: 0.75rem;
@@ -731,7 +736,7 @@ nav {
   background: #f8fafc;
   padding: 2rem;
   border-radius: 1rem;
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid #0066CC;
 }
 
 .testimonial-content {
@@ -752,7 +757,7 @@ nav {
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #0066CC;
   color: white;
   display: flex;
   align-items: center;
