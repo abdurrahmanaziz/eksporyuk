@@ -406,7 +406,7 @@ function MembershipCheckoutContent() {
             <CardTitle className="text-destructive">Error</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>{error || 'Paket membership tidak ditemukan'}</p>
+            <p>{typeof error === 'string' ? error : 'Paket membership tidak ditemukan'}</p>
             <Button 
               className="mt-4 w-full" 
               onClick={() => router.push('/membership')}
