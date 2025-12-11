@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+
+export const dynamic = 'force-dynamic';
 // GET /api/certificates/verify/[certificateNumber] - Public endpoint to verify certificate
 export async function GET(
   req: NextRequest,

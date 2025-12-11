@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { xenditService } from '@/lib/xendit'
 import { prisma } from '@/lib/prisma'
 
+
+export const dynamic = 'force-dynamic';
 // Create Virtual Account
 export async function POST(request: NextRequest) {
   try {

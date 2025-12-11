@@ -6,6 +6,10 @@ import { activateMembership, activateProduct } from '@/lib/membership-helper'
 import { processTransactionCommission, getAffiliateFromCode } from '@/lib/commission-helper'
 import { updateChallengeProgress } from '@/lib/challenge-helper'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/checkout/success - Handle successful payment
 export async function POST(request: NextRequest) {
   try {

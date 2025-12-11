@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * OneSignal Webhook Handler
  * POST /api/webhooks/onesignal

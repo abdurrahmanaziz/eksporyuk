@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { generateBrandedEmail } from '@/lib/reminder-templates'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * GET /api/affiliate/follow-ups/leads
  * Get affiliate's leads that need follow up

@@ -4,6 +4,8 @@ import crypto from 'crypto'
 import { sendEmail } from '@/lib/email'
 import bcrypt from 'bcryptjs'
 
+
+export const dynamic = 'force-dynamic';
 // POST - Request password reset (send reset link to email)
 export async function POST(request: NextRequest) {
   try {

@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // Helper function to check course ownership for mentor
 async function checkCourseAccess(userId: string, userRole: string, courseId: string) {
   if (userRole === 'ADMIN') return { allowed: true }

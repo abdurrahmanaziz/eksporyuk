@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 import { pusherService } from '@/lib/pusher'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Membership Reminder Cron Job
  * Triggers automated reminders based on membership status and configured sequences

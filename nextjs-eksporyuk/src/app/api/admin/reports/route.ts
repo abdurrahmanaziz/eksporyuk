@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subDays, subWeeks, subMonths } from 'date-fns'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)

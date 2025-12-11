@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { sendEmail } from '@/lib/email'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

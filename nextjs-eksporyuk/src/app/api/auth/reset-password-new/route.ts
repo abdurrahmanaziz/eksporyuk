@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { mailketingService } from '@/lib/services/mailketingService'
 
+
+export const dynamic = 'force-dynamic';
 /**
  * POST /api/auth/reset-password
  * Reset password menggunakan token

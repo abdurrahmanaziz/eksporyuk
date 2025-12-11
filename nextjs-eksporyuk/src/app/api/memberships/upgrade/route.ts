@@ -6,6 +6,10 @@ import { upgradeMembership } from '@/lib/membership-helper'
 import { processTransactionCommission, getAffiliateFromCode } from '@/lib/commission-helper'
 import { updateChallengeProgress } from '@/lib/challenge-helper'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/memberships/upgrade - Upgrade user membership
 export async function POST(request: NextRequest) {
   try {

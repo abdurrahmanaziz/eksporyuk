@@ -5,6 +5,10 @@ import { existsSync } from 'fs'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Check authentication and admin role

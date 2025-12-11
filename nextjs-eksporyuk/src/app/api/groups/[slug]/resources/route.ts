@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/groups/[id]/resources - Get group resources
 export async function GET(
   req: NextRequest,

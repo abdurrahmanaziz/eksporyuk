@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { pusherService } from '@/lib/pusher'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/posts/[id]/save - Toggle save/bookmark a post
 export async function POST(
   request: NextRequest,

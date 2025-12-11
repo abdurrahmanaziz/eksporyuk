@@ -7,6 +7,10 @@ import { sendEmail } from '@/lib/email'
 import { notificationService } from '@/lib/services/notificationService'
 import { createBrandedEmailAsync } from '@/lib/branded-template-engine'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

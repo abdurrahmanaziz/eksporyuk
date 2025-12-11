@@ -6,6 +6,10 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/admin/membership-documents - List all documents
 export async function GET(request: NextRequest) {
   try {

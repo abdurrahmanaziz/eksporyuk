@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { xenditService } from '@/lib/xendit'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/products/purchase
  * Create product purchase transaction

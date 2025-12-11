@@ -5,6 +5,10 @@ import { addUserToMailketingList, mailketing } from '@/lib/integrations/mailketi
 import { emailTemplates } from '@/lib/email-templates'
 import { notificationService } from '@/lib/services/notificationService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   try {
     // Get raw body and signature

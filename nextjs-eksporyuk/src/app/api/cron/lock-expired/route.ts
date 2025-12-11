@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAndLockExpiredAccess } from '@/lib/membership-helper'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/cron/lock-expired - Lock expired memberships and courses
 // This should be called daily by a cron job
 export async function GET(request: NextRequest) {

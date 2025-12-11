@@ -68,6 +68,8 @@ const defaultPlatformSettings = {
   notificationInAppEnabled: true,
 }
 
+
+export const dynamic = 'force-dynamic';
 // Public API - no auth required, returns platform features for client-side usage
 export async function GET(request: NextRequest) {
   try {

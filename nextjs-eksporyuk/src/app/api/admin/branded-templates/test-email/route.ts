@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { createBrandedEmailAsync, processShortcodes, type TemplateData } from '@/lib/branded-template-engine'
 import { MailketingService } from '@/lib/integrations/mailketing'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/admin/branded-templates/test-email
  * Send test email using branded template

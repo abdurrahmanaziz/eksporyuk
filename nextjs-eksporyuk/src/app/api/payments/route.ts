@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { mailketing } from '@/lib/integrations/mailketing'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // This endpoint handles payment confirmations/webhooks
 export async function POST(request: NextRequest) {
   try {

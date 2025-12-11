@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Clear all session cookies
  * Visit: /api/auth/clear-session

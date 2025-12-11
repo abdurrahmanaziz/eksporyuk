@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Product Reminder Cron Job
  * Triggers automated reminders based on product purchase and configured sequences

@@ -6,6 +6,10 @@ import { xenditService } from '@/lib/xendit'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 import { getXenditConfig } from '@/lib/integration-config'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // Helper function to get payment channel full name
 function getPaymentChannelName(code: string | null): string {
   if (!code) return 'Unknown'

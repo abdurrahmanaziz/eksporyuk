@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { starsenderService } from '@/lib/services/starsenderService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/admin/integrations/starsender/test
  * Test Starsender WhatsApp integration

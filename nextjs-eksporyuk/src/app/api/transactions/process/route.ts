@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { processRevenueDistribution } from '@/lib/revenue-split'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/transactions/process
  * Process a transaction and distribute revenue automatically

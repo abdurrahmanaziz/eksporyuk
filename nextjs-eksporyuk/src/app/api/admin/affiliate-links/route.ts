@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/admin/affiliate-links - Get all affiliate links (admin only)
 export async function GET(request: NextRequest) {
   try {

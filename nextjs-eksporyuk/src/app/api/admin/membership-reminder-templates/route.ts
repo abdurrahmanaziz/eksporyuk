@@ -8,6 +8,9 @@ import {
   getTemplateById,
 } from '@/lib/membership-reminder-templates'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/admin/membership-reminder-templates
  * Get all available reminder templates

@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/posts/[id]/comments - Get post comments
 export async function GET(
   request: NextRequest,

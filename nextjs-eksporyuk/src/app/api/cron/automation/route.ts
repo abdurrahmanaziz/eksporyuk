@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { automationExecutionService } from '@/lib/services/automationExecutionService';
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Cron endpoint untuk menjalankan automation jobs
  * 

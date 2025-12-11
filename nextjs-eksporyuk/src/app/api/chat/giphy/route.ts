@@ -3,6 +3,10 @@
  * Search GIFs from Giphy API
  */
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'

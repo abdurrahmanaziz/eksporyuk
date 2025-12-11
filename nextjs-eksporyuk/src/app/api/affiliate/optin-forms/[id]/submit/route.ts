@@ -8,6 +8,8 @@ interface RouteParams {
   }>
 }
 
+
+export const dynamic = 'force-dynamic';
 /**
  * POST /api/affiliate/optin-forms/[id]/submit
  * Submit optin form (public endpoint)

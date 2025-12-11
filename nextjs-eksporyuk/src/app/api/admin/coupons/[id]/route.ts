@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // PATCH /api/admin/coupons/[id] - Update coupon
 export async function PATCH(
   request: NextRequest,

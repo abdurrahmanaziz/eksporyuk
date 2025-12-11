@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { mailketingService } from '@/lib/services/mailketingService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST - Send broadcast (deduct credits and create logs)
 export async function POST(
   request: Request,

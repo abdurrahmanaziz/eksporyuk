@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/redirect/[code] - Track affiliate click and redirect to external salespage
 export async function GET(
   request: NextRequest,

@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { checkDatabaseAccess, trackDatabaseView } from '@/lib/export-database'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/buyers - List buyers for members (with quota check)
 export async function GET(request: NextRequest) {
   try {

@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { autoAssignMembershipFeatures } from '@/lib/membership-features'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET - Fetch all user memberships with stats
 export async function GET(request: NextRequest) {
   try {

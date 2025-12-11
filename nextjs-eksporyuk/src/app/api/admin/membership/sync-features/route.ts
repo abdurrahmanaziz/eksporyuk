@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { syncUserMembershipFeatures, autoAssignMembershipFeatures, removeMembershipFeatures } from '@/lib/membership-features'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST - Sync user membership features
 export async function POST(request: NextRequest) {
   try {

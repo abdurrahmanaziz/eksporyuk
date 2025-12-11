@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { sendCertificateEmail } from '@/lib/email/certificate-email'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/certificates/[id]/resend-email
  * Resend certificate email (Admin only)

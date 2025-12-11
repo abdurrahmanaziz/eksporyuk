@@ -5,6 +5,10 @@ import { writeFile } from 'fs/promises'
 import path from 'path'
 import { existsSync, mkdirSync } from 'fs'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

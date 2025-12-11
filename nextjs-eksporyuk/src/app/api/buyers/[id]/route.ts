@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { checkDatabaseAccess, trackDatabaseView } from '@/lib/export-database'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/buyers/[id] - View buyer detail (tracks quota)
 export async function GET(
   request: NextRequest,

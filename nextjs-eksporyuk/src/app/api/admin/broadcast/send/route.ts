@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { getMailketingConfig, getStarSenderConfig } from '@/lib/integration-config'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/admin/broadcast/send
  * Send broadcast campaign

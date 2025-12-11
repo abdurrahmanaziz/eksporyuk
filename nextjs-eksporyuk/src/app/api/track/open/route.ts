@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 /**
  * Track email opens via tracking pixel
  * GET /api/track/open?bid=broadcastId&lid=leadId

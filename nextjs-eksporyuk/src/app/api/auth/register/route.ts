@@ -5,6 +5,8 @@ import { createVerificationToken, sendVerificationEmail, isValidGmailEmail } fro
 import { mailketing } from '@/lib/integrations/mailketing'
 import { getNextMemberCode } from '@/lib/member-code'
 
+
+export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

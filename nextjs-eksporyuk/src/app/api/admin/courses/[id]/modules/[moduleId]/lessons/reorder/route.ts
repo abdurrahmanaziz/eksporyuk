@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // PUT /api/admin/courses/[id]/modules/[moduleId]/lessons/reorder
 export async function PUT(
   request: NextRequest,

@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { generateCertificatePDF, uploadCertificatePDF } from '@/lib/certificate-generator'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // PATCH /api/admin/certificates/[id]/regenerate - Regenerate certificate PDF (admin only)
 export async function PATCH(
   request: NextRequest,

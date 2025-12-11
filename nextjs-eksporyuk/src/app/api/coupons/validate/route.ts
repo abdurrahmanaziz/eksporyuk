@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/coupons/validate - Validate coupon code (checkout flow)
 export async function POST(request: NextRequest) {
   try {

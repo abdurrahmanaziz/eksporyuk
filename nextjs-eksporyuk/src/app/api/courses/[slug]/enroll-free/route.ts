@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/courses/[slug]/enroll-free - Free enrollment untuk affiliate training
 export async function POST(
   req: NextRequest,

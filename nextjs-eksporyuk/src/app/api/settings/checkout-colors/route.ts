@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+
+export const dynamic = 'force-dynamic';
 // GET - Fetch checkout color settings (using existing settings fields)
 export async function GET() {
   // Default colors - avoid database call if not needed

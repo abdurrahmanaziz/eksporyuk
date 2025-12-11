@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { xenditService } from '@/lib/xendit'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // Helper: Get full payment channel name
 function getPaymentChannelName(code: string): string {
   const names: Record<string, string> = {

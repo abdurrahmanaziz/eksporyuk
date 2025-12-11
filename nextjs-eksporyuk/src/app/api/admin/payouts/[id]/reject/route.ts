@@ -6,6 +6,10 @@ import { updateWallet } from '@/lib/commission-helper'
 import { notificationService } from '@/lib/services/notificationService'
 import { starsenderService } from '@/lib/starsender'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/admin/payouts/[id]/reject - Reject payout and refund to wallet
 export async function POST(
   request: NextRequest,

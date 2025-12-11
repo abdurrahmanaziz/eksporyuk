@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma';
 import { mailketing } from '@/lib/integrations/mailketing';
 import { emailTemplates } from '@/lib/email-templates';
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }

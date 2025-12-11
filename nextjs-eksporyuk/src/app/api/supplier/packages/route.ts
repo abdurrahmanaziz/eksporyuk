@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+
+export const dynamic = 'force-dynamic';
 /**
  * GET /api/supplier/packages
  * Public API - Get all active supplier packages for registration form

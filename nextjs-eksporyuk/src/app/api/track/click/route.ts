@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 /**
  * Track email link clicks and redirect to original URL
  * GET /api/track/click?bid=broadcastId&lid=leadId&url=originalUrl

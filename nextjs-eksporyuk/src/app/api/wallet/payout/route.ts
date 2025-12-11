@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { processPayout } from '@/lib/commission-helper'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/wallet/payout - Request payout
 export async function POST(request: NextRequest) {
   try {

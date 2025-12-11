@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { DEFAULT_FOLLOW_UP_TEMPLATES } from '@/lib/follow-up-templates'
 import { AVAILABLE_SHORTCODES } from '../route'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/admin/membership-plans/[id]/follow-ups/generate-defaults
  * Generate default follow-up templates for a membership

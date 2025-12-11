@@ -7,6 +7,8 @@ interface RouteParams {
   }>
 }
 
+
+export const dynamic = 'force-dynamic';
 /**
  * POST /api/public/bio/cta/[id]/click
  * Track CTA button click (public endpoint)

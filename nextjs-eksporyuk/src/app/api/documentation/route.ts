@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET - Get published documentation for public access (role-filtered)
 export async function GET(request: NextRequest) {
   try {

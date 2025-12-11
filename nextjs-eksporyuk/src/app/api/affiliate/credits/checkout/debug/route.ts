@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { getXenditConfig } from '@/lib/integration-config'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET - Debug checkout configuration
 export async function GET() {
   console.log('[Debug Checkout] === START ===')

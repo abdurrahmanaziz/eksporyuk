@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/affiliate/by-code?code=XXX - Get affiliate link details by code
 export async function GET(request: NextRequest) {
   try {

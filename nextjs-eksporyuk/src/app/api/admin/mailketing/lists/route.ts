@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { mailketing } from '@/lib/integrations/mailketing'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/admin/mailketing/lists
 // Fetch all lists from Mailketing
 export async function GET(req: NextRequest) {

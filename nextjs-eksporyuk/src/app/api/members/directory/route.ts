@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { Role } from '@prisma/client'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // Allowed roles for member directory (premium members and above)
 const ALLOWED_DIRECTORY_ROLES: Role[] = ['MEMBER_PREMIUM', 'MENTOR', 'ADMIN'] as Role[]
 

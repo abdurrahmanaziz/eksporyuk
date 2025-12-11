@@ -6,6 +6,10 @@ import { addUserToMailketingList, mailketing } from '@/lib/integrations/mailketi
 import { emailTemplates } from '@/lib/email-templates';
 import { updateChallengeProgress } from '@/lib/challenge-helper';
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { signIn } from 'next-auth/react'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
+
+export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

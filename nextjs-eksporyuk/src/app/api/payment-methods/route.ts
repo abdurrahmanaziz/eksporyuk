@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAvailablePaymentMethods, groupChannelsByType } from '@/lib/payment-methods'
 
+
+export const dynamic = 'force-dynamic';
 /**
  * GET /api/payment-methods
  * Returns available payment methods based on admin settings

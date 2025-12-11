@@ -6,6 +6,10 @@ import IntegrationService from '@/lib/integrations/service'
 import fs from 'fs'
 import path from 'path'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   try {
     console.log('[INTEGRATION_SAVE] Starting save process...')

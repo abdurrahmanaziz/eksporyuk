@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { processRevenueDistribution } from '@/lib/revenue-split'
 import { updateChallengeProgress } from '@/lib/challenge-helper'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/memberships/purchase
  * Process membership purchase with payment

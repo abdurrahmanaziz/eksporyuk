@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { xenditService } from '@/lib/xendit'
 import { getNextInvoiceNumber } from '@/lib/invoice-generator'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

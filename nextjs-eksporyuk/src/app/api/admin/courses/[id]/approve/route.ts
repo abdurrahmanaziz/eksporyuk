@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { notifyCourseApproved } from '@/lib/notifications'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/admin/courses/[id]/approve - Approve course
 export async function POST(
   request: NextRequest,

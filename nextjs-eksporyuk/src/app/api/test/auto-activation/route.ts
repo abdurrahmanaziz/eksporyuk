@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { activateMembership } from '@/lib/membership-helper'
 import bcrypt from 'bcryptjs'
 
+
+export const dynamic = 'force-dynamic';
 // GET /api/test/auto-activation - Test the auto-activation flow
 export async function GET(request: NextRequest) {
   // Block in production for security

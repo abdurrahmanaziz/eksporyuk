@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { createBrandedEmail, processShortcodes, TemplateData } from '@/lib/branded-template-engine'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 interface Props {
   params: {
     id: string

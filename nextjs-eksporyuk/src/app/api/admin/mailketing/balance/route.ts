@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { mailketing } from '@/lib/integrations/mailketing'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/admin/mailketing/balance
 // Fetch account balance from Mailketing
 export async function GET(req: NextRequest) {

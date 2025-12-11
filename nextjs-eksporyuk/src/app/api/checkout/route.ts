@@ -6,6 +6,10 @@ import { prisma } from '@/lib/prisma'
 import { getNextInvoiceNumber } from '@/lib/invoice-generator'
 import { isPaymentMethodAvailable, validatePaymentAmount } from '@/lib/payment-methods'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // Helper function to get payment channel full name
 function getPaymentChannelName(code: string | null): string {
   if (!code) return 'Unknown'

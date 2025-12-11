@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
 
 // GET /api/users/me/saved-posts - Get user's saved posts
 export async function GET(request: NextRequest) {

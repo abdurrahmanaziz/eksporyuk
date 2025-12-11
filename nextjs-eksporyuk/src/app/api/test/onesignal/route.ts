@@ -3,6 +3,10 @@ import { oneSignalService } from '@/lib/onesignal'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   // Require admin authentication
   const session = await getServerSession(authOptions)

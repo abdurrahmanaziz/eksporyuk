@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { getOneSignalNotificationHistory, getOneSignalAppInfo } from '@/lib/onesignal'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET - Get OneSignal notification history
 export async function GET(request: NextRequest) {
   try {

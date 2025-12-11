@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/auth/utils'
 import { calculateProfitSharing } from '@/lib/utils'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/dashboard/stats
 export async function GET(request: NextRequest) {
   try {

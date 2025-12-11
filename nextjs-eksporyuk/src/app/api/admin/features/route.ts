@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { FEATURE_DEFINITIONS } from '@/lib/features'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/admin/features - List all available features and user permissions
 export async function GET(request: NextRequest) {
   try {

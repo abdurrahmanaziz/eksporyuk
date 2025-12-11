@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { getWalletSummary } from '@/lib/commission-helper'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 // GET /api/wallet - Get user wallet summary
 export async function GET() {
   try {

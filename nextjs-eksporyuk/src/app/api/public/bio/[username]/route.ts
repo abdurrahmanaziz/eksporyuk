@@ -7,6 +7,8 @@ interface RouteParams {
   }>
 }
 
+
+export const dynamic = 'force-dynamic';
 /**
  * GET /api/public/bio/[username]
  * Get public bio page by username (no authentication required)

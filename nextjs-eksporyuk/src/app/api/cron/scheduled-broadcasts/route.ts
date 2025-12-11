@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { mailketingService } from '@/lib/services/mailketingService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Cron Job API to process scheduled broadcasts
  * Should be called every hour via external cron service (Vercel Cron, cPanel Cron, etc.)

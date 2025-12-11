@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID || process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID!
 const ONESIGNAL_API_KEY = process.env.ONESIGNAL_API_KEY!
 

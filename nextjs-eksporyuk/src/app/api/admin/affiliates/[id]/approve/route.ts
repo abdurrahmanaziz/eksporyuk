@@ -6,6 +6,10 @@ import { notificationService } from '@/lib/services/notificationService'
 import { starsenderService } from '@/lib/starsender'
 import { pusherService } from '@/lib/pusher'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/admin/affiliates/[id]/approve
  * 

@@ -9,6 +9,9 @@ import {
   getEWalletChannelCode 
 } from '@/lib/xendit-disbursement'
 import { notificationService } from '@/lib/services/notificationService'
+
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
 import { starsenderService } from '@/lib/starsender'
 
 // POST /api/admin/payouts/[id]/approve - Approve payout request with auto disbursement

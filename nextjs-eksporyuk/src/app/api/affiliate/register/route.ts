@@ -5,6 +5,8 @@ import { notificationService } from '@/lib/services/notificationService'
 import { starsenderService } from '@/lib/starsender'
 import { pusherService } from '@/lib/pusher'
 
+
+export const dynamic = 'force-dynamic';
 /**
  * POST /api/affiliate/register
  * Register new user as affiliate (public registration)

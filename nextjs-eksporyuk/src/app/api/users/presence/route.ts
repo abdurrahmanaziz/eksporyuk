@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { pusherService } from '@/lib/pusher'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * UPDATE USER ONLINE STATUS
  * Endpoint untuk update status online user dengan real-time broadcast

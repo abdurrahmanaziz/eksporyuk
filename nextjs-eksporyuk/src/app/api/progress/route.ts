@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 // GET /api/progress?courseId=xxx - Get user's progress for a course
 export async function GET(req: NextRequest) {
   try {

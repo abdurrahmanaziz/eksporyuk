@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options';
 import { prisma } from '@/lib/prisma';
 import { automationExecutionService } from '@/lib/services/automationExecutionService';
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Cancel automation untuk lead tertentu
  * POST /api/affiliate/automation/[id]/cancel

@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/supplier/upgrade
  * Upgrade supplier membership to a higher tier

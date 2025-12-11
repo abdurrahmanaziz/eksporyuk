@@ -3,6 +3,10 @@ import { sendVerificationEmail } from '@/lib/email-verification'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Test endpoint untuk verifikasi email
  * GET /api/test/email-verification?email=test@gmail.com&name=Test User

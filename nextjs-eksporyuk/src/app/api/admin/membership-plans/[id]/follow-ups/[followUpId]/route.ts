@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { AVAILABLE_SHORTCODES } from '../route'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET - Fetch single follow-up
 export async function GET(
   request: Request,

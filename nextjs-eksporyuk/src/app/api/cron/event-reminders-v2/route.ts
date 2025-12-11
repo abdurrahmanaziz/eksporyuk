@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 import { mailketingService } from '@/lib/services/mailketingService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Cron Job untuk Event Reminders (Enhanced)
  * 

@@ -9,6 +9,9 @@ import {
 } from '@/lib/certificate-generator'
 import { sendCertificateEmail } from '@/lib/email/certificate-email'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 // GET /api/certificates - Get user's certificates (or all for admin)
 export async function GET(req: NextRequest) {
   try {

@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { apiCache, CACHE_KEYS, CACHE_TTL } from '@/lib/api-cache'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/settings - Get current settings (public for website display)
 export async function GET() {
   try {

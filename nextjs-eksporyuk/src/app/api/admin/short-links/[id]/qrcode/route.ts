@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import QRCode from 'qrcode'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * GET /api/admin/short-links/[id]/qrcode
  * Generate QR code for any short link (admin only)

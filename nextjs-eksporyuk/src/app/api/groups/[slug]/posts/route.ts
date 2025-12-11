@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { containsBannedWords, filterBannedWords } from '@/lib/moderation'
 import { notificationService } from '@/lib/services/notificationService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/groups/[slug]/posts - Get group posts (feed)
 export async function GET(
   request: NextRequest,

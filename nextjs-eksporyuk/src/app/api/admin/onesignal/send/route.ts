@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { sendOneSignalNotification } from '@/lib/onesignal'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST - Send notification via OneSignal
 export async function POST(request: NextRequest) {
   try {

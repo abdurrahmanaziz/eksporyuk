@@ -9,6 +9,9 @@ import {
 } from '@/lib/certificate-generator'
 import { sendCertificateEmail } from '@/lib/email/certificate-email'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 // POST /api/admin/certificates/issue - Manually issue certificate (admin only)
 export async function POST(request: NextRequest) {
   try {

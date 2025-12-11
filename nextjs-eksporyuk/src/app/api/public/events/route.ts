@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 // GET - Fetch public events (Products with type EVENT)
 export async function GET(request: Request) {
   try {

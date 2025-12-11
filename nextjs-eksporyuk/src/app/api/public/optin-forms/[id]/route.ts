@@ -7,6 +7,8 @@ interface RouteParams {
   }>
 }
 
+
+export const dynamic = 'force-dynamic';
 /**
  * GET /api/public/optin-forms/[id]
  * Get optin form by ID or slug (public - no auth required)

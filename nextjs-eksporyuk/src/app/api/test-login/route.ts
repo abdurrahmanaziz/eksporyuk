@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
+
+export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   // Block in production for security
   if (process.env.NODE_ENV === 'production') {

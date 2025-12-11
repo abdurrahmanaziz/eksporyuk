@@ -4,6 +4,10 @@
  * Called when user interacts with reminder notification
  */
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { reminderService } from '@/lib/services/reminderService'

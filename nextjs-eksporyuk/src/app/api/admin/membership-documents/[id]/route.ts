@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { unlink } from 'fs/promises'
 import { join } from 'path'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/admin/membership-documents/[id] - Get document details
 export async function GET(
   request: NextRequest,

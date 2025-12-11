@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options';
 import { prisma } from '@/lib/prisma';
 import * as XLSX from 'xlsx';
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/databases/buyers/import - Import buyers from Excel
 export async function POST(request: NextRequest) {
   try {

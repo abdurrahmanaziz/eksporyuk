@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // Membership level hierarchy
 const LEVEL_HIERARCHY: Record<string, number> = {
   FREE: 0,

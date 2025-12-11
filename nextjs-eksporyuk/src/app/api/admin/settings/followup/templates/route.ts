@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { randomUUID } from 'crypto'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST - Create new template
 export async function POST(request: Request) {
   try {

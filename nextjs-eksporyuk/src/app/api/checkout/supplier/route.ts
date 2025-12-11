@@ -7,6 +7,10 @@ import { xenditService } from '@/lib/xendit'
 import { getNextInvoiceNumber } from '@/lib/invoice-generator'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

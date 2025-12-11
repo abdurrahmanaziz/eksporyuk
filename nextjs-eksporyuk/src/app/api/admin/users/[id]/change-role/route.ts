@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { mailketing } from '@/lib/integrations/mailketing'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/admin/users/[id]/change-role - Add role to user (can have multiple roles)
 export async function POST(
   request: NextRequest,

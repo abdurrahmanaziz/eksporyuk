@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 
+
+export const dynamic = 'force-dynamic';
 /**
  * DEV ONLY: Simulate payment webhook callback
  * This endpoint simulates what Xendit webhook would do after payment

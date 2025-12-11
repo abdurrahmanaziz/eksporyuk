@@ -5,6 +5,8 @@ import { notificationService } from '@/lib/services/notificationService'
 import { NotificationType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Fetch user notifications with filters
 export async function GET(request: NextRequest) {
   try {

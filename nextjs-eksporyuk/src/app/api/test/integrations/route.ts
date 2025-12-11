@@ -9,6 +9,9 @@ import {
   sendUnifiedNotification,
 } from '@/lib/integrations'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 /**
  * POST /api/test/integrations
  * Test all integration services

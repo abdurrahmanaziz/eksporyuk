@@ -39,6 +39,9 @@ const nextConfig = {
   // Fix CSS loading on Vercel
   trailingSlash: false,
   
+  // Disable static optimization for API routes
+  pageExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  
   // Cache headers for static assets
   async headers() {
     return [

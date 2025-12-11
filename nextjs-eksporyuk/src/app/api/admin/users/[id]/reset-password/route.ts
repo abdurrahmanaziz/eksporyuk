@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // Generate random password
 function generatePassword(length = 12): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%'

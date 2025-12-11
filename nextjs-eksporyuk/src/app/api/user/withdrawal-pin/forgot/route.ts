@@ -6,6 +6,10 @@ import crypto from 'crypto'
 import { sendEmail } from '@/lib/email'
 import bcrypt from 'bcryptjs'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // POST - Request PIN reset (send verification code to email)
 export async function POST(request: NextRequest) {
   try {

@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { mailketingService } from '@/lib/services/mailketingService'
 
+
+export const dynamic = 'force-dynamic';
 /**
  * POST /api/auth/forgot-password-v2
  * Request password reset - generates token and sends email via Mailketing

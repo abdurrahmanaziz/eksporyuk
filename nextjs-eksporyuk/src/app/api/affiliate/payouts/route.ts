@@ -6,6 +6,10 @@ import { notificationService } from '@/lib/services/notificationService'
 import { starsenderService } from '@/lib/starsender'
 import bcrypt from 'bcryptjs'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // Minimum payout amount (will be overridden by settings)
 const MIN_PAYOUT = 50000
 

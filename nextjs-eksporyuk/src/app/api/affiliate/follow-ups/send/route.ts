@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { generateBrandedEmail } from '@/lib/reminder-templates'
 import { mailketingService } from '@/lib/services/mailketingService'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * POST /api/affiliate/follow-ups/send
  * Send follow-up email to a lead

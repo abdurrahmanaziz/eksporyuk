@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 // DELETE /api/posts/[id]/comments/[commentId] - Delete a comment
 export async function DELETE(
   req: NextRequest,

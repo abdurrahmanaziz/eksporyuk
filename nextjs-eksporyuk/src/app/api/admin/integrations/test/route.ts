@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth-options'
 import IntegrationService from '@/lib/integrations/service'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
+
 /**
  * Test integration configuration
  */
