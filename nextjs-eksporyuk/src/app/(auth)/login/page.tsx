@@ -34,6 +34,19 @@ function LoginForm() {
     }
   }, [searchParams])
 
+  // Get safe callback URL (avoid auth pages loop)
+  const getCallbackUrl = () => {
+    const callbackUrl = searchParams.get('callbackUrl')
+    // Don't redirect to auth pages
+    if (!callbackUrl || 
+        callbackUrl.includes('/login') || 
+        callbackUrl.includes('/register') || 
+        callbackUrl.includes('/auth/')) {
+      return '/dashboard'
+    }
+    return callbackUrl
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -49,7 +62,7 @@ function LoginForm() {
       if (result?.error) {
         setError(result.error)
       } else {
-        router.push('/dashboard')
+        router.push(getCallbackUrl())
         router.refresh()
       }
     } catch (err: any) {
