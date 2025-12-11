@@ -10,10 +10,20 @@ set -e
 
 echo "🚀 Starting Google OAuth setup on VPS..."
 
-cd /var/www/eksporyuk/nextjs-eksporyuk
+# Detect current directory
+if [ -f "package.json" ]; then
+    echo "📍 Already in project directory"
+elif [ -d "/home/eksporyuk/eksporyuk/nextjs-eksporyuk" ]; then
+    cd /home/eksporyuk/eksporyuk/nextjs-eksporyuk
+elif [ -d "/var/www/eksporyuk/nextjs-eksporyuk" ]; then
+    cd /var/www/eksporyuk/nextjs-eksporyuk
+else
+    echo "❌ Cannot find project directory"
+    exit 1
+fi
 
 echo "📥 Pulling latest code..."
-git pull origin main
+git pull origin main 2>/dev/null || echo "⚠️ Git pull skipped (already up to date or not a git repo)"
 
 echo "🔑 Adding Google OAuth environment variables..."
 
