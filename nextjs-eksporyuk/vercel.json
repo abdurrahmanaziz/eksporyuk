@@ -44,10 +44,4 @@
       ]
     }
   ],
-  "crons": [
-    {
-      "path": "/api/cron/daily-tasks",
-      "schedule": "0 9 * * *"
-    }
-  ]
 }
