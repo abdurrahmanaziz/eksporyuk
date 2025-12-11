@@ -51,6 +51,11 @@ async function checkGoogleOAuth() {
         console.log(`  CLIENT_ID prefix: ${clientId.substring(0, 20)}...`)
       }
       
+      const callbackUrl = cfg.GOOGLE_CALLBACK_URL || cfg.CALLBACK_URL
+      if (callbackUrl) {
+        console.log(`  Callback URL: ${callbackUrl}`)
+      }
+      
       console.log(`  Created: ${config.createdAt}`)
       console.log(`  Updated: ${config.updatedAt}`)
       console.log('')

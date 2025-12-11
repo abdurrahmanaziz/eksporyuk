@@ -32,6 +32,21 @@ function LoginForm() {
     getCsrfToken().then(token => {
       if (token) setCsrfToken(token)
     })
+    
+    // Debug: Check available providers
+    fetch('/api/auth/providers')
+      .then(res => res.json())
+      .then(providers => {
+        console.log('[LOGIN] Available providers:', providers)
+        const hasGoogle = providers.some((p: any) => p.id === 'google' || p.name === 'Google')
+        console.log('[LOGIN] Google provider available:', hasGoogle)
+        if (!hasGoogle) {
+          console.warn('[LOGIN] ⚠️ Google provider not found in NextAuth providers!')
+        }
+      })
+      .catch(err => {
+        console.error('[LOGIN] Failed to fetch providers:', err)
+      })
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,13 +99,25 @@ function LoginForm() {
 
   const handleGoogleLogin = async () => {
     try {
-      await signIn('google', { 
+      console.log('[LOGIN] Google button clicked')
+      console.log('[LOGIN] Callback URL:', callbackUrl)
+      console.log('[LOGIN] Calling signIn with provider: google')
+      
+      const result = await signIn('google', { 
         callbackUrl: callbackUrl,
         redirect: true 
       })
+      
+      console.log('[LOGIN] signIn result:', result)
+      
+      // If we reach here, signIn didn't redirect (which is unusual)
+      if (!result) {
+        console.error('[LOGIN] signIn returned undefined/null')
+        setError('Gagal menginisiasi login Google. Provider mungkin tidak aktif.')
+      }
     } catch (error) {
-      console.error('Google login error:', error)
-      setError('Gagal login dengan Google. Pastikan credentials sudah di-setup.')
+      console.error('[LOGIN] Google login error:', error)
+      setError('Gagal login dengan Google: ' + (error instanceof Error ? error.message : String(error)))
     }
   }
 
