@@ -32,3 +32,5 @@ nextjs-eksporyuk/.next/
 eksporyuk_backup.sql
 eksporyuk_clean.sql
 *.sql
+.vercel
+.env*.local
