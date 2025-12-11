@@ -14,6 +14,8 @@ const nextConfig = {
   // Next.js 14 compatible config
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
+    optimizeCss: true,
+    cssChunking: 'loose',
   },
   
   typescript: {
@@ -36,13 +38,6 @@ const nextConfig = {
   
   // Fix CSS loading on Vercel
   trailingSlash: false,
-  
-  // CSS optimization for Vercel
-  experimental: {
-    ...nextConfig.experimental,
-    optimizeCss: true,
-    cssChunking: 'loose',
-  },
   
   // Cache headers for static assets
   async headers() {
