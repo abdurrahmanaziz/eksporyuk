@@ -416,7 +416,7 @@ export default function AdminAffiliateCreditsPage() {
                 <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
                 <div>
                   <p className="text-amber-800 font-medium">Tidak dapat mengambil balance</p>
-                  <p className="text-amber-700 text-sm">{mailketingError}</p>
+                  <p className="text-amber-700 text-sm">{mailketingError instanceof Error ? mailketingError.message : String(mailketingError)}</p>
                   <a 
                     href="/admin/integrations" 
                     className="text-sm text-purple-600 hover:underline flex items-center gap-1 mt-2"
@@ -499,8 +499,8 @@ export default function AdminAffiliateCreditsPage() {
                   <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-red-800">Gagal Memuat Balance</p>
-                    <p className="text-sm text-red-600 mt-1">{xenditError}</p>
-                    {xenditError.includes('tidak dikonfigurasi') && (
+                    <p className="text-sm text-red-600 mt-1">{xenditError instanceof Error ? xenditError.message : String(xenditError)}</p>
+                    {(xenditError instanceof Error ? xenditError.message : String(xenditError)).includes('tidak dikonfigurasi') && (
                       <a 
                         href="/admin/integrations" 
                         className="text-sm text-red-700 hover:underline flex items-center gap-1 mt-2 font-medium"
