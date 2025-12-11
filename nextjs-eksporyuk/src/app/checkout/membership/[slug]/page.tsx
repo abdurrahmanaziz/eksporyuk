@@ -387,8 +387,8 @@ function MembershipCheckoutContent() {
     : 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12">
-      <div className="max-w-2xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
         <div className="space-y-6">
           {/* Membership Details */}
           <div className="space-y-6">
