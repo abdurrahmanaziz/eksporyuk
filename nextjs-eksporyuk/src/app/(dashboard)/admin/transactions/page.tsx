@@ -266,96 +266,121 @@ export default function AdminTransactionsPage() {
 
   return (
     <ResponsivePageWrapper>
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Transaksi</h1>
-        <p className="text-gray-600">Kelola semua transaksi pembayaran</p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border-0">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
+            <ShoppingCart className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Transaksi</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Kelola semua transaksi pembayaran</p>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white">
-                <DollarSign className="w-5 h-5" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border-0">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform"></div>
+            <div className="p-4 relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md">
+                  <DollarSign className="w-5 h-5" />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Revenue</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Revenue</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white mt-1">
+                {formatCurrency(stats.totalRevenue)}
+              </p>
             </div>
-            <p className="text-lg font-bold text-gray-900">
-              {formatCurrency(stats.totalRevenue)}
-            </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center text-white">
-                <CheckCircle className="w-5 h-5" />
+          <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border-0">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-400/20 to-green-600/20 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform"></div>
+            <div className="p-4 relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white shadow-md">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Sukses</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Sukses</p>
+              <p className="text-lg font-bold text-green-600 dark:text-green-400 mt-1">
+                {stats.successTransactions}
+              </p>
             </div>
-            <p className="text-lg font-bold text-green-600">
-              {stats.successTransactions}
-            </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-yellow-500 flex items-center justify-center text-white">
-                <Clock className="w-5 h-5" />
+          <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border-0">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-yellow-400/20 to-yellow-600/20 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform"></div>
+            <div className="p-4 relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-white shadow-md">
+                  <Clock className="w-5 h-5" />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Pending</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+              <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400 mt-1">
+                {stats.pendingTransactions}
+              </p>
             </div>
-            <p className="text-lg font-bold text-yellow-600">
-              {stats.pendingTransactions}
-            </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-red-500 flex items-center justify-center text-white">
-                <XCircle className="w-5 h-5" />
+          <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border-0">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-400/20 to-red-600/20 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform"></div>
+            <div className="p-4 relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white shadow-md">
+                  <XCircle className="w-5 h-5" />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Gagal</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Gagal</p>
+              <p className="text-lg font-bold text-red-600 dark:text-red-400 mt-1">
+                {stats.failedTransactions}
+              </p>
             </div>
-            <p className="text-lg font-bold text-red-600">
-              {stats.failedTransactions}
-            </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center text-white">
-                <TrendingUp className="w-5 h-5" />
+          <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border-0">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-400/20 to-purple-600/20 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform"></div>
+            <div className="p-4 relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                  <TrendingUp className="w-5 h-5" />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Komisi Aff</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Komisi Aff</p>
+              <p className="text-lg font-bold text-purple-600 dark:text-purple-400 mt-1">
+                {formatCurrency(stats.totalCommissions)}
+              </p>
             </div>
-            <p className="text-lg font-bold text-purple-600">
-              {formatCurrency(stats.totalCommissions)}
-            </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white">
-                <CreditCard className="w-5 h-5" />
+          <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border-0">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-400/20 to-orange-600/20 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform"></div>
+            <div className="p-4 relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white shadow-md">
+                  <CreditCard className="w-5 h-5" />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Diskon</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Diskon</p>
+              <p className="text-lg font-bold text-orange-600 dark:text-orange-400 mt-1">
+                {formatCurrency(stats.totalDiscount)}
+              </p>
             </div>
-            <p className="text-lg font-bold text-orange-600">
-              {formatCurrency(stats.totalDiscount)}
-            </p>
           </div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-0">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Search */}
           <div className="lg:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Search className="w-4 h-4 inline mr-1" />
               Cari Transaksi
             </label>
@@ -364,20 +389,20 @@ export default function AdminTransactionsPage() {
               placeholder="ID, nama, email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
             />
           </div>
 
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Filter className="w-4 h-4 inline mr-1" />
               Status
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
             >
               <option value="all">Semua Status</option>
               <option value="SUCCESS">Berhasil</option>
@@ -388,7 +413,7 @@ export default function AdminTransactionsPage() {
 
           {/* Date From */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Calendar className="w-4 h-4 inline mr-1" />
               Dari Tanggal
             </label>
@@ -396,20 +421,20 @@ export default function AdminTransactionsPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
             />
           </div>
 
           {/* Date To */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Sampai Tanggal
             </label>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
             />
           </div>
         </div>
@@ -418,7 +443,7 @@ export default function AdminTransactionsPage() {
         <div className="mt-4 flex justify-end">
           <button
             onClick={exportTransactions}
-            className="flex items-center gap-2 px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -427,41 +452,41 @@ export default function AdminTransactionsPage() {
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Member ID
                 </th>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Produk
                 </th>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Harga Asli
                 </th>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Diskon
                 </th>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Final
                 </th>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Affiliate
                 </th>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Tanggal
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {filteredTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
