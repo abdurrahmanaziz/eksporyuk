@@ -52,8 +52,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({
           success: false,
           data: null,
-          message: 'Failed to fetch balance - empty response'
-        }, { status: 400 })
+          message: 'Tidak dapat mengambil saldo - response kosong dari Xendit'
+        }, { status: 200 }) // Return 200 to prevent UI crash
       }
     } catch (xenditError: any) {
       console.error('❌ [API] Xendit getBalance error:', {
@@ -65,28 +65,38 @@ export async function GET(req: NextRequest) {
         fullError: xenditError
       })
       
-      // Return more detailed error
+      // Check for authentication errors
+      const isAuthError = xenditError.statusCode === 401 || 
+                          xenditError.message?.toLowerCase().includes('unauthorized') ||
+                          xenditError.message?.toLowerCase().includes('authentication');
+      
+      // Return 200 with error info to prevent UI crash
       return NextResponse.json({
         success: false,
         data: null,
-        message: `Xendit API Error: ${xenditError.message || 'Unknown error'}`,
+        message: isAuthError 
+          ? 'Xendit API Key tidak valid. Silakan periksa konfigurasi di halaman Integrasi.'
+          : `Tidak dapat mengambil saldo Xendit: ${xenditError.message || 'Unknown error'}`,
+        isConfigurationError: isAuthError,
         error: {
           code: xenditError.code || xenditError.statusCode,
           message: xenditError.message,
           status: xenditError.status || xenditError.statusCode
         }
-      }, { status: xenditError.statusCode || 500 })
+      }, { status: 200 }) // Return 200 to prevent UI crash, error handled in response body
     }
 
   } catch (error: any) {
     console.error('❌ Error fetching Xendit balance:', error)
+    // Return 200 with error info to prevent UI crash
     return NextResponse.json(
       { 
         success: false, 
-        message: error.message || 'Internal server error',
+        data: null,
+        message: error.message || 'Terjadi kesalahan saat mengambil saldo Xendit',
         error: error.message 
       },
-      { status: 500 }
+      { status: 200 }
     )
   }
 }
