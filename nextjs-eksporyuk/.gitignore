@@ -39,6 +39,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# uploaded files
-/public/uploads/
+# uploaded files (allow some sample files for production)
+/public/uploads/*/
+!public/uploads/image/
 .next/cache/
