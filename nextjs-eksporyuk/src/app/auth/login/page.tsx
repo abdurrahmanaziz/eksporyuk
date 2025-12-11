@@ -18,7 +18,14 @@ function LoginForm() {
 
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || searchParams.get('redirect') || '/dashboard'
+  
+  // Get safe callback URL (avoid auth pages loop)
+  const rawCallbackUrl = searchParams.get('callbackUrl') || searchParams.get('redirect') || '/dashboard'
+  const callbackUrl = (rawCallbackUrl.includes('/login') || 
+                       rawCallbackUrl.includes('/register') || 
+                       rawCallbackUrl.includes('/auth/')) 
+                      ? '/dashboard' 
+                      : rawCallbackUrl
 
   useEffect(() => {
     // Get CSRF token on mount

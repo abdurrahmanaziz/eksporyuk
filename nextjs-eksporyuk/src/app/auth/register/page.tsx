@@ -48,7 +48,7 @@ export default function RegisterPage() {
   const handleGoogleRegister = async () => {
     setIsLoading(true)
     try {
-      await signIn('google', { callbackUrl: '/auth/register' })
+      await signIn('google', { callbackUrl: '/dashboard' })
     } catch (error) {
       console.error('Google sign in error:', error)
       setError('Gagal login dengan Google. Pastikan credentials sudah di-setup.')
