@@ -25,13 +25,18 @@ import {
   Percent,
   CreditCard,
   RefreshCw,
-  Loader2
+  Loader2,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  Clock
 } from 'lucide-react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAdminStats, useXenditBalance } from '@/hooks/use-api'
+import { cn } from '@/lib/utils'
 
 interface DashboardStats {
   users: {
@@ -102,77 +107,125 @@ export default function AdminPage() {
 
   return (
     <ResponsivePageWrapper>
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto p-6 space-y-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen">
+        {/* Modern Header with Gradient */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Crown className="w-8 h-8 text-yellow-500" />
-              Admin Dashboard
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Welcome back, {session.user.name} • Real-time platform overview
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-lg">
+                <Crown className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+                Dashboard
+              </h1>
+            </div>
+            <p className="text-muted-foreground flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {stats?.users.online !== undefined && (
-              <Badge variant="outline" className="gap-1">
-                <Radio className="h-3 w-3 text-green-500 animate-pulse" />
-                {stats.users.online} online
-              </Badge>
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-green-700 dark:text-green-300">{stats.users.online} Online</span>
+              </div>
             )}
             {stats?.moderation.pendingReports > 0 && (
-              <Badge variant="destructive" className="gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {stats.moderation.pendingReports} reports
+              <Badge variant="destructive" className="gap-1 px-3 py-2 rounded-xl">
+                <AlertCircle className="h-4 w-4" />
+                {stats.moderation.pendingReports} Reports
               </Badge>
             )}
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => { refetchStats(); refetchXendit(); }}
+              className="rounded-xl"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Primary Stats */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {/* Total Users */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
+        {/* Modern Stats Cards with Gradient */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* Total Users Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                {!statsLoading && stats?.users.growth && (
+                  <div className={cn(
+                    "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium",
+                    parseFloat(stats.users.growth) >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  )}>
+                    {parseFloat(stats.users.growth) >= 0 ? (
+                      <ArrowUpRight className="h-3 w-3" />
+                    ) : (
+                      <ArrowDownRight className="h-3 w-3" />
+                    )}
+                    {stats.users.growth}%
+                  </div>
+                )}
+              </div>
               {statsLoading ? (
                 <Skeleton className="h-8 w-24" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{stats?.users.total.toLocaleString()}</div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <TrendingUp className="h-3 w-3 text-green-500" />
-                    <span>+{stats?.users.growth}% this month</span>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                    {stats?.users.total.toLocaleString()}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {stats?.users.active.toLocaleString()} active • {stats?.users.new30Days} new
+                  <p className="text-sm text-muted-foreground mb-3">Total Users</p>
+                  <div className="flex items-center gap-4 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-muted-foreground">{stats?.users.active.toLocaleString()} Active</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-muted-foreground">{stats?.users.new30Days} New</span>
+                    </div>
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          {/* Total Revenue */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
+          {/* Total Revenue Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400/20 to-green-600/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
+                  <DollarSign className="h-6 w-6 text-white" />
+                </div>
+                {!statsLoading && stats?.revenue.growth && (
+                  <div className={cn(
+                    "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium",
+                    parseFloat(stats.revenue.growth) >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  )}>
+                    {parseFloat(stats.revenue.growth) >= 0 ? (
+                      <ArrowUpRight className="h-3 w-3" />
+                    ) : (
+                      <ArrowDownRight className="h-3 w-3" />
+                    )}
+                    {stats.revenue.growth}%
+                  </div>
+                )}
+              </div>
               {statsLoading ? (
                 <Skeleton className="h-8 w-32" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{formatCurrency(stats?.revenue.total || 0)}</div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <TrendingUp className="h-3 w-3 text-green-500" />
-                    <span>+{stats?.revenue.growth}% growth</span>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                    {formatCurrency(stats?.revenue.total || 0)}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mb-3">Total Revenue</p>
+                  <div className="text-xs text-muted-foreground">
                     {formatCurrency(stats?.revenue.thisMonth || 0)} this month
                   </div>
                 </>
@@ -180,48 +233,55 @@ export default function AdminPage() {
             </CardContent>
           </Card>
 
-          {/* Active Memberships */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Memberships</CardTitle>
-              <Crown className="h-4 w-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
+          {/* Memberships Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-purple-600/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                  <Crown className="h-6 w-6 text-white" />
+                </div>
+              </div>
               {statsLoading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{stats?.memberships.active.toLocaleString()}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Active memberships
+                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                    {stats?.memberships.active.toLocaleString()}
                   </div>
+                  <p className="text-sm text-muted-foreground mb-3">Active Members</p>
                   <div className="text-xs text-muted-foreground">
-                    {stats?.memberships.total.toLocaleString()} total
+                    {stats?.memberships.total.toLocaleString()} total memberships
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          {/* Pending Transactions */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
+          {/* Transactions Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-400/20 to-orange-600/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg">
+                  <ShoppingCart className="h-6 w-6 text-white" />
+                </div>
+                {!statsLoading && stats?.transactions.pending > 0 && (
+                  <Badge variant="destructive" className="rounded-lg">
+                    {stats.transactions.pending}
+                  </Badge>
+                )}
+              </div>
               {statsLoading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{stats?.transactions.total.toLocaleString()}</div>
-                  {stats?.transactions.pending > 0 && (
-                    <Badge variant="destructive" className="mt-2">
-                      {stats.transactions.pending} pending
-                    </Badge>
-                  )}
-                  <div className="text-xs text-muted-foreground mt-1">
-                    All time transactions
+                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                    {stats?.transactions.total.toLocaleString()}
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">Transactions</p>
+                  <div className="text-xs text-muted-foreground">
+                    {stats?.transactions.pending > 0 ? `${stats.transactions.pending} pending approval` : 'All processed'}
                   </div>
                 </>
               )}
@@ -229,20 +289,34 @@ export default function AdminPage() {
           </Card>
         </div>
 
-        {/* Xendit Balance Card */}
-        <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-blue-600 rounded-lg">
-                  <CreditCard className="w-6 h-6 text-white" />
+        {/* Xendit Balance Card - Modern Design */}
+        <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
+                  <CreditCard className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-blue-900">Saldo Xendit</CardTitle>
-                  <CardDescription>Balance payment gateway untuk transaksi otomatis</CardDescription>
+                  <h3 className="text-2xl font-bold mb-1">Xendit Balance</h3>
+                  <p className="text-blue-100 text-sm">Payment gateway balance</p>
                 </div>
               </div>
-              <Button 
+              <div className="flex items-center gap-4">
+                {xenditLoading ? (
+                  <Skeleton className="h-12 w-48 bg-white/20" />
+                ) : xenditError ? (
+                  <div className="text-sm bg-red-500/20 px-4 py-2 rounded-lg">
+                    {xenditError instanceof Error ? xenditError.message : String(xenditError)}
+                  </div>
+                ) : (
+                  <div className="text-right">
+                    <div className="text-4xl font-bold">{formatCurrency(xenditBalance?.balance || 0)}</div>
+                    <div className="text-sm text-blue-100 mt-1">Available balance</div>
+                  </div>
+                )}
+                <Button 
+```
                 variant="outline" 
                 size="sm"
                 onClick={() => window.location.reload()}
