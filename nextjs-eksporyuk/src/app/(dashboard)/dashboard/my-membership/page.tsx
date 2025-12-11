@@ -203,7 +203,7 @@ export default function MyMembershipPage() {
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
           <XCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-          <p className="text-red-700 font-medium">{error}</p>
+          <p className="text-red-700 font-medium">{typeof error === 'string' ? error : String(error)}</p>
           <button
             onClick={fetchMembershipData}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"

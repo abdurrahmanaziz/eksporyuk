@@ -217,7 +217,7 @@ export default function AdminUserDetailPage() {
         <div className="p-6 max-w-4xl mx-auto">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-red-800 mb-2">{error}</h2>
+            <h2 className="text-xl font-semibold text-red-800 mb-2">{typeof error === 'string' ? error : String(error)}</h2>
             <button
               onClick={() => router.push('/admin/users')}
               className="text-red-600 hover:underline"
@@ -260,7 +260,7 @@ export default function AdminUserDetailPage() {
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
             <XCircle className="w-5 h-5 text-red-600" />
-            <span className="text-red-800">{error}</span>
+            <span className="text-red-800">{typeof error === 'string' ? error : String(error)}</span>
           </div>
         )}
         
