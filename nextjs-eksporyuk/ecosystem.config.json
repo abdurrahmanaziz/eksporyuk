@@ -11,6 +11,9 @@
     "env": {
       "NODE_ENV": "production",
       "PORT": "3000",
+      "DATABASE_URL": "postgresql://neondb_owner:npg_YUbWXw6urZ0d@ep-purple-breeze-a1ovfiz0-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require",
+      "NEXTAUTH_SECRET": "eksporyuk-secret-key-2024-production",
+      "NEXTAUTH_URL": "https://app.eksporyuk.com",
       "GOOGLE_CLIENT_ID": "805480551537-b89th9psujgarmr8atcj140j9q353eb.apps.googleusercontent.com",
       "GOOGLE_CLIENT_SECRET": "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"
     },
