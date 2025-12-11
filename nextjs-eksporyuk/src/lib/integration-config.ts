@@ -38,6 +38,12 @@ export interface PusherConfig {
   PUSHER_CLUSTER: string
 }
 
+export interface GoogleOAuthConfig {
+  GOOGLE_CLIENT_ID: string
+  GOOGLE_CLIENT_SECRET: string
+  GOOGLE_CALLBACK_URL?: string
+}
+
 /**
  * Get Xendit configuration from database or fallback to environment variables
  * Priority: Database config > Environment variables
@@ -240,6 +246,56 @@ export async function getPusherConfig(): Promise<PusherConfig | null> {
     return null
   } catch (error) {
     console.error('Error loading Pusher config:', error)
+    return null
+  }
+}
+
+/**
+ * Get Google OAuth configuration from database or fallback to environment variables
+ */
+export async function getGoogleOAuthConfig(): Promise<GoogleOAuthConfig | null> {
+  try {
+    const integrationConfig = await prisma.integrationConfig.findUnique({
+      where: { service: 'google_oauth' }
+    })
+
+    if (integrationConfig && integrationConfig.isActive) {
+      const config = integrationConfig.config as any
+      
+      if (config.GOOGLE_CLIENT_ID && config.GOOGLE_CLIENT_SECRET) {
+        console.log('✅ Using Google OAuth config from database')
+        return {
+          GOOGLE_CLIENT_ID: config.GOOGLE_CLIENT_ID,
+          GOOGLE_CLIENT_SECRET: config.GOOGLE_CLIENT_SECRET,
+          GOOGLE_CALLBACK_URL: config.GOOGLE_CALLBACK_URL
+        }
+      }
+    }
+
+    // Fallback to environment
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+      console.log('⚠️ Using Google OAuth config from environment variables (fallback)')
+      return {
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+        GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL
+      }
+    }
+
+    console.warn('⚠️ No Google OAuth configuration found in database or environment')
+    return null
+  } catch (error) {
+    console.error('❌ Error loading Google OAuth config:', error)
+    
+    // Final fallback to environment
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+      return {
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+        GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL
+      }
+    }
+    
     return null
   }
 }

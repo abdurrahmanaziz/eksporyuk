@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from '@/lib/prisma'
+import { getGoogleOAuthConfig } from '@/lib/integration-config'
 import bcrypt from 'bcryptjs'
 
 // Conditionally include Google provider only if credentials are configured
@@ -79,6 +80,8 @@ const providers: any[] = [
 ]
 
 // Add Google provider only if credentials are configured
+// Note: NextAuth providers are loaded at startup, so we use environment variables
+// The database config is checked at runtime in signIn callback
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   console.log('[AUTH-OPTIONS] Google OAuth enabled - Client ID:', process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + '...')
   providers.push(
@@ -95,7 +98,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     })
   )
 } else {
-  console.log('[AUTH-OPTIONS] Google OAuth NOT enabled - Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET')
+  console.log('[AUTH-OPTIONS] Google OAuth NOT enabled - Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in environment')
+  console.log('[AUTH-OPTIONS] To enable Google OAuth, either:')
+  console.log('[AUTH-OPTIONS]   1. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env')
+  console.log('[AUTH-OPTIONS]   2. Configure in Admin > Integrations page (requires restart)')
 }
 console.log('[AUTH-OPTIONS] Total providers configured:', providers.length)
 
