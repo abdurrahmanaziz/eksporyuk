@@ -267,7 +267,7 @@ export default function ApplyAffiliatePage() {
               {error && (
                 <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
                   <XCircle className="w-5 h-5 text-red-600" />
-                  <span className="text-red-800">{error}</span>
+                  <span className="text-red-800">{typeof error === 'string' ? error : String(error)}</span>
                 </div>
               )}
 

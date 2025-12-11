@@ -229,7 +229,7 @@ export default function MembershipCoursesPage() {
             <CardContent className="py-6">
               <div className="flex items-center gap-3 text-red-700">
                 <AlertCircle className="w-5 h-5" />
-                <p>{error}</p>
+                <p>{typeof error === 'string' ? error : String(error)}</p>
               </div>
             </CardContent>
           </Card>
