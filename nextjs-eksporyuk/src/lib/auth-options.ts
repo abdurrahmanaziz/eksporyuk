@@ -124,17 +124,32 @@ export const authOptions: NextAuthOptions = {
   providers,
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log('[AUTH] signIn callback - provider:', account?.provider, 'email:', user.email)
+      const timestamp = new Date().toISOString()
+      console.log(`[AUTH ${timestamp}] ====== signIn callback START ======`)
+      console.log(`[AUTH ${timestamp}] Provider:`, account?.provider)
+      console.log(`[AUTH ${timestamp}] User email:`, user.email)
+      console.log(`[AUTH ${timestamp}] User name:`, user.name)
+      console.log(`[AUTH ${timestamp}] User image:`, user.image)
+      console.log(`[AUTH ${timestamp}] Account type:`, account?.type)
       
       // Handle Google OAuth sign in
       if (account?.provider === 'google' && user.email) {
         try {
+          console.log(`[AUTH ${timestamp}] Processing Google OAuth login...`)
+          
           // Check if user exists in database
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email }
           })
           
-          console.log('[AUTH] Google signIn - existing user:', !!existingUser)
+          console.log(`[AUTH ${timestamp}] Google signIn - existing user:`, !!existingUser)
+          if (existingUser) {
+            console.log(`[AUTH ${timestamp}]   User ID:`, existingUser.id)
+            console.log(`[AUTH ${timestamp}]   Username:`, existingUser.username)
+            console.log(`[AUTH ${timestamp}]   Role:`, existingUser.role)
+            console.log(`[AUTH ${timestamp}]   Is Active:`, existingUser.isActive)
+            console.log(`[AUTH ${timestamp}]   Is Suspended:`, existingUser.isSuspended)
+          }
 
           if (!existingUser) {
             // Create new user from Google OAuth
@@ -148,9 +163,9 @@ export const authOptions: NextAuthOptions = {
               counter++
             }
             
-            console.log('[AUTH] Creating new Google user:', user.email, 'username:', username)
+            console.log(`[AUTH ${timestamp}] Creating new Google user:`, user.email, 'username:', username)
             
-            await prisma.user.create({
+            const newUser = await prisma.user.create({
               data: {
                 email: user.email,
                 name: user.name || username,
@@ -161,17 +176,17 @@ export const authOptions: NextAuthOptions = {
                 // No password for OAuth users
               }
             })
-            console.log('[AUTH] New Google user created successfully')
+            console.log(`[AUTH ${timestamp}] New Google user created successfully - ID:`, newUser.id)
           } else {
             // Check if user is suspended
             if (existingUser.isSuspended) {
-              console.log('[AUTH] Google user is suspended:', existingUser.suspendReason)
+              console.log(`[AUTH ${timestamp}] ❌ BLOCKED - Google user is suspended:`, existingUser.suspendReason)
               return false // Block sign in
             }
             
             // Check if user is active
             if (!existingUser.isActive) {
-              console.log('[AUTH] Google user is not active')
+              console.log(`[AUTH ${timestamp}] ❌ BLOCKED - Google user is not active`)
               return false // Block sign in
             }
             
@@ -181,14 +196,20 @@ export const authOptions: NextAuthOptions = {
                 where: { email: user.email },
                 data: { avatar: user.image }
               })
+              console.log(`[AUTH ${timestamp}] Updated user avatar`)
             }
+            
+            console.log(`[AUTH ${timestamp}] ✅ Google login allowed for existing user`)
           }
         } catch (error) {
-          console.error('[AUTH] Error creating/updating Google user:', error)
+          console.error(`[AUTH ${timestamp}] ❌ ERROR in Google signIn callback:`, error)
+          console.error(`[AUTH ${timestamp}] Error stack:`, error instanceof Error ? error.stack : 'No stack')
           // Still allow sign in even if database operation fails
+          console.log(`[AUTH ${timestamp}] Allowing sign in despite database error`)
         }
       }
       
+      console.log(`[AUTH ${timestamp}] ====== signIn callback END - Returning true ======`)
       return true
     },
     async jwt({ token, user, account, profile }) {
