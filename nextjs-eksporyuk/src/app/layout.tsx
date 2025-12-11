@@ -32,11 +32,23 @@ export default function RootLayout({
     <html lang="id" className={poppins.variable}>
       <head>
         {/* Ensure CSS is loaded first */}
+        <link
+          rel="preload"
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          as="style"
+          onLoad="this.onload=null;this.rel='stylesheet'"
+        />
+        <noscript>
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          />
+        </noscript>
         <style dangerouslySetInnerHTML={{
           __html: `
-            html { font-family: var(--font-poppins), system-ui, sans-serif; }
+            html { font-family: 'Poppins', system-ui, sans-serif; }
             * { box-sizing: border-box; }
-            body { margin: 0; padding: 0; }
+            body { margin: 0; padding: 0; font-family: 'Poppins', system-ui, sans-serif; }
           `
         }} />
       </head>
