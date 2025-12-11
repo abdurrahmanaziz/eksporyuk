@@ -140,30 +140,30 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-white font-poppins">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">E</span>
+      <nav className="nav">
+        <div className="nav-container">
+          <div className="nav-content">
+            <Link href="/" className="nav-logo">
+              <div className="nav-logo-icon">
+                <span>E</span>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="nav-logo-text">
                 {settings?.navbarLogoText || 'Eksporyuk'}
               </span>
             </Link>
             
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Fitur</a>
-              <a href="#pricing" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Harga</a>
-              <a href="#testimonials" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Testimoni</a>
-              <a href="#faq" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">FAQ</a>
+            <div className="nav-links">
+              <a href="#features" className="nav-link">Fitur</a>
+              <a href="#pricing" className="nav-link">Harga</a>
+              <a href="#testimonials" className="nav-link">Testimoni</a>
+              <a href="#faq" className="nav-link">FAQ</a>
             </div>
             
-            <div className="flex items-center gap-3">
-              <Link href="/auth/login" className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors">
+            <div className="nav-actions">
+              <Link href="/auth/login" className="btn btn-ghost">
                 Masuk
               </Link>
-              <a href="#pricing" className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all">
+              <a href="#pricing" className="btn btn-primary">
                 {settings?.navbarCtaText || 'Gabung Komunitas'}
               </a>
             </div>
@@ -172,32 +172,31 @@ export default async function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 py-20 lg:py-32">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-lg shadow-blue-500/10 mb-8">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-gray-700">{settings?.heroBadgeText || '7,000+ Calon Eksportir Bergabung'}</span>
+      <section className="hero">
+        <div className="hero-container">
+          <div className="hero-content">
+            <div className="hero-badge">
+              <span className="hero-badge-dot" />
+              <span className="hero-badge-text">{settings?.heroBadgeText || '7,000+ Calon Eksportir Bergabung'}</span>
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="hero-title">
               {settings?.heroTitle?.split(settings?.heroHighlight || '')[0]}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="hero-highlight">
                 {settings?.heroHighlight || 'Mudah dan Praktis'}
               </span>
               {settings?.heroTitle?.split(settings?.heroHighlight || '')[1] || ' di Komunitas'}
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="hero-description">
               {settings?.heroDescription || 'Dibimbing langsung oleh praktisi ekspor berpengalaman. Mulai dari persiapan dokumen, mencari buyer, hingga pengiriman barang ke luar negeri.'}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="#pricing" className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-xl shadow-blue-500/30 transition-all transform hover:scale-105">
+            <div className="hero-actions">
+              <a href="#pricing" className="btn-hero-primary">
                 {settings?.heroCtaText || 'Mulai Belajar Sekarang'}
               </a>
-              <a href="#features" className="px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl shadow-lg border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all">
+              <a href="#features" className="btn-hero-secondary">
                 {settings?.heroCtaSecondaryText || 'Lihat Fitur'}
               </a>
             </div>

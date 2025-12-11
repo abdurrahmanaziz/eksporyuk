@@ -31,6 +31,9 @@ export default function RootLayout({
   return (
     <html lang="id" className={poppins.variable}>
       <head>
+        {/* Critical CSS loading */}
+        <link rel="stylesheet" href="/critical.css" />
+        
         {/* Ensure CSS is loaded first */}
         <link
           rel="preload"
@@ -44,11 +47,21 @@ export default function RootLayout({
             href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
           />
         </noscript>
+        
         <style dangerouslySetInnerHTML={{
           __html: `
-            html { font-family: 'Poppins', system-ui, sans-serif; }
+            /* Immediate font loading */
+            html, body { 
+              font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+              margin: 0;
+              padding: 0;
+            }
             * { box-sizing: border-box; }
-            body { margin: 0; padding: 0; font-family: 'Poppins', system-ui, sans-serif; }
+            
+            /* Emergency fallback if CSS doesn't load */
+            .min-h-screen { min-height: 100vh; }
+            .bg-white { background-color: #ffffff; }
+            .font-poppins { font-family: 'Poppins', sans-serif !important; }
           `
         }} />
       </head>
