@@ -15,6 +15,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(authLoginUrl)
   }
 
+  // Fix CSS loading for Vercel
+  if (pathname.startsWith('/_next/static/') || pathname.includes('.css')) {
+    const response = NextResponse.next()
+    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+    response.headers.set('Content-Type', pathname.includes('.css') ? 'text/css' : 'application/javascript')
+    return response
+  }
+
   // Continue with auth middleware for protected routes
   return authMiddleware(request as NextRequestWithAuth)
 }
