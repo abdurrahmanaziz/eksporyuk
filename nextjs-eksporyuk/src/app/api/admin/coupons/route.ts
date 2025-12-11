@@ -89,25 +89,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Build data object - use undefined for empty arrays (Prisma JSON field requirement)
+    const couponData: any = {
+      code: code.toUpperCase(),
+      description: description || null,
+      discountType: discountType,
+      discountValue: Number(discountValue),
+      usageLimit: usageLimit ? Number(usageLimit) : null,
+      usageCount: 0,
+      validUntil: validUntil ? new Date(validUntil) : null,
+      isActive: isActive !== undefined ? isActive : true,
+      minPurchase: minPurchase ? Number(minPurchase) : null,
+      isAffiliateEnabled: isAffiliateEnabled || false,
+      isForRenewal: isForRenewal || false,
+      maxGeneratePerAffiliate: maxGeneratePerAffiliate ? Number(maxGeneratePerAffiliate) : null,
+      maxUsagePerCoupon: maxUsagePerCoupon ? Number(maxUsagePerCoupon) : null,
+    }
+
+    // Only set JSON fields if they have values (Prisma doesn't accept null for JSON)
+    if (productIds && productIds.length > 0) {
+      couponData.productIds = productIds
+    }
+    if (membershipIds && membershipIds.length > 0) {
+      couponData.membershipIds = membershipIds
+    }
+    if (courseIds && courseIds.length > 0) {
+      couponData.courseIds = courseIds
+    }
+
     const coupon = await prisma.coupon.create({
-      data: {
-        code: code.toUpperCase(),
-        description: description || null,
-        discountType: discountType,
-        discountValue: Number(discountValue),
-        usageLimit: usageLimit ? Number(usageLimit) : null,
-        usageCount: 0,
-        validUntil: validUntil ? new Date(validUntil) : null,
-        isActive: isActive !== undefined ? isActive : true,
-        minPurchase: minPurchase ? Number(minPurchase) : null,
-        productIds: productIds && productIds.length > 0 ? productIds : null,
-        membershipIds: membershipIds && membershipIds.length > 0 ? membershipIds : null,
-        courseIds: courseIds && courseIds.length > 0 ? courseIds : null,
-        isAffiliateEnabled: isAffiliateEnabled || false,
-        isForRenewal: isForRenewal || false,
-        maxGeneratePerAffiliate: maxGeneratePerAffiliate ? Number(maxGeneratePerAffiliate) : null,
-        maxUsagePerCoupon: maxUsagePerCoupon ? Number(maxUsagePerCoupon) : null,
-      },
+      data: couponData,
     })
 
     return NextResponse.json({ coupon }, { status: 201 })

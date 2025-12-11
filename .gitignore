@@ -25,3 +25,7 @@ Thumbs.db
 node_modules/
 **/node_modules
 *.node
+nextjs-eksporyuk/.next/
+nextjs-eksporyuk/next-build.tar.gz
+*.tar.gz
+nextjs-eksporyuk/.next/

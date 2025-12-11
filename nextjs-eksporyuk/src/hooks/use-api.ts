@@ -36,13 +36,26 @@ export function useXenditBalance() {
     queryKey: ['admin', 'xendit', 'balance'],
     queryFn: async () => {
       const res = await fetch('/api/admin/xendit/balance')
-      if (!res.ok) throw new Error('Failed to fetch balance')
       const data = await res.json()
-      if (!data.success) throw new Error(data.message)
+      
+      // If it's a configuration error, return null instead of throwing
+      if (data.isConfigurationError) {
+        console.log('[XENDIT] Not configured, returning null balance')
+        return null
+      }
+      
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to fetch balance')
+      }
+      
       return data.data
     },
     // Refetch every minute
     refetchInterval: 60000,
+    // Don't retry on configuration errors
+    retry: (failureCount, error) => {
+      return failureCount < 3 && !error.message?.includes('dikonfigurasi')
+    },
   })
 }
 

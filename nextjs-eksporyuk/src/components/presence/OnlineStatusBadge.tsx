@@ -33,7 +33,13 @@ export default function OnlineStatusBadge({
     let pusher: Pusher | null = null
 
     try {
-      pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+      if (!pusherKey) {
+        // Pusher not configured, skip real-time updates
+        return
+      }
+      
+      pusher = new Pusher(pusherKey, {
         cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
         forceTLS: true
       })

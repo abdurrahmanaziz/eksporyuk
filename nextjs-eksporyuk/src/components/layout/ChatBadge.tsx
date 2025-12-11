@@ -27,8 +27,14 @@ export default function ChatBadge() {
 
     // Setup Pusher for real-time updates
     if (session?.user?.id) {
-      const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+      if (!pusherKey) {
+        console.log('[PUSHER] Key not configured in ChatBadge')
+        return
+      }
+
+      const pusher = new Pusher(pusherKey, {
+        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
       })
 
       const channel = pusher.subscribe(`user-${session.user.id}`)

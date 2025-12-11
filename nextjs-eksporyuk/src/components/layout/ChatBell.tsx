@@ -134,8 +134,9 @@ export default function ChatBell() {
     fetchChatRooms()
 
     // Setup Pusher real-time updates
-    if (session?.user?.id && typeof window !== 'undefined' && process.env.NEXT_PUBLIC_PUSHER_KEY) {
-      const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    if (session?.user?.id && typeof window !== 'undefined' && pusherKey) {
+      const pusher = new Pusher(pusherKey, {
         cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
       })
 

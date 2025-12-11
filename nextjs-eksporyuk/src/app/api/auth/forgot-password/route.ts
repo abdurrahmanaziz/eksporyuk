@@ -33,14 +33,14 @@ export async function POST(request: NextRequest) {
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex')
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+    const expires = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
 
     // Store token in database
     await prisma.emailVerificationToken.create({
       data: {
-        userId: user.id,
+        identifier: user.id,
         token: resetToken,
-        expiresAt,
+        expires,
         type: 'PASSWORD_RESET'
       }
     })
@@ -145,9 +145,8 @@ export async function PUT(request: NextRequest) {
       where: {
         token,
         type: 'PASSWORD_RESET',
-        expiresAt: { gt: new Date() }
-      },
-      include: { user: true }
+        expires: { gt: new Date() }
+      }
     })
 
     if (!resetToken) {
@@ -157,12 +156,25 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // Get user data
+    const user = await prisma.user.findUnique({
+      where: { id: resetToken.identifier },
+      select: { id: true, email: true, name: true }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User tidak ditemukan' },
+        { status: 404 }
+      )
+    }
+
     // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10)
 
     // Update password
     await prisma.user.update({
-      where: { id: resetToken.userId },
+      where: { id: user.id },
       data: { password: hashedPassword }
     })
 
@@ -174,14 +186,14 @@ export async function PUT(request: NextRequest) {
     // Delete all other password reset tokens for this user
     await prisma.emailVerificationToken.deleteMany({
       where: {
-        userId: resetToken.userId,
+        identifier: user.id,
         type: 'PASSWORD_RESET'
       }
     })
 
     // Send confirmation email
     await sendEmail({
-      to: resetToken.user.email,
+      to: user.email,
       subject: '✅ Password Berhasil Direset - EksporYuk',
       html: `
         <!DOCTYPE html>
@@ -196,7 +208,7 @@ export async function PUT(request: NextRequest) {
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-            <p style="font-size: 16px; margin-bottom: 20px;">Halo <strong>${resetToken.user.name}</strong>,</p>
+            <p style="font-size: 16px; margin-bottom: 20px;">Halo <strong>${user.name}</strong>,</p>
             
             <p style="margin-bottom: 20px;">Password akun Anda telah berhasil direset pada:</p>
             

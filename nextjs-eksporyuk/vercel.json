@@ -1,35 +1,52 @@
 {
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30,
+      "memory": 1024
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/r/:username",
+      "destination": "/api/r/:username"
+    },
+    {
+      "source": "/go/:username/:path*",
+      "destination": "/api/r/:username"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ],
   "crons": [
     {
-      "path": "/api/cron/payment-followup",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/check-expiring-memberships",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/expire-memberships",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/check-payment-status",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/event-reminders",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/cron/learning-reminders",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/membership-reminders",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/upgrade-reminders",
+      "path": "/api/cron/daily-tasks",
       "schedule": "0 9 * * *"
     }
   ]

@@ -622,10 +622,16 @@ export default function ChatPage() {
   useEffect(() => {
     if (!session?.user?.id || !activeRoom) return
 
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    if (!pusherKey) {
+      console.log('[PUSHER] Key not configured in chat page')
+      return
+    }
+
     console.log('[Pusher] Setting up connection for room:', activeRoom.id)
 
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    const pusher = new Pusher(pusherKey, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
       authEndpoint: '/api/pusher/auth',
       auth: {
         headers: {

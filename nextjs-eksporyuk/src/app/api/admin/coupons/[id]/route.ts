@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 // PATCH /api/admin/coupons/[id] - Update coupon
 export async function PATCH(
@@ -33,9 +34,16 @@ export async function PATCH(
     if (description !== undefined) updateData.description = description || null
     if (isActive !== undefined) updateData.isActive = isActive
     if (minPurchase !== undefined) updateData.minPurchase = minPurchase ? Number(minPurchase) : null
-    if (productIds !== undefined) updateData.productIds = productIds && productIds.length > 0 ? productIds : null
-    if (membershipIds !== undefined) updateData.membershipIds = membershipIds && membershipIds.length > 0 ? membershipIds : null
-    if (courseIds !== undefined) updateData.courseIds = courseIds && courseIds.length > 0 ? courseIds : null
+    // For JSON fields, use Prisma.DbNull to clear, or array value to set
+    if (productIds !== undefined) {
+      updateData.productIds = productIds && productIds.length > 0 ? productIds : Prisma.DbNull
+    }
+    if (membershipIds !== undefined) {
+      updateData.membershipIds = membershipIds && membershipIds.length > 0 ? membershipIds : Prisma.DbNull
+    }
+    if (courseIds !== undefined) {
+      updateData.courseIds = courseIds && courseIds.length > 0 ? courseIds : Prisma.DbNull
+    }
     if (isAffiliateEnabled !== undefined) updateData.isAffiliateEnabled = isAffiliateEnabled
     if (isForRenewal !== undefined) updateData.isForRenewal = isForRenewal
     if (maxGeneratePerAffiliate !== undefined) updateData.maxGeneratePerAffiliate = maxGeneratePerAffiliate ? Number(maxGeneratePerAffiliate) : null

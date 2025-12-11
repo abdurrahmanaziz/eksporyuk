@@ -12,6 +12,14 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
     db: {
       url: process.env.DATABASE_URL
     }
+  },
+  // Optimize for serverless/Neon
+  // @ts-ignore
+  __internal: {
+    engine: {
+      // Reduce connection overhead for serverless
+      cwd: process.cwd(),
+    }
   }
 })
 

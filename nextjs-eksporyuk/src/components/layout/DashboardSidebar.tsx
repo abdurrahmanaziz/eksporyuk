@@ -547,8 +547,9 @@ export default function DashboardSidebar() {
     fetchUnreadCounts()
 
     // Setup Pusher for real-time updates
-    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_PUSHER_KEY) {
-      const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    if (typeof window !== 'undefined' && pusherKey) {
+      const pusher = new Pusher(pusherKey, {
         cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
       })
 

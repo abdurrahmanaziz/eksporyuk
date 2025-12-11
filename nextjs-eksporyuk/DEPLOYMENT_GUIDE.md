@@ -394,5 +394,85 @@ Recommended analytics events to track:
 
 ---
 
-Last Updated: November 22, 2025
-Version: 1.0.0
+## 🔄 Quick Deployment Options (Updated Dec 2025)
+
+### Option 1: Quick Deploy ⚡ (RECOMMENDED for fixes)
+
+**When to use:** Fix bug, update 1-5 files, no package changes
+
+```bash
+# 1. Edit deploy-quick.sh, add changed files:
+FILES_TO_UPLOAD=(
+  "src/components/layout/ChatBadge.tsx"
+  "src/hooks/use-api.ts"
+)
+
+# 2. Run
+./deploy-quick.sh
+```
+
+- **Time:** 30-60 seconds
+- **RAM:** Minimal (~200MB)
+- **Process:** Upload files → Restart PM2
+
+---
+
+### Option 2: Safe Deploy 🛡️ (For major changes)
+
+**When to use:** Multiple files, new dependencies, database changes
+
+```bash
+./deploy-safe.sh
+```
+
+- **Time:** 3-5 minutes
+- **RAM:** Medium (builds on your Mac)
+- **Process:** Build locally → Upload .next → Install deps → Restart
+
+---
+
+### Option 3: Full Deploy ⚠️ (Use with caution)
+
+**When to use:** Next.js version update, structural changes
+
+```bash
+./deploy-fixes.sh
+```
+
+- **Time:** 5-10 minutes
+- **RAM:** High (builds on server)
+- **Warning:** Can crash server if RAM < 16GB
+
+---
+
+## 📊 Deployment Comparison
+
+| Scenario | Script | Time | Server RAM | Safe? |
+|----------|--------|------|------------|-------|
+| Fix 1-5 files | `deploy-quick.sh` | 30s | Minimal | ✅ Yes |
+| Multiple files | `deploy-safe.sh` | 3-5m | Medium | ✅ Yes |
+| Major update | `deploy-fixes.sh` | 5-10m | High | ⚠️ Risky |
+
+---
+
+## 💡 Examples
+
+### Fix Pusher Error (3 files):
+```bash
+FILES_TO_UPLOAD=(
+  "src/components/layout/ChatBadge.tsx"
+  "src/components/layout/NotificationBell.tsx"
+  "src/hooks/use-api.ts"
+)
+./deploy-quick.sh
+```
+
+### New Feature (15+ files + new package):
+```bash
+./deploy-safe.sh
+```
+
+---
+
+Last Updated: December 10, 2025
+Version: 5.2.0

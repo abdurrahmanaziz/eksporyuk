@@ -446,7 +446,7 @@ export default function AdminPage() {
                   Manage Users
                 </Button>
               </Link>
-              <Link href="/admin/memberships">
+              <Link href="/admin/membership">
                 <Button variant="outline" className="w-full justify-start">
                   <Crown className="mr-2 h-4 w-4" />
                   Memberships
@@ -466,7 +466,7 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Link href="/admin/revenue">
+              <Link href="/admin/sales">
                 <Button variant="outline" className="w-full justify-start">
                   <TrendingUp className="mr-2 h-4 w-4" />
                   Revenue Dashboard
@@ -478,7 +478,7 @@ export default function AdminPage() {
                   Transactions
                 </Button>
               </Link>
-              <Link href="/admin/invoices">
+              <Link href="/admin/transactions">
                 <Button variant="outline" className="w-full justify-start">
                   <FileText className="mr-2 h-4 w-4" />
                   Invoices
@@ -510,7 +510,7 @@ export default function AdminPage() {
                   Products
                 </Button>
               </Link>
-              <Link href="/admin/forums">
+              <Link href="/admin/groups">
                 <Button variant="outline" className="w-full justify-start">
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Forums

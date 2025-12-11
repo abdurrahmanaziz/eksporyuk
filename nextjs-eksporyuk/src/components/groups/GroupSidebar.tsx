@@ -125,7 +125,13 @@ export default function GroupSidebar({ groupId, groupSlug }: GroupSidebarProps) 
     let pusher: Pusher | null = null
 
     try {
-      pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+      if (!pusherKey) {
+        console.log('[PUSHER] Key not configured in GroupSidebar, skipping real-time features')
+        return
+      }
+
+      pusher = new Pusher(pusherKey, {
         cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
         forceTLS: true
       })

@@ -41,7 +41,13 @@ export default function OnlineStatusProvider({ children }: { children: React.Rea
 
     // Setup Pusher for real-time presence
     try {
-      pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+      if (!pusherKey) {
+        console.log('[PUSHER] Key not configured, skipping real-time features')
+        return
+      }
+      
+      pusher = new Pusher(pusherKey, {
         cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
         authEndpoint: '/api/pusher/auth',
         forceTLS: true

@@ -285,39 +285,26 @@ export async function GET(request: NextRequest) {
     const service = searchParams.get('service')
 
     if (service) {
-      // Get specific service config with fallback mechanism
+      // Get specific service config directly from database
       console.log(`[CONFIG_GET] Getting configuration for service: ${service}`)
       
-      if (service === 'giphy') {
-        // Handle Giphy integration config
-        const dbConfig = await prisma.integrationConfig.findUnique({
-          where: { service: 'giphy' }
-        })
-        
-        return NextResponse.json({
-          configured: !!dbConfig?.config?.GIPHY_API_KEY,
-          isActive: dbConfig?.isActive || false,
-          config: dbConfig?.config || {},
-          testStatus: dbConfig?.testStatus || null,
-          lastTestedAt: dbConfig?.lastTestedAt || null
-        })
-      }
-      
-      const config = await IntegrationService.getConfig(service)
-      const isConfigured = await IntegrationService.isConfigured(service)
-      
-      // Get database info for status
+      // Always read directly from database for admin panel
       const dbConfig = await prisma.integrationConfig.findUnique({
-        where: { service },
+        where: { service }
       })
-
+      
+      const config = dbConfig?.config || {}
+      const hasRequiredFields = Object.keys(config).length > 0
+      
+      console.log(`[CONFIG_GET] Service ${service} - dbConfig exists: ${!!dbConfig}, isActive: ${dbConfig?.isActive}, hasConfig: ${hasRequiredFields}`)
+      
       return NextResponse.json({
-        configured: isConfigured,
+        configured: hasRequiredFields && dbConfig?.isActive === true,
         isActive: dbConfig?.isActive || false,
-        config,
+        config: config,
         testStatus: dbConfig?.testStatus || null,
         lastTestedAt: dbConfig?.lastTestedAt || null,
-        source: Object.keys(config).length > 0 ? 'resolved' : 'none',
+        source: hasRequiredFields ? 'database' : 'none',
       })
     } else {
       // Get all services status including integrations

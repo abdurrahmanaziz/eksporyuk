@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { xenditService } from '@/lib/xendit'
 
+// Force dynamic to read from database at runtime
+export const dynamic = 'force-dynamic'
+
 // GET /api/admin/xendit/balance
 // Fetch account balance from Xendit
 export async function GET(req: NextRequest) {
@@ -19,15 +22,17 @@ export async function GET(req: NextRequest) {
 
     // Fetch balance from Xendit
     console.log('💰 [API] Fetching balance from Xendit...')
-    console.log('🔑 Xendit Secret Key exists:', !!process.env.XENDIT_SECRET_KEY)
     
-    // Check if Xendit is configured
-    if (!process.env.XENDIT_SECRET_KEY) {
-      console.log('⚠️ [API] Xendit Secret Key not configured')
+    // Check if Xendit is configured (reads from database OR env vars)
+    const isConfigured = await xenditService.isConfigured()
+    console.log('🔑 Xendit is configured:', isConfigured)
+    
+    if (!isConfigured) {
+      console.log('⚠️ [API] Xendit not configured in database or env vars')
       return NextResponse.json({
         success: false,
         data: null,
-        message: 'Xendit tidak dikonfigurasi. Silakan tambahkan XENDIT_SECRET_KEY ke environment variables.',
+        message: 'Xendit tidak dikonfigurasi. Silakan konfigurasi di halaman Integrasi atau tambahkan XENDIT_SECRET_KEY ke environment variables.',
         isConfigurationError: true
       }, { status: 400 })
     }
