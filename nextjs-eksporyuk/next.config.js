@@ -31,6 +31,9 @@ const nextConfig = {
   // Optimize production builds
   productionBrowserSourceMaps: false, // Faster builds, smaller bundles
   
+  // Force all pages to be dynamic (fixes Vercel static rendering errors)
+  output: 'standalone',
+  
   // Cache headers for static assets
   async headers() {
     return [
