@@ -382,121 +382,121 @@ export default function AdminPage() {
         {/* Secondary Stats */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {/* Content Stats */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Content</CardTitle>
-              <BookOpen className="h-4 w-4 text-indigo-500" />
-            </CardHeader>
-            <CardContent>
+          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-md">
+                  <BookOpen className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">Content</span>
+              </div>
               {statsLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
-                <>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Courses:</span>
-                      <span className="font-semibold">{stats?.content.courses}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Lessons:</span>
-                      <span className="font-semibold">{stats?.content.lessons}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Products:</span>
-                      <span className="font-semibold">{stats?.content.products}</span>
-                    </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Courses</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.courses}</span>
                   </div>
-                </>
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Lessons</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.lessons}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Products</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.products}</span>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
 
           {/* Community Stats */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Community</CardTitle>
-              <MessageSquare className="h-4 w-4 text-pink-500" />
-            </CardHeader>
-            <CardContent>
+          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950 dark:to-rose-950">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg shadow-md">
+                  <MessageSquare className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-pink-700 dark:text-pink-300">Community</span>
+              </div>
               {statsLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
-                <>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Forums:</span>
-                      <span className="font-semibold">{stats?.content.forums}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Discussions:</span>
-                      <span className="font-semibold">{stats?.content.discussions}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Comments:</span>
-                      <span className="font-semibold">{stats?.content.comments}</span>
-                    </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Forums</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.forums}</span>
                   </div>
-                </>
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Discussions</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.discussions}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Comments</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.comments}</span>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
 
           {/* Affiliate Stats */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Affiliates</CardTitle>
-              <Link2 className="h-4 w-4 text-cyan-500" />
-            </CardHeader>
-            <CardContent>
+          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950 dark:to-blue-950">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg shadow-md">
+                  <Link2 className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-cyan-700 dark:text-cyan-300">Affiliates</span>
+              </div>
               {statsLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
-                <>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Links:</span>
-                      <span className="font-semibold">{stats?.affiliates.totalLinks}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Active:</span>
-                      <span className="font-semibold">{stats?.affiliates.activeLinks}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Clicks:</span>
-                      <span className="font-semibold">{stats?.affiliates.totalClicks}</span>
-                    </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Total Links</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.affiliates.totalLinks}</span>
                   </div>
-                </>
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Active</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.affiliates.activeLinks}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Total Clicks</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.affiliates.totalClicks}</span>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
 
           {/* Notifications Stats */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Notifications</CardTitle>
-              <Bell className="h-4 w-4 text-amber-500" />
-            </CardHeader>
-            <CardContent>
+          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-md">
+                  <Bell className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Notifications</span>
+              </div>
               {statsLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
-                <>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Sent (30d):</span>
-                      <span className="font-semibold">{stats?.notifications.sent30Days}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Templates:</span>
-                      <span className="font-semibold">{stats?.notifications.templates}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Auto Rules:</span>
-                      <span className="font-semibold">{stats?.notifications.autoRules}</span>
-                    </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Sent (30d)</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.notifications.sent30Days}</span>
                   </div>
-                </>
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Templates</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.notifications.templates}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Auto Rules</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.notifications.autoRules}</span>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -504,182 +504,200 @@ export default function AdminPage() {
 
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-500" />
-              User Management
-            </CardTitle>
-            <CardDescription>Manage users, roles, and permissions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Link href="/admin/users">
-                <Button variant="outline" className="w-full justify-start">
-                  <Users className="mr-2 h-4 w-4" />
-                  Manage Users
-                </Button>
-              </Link>
-              <Link href="/admin/membership">
-                <Button variant="outline" className="w-full justify-start">
-                  <Crown className="mr-2 h-4 w-4" />
-                  Memberships
-                </Button>
-              </Link>
+        {/* User Management */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-blue-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
+          <CardHeader className="relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base">User Management</CardTitle>
+                <CardDescription className="text-xs">Kelola users & permissions</CardDescription>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Link href="/admin/users">
+              <Button variant="ghost" className="w-full justify-start hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors">
+                <Users className="mr-2 h-4 w-4" />
+                Manage Users
+              </Button>
+            </Link>
+            <Link href="/admin/membership">
+              <Button variant="ghost" className="w-full justify-start hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors">
+                <Crown className="mr-2 h-4 w-4" />
+                Memberships
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-500" />
-              Revenue & Sales
-            </CardTitle>
-            <CardDescription>View sales reports and transactions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Link href="/admin/sales">
-                <Button variant="outline" className="w-full justify-start">
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  Revenue Dashboard
-                </Button>
-              </Link>
-              <Link href="/admin/transactions">
-                <Button variant="outline" className="w-full justify-start">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Transactions
-                </Button>
-              </Link>
-              <Link href="/admin/transactions">
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Invoices
-                </Button>
-              </Link>
+        {/* Revenue & Sales */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400/10 to-green-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
+          <CardHeader className="relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Revenue & Sales</CardTitle>
+                <CardDescription className="text-xs">Lihat laporan penjualan</CardDescription>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Link href="/admin/sales">
+              <Button variant="ghost" className="w-full justify-start hover:bg-green-50 dark:hover:bg-green-950 transition-colors">
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Revenue Dashboard
+              </Button>
+            </Link>
+            <Link href="/admin/transactions">
+              <Button variant="ghost" className="w-full justify-start hover:bg-green-50 dark:hover:bg-green-950 transition-colors">
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Transactions
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-indigo-500" />
-              Content & Community
-            </CardTitle>
-            <CardDescription>Manage courses, products, and forums</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Link href="/admin/courses">
-                <Button variant="outline" className="w-full justify-start">
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  Courses
-                </Button>
-              </Link>
-              <Link href="/admin/products">
-                <Button variant="outline" className="w-full justify-start">
-                  <Package className="mr-2 h-4 w-4" />
-                  Products
-                </Button>
-              </Link>
-              <Link href="/admin/groups">
-                <Button variant="outline" className="w-full justify-start">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Forums
-                </Button>
-              </Link>
+        {/* Content & Community */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-400/10 to-indigo-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
+          <CardHeader className="relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
+                <BookOpen className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Content & Community</CardTitle>
+                <CardDescription className="text-xs">Kelola konten & forum</CardDescription>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Link href="/admin/courses">
+              <Button variant="ghost" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Courses
+              </Button>
+            </Link>
+            <Link href="/admin/products">
+              <Button variant="ghost" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors">
+                <Package className="mr-2 h-4 w-4" />
+                Products
+              </Button>
+            </Link>
+            <Link href="/admin/groups">
+              <Button variant="ghost" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Forums
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Link2 className="h-5 w-5 text-cyan-500" />
-              Affiliates
-            </CardTitle>
-            <CardDescription>Manage affiliate links and coupons</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Link href="/admin/affiliates">
-                <Button variant="outline" className="w-full justify-start">
-                  <Link2 className="mr-2 h-4 w-4" />
-                  Affiliate Links
-                </Button>
-              </Link>
-              <Link href="/admin/coupons">
-                <Button variant="outline" className="w-full justify-start">
-                  <Percent className="mr-2 h-4 w-4" />
-                  Coupons
-                </Button>
-              </Link>
+        {/* Affiliates */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-400/10 to-cyan-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
+          <CardHeader className="relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
+                <Link2 className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Affiliates</CardTitle>
+                <CardDescription className="text-xs">Kelola links & coupons</CardDescription>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Link href="/admin/affiliates">
+              <Button variant="ghost" className="w-full justify-start hover:bg-cyan-50 dark:hover:bg-cyan-950 transition-colors">
+                <Link2 className="mr-2 h-4 w-4" />
+                Affiliate Links
+              </Button>
+            </Link>
+            <Link href="/admin/coupons">
+              <Button variant="ghost" className="w-full justify-start hover:bg-cyan-50 dark:hover:bg-cyan-950 transition-colors">
+                <Percent className="mr-2 h-4 w-4" />
+                Coupons
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-amber-500" />
-              Marketing & Outreach
-            </CardTitle>
-            <CardDescription>Push notifications and email campaigns</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Link href="/admin/onesignal">
-                <Button variant="outline" className="w-full justify-start">
-                  <Bell className="mr-2 h-4 w-4" />
-                  OneSignal
-                </Button>
-              </Link>
-              <Link href="/admin/certificates">
-                <Button variant="outline" className="w-full justify-start">
-                  <Award className="mr-2 h-4 w-4" />
-                  Certificates
-                </Button>
-              </Link>
+        {/* Marketing & Outreach */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-400/10 to-amber-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
+          <CardHeader className="relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
+                <Bell className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Marketing</CardTitle>
+                <CardDescription className="text-xs">Push notif & campaigns</CardDescription>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Link href="/admin/onesignal">
+              <Button variant="ghost" className="w-full justify-start hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors">
+                <Bell className="mr-2 h-4 w-4" />
+                OneSignal
+              </Button>
+            </Link>
+            <Link href="/admin/certificates">
+              <Button variant="ghost" className="w-full justify-start hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors">
+                <Award className="mr-2 h-4 w-4" />
+                Certificates
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-gray-500" />
-              System & Settings
-            </CardTitle>
-            <CardDescription>Platform configuration and reports</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Link href="/admin/settings">
-                <Button variant="outline" className="w-full justify-start">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Button>
-              </Link>
-              <Link href="/admin/reports">
-                <Button variant="outline" className="w-full justify-start">
-                  <Flag className="mr-2 h-4 w-4" />
-                  Reports
-                  {stats?.moderation.pendingReports > 0 && (
-                    <Badge variant="destructive" className="ml-auto">
-                      {stats.moderation.pendingReports}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
-              <Link href="/admin/integrations">
-                <Button variant="outline" className="w-full justify-start">
-                  <Zap className="mr-2 h-4 w-4" />
-                  Integrations
-                </Button>
-              </Link>
+        {/* System & Settings */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gray-400/10 to-gray-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
+          <CardHeader className="relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
+                <Settings className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base">System & Settings</CardTitle>
+                <CardDescription className="text-xs">Konfigurasi platform</CardDescription>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Link href="/admin/settings">
+              <Button variant="ghost" className="w-full justify-start hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
+            <Link href="/admin/reports">
+              <Button variant="ghost" className="w-full justify-start hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <Flag className="mr-2 h-4 w-4" />
+                Reports
+                {stats?.moderation.pendingReports > 0 && (
+                  <Badge variant="destructive" className="ml-auto">
+                    {stats.moderation.pendingReports}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+            <Link href="/admin/integrations">
+              <Button variant="ghost" className="w-full justify-start hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <Zap className="mr-2 h-4 w-4" />
+                Integrations
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
