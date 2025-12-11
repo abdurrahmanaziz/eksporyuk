@@ -12,4 +12,31 @@ coverage/
 # Cache
 .turbo/
 .cache/
+
+# Documentation site (too large for deployment)
+docs-site/
+
+# Development scripts and utilities
+*.js
+*.mjs
+!next.config.js
+!ecosystem.config.cjs
+
+# Documentation and audit files (reduce bundle size)
+*.md
+!README.md
+
+# Test files
+*.test.js
+*.test.ts
+*.test.tsx
+__tests__/
+
+# IDE files
+.vscode/
+.idea/
+
+# Prisma migrations (use db push instead)
+prisma/migrations/
+
 # Vercel deployment Thu Dec 11 17:39:08 WIB 2025

@@ -1,0 +1,36 @@
+# Environment variables needed for Vercel deployment
+# Copy these to Vercel Project Settings > Environment Variables
+
+# Database - Neon PostgreSQL
+DATABASE_URL=postgresql://neondb_owner:npg_YUbWXw6urZ0d@ep-purple-breeze-a1ovfiz0-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+
+# NextAuth
+NEXTAUTH_SECRET=your-secret-key-32-chars-minimum
+NEXTAUTH_URL=https://your-vercel-domain.vercel.app
+
+# Google OAuth (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Xendit Payment
+XENDIT_API_KEY=your-xendit-api-key
+XENDIT_SECRET_KEY=your-xendit-secret-key
+XENDIT_WEBHOOK_TOKEN=your-webhook-token
+
+# Pusher (Real-time features)
+PUSHER_APP_ID=your-pusher-app-id
+PUSHER_KEY=your-pusher-key
+PUSHER_SECRET=your-pusher-secret
+PUSHER_CLUSTER=your-pusher-cluster
+
+# OneSignal (Notifications)
+ONESIGNAL_APP_ID=your-onesignal-app-id
+ONESIGNAL_REST_API_KEY=your-onesignal-api-key
+
+# Mailketing (Email marketing)
+MAILKETING_BASE_URL=your-mailketing-url
+MAILKETING_API_KEY=your-mailketing-key
+
+# Starsender (WhatsApp)
+STARSENDER_API_KEY=your-starsender-key
+STARSENDER_BASE_URL=your-starsender-url
