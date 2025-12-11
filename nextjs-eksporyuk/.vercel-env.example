@@ -1,18 +1,18 @@
 # Environment variables needed for Vercel deployment
 # Copy these to Vercel Project Settings > Environment Variables
 
-# Database - Neon PostgreSQL
+# Database - Neon PostgreSQL (CRITICAL)
 DATABASE_URL=postgresql://neondb_owner:npg_YUbWXw6urZ0d@ep-purple-breeze-a1ovfiz0-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
 
-# NextAuth
-NEXTAUTH_SECRET=your-secret-key-32-chars-minimum
-NEXTAUTH_URL=https://your-vercel-domain.vercel.app
+# NextAuth (CRITICAL)
+NEXTAUTH_SECRET=eksporyuk-secret-key-2024-production
+NEXTAUTH_URL=https://app.eksporyuk.com
 
-# Google OAuth (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+# Google OAuth (Optional - for Google login)
+GOOGLE_CLIENT_ID=805480551537-b89th9psutjgarmrr8dtcj1409q353eb.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
 
-# Xendit Payment
+# Xendit Payment (CRITICAL)
 XENDIT_API_KEY=your-xendit-api-key
 XENDIT_SECRET_KEY=your-xendit-secret-key
 XENDIT_WEBHOOK_TOKEN=your-webhook-token
