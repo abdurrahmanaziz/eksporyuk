@@ -106,6 +106,14 @@ export async function POST(request: NextRequest) {
       siteDescription,
       siteLogo,
       siteFavicon,
+      // Branding V2
+      logoAffiliate,
+      brandName,
+      brandShortName,
+      tagline,
+      typographyHeadingSize,
+      typographyBodySize,
+      typographyFontFamily,
       primaryColor,
       secondaryColor,
       accentColor,
@@ -198,6 +206,14 @@ export async function POST(request: NextRequest) {
     if (siteDescription !== undefined) updateData.siteDescription = toNullIfEmpty(siteDescription)
     if (siteLogo !== undefined) updateData.siteLogo = toNullIfEmpty(siteLogo)
     if (siteFavicon !== undefined) updateData.siteFavicon = toNullIfEmpty(siteFavicon)
+    // Branding V2
+    if (logoAffiliate !== undefined) updateData.logoAffiliate = toNullIfEmpty(logoAffiliate)
+    if (brandName !== undefined) updateData.brandName = toNullIfEmpty(brandName)
+    if (brandShortName !== undefined) updateData.brandShortName = toNullIfEmpty(brandShortName)
+    if (tagline !== undefined) updateData.tagline = toNullIfEmpty(tagline)
+    if (typographyHeadingSize !== undefined) updateData.typographyHeadingSize = toNullIfEmpty(typographyHeadingSize)
+    if (typographyBodySize !== undefined) updateData.typographyBodySize = toNullIfEmpty(typographyBodySize)
+    if (typographyFontFamily !== undefined) updateData.typographyFontFamily = toNullIfEmpty(typographyFontFamily)
     if (primaryColor !== undefined) updateData.primaryColor = toNullIfEmpty(primaryColor)
     if (secondaryColor !== undefined) updateData.secondaryColor = toNullIfEmpty(secondaryColor)
     if (accentColor !== undefined) updateData.accentColor = toNullIfEmpty(accentColor)

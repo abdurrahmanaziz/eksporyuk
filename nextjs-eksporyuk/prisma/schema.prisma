@@ -2362,6 +2362,17 @@ model Settings {
   dashboardInfoColor              String?  @default("#3b82f6")
   
   // ===========================
+  // Branding V2 - Role-Based Logo & Typography
+  // ===========================
+  logoAffiliate                   String?  // Logo khusus untuk affiliate (berbeda dari siteLogo)
+  brandName                       String?  @default("Eksporyuk")
+  brandShortName                  String?  @default("EYK")
+  tagline                         String?  @default("Platform Ekspor Indonesia")
+  typographyHeadingSize           String?  @default("2rem")
+  typographyBodySize              String?  @default("1rem")
+  typographyFontFamily            String?  @default("Inter, sans-serif")
+  
+  // ===========================
   // Platform Feature Settings
   // ===========================
   

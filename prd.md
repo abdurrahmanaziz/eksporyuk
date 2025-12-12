@@ -3524,4 +3524,289 @@ Modul kelas yang sudah ada harus:
 
 ---
 
+Siap. Berikut **PRD PERBAIKAN (REFINEMENT) HALAMAN BRANDING**
+khusus untuk halaman yang **SUDAH ADA** di:
+
+> **`/admin/settings/branding`**
+
+Dokumen ini **BUKAN membuat fitur baru**, tapi **mengaktifkan, merapikan, dan menyempurnakan** agar branding benar-benar berfungsi sesuai kebutuhan sistem & bisnis kamu.
+
+---
+
+# 🟦 **PRD PERBAIKAN – BRANDING SETTINGS V.1**
+
+**Halaman:** `/admin/settings/branding`
+**Versi:** 1.1 (Refinement Existing Feature)
+**Status:** Improvement & Activation
+**Scope:** Admin only
+
+---
+
+## 1. TUJUAN PERBAIKAN
+
+Halaman **Branding Settings** sudah ada, tetapi perlu diperbaiki agar:
+
+1. Branding **benar-benar diterapkan realtime** ke seluruh website
+2. Logo **berbeda berdasarkan role** (affiliate vs non-affiliate)
+3. Warna, teks, dan style **konsisten di semua halaman & role**
+4. Notifikasi realtime **selalu aktif & terlihat**
+5. Tidak ada setting “pajangan” yang tidak berdampak ke UI
+
+---
+
+## 2. KONDISI SAAT INI (ASUMSI MASALAH)
+
+Masalah umum yang biasanya terjadi dan **HARUS diperbaiki**:
+
+* Logo di-setting tapi **tidak berubah di semua role**
+* Perubahan warna **tidak konsisten** (hanya sebagian halaman)
+* Tidak ada **preview realtime**
+* Branding **belum terikat ke role affiliate**
+* Setting tersimpan tapi **tidak dipakai oleh FE**
+* Notifikasi tidak selalu muncul / badge tidak update
+* Tidak ada validasi kontras warna (teks sulit dibaca)
+
+PRD ini menyelesaikan semua itu.
+
+---
+
+## 3. PRINSIP PERBAIKAN (WAJIB)
+
+Mengikuti aturan kerja kamu:
+
+* ❌ Tidak hapus fitur existing
+* ✅ Aktifkan fungsi yang belum jalan
+* ✅ Sinkron FE + BE + DB
+* ❌ Tidak buat menu baru
+* ❌ Tidak popup (kecuali notifikasi)
+* ✅ ResponsivePageWrapper
+* ✅ Aman, ringan, clean
+* ✅ Bahasa Indonesia
+
+---
+
+## 4. STRUKTUR HALAMAN (TETAP / DIPERBAIKI)
+
+URL tetap:
+`/admin/settings/branding`
+
+Gunakan **TAB (bukan popup)**:
+
+1. **Logo & Identitas**
+2. **Warna & Tema**
+3. **Typography & Teks**
+4. **Komponen UI**
+5. **Notifikasi Realtime**
+
+Jika tab sudah ada → **perbaiki fungsinya**, bukan tambah tab baru.
+
+---
+
+## 5. DETAIL PERBAIKAN PER TAB
+
+---
+
+### 🟦 TAB 1 — LOGO & IDENTITAS (PERBAIKAN WAJIB)
+
+#### A. Logo berdasarkan role
+
+| Role          | Logo                      |
+| ------------- | ------------------------- |
+| Admin         | Logo Utama                |
+| User Free     | Logo Utama                |
+| User Premium  | Logo Utama                |
+| Supplier      | Logo Utama                |
+| **Affiliate** | **Logo Affiliate (beda)** |
+
+#### Perbaikan yang WAJIB:
+
+* Logo affiliate **benar-benar berbeda**
+* Sidebar kiri membaca logo dari DB berdasarkan role
+* Tidak hardcode logo di FE
+* Logo update **realtime** (refresh halaman OK, tanpa restart server)
+
+#### Field yang harus aktif:
+
+* Logo Utama
+* Logo Affiliate
+* Favicon
+
+---
+
+### 🟦 TAB 2 — WARNA & TEMA (GLOBAL THEME ENGINE)
+
+#### Warna WAJIB:
+
+* Primary: `#2047FC`
+* Secondary: `#ffc30d`
+* Netral: putih & hitam
+
+#### Perbaikan wajib:
+
+* Semua komponen UI **mengambil warna dari config branding**
+* Tidak ada warna hardcode di component
+* Sidebar, header, button, badge, card, table **sinkron**
+* Warna disimpan di DB & dipakai global
+
+#### Validasi:
+
+* Jika teks tidak terbaca → tampilkan warning
+* Tidak boleh simpan warna ekstrim tanpa kontras
+
+---
+
+### 🟦 TAB 3 — TYPOGRAPHY & TEKS BRAND
+
+#### Field yang harus benar-benar berfungsi:
+
+* Nama Platform
+* Nama Pendek
+* Tagline
+* Ukuran Heading
+* Ukuran Text body
+
+#### Perbaikan:
+
+* Nama platform tampil di:
+
+  * Title browser
+  * Header
+  * Footer
+* Tagline muncul konsisten
+* Tidak hanya tersimpan, tapi **dipakai FE**
+
+---
+
+### 🟦 TAB 4 — KOMPONEN UI (STYLE SYSTEM)
+
+#### Komponen yang dikontrol:
+
+* Button Primary
+* Button Secondary
+* Sidebar Active
+* Sidebar Background
+* Card Background
+* Border Radius
+* Hover State
+
+#### Perbaikan:
+
+* Semua halaman pakai style ini
+* Tidak ada style ganda
+* Tidak conflict antar role
+
+---
+
+### 🟦 TAB 5 — NOTIFIKASI REALTIME (SANGAT PENTING)
+
+#### Integrasi WAJIB aktif:
+
+* Pusher → realtime UI
+* OneSignal → push notif
+* Mailketing → email notif
+
+#### Perbaikan fungsional:
+
+1. **Icon notifikasi kanan atas selalu tampil**
+2. Badge realtime (angka merah)
+3. Popup muncul **hanya saat notif baru**
+4. Popup bisa ditutup
+5. Notifikasi masuk tanpa reload halaman
+6. Semua role menerima notif sesuai haknya
+
+❗ Popup **HANYA BOLEH untuk notifikasi**
+
+---
+
+## 6. PERBAIKAN BACKEND (WAJIB)
+
+### A. API Branding
+
+* 1 endpoint global branding
+* Semua role fetch dari endpoint ini
+* Cache boleh, tapi invalidated saat update
+
+### B. Database
+
+Pastikan field berikut **dipakai**, bukan cuma disimpan:
+
+* logo_main
+* logo_affiliate
+* primary_color
+* secondary_color
+* brand_name
+* tagline
+* typography_json
+* component_style_json
+
+---
+
+## 7. SECURITY & PERFORMANCE
+
+* Upload logo hanya admin
+* Validasi file (size & type)
+* CDN untuk logo
+* Tidak expose path file
+* Branding tidak bisa diubah via FE request selain admin
+
+---
+
+## 8. USER FLOW (REAL)
+
+### Admin
+
+```
+Admin → /admin/settings/branding
+→ Edit logo / warna
+→ Simpan
+→ Semua halaman langsung berubah
+```
+
+### User
+
+```
+User login
+→ Sistem cek role
+→ Ambil branding
+→ Logo & tema sesuai role
+```
+
+### Notifikasi
+
+```
+Event terjadi
+→ Pusher trigger
+→ Badge update
+→ Popup tampil
+→ OneSignal + Email terkirim
+```
+
+---
+
+## 9. CHECKLIST DEV (FINAL)
+
+✔ Tidak buat halaman baru
+✔ Tidak hapus fitur lama
+✔ Logo affiliate berbeda & aktif
+✔ Warna konsisten global
+✔ Tidak ada hardcode warna
+✔ Branding dipakai FE
+✔ ResponsivePageWrapper
+✔ Popup hanya notif
+✔ Semua role tested
+✔ Tidak ada error
+✔ UI ringan & bersih
+
+---
+
+## 10. KESIMPULAN
+
+Halaman **/admin/settings/branding**:
+
+* Sudah ada → **wajib difungsikan penuh**
+* Menjadi **satu-satunya sumber branding**
+* Mengontrol logo, warna, teks, UI, dan notifikasi
+* Realtime, konsisten, aman
+* Siap production
+
 
