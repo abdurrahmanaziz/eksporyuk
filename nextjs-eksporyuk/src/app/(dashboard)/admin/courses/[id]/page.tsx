@@ -84,6 +84,10 @@ type Course = {
   affiliateOnly?: boolean
   isAffiliateTraining?: boolean
   isAffiliateMaterial?: boolean
+  // PRD Perbaikan Fitur Kelas - field baru
+  roleAccess?: string
+  membershipIncluded?: boolean
+  isPublicListed?: boolean
   modules: Module[]
 }
 
@@ -288,7 +292,11 @@ export default function AdminCourseDetailPage() {
           mailketingListName: course.mailketingListName,
           affiliateOnly: course.affiliateOnly,
           isAffiliateTraining: course.isAffiliateTraining,
-          isAffiliateMaterial: course.isAffiliateMaterial
+          isAffiliateMaterial: course.isAffiliateMaterial,
+          // PRD Perbaikan Fitur Kelas - field baru
+          roleAccess: course.roleAccess,
+          membershipIncluded: course.membershipIncluded,
+          isPublicListed: course.isPublicListed
         })
       })
 
@@ -1055,6 +1063,82 @@ export default function AdminCourseDetailPage() {
                         </div>
                       </>
                     )}
+                  </div>
+                </div>
+
+                {/* PRD Perbaikan Fitur Kelas - Pengaturan Akses */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-lg">🔐 Pengaturan Akses & Visibilitas</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Atur siapa yang bisa mengakses dan melihat kursus ini
+                  </p>
+                  
+                  <div>
+                    <Label htmlFor="roleAccess">Akses Berdasarkan Role</Label>
+                    <Select
+                      value={course.roleAccess || 'PUBLIC'}
+                      onValueChange={(value) => setCourse({ ...course, roleAccess: value })}
+                    >
+                      <SelectTrigger id="roleAccess">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PUBLIC">
+                          <span className="flex items-center gap-2">
+                            🌐 Publik - Semua user bisa lihat
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="MEMBER">
+                          <span className="flex items-center gap-2">
+                            👤 Member Only - Hanya member aktif
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="AFFILIATE">
+                          <span className="flex items-center gap-2">
+                            💼 Affiliate Only - Hanya affiliate
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {course.roleAccess === 'PUBLIC' && 'Semua user dapat melihat kursus ini'}
+                      {course.roleAccess === 'MEMBER' && 'Hanya member aktif yang dapat melihat dan mengakses'}
+                      {course.roleAccess === 'AFFILIATE' && 'Hanya affiliate yang dapat mengakses kursus ini'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="isPublicListed"
+                        checked={course.isPublicListed ?? true}
+                        onChange={(e) => setCourse({ ...course, isPublicListed: e.target.checked })}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      <Label htmlFor="isPublicListed" className="cursor-pointer">
+                        <span className="font-medium">📋 Tampilkan di Daftar Publik</span>
+                        <p className="text-sm text-muted-foreground font-normal">
+                          Kursus akan muncul di halaman daftar kursus umum
+                        </p>
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="membershipIncluded"
+                        checked={course.membershipIncluded || false}
+                        onChange={(e) => setCourse({ ...course, membershipIncluded: e.target.checked })}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      <Label htmlFor="membershipIncluded" className="cursor-pointer">
+                        <span className="font-medium">🎫 Gratis untuk Member Aktif</span>
+                        <p className="text-sm text-muted-foreground font-normal">
+                          Member dengan membership aktif tidak perlu bayar untuk kursus ini
+                        </p>
+                      </Label>
+                    </div>
                   </div>
                 </div>
 

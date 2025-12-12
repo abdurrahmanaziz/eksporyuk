@@ -1091,6 +1091,10 @@ model Course {
   affiliateOnly           Boolean                @default(false)
   isAffiliateTraining     Boolean                @default(false)
   isAffiliateMaterial     Boolean                @default(false)
+  // PRD Perbaikan Fitur Kelas - Field baru untuk role access
+  roleAccess              CourseRoleAccess       @default(PUBLIC)
+  membershipIncluded      Boolean                @default(false) // Member aktif gratis akses
+  isPublicListed          Boolean                @default(true)  // Tampil di halaman publik
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
   bioCTAs                 AffiliateBioCTA[]
@@ -1118,6 +1122,8 @@ model Course {
   @@index([isPublished])
   @@index([status])
   @@index([monetizationType])
+  @@index([roleAccess])
+  @@index([isPublicListed])
 }
 
 model UserCourseProgress {
@@ -4014,6 +4020,14 @@ enum CourseStatus {
   REJECTED
   PUBLISHED
   ARCHIVED
+  PRIVATE
+}
+
+// Role akses untuk kelas sesuai PRD Perbaikan Fitur Kelas
+enum CourseRoleAccess {
+  PUBLIC    // Semua user bisa lihat
+  MEMBER    // Hanya member aktif
+  AFFILIATE // Hanya affiliate
 }
 
 enum CourseMonetizationType {

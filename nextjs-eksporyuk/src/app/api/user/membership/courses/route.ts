@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform courses data
-    const courses = userMembership.membership.membershipCourses.map((mc) => {
+    const membershipPackageCourses = userMembership.membership.membershipCourses.map((mc) => {
       const course = mc.course
       
       // Calculate totals
@@ -114,6 +114,7 @@ export async function GET(request: NextRequest) {
           avatar: course.mentor.user.avatar,
         } : null,
         isEnrolled: !!enrollment,
+        isFreeForMember: true, // PRD: Kursus dari paket membership = gratis
         userProgress: userProgress ? {
           progress,
           completedLessons,
@@ -121,6 +122,88 @@ export async function GET(request: NextRequest) {
         } : null,
       }
     })
+
+    // PRD: Ambil juga kursus dengan membershipIncluded = true
+    const membershipIncludedCourses = await prisma.course.findMany({
+      where: {
+        membershipIncluded: true,
+        status: { in: ['PUBLISHED', 'APPROVED'] },
+        // Exclude affiliate-only courses
+        affiliateOnly: false,
+        isAffiliateTraining: false,
+        isAffiliateMaterial: false,
+        roleAccess: { not: 'AFFILIATE' }
+      },
+      include: {
+        modules: {
+          include: { lessons: true }
+        },
+        mentor: {
+          include: {
+            user: {
+              select: { id: true, name: true, avatar: true }
+            }
+          }
+        },
+        enrollments: {
+          where: { userId }
+        },
+        userProgress: {
+          where: { userId }
+        },
+        _count: {
+          select: { enrollments: true }
+        }
+      }
+    })
+
+    // Transform membershipIncluded courses
+    const includedCourses = membershipIncludedCourses
+      .filter(course => !membershipPackageCourses.some(pc => pc.id === course.id)) // Avoid duplicates
+      .map(course => {
+        const totalModules = course.modules.length
+        const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0)
+        const totalDuration = course.modules.reduce((sum, m) => 
+          sum + m.lessons.reduce((lsum, l) => lsum + (l.duration || 0), 0), 0
+        )
+        const userProgress = course.userProgress[0]
+        const enrollment = course.enrollments[0]
+        let progress = 0
+        let completedLessons = 0
+        if (userProgress) {
+          const completedLessonsData = userProgress.completedLessons as string[] | null
+          completedLessons = completedLessonsData ? completedLessonsData.length : 0
+          progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+        }
+
+        return {
+          id: course.id,
+          title: course.title,
+          slug: course.slug,
+          thumbnail: course.thumbnail,
+          description: course.description,
+          level: course.level || 'BEGINNER',
+          totalModules,
+          totalLessons,
+          totalDuration,
+          enrollmentCount: course._count.enrollments,
+          instructor: course.mentor?.user ? {
+            id: course.mentor.user.id,
+            name: course.mentor.user.name,
+            avatar: course.mentor.user.avatar,
+          } : null,
+          isEnrolled: !!enrollment,
+          isFreeForMember: true, // PRD: membershipIncluded = true
+          userProgress: userProgress ? {
+            progress,
+            completedLessons,
+            lastAccessedAt: userProgress.updatedAt?.toISOString() || null,
+          } : null,
+        }
+      })
+
+    // Combine all courses
+    const courses = [...membershipPackageCourses, ...includedCourses]
 
     // Check if membership is active
     const now = new Date()

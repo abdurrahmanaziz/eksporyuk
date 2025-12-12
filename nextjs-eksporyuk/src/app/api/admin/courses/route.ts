@@ -32,6 +32,13 @@ export async function GET(request: NextRequest) {
         enrollmentCount: true,
         rating: true,
         createdAt: true,
+        // PRD Perbaikan Fitur Kelas - field baru
+        roleAccess: true,
+        membershipIncluded: true,
+        isPublicListed: true,
+        affiliateOnly: true,
+        isAffiliateTraining: true,
+        isAffiliateMaterial: true,
         mentor: {
           include: {
             user: {
@@ -98,7 +105,14 @@ export async function POST(request: NextRequest) {
       mailketingListId,
       mailketingListName,
       commissionType,
-      affiliateCommissionRate
+      affiliateCommissionRate,
+      // PRD Perbaikan Fitur Kelas - field baru
+      roleAccess,
+      membershipIncluded,
+      isPublicListed,
+      affiliateOnly,
+      isAffiliateTraining,
+      isAffiliateMaterial
     } = body
 
     console.log('POST /api/admin/courses - Received body:', body)
@@ -190,7 +204,14 @@ export async function POST(request: NextRequest) {
         commissionType: commissionType || 'PERCENTAGE',
         affiliateCommissionRate: affiliateCommissionRate || 30,
         approvedBy: session.user.id,
-        approvedAt: new Date()
+        approvedAt: new Date(),
+        // PRD Perbaikan Fitur Kelas - field baru
+        roleAccess: roleAccess || 'PUBLIC',
+        membershipIncluded: membershipIncluded ?? false,
+        isPublicListed: isPublicListed ?? true,
+        affiliateOnly: affiliateOnly ?? false,
+        isAffiliateTraining: isAffiliateTraining ?? false,
+        isAffiliateMaterial: isAffiliateMaterial ?? false
       },
       include: {
         mentor: {

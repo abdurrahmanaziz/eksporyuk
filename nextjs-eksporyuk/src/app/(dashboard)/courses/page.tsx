@@ -26,6 +26,14 @@ type Course = {
   level?: string
   duration?: number
   createdAt: string
+  // PRD Perbaikan Fitur Kelas - field baru
+  roleAccess?: string
+  membershipIncluded?: boolean
+  isPublicListed?: boolean
+  affiliateOnly?: boolean
+  isAffiliateTraining?: boolean
+  accessStatus?: string // 'preview' | 'enrolled' | 'membership'
+  isFreeForUser?: boolean
   _count?: {
     enrollments: number
     modules: number
@@ -303,6 +311,13 @@ function CourseCard({
   isEnrolled?: boolean
 }) {
   const getMonetizationBadge = () => {
+    // PRD: Tampilkan badge berdasarkan akses
+    if (course.accessStatus === 'membership' || course.isFreeForUser) {
+      return <Badge className="bg-green-500 text-white">🎫 Gratis (Member)</Badge>
+    }
+    if (course.roleAccess === 'MEMBER') {
+      return <Badge className="bg-orange-500 text-white">👤 Member Only</Badge>
+    }
     switch (course.monetizationType) {
       case 'FREE':
         return <Badge className="bg-green-500 text-white">Gratis</Badge>
@@ -392,7 +407,17 @@ function CourseCard({
         {/* Price & Action */}
         <div className="flex items-center justify-between pt-4 border-t">
           <div>
-            {course.monetizationType === 'PAID' ? (
+            {/* PRD: Member dengan akses membership lihat harga dicoret + "Gratis" */}
+            {course.isFreeForUser || course.accessStatus === 'membership' ? (
+              <div>
+                {Number(course.price) > 0 && (
+                  <p className="text-sm text-gray-500 line-through">
+                    {formatPrice(course.price)}
+                  </p>
+                )}
+                <p className="text-xl font-bold text-green-600">Gratis untuk Anda</p>
+              </div>
+            ) : course.monetizationType === 'PAID' ? (
               <div>
                 <p className="text-2xl font-bold text-gray-900">
                   {formatPrice(course.price)}
@@ -403,7 +428,7 @@ function CourseCard({
                   </p>
                 )}
               </div>
-            ) : course.monetizationType === 'MEMBERSHIP' ? (
+            ) : course.monetizationType === 'MEMBERSHIP' || course.roleAccess === 'MEMBER' ? (
               <p className="text-sm font-semibold text-orange-600">
                 Khusus Member
               </p>
@@ -412,10 +437,17 @@ function CourseCard({
             )}
           </div>
 
-          {isEnrolled ? (
+          {isEnrolled || course.accessStatus === 'enrolled' ? (
             <Link href={`/learn/${course.slug}`}>
               <Button size="sm">Lanjutkan</Button>
             </Link>
+          ) : course.isFreeForUser || course.accessStatus === 'membership' ? (
+            <Button
+              size="sm"
+              onClick={() => onEnroll(course.id)}
+            >
+              Akses Sekarang
+            </Button>
           ) : (
             <Button
               size="sm"

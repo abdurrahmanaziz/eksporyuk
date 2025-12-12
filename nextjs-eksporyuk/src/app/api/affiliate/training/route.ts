@@ -45,14 +45,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Access denied. Affiliate only.' }, { status: 403 })
     }
 
-    // Get affiliate-only courses using raw query to bypass type issues
+    // Get affiliate-only courses (PRD: include roleAccess=AFFILIATE)
     // @ts-ignore - Prisma types cache issue, fields exist in schema
     const courses = await prisma.course.findMany({
       where: {
-        // @ts-ignore
-        affiliateOnly: true,
-        isPublished: true,
-        status: 'PUBLISHED',
+        OR: [
+          // @ts-ignore
+          { affiliateOnly: true },
+          { isAffiliateTraining: true },
+          { isAffiliateMaterial: true },
+          { roleAccess: 'AFFILIATE' }
+        ],
+        status: { in: ['PUBLISHED', 'APPROVED'] }
       },
       include: {
         modules: {
