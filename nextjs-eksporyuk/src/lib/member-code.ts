@@ -46,7 +46,9 @@ export async function getNextMemberCode(): Promise<string> {
   return formatMemberCode(nextNumber)
 }
 
-export async function assignMemberCode(userId: string): Promise<string> {
+export async function assignMemberCode(userId: string, retryCount = 0): Promise<string> {
+  const MAX_RETRIES = 5
+  
   // Check if user already has memberCode
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -57,16 +59,61 @@ export async function assignMemberCode(userId: string): Promise<string> {
     return user.memberCode
   }
 
-  // Generate new code
-  const newCode = await getNextMemberCode()
+  try {
+    // Use transaction to ensure atomicity
+    const result = await prisma.$transaction(async (tx) => {
+      // Get the highest existing memberCode within transaction
+      const lastUser = await tx.user.findFirst({
+        where: {
+          memberCode: {
+            not: null,
+            startsWith: 'EY'
+          }
+        },
+        orderBy: {
+          memberCode: 'desc'
+        },
+        select: {
+          memberCode: true
+        }
+      })
 
-  // Update user with new code
-  await prisma.user.update({
-    where: { id: userId },
-    data: { memberCode: newCode }
-  })
+      let nextNumber = 1
 
-  return newCode
+      if (lastUser?.memberCode) {
+        const currentNumber = parseMemberCode(lastUser.memberCode)
+        if (currentNumber !== null) {
+          nextNumber = currentNumber + 1
+        }
+      }
+
+      const newCode = formatMemberCode(nextNumber)
+
+      // Update user with new code
+      await tx.user.update({
+        where: { id: userId },
+        data: { memberCode: newCode }
+      })
+
+      return newCode
+    })
+
+    return result
+  } catch (error: unknown) {
+    // Handle unique constraint violation - retry with new code
+    if (
+      error && 
+      typeof error === 'object' && 
+      'code' in error && 
+      error.code === 'P2002' && 
+      retryCount < MAX_RETRIES
+    ) {
+      // Wait a bit before retrying to reduce collision chance
+      await new Promise(resolve => setTimeout(resolve, 50 * (retryCount + 1)))
+      return assignMemberCode(userId, retryCount + 1)
+    }
+    throw error
+  }
 }
 
 // Validate memberCode format

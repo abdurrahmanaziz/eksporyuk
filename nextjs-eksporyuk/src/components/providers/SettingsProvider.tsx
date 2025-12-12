@@ -9,6 +9,7 @@ interface WebsiteSettings {
   siteFavicon: string | null
   primaryColor: string
   secondaryColor: string
+  accentColor: string
   buttonPrimaryBg: string
   buttonPrimaryText: string
   buttonSecondaryBg: string
@@ -31,6 +32,26 @@ interface WebsiteSettings {
   maintenanceMode: boolean
   defaultLanguage: string
   bannerImage: string | null
+  // Dashboard Theme Colors
+  dashboardSidebarBg: string
+  dashboardSidebarText: string
+  dashboardSidebarActiveText: string
+  dashboardSidebarActiveBg: string
+  dashboardSidebarHoverBg: string
+  dashboardHeaderBg: string
+  dashboardHeaderText: string
+  dashboardBodyBg: string
+  dashboardCardBg: string
+  dashboardCardBorder: string
+  dashboardCardHeaderBg: string
+  dashboardTextPrimary: string
+  dashboardTextSecondary: string
+  dashboardTextMuted: string
+  dashboardBorderColor: string
+  dashboardSuccessColor: string
+  dashboardWarningColor: string
+  dashboardDangerColor: string
+  dashboardInfoColor: string
 }
 
 const defaultSettings: WebsiteSettings = {
@@ -38,9 +59,10 @@ const defaultSettings: WebsiteSettings = {
   siteDescription: 'Platform Ekspor Indonesia',
   siteLogo: null,
   siteFavicon: null,
-  primaryColor: '#3B82F6',
-  secondaryColor: '#1F2937',
-  buttonPrimaryBg: '#3B82F6',
+  primaryColor: '#0066CC',
+  secondaryColor: '#0052CC',
+  accentColor: '#3399FF',
+  buttonPrimaryBg: '#0066CC',
   buttonPrimaryText: '#FFFFFF',
   buttonSecondaryBg: '#6B7280',
   buttonSecondaryText: '#FFFFFF',
@@ -62,6 +84,26 @@ const defaultSettings: WebsiteSettings = {
   maintenanceMode: false,
   defaultLanguage: 'id',
   bannerImage: null,
+  // Dashboard Theme Colors - Default
+  dashboardSidebarBg: '#1e293b',
+  dashboardSidebarText: '#e2e8f0',
+  dashboardSidebarActiveText: '#ffffff',
+  dashboardSidebarActiveBg: '#3b82f6',
+  dashboardSidebarHoverBg: '#334155',
+  dashboardHeaderBg: '#ffffff',
+  dashboardHeaderText: '#1f2937',
+  dashboardBodyBg: '#f1f5f9',
+  dashboardCardBg: '#ffffff',
+  dashboardCardBorder: '#e2e8f0',
+  dashboardCardHeaderBg: '#f8fafc',
+  dashboardTextPrimary: '#1f2937',
+  dashboardTextSecondary: '#64748b',
+  dashboardTextMuted: '#94a3b8',
+  dashboardBorderColor: '#e2e8f0',
+  dashboardSuccessColor: '#22c55e',
+  dashboardWarningColor: '#f59e0b',
+  dashboardDangerColor: '#ef4444',
+  dashboardInfoColor: '#3b82f6',
 }
 
 interface SettingsContextType {
@@ -181,12 +223,38 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       // Update primary color (affects default button)
       if (settings.primaryColor) {
         root.style.setProperty('--primary', hexToHSL(settings.primaryColor))
+        root.style.setProperty('--primary-color', settings.primaryColor)
       }
       
       // Update primary foreground to match button primary text
       if (settings.buttonPrimaryText) {
         root.style.setProperty('--primary-foreground', hexToHSL(settings.buttonPrimaryText))
       }
+
+      // Dashboard Theme Colors CSS Variables
+      root.style.setProperty('--dashboard-sidebar-bg', settings.dashboardSidebarBg)
+      root.style.setProperty('--dashboard-sidebar-text', settings.dashboardSidebarText)
+      root.style.setProperty('--dashboard-sidebar-active-text', settings.dashboardSidebarActiveText)
+      root.style.setProperty('--dashboard-sidebar-active-bg', settings.dashboardSidebarActiveBg)
+      root.style.setProperty('--dashboard-sidebar-hover-bg', settings.dashboardSidebarHoverBg)
+      root.style.setProperty('--dashboard-header-bg', settings.dashboardHeaderBg)
+      root.style.setProperty('--dashboard-header-text', settings.dashboardHeaderText)
+      root.style.setProperty('--dashboard-body-bg', settings.dashboardBodyBg)
+      root.style.setProperty('--dashboard-card-bg', settings.dashboardCardBg)
+      root.style.setProperty('--dashboard-card-border', settings.dashboardCardBorder)
+      root.style.setProperty('--dashboard-card-header-bg', settings.dashboardCardHeaderBg)
+      root.style.setProperty('--dashboard-text-primary', settings.dashboardTextPrimary)
+      root.style.setProperty('--dashboard-text-secondary', settings.dashboardTextSecondary)
+      root.style.setProperty('--dashboard-text-muted', settings.dashboardTextMuted)
+      root.style.setProperty('--dashboard-border-color', settings.dashboardBorderColor)
+      root.style.setProperty('--dashboard-success-color', settings.dashboardSuccessColor)
+      root.style.setProperty('--dashboard-warning-color', settings.dashboardWarningColor)
+      root.style.setProperty('--dashboard-danger-color', settings.dashboardDangerColor)
+      root.style.setProperty('--dashboard-info-color', settings.dashboardInfoColor)
+      // Also set HSL versions for opacity support
+      root.style.setProperty('--dashboard-sidebar-bg-hsl', hexToHSL(settings.dashboardSidebarBg))
+      root.style.setProperty('--dashboard-sidebar-active-bg-hsl', hexToHSL(settings.dashboardSidebarActiveBg))
+      root.style.setProperty('--dashboard-body-bg-hsl', hexToHSL(settings.dashboardBodyBg))
 
       // Update document title if siteTitle is set
       if (settings.siteTitle) {

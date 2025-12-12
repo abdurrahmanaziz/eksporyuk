@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { getRoleTheme } from '@/lib/role-themes'
+import { useSettings } from '@/components/providers/SettingsProvider'
 import Pusher from 'pusher-js'
 import {
   Home,
@@ -479,6 +480,17 @@ export default function DashboardSidebar() {
   
   const userRole = session?.user?.role || 'MEMBER_FREE'
   const theme = getRoleTheme(userRole)
+  const { settings } = useSettings()
+
+  // Dashboard theme colors with fallbacks
+  const dashboardTheme = {
+    sidebarBg: settings.dashboardSidebarBg || '#1e293b',
+    sidebarText: settings.dashboardSidebarText || '#e2e8f0',
+    sidebarActiveText: settings.dashboardSidebarActiveText || '#ffffff',
+    sidebarActiveBg: settings.dashboardSidebarActiveBg || '#3b82f6',
+    sidebarHoverBg: settings.dashboardSidebarHoverBg || '#334155',
+    textMuted: settings.dashboardTextMuted || '#94a3b8',
+  }
 
   // Fetch affiliate menu status for non-affiliate users
   useEffect(() => {
@@ -657,7 +669,7 @@ export default function DashboardSidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300',
+          'fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300',
           // Desktop
           'lg:translate-x-0',
           collapsed ? 'lg:w-20' : 'lg:w-64',
@@ -665,9 +677,16 @@ export default function DashboardSidebar() {
           'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
+        style={{
+          backgroundColor: dashboardTheme.sidebarBg,
+          borderRight: `1px solid ${dashboardTheme.sidebarText}20`,
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+        <div 
+          className="flex items-center justify-between h-16 px-4"
+          style={{ borderBottom: `1px solid ${dashboardTheme.sidebarText}20` }}
+        >
           {!collapsed && (
             <Link href={
               userRole === 'ADMIN' ? '/admin' :
@@ -676,42 +695,46 @@ export default function DashboardSidebar() {
               '/dashboard'
             } className="flex items-center gap-2">
               <div 
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-lg font-bold"
-                style={{ backgroundColor: theme.primary }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-lg font-bold"
+                style={{ backgroundColor: dashboardTheme.sidebarActiveBg, color: dashboardTheme.sidebarActiveText }}
               >
                 {theme.icon}
               </div>
-              <span className="font-bold text-lg" style={{ color: theme.primary }}>
+              <span className="font-bold text-lg" style={{ color: dashboardTheme.sidebarActiveText }}>
                 Eksporyuk
               </span>
             </Link>
           )}
           {collapsed && (
             <div 
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-lg font-bold mx-auto"
-              style={{ backgroundColor: theme.primary }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-lg font-bold mx-auto"
+              style={{ backgroundColor: dashboardTheme.sidebarActiveBg, color: dashboardTheme.sidebarActiveText }}
             >
               {theme.icon}
             </div>
           )}
           <button
             onClick={toggleCollapsed}
-            className="hidden lg:block p-1.5 rounded-lg hover:bg-gray-100 transition-colors ml-auto"
+            className="hidden lg:block p-1.5 rounded-lg transition-colors ml-auto"
+            style={{ color: dashboardTheme.sidebarText }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = dashboardTheme.sidebarHoverBg}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? (
-              <ChevronRight className="w-5 h-5 text-gray-600" />
+              <ChevronRight className="w-5 h-5" />
             ) : (
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
+              <ChevronLeft className="w-5 h-5" />
             )}
           </button>
           
           {/* Mobile Close Button */}
           <button
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors ml-auto"
+            className="lg:hidden p-1.5 rounded-lg transition-colors ml-auto"
+            style={{ color: dashboardTheme.sidebarText }}
           >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -722,7 +745,10 @@ export default function DashboardSidebar() {
           {categoriesWithBadges.map((category, idx) => (
             <div key={idx}>
               {!collapsed && (
-                <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <h3 
+                  className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: dashboardTheme.textMuted }}
+                >
                   {category.title}
                 </h3>
               )}
@@ -737,12 +763,16 @@ export default function DashboardSidebar() {
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-                        isActive
-                          ? 'text-white shadow-sm'
-                          : 'text-gray-700 hover:bg-gray-50'
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200'
                       )}
-                      style={isActive ? { backgroundColor: theme.primary } : {}}
+                      style={isActive ? { 
+                        backgroundColor: dashboardTheme.sidebarActiveBg, 
+                        color: dashboardTheme.sidebarActiveText 
+                      } : { 
+                        color: dashboardTheme.sidebarText 
+                      }}
+                      onMouseEnter={(e) => !isActive && (e.currentTarget.style.backgroundColor = dashboardTheme.sidebarHoverBg)}
+                      onMouseLeave={(e) => !isActive && (e.currentTarget.style.backgroundColor = 'transparent')}
                       title={collapsed ? item.name : undefined}
                     >
                       <Icon className={cn('w-5 h-5 flex-shrink-0', collapsed && 'mx-auto')} />
@@ -753,8 +783,8 @@ export default function DashboardSidebar() {
                             <span 
                             className="px-2 py-0.5 text-xs font-semibold rounded-full"
                             style={{ 
-                              backgroundColor: theme.accent + '20',
-                              color: theme.primary 
+                              backgroundColor: dashboardTheme.sidebarActiveBg + '30',
+                              color: dashboardTheme.sidebarActiveText 
                             }}
                           >
                             {item.badge as React.ReactNode}
@@ -771,20 +801,23 @@ export default function DashboardSidebar() {
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-gray-200">
+        <div 
+          className="p-4"
+          style={{ borderTop: `1px solid ${dashboardTheme.sidebarText}20` }}
+        >
           <div className={cn('flex items-center gap-3', collapsed && 'justify-center')}>
             <div 
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0"
-              style={{ backgroundColor: theme.primary }}
+              className="w-10 h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0"
+              style={{ backgroundColor: dashboardTheme.sidebarActiveBg, color: dashboardTheme.sidebarActiveText }}
             >
               {session?.user?.name?.[0]?.toUpperCase() || 'U'}
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium truncate" style={{ color: dashboardTheme.sidebarActiveText }}>
                   {session?.user?.name || 'User'}
                 </p>
-                <p className="text-xs truncate" style={{ color: theme.primary }}>
+                <p className="text-xs truncate" style={{ color: dashboardTheme.sidebarText }}>
                   {userRole.replace('_', ' ')}
                 </p>
               </div>

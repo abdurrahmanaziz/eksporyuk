@@ -2333,6 +2333,29 @@ model Settings {
   checkoutWarningColor            String?  @default("#eab308")
   
   // ===========================
+  // Dashboard/Admin Theme Colors
+  // ===========================
+  dashboardSidebarBg              String?  @default("#1e293b")
+  dashboardSidebarText            String?  @default("#e2e8f0")
+  dashboardSidebarActiveText      String?  @default("#ffffff")
+  dashboardSidebarActiveBg        String?  @default("#3b82f6")
+  dashboardSidebarHoverBg         String?  @default("#334155")
+  dashboardHeaderBg               String?  @default("#ffffff")
+  dashboardHeaderText             String?  @default("#1f2937")
+  dashboardBodyBg                 String?  @default("#f1f5f9")
+  dashboardCardBg                 String?  @default("#ffffff")
+  dashboardCardBorder             String?  @default("#e2e8f0")
+  dashboardCardHeaderBg           String?  @default("#f8fafc")
+  dashboardTextPrimary            String?  @default("#1f2937")
+  dashboardTextSecondary          String?  @default("#64748b")
+  dashboardTextMuted              String?  @default("#94a3b8")
+  dashboardBorderColor            String?  @default("#e2e8f0")
+  dashboardSuccessColor           String?  @default("#22c55e")
+  dashboardWarningColor           String?  @default("#f59e0b")
+  dashboardDangerColor            String?  @default("#ef4444")
+  dashboardInfoColor              String?  @default("#3b82f6")
+  
+  // ===========================
   // Platform Feature Settings
   // ===========================
   

@@ -30,6 +30,26 @@ interface BrandingSettings {
   buttonDangerBg: string
   buttonDangerText: string
   buttonBorderRadius: string
+  // Dashboard Theme Colors
+  dashboardSidebarBg: string
+  dashboardSidebarText: string
+  dashboardSidebarActiveText: string
+  dashboardSidebarActiveBg: string
+  dashboardSidebarHoverBg: string
+  dashboardHeaderBg: string
+  dashboardHeaderText: string
+  dashboardBodyBg: string
+  dashboardCardBg: string
+  dashboardCardBorder: string
+  dashboardCardHeaderBg: string
+  dashboardTextPrimary: string
+  dashboardTextSecondary: string
+  dashboardTextMuted: string
+  dashboardBorderColor: string
+  dashboardSuccessColor: string
+  dashboardWarningColor: string
+  dashboardDangerColor: string
+  dashboardInfoColor: string
 }
 
 const EKSPOR_YUK_BRAND = {
@@ -45,6 +65,26 @@ const EKSPOR_YUK_BRAND = {
   buttonDangerBg: '#EF4444',
   buttonDangerText: '#FFFFFF',
   buttonBorderRadius: '0.5rem',
+  // Dashboard Theme Colors - Default
+  dashboardSidebarBg: '#1e293b',
+  dashboardSidebarText: '#e2e8f0',
+  dashboardSidebarActiveText: '#ffffff',
+  dashboardSidebarActiveBg: '#3b82f6',
+  dashboardSidebarHoverBg: '#334155',
+  dashboardHeaderBg: '#ffffff',
+  dashboardHeaderText: '#1f2937',
+  dashboardBodyBg: '#f1f5f9',
+  dashboardCardBg: '#ffffff',
+  dashboardCardBorder: '#e2e8f0',
+  dashboardCardHeaderBg: '#f8fafc',
+  dashboardTextPrimary: '#1f2937',
+  dashboardTextSecondary: '#64748b',
+  dashboardTextMuted: '#94a3b8',
+  dashboardBorderColor: '#e2e8f0',
+  dashboardSuccessColor: '#22c55e',
+  dashboardWarningColor: '#f59e0b',
+  dashboardDangerColor: '#ef4444',
+  dashboardInfoColor: '#3b82f6',
 }
 
 export default function AdminBrandingSettings() {
@@ -90,6 +130,26 @@ export default function AdminBrandingSettings() {
           buttonDangerBg: data.settings.buttonDangerBg || EKSPOR_YUK_BRAND.buttonDangerBg,
           buttonDangerText: data.settings.buttonDangerText || EKSPOR_YUK_BRAND.buttonDangerText,
           buttonBorderRadius: data.settings.buttonBorderRadius || EKSPOR_YUK_BRAND.buttonBorderRadius,
+          // Dashboard Theme Colors
+          dashboardSidebarBg: data.settings.dashboardSidebarBg || EKSPOR_YUK_BRAND.dashboardSidebarBg,
+          dashboardSidebarText: data.settings.dashboardSidebarText || EKSPOR_YUK_BRAND.dashboardSidebarText,
+          dashboardSidebarActiveText: data.settings.dashboardSidebarActiveText || EKSPOR_YUK_BRAND.dashboardSidebarActiveText,
+          dashboardSidebarActiveBg: data.settings.dashboardSidebarActiveBg || EKSPOR_YUK_BRAND.dashboardSidebarActiveBg,
+          dashboardSidebarHoverBg: data.settings.dashboardSidebarHoverBg || EKSPOR_YUK_BRAND.dashboardSidebarHoverBg,
+          dashboardHeaderBg: data.settings.dashboardHeaderBg || EKSPOR_YUK_BRAND.dashboardHeaderBg,
+          dashboardHeaderText: data.settings.dashboardHeaderText || EKSPOR_YUK_BRAND.dashboardHeaderText,
+          dashboardBodyBg: data.settings.dashboardBodyBg || EKSPOR_YUK_BRAND.dashboardBodyBg,
+          dashboardCardBg: data.settings.dashboardCardBg || EKSPOR_YUK_BRAND.dashboardCardBg,
+          dashboardCardBorder: data.settings.dashboardCardBorder || EKSPOR_YUK_BRAND.dashboardCardBorder,
+          dashboardCardHeaderBg: data.settings.dashboardCardHeaderBg || EKSPOR_YUK_BRAND.dashboardCardHeaderBg,
+          dashboardTextPrimary: data.settings.dashboardTextPrimary || EKSPOR_YUK_BRAND.dashboardTextPrimary,
+          dashboardTextSecondary: data.settings.dashboardTextSecondary || EKSPOR_YUK_BRAND.dashboardTextSecondary,
+          dashboardTextMuted: data.settings.dashboardTextMuted || EKSPOR_YUK_BRAND.dashboardTextMuted,
+          dashboardBorderColor: data.settings.dashboardBorderColor || EKSPOR_YUK_BRAND.dashboardBorderColor,
+          dashboardSuccessColor: data.settings.dashboardSuccessColor || EKSPOR_YUK_BRAND.dashboardSuccessColor,
+          dashboardWarningColor: data.settings.dashboardWarningColor || EKSPOR_YUK_BRAND.dashboardWarningColor,
+          dashboardDangerColor: data.settings.dashboardDangerColor || EKSPOR_YUK_BRAND.dashboardDangerColor,
+          dashboardInfoColor: data.settings.dashboardInfoColor || EKSPOR_YUK_BRAND.dashboardInfoColor,
         })
       }
     } catch (error) {
@@ -420,6 +480,376 @@ export default function AdminBrandingSettings() {
                     <option value="1rem">Extra Large (1rem)</option>
                     <option value="9999px">Pill (rounded full)</option>
                   </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Dashboard Theme Colors */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div
+                className="px-6 py-4 border-b border-gray-200"
+                style={{ backgroundColor: `${settings.dashboardSidebarBg}15` }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: settings.dashboardSidebarBg }}>
+                    <svg className="w-4 h-4" style={{ color: settings.dashboardSidebarText }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Warna Dashboard</h2>
+                    <p className="text-sm text-gray-600">Kustomisasi tampilan panel admin</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Sidebar Colors */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                    Sidebar
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Background</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardSidebarBg}
+                          onChange={(e) => updateSetting('dashboardSidebarBg', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardSidebarBg}
+                          onChange={(e) => updateSetting('dashboardSidebarBg', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Text</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardSidebarText}
+                          onChange={(e) => updateSetting('dashboardSidebarText', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardSidebarText}
+                          onChange={(e) => updateSetting('dashboardSidebarText', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Active BG</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardSidebarActiveBg}
+                          onChange={(e) => updateSetting('dashboardSidebarActiveBg', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardSidebarActiveBg}
+                          onChange={(e) => updateSetting('dashboardSidebarActiveBg', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Active Text</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardSidebarActiveText}
+                          onChange={(e) => updateSetting('dashboardSidebarActiveText', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardSidebarActiveText}
+                          onChange={(e) => updateSetting('dashboardSidebarActiveText', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs text-gray-500 mb-1">Hover BG</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardSidebarHoverBg}
+                          onChange={(e) => updateSetting('dashboardSidebarHoverBg', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardSidebarHoverBg}
+                          onChange={(e) => updateSetting('dashboardSidebarHoverBg', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Body & Card Colors */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    Body & Card
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Body BG</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardBodyBg}
+                          onChange={(e) => updateSetting('dashboardBodyBg', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardBodyBg}
+                          onChange={(e) => updateSetting('dashboardBodyBg', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Card BG</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardCardBg}
+                          onChange={(e) => updateSetting('dashboardCardBg', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardCardBg}
+                          onChange={(e) => updateSetting('dashboardCardBg', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Card Border</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardCardBorder}
+                          onChange={(e) => updateSetting('dashboardCardBorder', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardCardBorder}
+                          onChange={(e) => updateSetting('dashboardCardBorder', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Header BG</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardHeaderBg}
+                          onChange={(e) => updateSetting('dashboardHeaderBg', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardHeaderBg}
+                          onChange={(e) => updateSetting('dashboardHeaderBg', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Text Colors */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                    Warna Teks
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Primary</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="color"
+                          value={settings.dashboardTextPrimary}
+                          onChange={(e) => updateSetting('dashboardTextPrimary', e.target.value)}
+                          className="w-8 h-8 border border-gray-300 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardTextPrimary}
+                          onChange={(e) => updateSetting('dashboardTextPrimary', e.target.value)}
+                          className="w-full px-1 py-1 border border-gray-300 rounded font-mono text-[10px]"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Secondary</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="color"
+                          value={settings.dashboardTextSecondary}
+                          onChange={(e) => updateSetting('dashboardTextSecondary', e.target.value)}
+                          className="w-8 h-8 border border-gray-300 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardTextSecondary}
+                          onChange={(e) => updateSetting('dashboardTextSecondary', e.target.value)}
+                          className="w-full px-1 py-1 border border-gray-300 rounded font-mono text-[10px]"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Muted</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="color"
+                          value={settings.dashboardTextMuted}
+                          onChange={(e) => updateSetting('dashboardTextMuted', e.target.value)}
+                          className="w-8 h-8 border border-gray-300 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardTextMuted}
+                          onChange={(e) => updateSetting('dashboardTextMuted', e.target.value)}
+                          className="w-full px-1 py-1 border border-gray-300 rounded font-mono text-[10px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Colors */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                    Warna Status
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Success</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardSuccessColor}
+                          onChange={(e) => updateSetting('dashboardSuccessColor', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardSuccessColor}
+                          onChange={(e) => updateSetting('dashboardSuccessColor', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Warning</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardWarningColor}
+                          onChange={(e) => updateSetting('dashboardWarningColor', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardWarningColor}
+                          onChange={(e) => updateSetting('dashboardWarningColor', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Danger</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardDangerColor}
+                          onChange={(e) => updateSetting('dashboardDangerColor', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardDangerColor}
+                          onChange={(e) => updateSetting('dashboardDangerColor', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Info</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={settings.dashboardInfoColor}
+                          onChange={(e) => updateSetting('dashboardInfoColor', e.target.value)}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={settings.dashboardInfoColor}
+                          onChange={(e) => updateSetting('dashboardInfoColor', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-lg font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dashboard Preview Mini */}
+                <div className="mt-4 p-3 rounded-lg border border-gray-200">
+                  <p className="text-xs font-medium text-gray-500 mb-2">Preview Dashboard</p>
+                  <div className="flex rounded-lg overflow-hidden border" style={{ height: '80px' }}>
+                    {/* Mini Sidebar */}
+                    <div className="w-12" style={{ backgroundColor: settings.dashboardSidebarBg }}>
+                      <div className="mt-2 mx-1.5 p-1 rounded" style={{ backgroundColor: settings.dashboardSidebarActiveBg }}>
+                        <div className="w-full h-1.5 rounded" style={{ backgroundColor: settings.dashboardSidebarActiveText }}></div>
+                      </div>
+                      <div className="mt-1.5 mx-1.5 p-1">
+                        <div className="w-full h-1.5 rounded" style={{ backgroundColor: settings.dashboardSidebarText, opacity: 0.5 }}></div>
+                      </div>
+                      <div className="mt-1.5 mx-1.5 p-1">
+                        <div className="w-full h-1.5 rounded" style={{ backgroundColor: settings.dashboardSidebarText, opacity: 0.5 }}></div>
+                      </div>
+                    </div>
+                    {/* Mini Content */}
+                    <div className="flex-1" style={{ backgroundColor: settings.dashboardBodyBg }}>
+                      <div className="h-4 border-b" style={{ backgroundColor: settings.dashboardHeaderBg, borderColor: settings.dashboardBorderColor }}></div>
+                      <div className="p-1.5 grid grid-cols-3 gap-1">
+                        <div className="h-8 rounded" style={{ backgroundColor: settings.dashboardCardBg, border: `1px solid ${settings.dashboardCardBorder}` }}></div>
+                        <div className="h-8 rounded" style={{ backgroundColor: settings.dashboardCardBg, border: `1px solid ${settings.dashboardCardBorder}` }}></div>
+                        <div className="h-8 rounded" style={{ backgroundColor: settings.dashboardCardBg, border: `1px solid ${settings.dashboardCardBorder}` }}></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

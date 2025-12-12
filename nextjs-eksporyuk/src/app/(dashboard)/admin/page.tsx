@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,7 +30,11 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
-  Clock
+  Clock,
+  BarChart3,
+  Eye,
+  MousePointer,
+  Target
 } from 'lucide-react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
@@ -82,12 +87,79 @@ interface DashboardStats {
   }
 }
 
+interface TrafficSource {
+  name: string
+  key: string
+  count: number
+  percentage: number
+  color: string
+  icon: string
+}
+
+interface TopAffiliate {
+  rank: number
+  affiliateId: string
+  name: string
+  sales: number
+  commission: number
+}
+
 export default function AdminPage() {
   const { data: session } = useSession()
+  const [trafficSources, setTrafficSources] = React.useState<TrafficSource[]>([])
+  const [trafficLoading, setTrafficLoading] = React.useState(true)
+  const [topAffiliates, setTopAffiliates] = React.useState<TopAffiliate[]>([])
+  const [affiliatesLoading, setAffiliatesLoading] = React.useState(true)
+  const [affiliatesPeriod, setAffiliatesPeriod] = React.useState('')
   
   // Use React Query hooks for cached, auto-refreshing data
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useAdminStats()
   const { data: xenditBalance, isLoading: xenditLoading, error: xenditError, refetch: refetchXendit } = useXenditBalance()
+
+  // Fetch traffic sources
+  React.useEffect(() => {
+    const fetchTrafficSources = async () => {
+      try {
+        const res = await fetch('/api/admin/stats/traffic-source')
+        if (res.ok) {
+          const data = await res.json()
+          setTrafficSources(data.sources || [])
+        }
+      } catch (error) {
+        console.error('Error fetching traffic sources:', error)
+      } finally {
+        setTrafficLoading(false)
+      }
+    }
+    
+    fetchTrafficSources()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchTrafficSources, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Fetch top affiliates
+  React.useEffect(() => {
+    const fetchTopAffiliates = async () => {
+      try {
+        const res = await fetch('/api/admin/stats/top-affiliates')
+        if (res.ok) {
+          const data = await res.json()
+          setTopAffiliates(data.affiliates || [])
+          setAffiliatesPeriod(data.period || '')
+        }
+      } catch (error) {
+        console.error('Error fetching top affiliates:', error)
+      } finally {
+        setAffiliatesLoading(false)
+      }
+    }
+    
+    fetchTopAffiliates()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchTopAffiliates, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   if (!session) {
     return (
@@ -103,6 +175,19 @@ export default function AdminPage() {
       currency: 'IDR',
       minimumFractionDigits: 0
     }).format(amount)
+  }
+
+  const formatCurrencyShort = (amount: number) => {
+    if (amount >= 1000000000000) {
+      return `Rp ${(amount / 1000000000000).toFixed(1)}T`
+    } else if (amount >= 1000000000) {
+      return `Rp ${(amount / 1000000000).toFixed(1)}B`
+    } else if (amount >= 1000000) {
+      return `Rp ${(amount / 1000000).toFixed(1)}M`
+    } else if (amount >= 1000) {
+      return `Rp ${(amount / 1000).toFixed(0)}K`
+    }
+    return `Rp ${amount.toLocaleString('id-ID')}`
   }
 
   return (
@@ -151,17 +236,17 @@ export default function AdminPage() {
         {/* Modern Stats Cards with Gradient */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Total Users Card */}
-          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-blue-500 to-blue-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
             <CardContent className="pt-6 relative z-10">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
                   <Users className="h-6 w-6 text-white" />
                 </div>
                 {!statsLoading && stats?.users.growth && (
                   <div className={cn(
                     "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium",
-                    parseFloat(stats.users.growth) >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    parseFloat(stats.users.growth) >= 0 ? "bg-green-400/20 text-green-100" : "bg-red-400/20 text-red-100"
                   )}>
                     {parseFloat(stats.users.growth) >= 0 ? (
                       <ArrowUpRight className="h-3 w-3" />
@@ -173,21 +258,21 @@ export default function AdminPage() {
                 )}
               </div>
               {statsLoading ? (
-                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-8 w-24 bg-white/20" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                  <div className="text-3xl font-bold text-white mb-1">
                     {stats?.users.total.toLocaleString()}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">Total Users</p>
+                  <p className="text-sm text-blue-100 mb-3">Total Users</p>
                   <div className="flex items-center gap-4 text-xs">
                     <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-muted-foreground">{stats?.users.active.toLocaleString()} Active</span>
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <span className="text-blue-100">{stats?.users.active.toLocaleString()} Active</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-muted-foreground">{stats?.users.new30Days} New</span>
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                      <span className="text-blue-100">{stats?.users.new30Days} New</span>
                     </div>
                   </div>
                 </>
@@ -196,17 +281,17 @@ export default function AdminPage() {
           </Card>
 
           {/* Total Revenue Card */}
-          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400/20 to-green-600/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-green-500 to-emerald-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
             <CardContent className="pt-6 relative z-10">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
                   <DollarSign className="h-6 w-6 text-white" />
                 </div>
                 {!statsLoading && stats?.revenue.growth && (
                   <div className={cn(
                     "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium",
-                    parseFloat(stats.revenue.growth) >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    parseFloat(stats.revenue.growth) >= 0 ? "bg-green-400/20 text-green-100" : "bg-red-400/20 text-red-100"
                   )}>
                     {parseFloat(stats.revenue.growth) >= 0 ? (
                       <ArrowUpRight className="h-3 w-3" />
@@ -218,14 +303,14 @@ export default function AdminPage() {
                 )}
               </div>
               {statsLoading ? (
-                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-8 w-32 bg-white/20" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                  <div className="text-[24px] font-bold text-white mb-1">
                     {formatCurrency(stats?.revenue.total || 0)}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">Total Revenue</p>
-                  <div className="text-xs text-muted-foreground">
+                  <p className="text-sm text-green-100 mb-3">Total Revenue</p>
+                  <div className="text-xs text-green-100">
                     {formatCurrency(stats?.revenue.thisMonth || 0)} this month
                   </div>
                 </>
@@ -234,23 +319,23 @@ export default function AdminPage() {
           </Card>
 
           {/* Memberships Card */}
-          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-purple-600/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-purple-500 to-violet-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
             <CardContent className="pt-6 relative z-10">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
                   <Crown className="h-6 w-6 text-white" />
                 </div>
               </div>
               {statsLoading ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-20 bg-white/20" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                  <div className="text-3xl font-bold text-white mb-1">
                     {stats?.memberships.active.toLocaleString()}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">Active Members</p>
-                  <div className="text-xs text-muted-foreground">
+                  <p className="text-sm text-purple-100 mb-3">Active Members</p>
+                  <div className="text-xs text-purple-100">
                     {stats?.memberships.total.toLocaleString()} total memberships
                   </div>
                 </>
@@ -259,28 +344,28 @@ export default function AdminPage() {
           </Card>
 
           {/* Transactions Card */}
-          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-400/20 to-orange-600/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-orange-500 to-amber-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
             <CardContent className="pt-6 relative z-10">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
                   <ShoppingCart className="h-6 w-6 text-white" />
                 </div>
                 {!statsLoading && stats?.transactions.pending > 0 && (
-                  <Badge variant="destructive" className="rounded-lg">
+                  <Badge className="rounded-lg bg-red-500/20 text-red-100 border-0">
                     {stats.transactions.pending}
                   </Badge>
                 )}
               </div>
               {statsLoading ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-20 bg-white/20" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                  <div className="text-3xl font-bold text-white mb-1">
                     {stats?.transactions.total.toLocaleString()}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">Transactions</p>
-                  <div className="text-xs text-muted-foreground">
+                  <p className="text-sm text-orange-100 mb-3">Transactions</p>
+                  <div className="text-xs text-orange-100">
                     {stats?.transactions.pending > 0 ? `${stats.transactions.pending} pending approval` : 'All processed'}
                   </div>
                 </>
@@ -289,418 +374,298 @@ export default function AdminPage() {
           </Card>
         </div>
 
-        {/* Xendit Balance Card - Modern Design */}
-        <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
-                  <CreditCard className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold mb-1">Xendit Balance</h3>
-                  <p className="text-blue-100 text-sm">Payment gateway balance</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                {xenditLoading ? (
-                  <Skeleton className="h-12 w-48 bg-white/20" />
-                ) : xenditError ? (
-                  <div className="text-sm bg-red-500/20 px-4 py-2 rounded-lg">
-                    {xenditError instanceof Error ? xenditError.message : String(xenditError)}
+        {/* Revenue Charts Section */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Monthly Revenue Chart */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-md">
+                    <BarChart3 className="h-5 w-5 text-white" />
                   </div>
-                ) : (
-                  <div className="text-right">
-                    <div className="text-4xl font-bold">{formatCurrency(xenditBalance?.balance || 0)}</div>
-                    <div className="text-sm text-blue-100 mt-1">Available balance</div>
-                  </div>
-                )}
-                <Button 
-```
-                variant="outline" 
-                size="sm"
-                onClick={() => window.location.reload()}
-                disabled={xenditLoading}
-                className="border-blue-300 text-blue-600 hover:bg-blue-100"
-              >
-                {xenditLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {xenditLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                <span className="ml-2 text-gray-600">Mengambil balance...</span>
-              </div>
-            ) : xenditError ? (
-              <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
-                <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-                <div>
-                  <p className="text-amber-800 font-medium">Tidak dapat mengambil balance</p>
-                  <p className="text-amber-700 text-sm">{xenditError instanceof Error ? xenditError.message : String(xenditError)}</p>
-                </div>
-              </div>
-            ) : xenditBalance ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-6 rounded-lg border border-blue-200 shadow-sm">
-                  <p className="text-sm text-gray-600 mb-1">Available Balance</p>
-                  <p className="text-3xl font-bold text-blue-600">
-                    Rp {(xenditBalance.balance || 0).toLocaleString('id-ID')}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">Saldo tersedia</p>
-                </div>
-                
-                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                  <p className="text-sm text-gray-600 mb-1">Account Type</p>
-                  <p className="text-lg font-semibold text-gray-800">
-                    {xenditBalance.accountType || 'CASH'}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">Tipe akun</p>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg border border-green-200 shadow-sm">
-                  <p className="text-sm text-gray-600 mb-1">Status</p>
-                  <Badge variant="default" className="bg-green-600">
-                    Active
-                  </Badge>
-                  <p className="text-xs text-gray-500 mt-2">Payment gateway aktif</p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-4 text-gray-500">
-                Tidak ada data balance
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Secondary Stats */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {/* Content Stats */}
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-md">
-                  <BookOpen className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">Content</span>
-              </div>
-              {statsLoading ? (
-                <Skeleton className="h-6 w-20" />
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Courses</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.courses}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Lessons</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.lessons}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Products</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.products}</span>
+                  <div>
+                    <CardTitle className="text-lg">Revenue Bulanan</CardTitle>
+                    <CardDescription>Pendapatan 6 bulan terakhir</CardDescription>
                   </div>
                 </div>
-              )}
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  +12.5%
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Simple Bar Chart Visualization */}
+                <div className="flex items-end justify-between gap-2 h-40">
+                  {[
+                    { month: 'Jul', value: 65, amount: '2.1M' },
+                    { month: 'Aug', value: 45, amount: '1.5M' },
+                    { month: 'Sep', value: 78, amount: '2.5M' },
+                    { month: 'Oct', value: 52, amount: '1.7M' },
+                    { month: 'Nov', value: 88, amount: '2.8M' },
+                    { month: 'Des', value: 100, amount: '3.2M' },
+                  ].map((item, index) => (
+                    <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                      <span className="text-xs font-medium text-gray-600">Rp {item.amount}</span>
+                      <div 
+                        className="w-full bg-gradient-to-t from-emerald-500 to-green-400 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-green-500"
+                        style={{ height: `${item.value}%` }}
+                      ></div>
+                      <span className="text-xs text-gray-500">{item.month}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Total Bulan Ini</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats?.revenue.total || 0)}</p>
+                  </div>
+                  <Link href="/admin/sales">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      Lihat Detail
+                      <ArrowUpRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Community Stats */}
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950 dark:to-rose-950">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg shadow-md">
-                  <MessageSquare className="h-5 w-5 text-white" />
+          {/* Lifetime Stats */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-md">
+                    <Target className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Lifetime Statistics</CardTitle>
+                    <CardDescription>Data keseluruhan platform</CardDescription>
+                  </div>
                 </div>
-                <span className="text-xs font-medium text-pink-700 dark:text-pink-300">Community</span>
               </div>
-              {statsLoading ? (
-                <Skeleton className="h-6 w-20" />
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Forums</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.forums}</span>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs font-medium text-blue-600">Total Members</span>
                   </div>
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Discussions</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.discussions}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Comments</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.content.comments}</span>
-                  </div>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.users.total.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-gray-500 mt-1">Sejak awal</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Affiliate Stats */}
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950 dark:to-blue-950">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg shadow-md">
-                  <Link2 className="h-5 w-5 text-white" />
+                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign className="w-4 h-4 text-green-600" />
+                    <span className="text-xs font-medium text-green-600">Total Revenue</span>
+                  </div>
+                  <p className="text-xl font-bold text-gray-900">{formatCurrency(stats?.revenue.lifetime || stats?.revenue.total || 0)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Lifetime</p>
                 </div>
-                <span className="text-xs font-medium text-cyan-700 dark:text-cyan-300">Affiliates</span>
+                <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShoppingCart className="w-4 h-4 text-amber-600" />
+                    <span className="text-xs font-medium text-amber-600">Transactions</span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.transactions.total.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-gray-500 mt-1">Total transaksi</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Crown className="w-4 h-4 text-pink-600" />
+                    <span className="text-xs font-medium text-pink-600">Active Members</span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.memberships.active.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-gray-500 mt-1">Membership aktif</p>
+                </div>
               </div>
-              {statsLoading ? (
-                <Skeleton className="h-6 w-20" />
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Total Links</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.affiliates.totalLinks}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Active</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.affiliates.activeLinks}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Total Clicks</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.affiliates.totalClicks}</span>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Notifications Stats */}
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-md">
-                  <Bell className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Notifications</span>
-              </div>
-              {statsLoading ? (
-                <Skeleton className="h-6 w-20" />
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Sent (30d)</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.notifications.sent30Days}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Templates</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.notifications.templates}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Auto Rules</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{stats?.notifications.autoRules}</span>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
 
-      {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* User Management */}
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-blue-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
-          <CardHeader className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
-                <Users className="h-5 w-5 text-white" />
+        {/* Affiliate Performance Section */}
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-5">
+          {/* Affiliate Chart */}
+          <Card className="border-0 shadow-lg lg:col-span-3">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl shadow-md">
+                    <Link2 className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Affiliate Performance</CardTitle>
+                    <CardDescription>Performa affiliate 7 hari terakhir</CardDescription>
+                  </div>
+                </div>
+                <Link href="/admin/affiliates">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    Kelola Affiliate
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
-              <div>
-                <CardTitle className="text-base">User Management</CardTitle>
-                <CardDescription className="text-xs">Kelola users & permissions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Simple Line Chart Visualization */}
+              <div className="relative h-48 mb-4">
+                <div className="absolute inset-0 flex items-end justify-between gap-1">
+                  {[35, 45, 40, 60, 55, 80, 75].map((value, index) => (
+                    <div key={index} className="flex-1 flex flex-col items-center gap-1">
+                      <div 
+                        className="w-full bg-gradient-to-t from-cyan-500 to-blue-400 rounded-t opacity-80 hover:opacity-100 transition-opacity"
+                        style={{ height: `${value}%` }}
+                      ></div>
+                    </div>
+                  ))}
+                </div>
+                {/* Grid lines */}
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                  {[0, 1, 2, 3].map((_, i) => (
+                    <div key={i} className="border-t border-dashed border-gray-200"></div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Link href="/admin/users">
-              <Button variant="ghost" className="w-full justify-start hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors">
-                <Users className="mr-2 h-4 w-4" />
-                Manage Users
-              </Button>
-            </Link>
-            <Link href="/admin/membership">
-              <Button variant="ghost" className="w-full justify-start hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors">
-                <Crown className="mr-2 h-4 w-4" />
-                Memberships
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((day, i) => (
+                  <span key={i}>{day}</span>
+                ))}
+              </div>
+              {/* Stats Summary */}
+              <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1 text-cyan-600 mb-1">
+                    <Eye className="w-4 h-4" />
+                    <span className="text-xs font-medium">Total Clicks</span>
+                  </div>
+                  <p className="text-xl font-bold text-gray-900">{stats?.affiliates.totalClicks?.toLocaleString() || '0'}</p>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
+                    <MousePointer className="w-4 h-4" />
+                    <span className="text-xs font-medium">Conversions</span>
+                  </div>
+                  <p className="text-xl font-bold text-gray-900">{stats?.affiliates.conversions || '0'}</p>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1 text-green-600 mb-1">
+                    <DollarSign className="w-4 h-4" />
+                    <span className="text-xs font-medium">Commission</span>
+                  </div>
+                  <p className="text-xl font-bold text-gray-900">{formatCurrency(stats?.affiliates.totalCommission || 0)}</p>
+                </div>
+              </div>
 
-        {/* Revenue & Sales */}
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400/10 to-green-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
-          <CardHeader className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
-                <DollarSign className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-base">Revenue & Sales</CardTitle>
-                <CardDescription className="text-xs">Lihat laporan penjualan</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Link href="/admin/sales">
-              <Button variant="ghost" className="w-full justify-start hover:bg-green-50 dark:hover:bg-green-950 transition-colors">
-                <TrendingUp className="mr-2 h-4 w-4" />
-                Revenue Dashboard
-              </Button>
-            </Link>
-            <Link href="/admin/transactions">
-              <Button variant="ghost" className="w-full justify-start hover:bg-green-50 dark:hover:bg-green-950 transition-colors">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Transactions
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Content & Community */}
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-400/10 to-indigo-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
-          <CardHeader className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
-                <BookOpen className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-base">Content & Community</CardTitle>
-                <CardDescription className="text-xs">Kelola konten & forum</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Link href="/admin/courses">
-              <Button variant="ghost" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Courses
-              </Button>
-            </Link>
-            <Link href="/admin/products">
-              <Button variant="ghost" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors">
-                <Package className="mr-2 h-4 w-4" />
-                Products
-              </Button>
-            </Link>
-            <Link href="/admin/groups">
-              <Button variant="ghost" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors">
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Forums
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Affiliates */}
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-400/10 to-cyan-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
-          <CardHeader className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
-                <Link2 className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-base">Affiliates</CardTitle>
-                <CardDescription className="text-xs">Kelola links & coupons</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Link href="/admin/affiliates">
-              <Button variant="ghost" className="w-full justify-start hover:bg-cyan-50 dark:hover:bg-cyan-950 transition-colors">
-                <Link2 className="mr-2 h-4 w-4" />
-                Affiliate Links
-              </Button>
-            </Link>
-            <Link href="/admin/coupons">
-              <Button variant="ghost" className="w-full justify-start hover:bg-cyan-50 dark:hover:bg-cyan-950 transition-colors">
-                <Percent className="mr-2 h-4 w-4" />
-                Coupons
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Marketing & Outreach */}
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-400/10 to-amber-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
-          <CardHeader className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
-                <Bell className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-base">Marketing</CardTitle>
-                <CardDescription className="text-xs">Push notif & campaigns</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Link href="/admin/onesignal">
-              <Button variant="ghost" className="w-full justify-start hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors">
-                <Bell className="mr-2 h-4 w-4" />
-                OneSignal
-              </Button>
-            </Link>
-            <Link href="/admin/certificates">
-              <Button variant="ghost" className="w-full justify-start hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors">
-                <Award className="mr-2 h-4 w-4" />
-                Certificates
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* System & Settings */}
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gray-400/10 to-gray-600/10 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-500"></div>
-          <CardHeader className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl shadow-md group-hover:scale-110 transition-transform">
-                <Settings className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-base">System & Settings</CardTitle>
-                <CardDescription className="text-xs">Konfigurasi platform</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Link href="/admin/settings">
-              <Button variant="ghost" className="w-full justify-start hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
-            </Link>
-            <Link href="/admin/reports">
-              <Button variant="ghost" className="w-full justify-start hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <Flag className="mr-2 h-4 w-4" />
-                Reports
-                {stats?.moderation.pendingReports > 0 && (
-                  <Badge variant="destructive" className="ml-auto">
-                    {stats.moderation.pendingReports}
-                  </Badge>
+              {/* Traffic Source Section */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-gray-700">Sumber Traffic</h4>
+                  <span className="text-xs text-gray-400">30 hari terakhir</span>
+                </div>
+                {trafficLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <Skeleton key={i} className="h-6 w-full" />
+                    ))}
+                  </div>
+                ) : trafficSources.length > 0 ? (
+                  <div className="space-y-2">
+                    {trafficSources.slice(0, 5).map((source) => (
+                      <div key={source.key} className="flex items-center gap-2">
+                        <div 
+                          className="w-6 h-6 rounded-md flex items-center justify-center text-white text-[10px] font-bold"
+                          style={{ backgroundColor: source.color }}
+                        >
+                          {source.name.charAt(0)}
+                        </div>
+                        <span className="text-xs font-medium text-gray-700 w-20 truncate">{source.name}</span>
+                        <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ 
+                              width: `${source.percentage}%`,
+                              backgroundColor: source.color
+                            }}
+                          ></div>
+                        </div>
+                        <span className="text-xs font-bold text-gray-600 w-14 text-right">{source.count.toLocaleString()}</span>
+                        <span className="text-[10px] text-gray-400 w-8">{source.percentage}%</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-400 text-sm">
+                    Belum ada data traffic
+                  </div>
                 )}
-              </Button>
-            </Link>
-            <Link href="/admin/integrations">
-              <Button variant="ghost" className="w-full justify-start hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <Zap className="mr-2 h-4 w-4" />
-                Integrations
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top Affiliates List */}
+          <Card className="border-0 shadow-lg lg:col-span-2">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-md">
+                    <Award className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Top Affiliates</CardTitle>
+                    <CardDescription>{affiliatesPeriod || 'Bulan ini'}</CardDescription>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0 px-5">
+              {affiliatesLoading ? (
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
+                </div>
+              ) : topAffiliates.length > 0 ? (
+                <div>
+                  {topAffiliates.map((affiliate) => (
+                    <div key={affiliate.rank} className="flex items-center gap-2 py-[5px] hover:bg-gray-50 rounded-lg px-1 -mx-1 transition-colors">
+                      <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                        affiliate.rank === 1 ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-amber-900 shadow-sm' :
+                        affiliate.rank === 2 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700 shadow-sm' :
+                        affiliate.rank === 3 ? 'bg-gradient-to-br from-orange-300 to-orange-400 text-orange-800 shadow-sm' :
+                        'bg-gray-100 text-gray-500'
+                      }`}>
+                        {affiliate.rank}
+                      </div>
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0 shadow-sm">
+                        {affiliate.name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-gray-900 text-[15px] truncate block">{affiliate.name}</span><span className="text-[11px] text-gray-400">{affiliate.sales} sales</span>
+                      </div>
+                      <p className="font-bold text-green-600 text-sm flex-shrink-0">{formatCurrency(affiliate.commission)}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  Belum ada data affiliate bulan ini
+                </div>
+              )}
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <Link href="/admin/affiliates">
+                  <Button variant="ghost" size="sm" className="w-full justify-center gap-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50">
+                    Lihat Semua Affiliate
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
     </div>
     </ResponsivePageWrapper>
   )

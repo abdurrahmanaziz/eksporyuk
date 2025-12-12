@@ -22,6 +22,8 @@ import {
   Wallet,
   ShoppingCart,
   AlertTriangle,
+  RefreshCw,
+  Hash,
 } from 'lucide-react'
 
 type User = {
@@ -74,6 +76,8 @@ export default function AdminUsersPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [error, setError] = useState('')
   const [createLoading, setCreateLoading] = useState(false)
+  const [updatingMemberCodes, setUpdatingMemberCodes] = useState(false)
+  const [usersWithoutMemberCode, setUsersWithoutMemberCode] = useState(0)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -90,6 +94,48 @@ export default function AdminUsersPage() {
       router.push('/dashboard')
     }
   }, [status, session, router])
+
+  // Check users without member codes
+  const checkMemberCodeStatus = async () => {
+    try {
+      const res = await fetch('/api/admin/users/update-member-codes')
+      if (res.ok) {
+        const data = await res.json()
+        setUsersWithoutMemberCode(data.usersWithoutMemberCode || 0)
+      }
+    } catch (error) {
+      console.error('Error checking member codes:', error)
+    }
+  }
+
+  // Update all member codes
+  const handleUpdateAllMemberCodes = async () => {
+    if (!confirm(`Yakin ingin generate Member ID untuk ${usersWithoutMemberCode} user yang belum punya?`)) {
+      return
+    }
+
+    try {
+      setUpdatingMemberCodes(true)
+      const res = await fetch('/api/admin/users/update-member-codes', {
+        method: 'POST',
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        alert(`Berhasil! ${data.updated} user telah diberi Member ID baru.`)
+        fetchUsers() // Refresh data
+        checkMemberCodeStatus() // Update count
+      } else {
+        alert(data.error || 'Gagal update member codes')
+      }
+    } catch (error) {
+      console.error('Error updating member codes:', error)
+      alert('Terjadi kesalahan saat update member codes')
+    } finally {
+      setUpdatingMemberCodes(false)
+    }
+  }
 
   // Fetch users
   const fetchUsers = async () => {
@@ -138,6 +184,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
       fetchUsers()
+      checkMemberCodeStatus() // Check member code status on load
     }
   }, [status, session, page, roleFilter, membershipFilter])
 
@@ -269,13 +316,33 @@ export default function AdminUsersPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Manajemen user, role, dan membership</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
-          >
-            <Plus className="w-5 h-5" />
-            Tambah User
-          </button>
+          <div className="flex items-center gap-3">
+            {usersWithoutMemberCode > 0 && (
+              <button
+                onClick={handleUpdateAllMemberCodes}
+                disabled={updatingMemberCodes}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                title={`${usersWithoutMemberCode} user belum punya Member ID`}
+              >
+                {updatingMemberCodes ? (
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Hash className="w-5 h-5" />
+                )}
+                <span className="hidden sm:inline">Update Member ID</span>
+                <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold bg-white/20 rounded-full">
+                  {usersWithoutMemberCode}
+                </span>
+              </button>
+            )}
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
+            >
+              <Plus className="w-5 h-5" />
+              Tambah User
+            </button>
+          </div>
         </div>
       </div>
 

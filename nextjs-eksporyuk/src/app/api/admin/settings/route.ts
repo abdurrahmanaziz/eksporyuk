@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
       siteFavicon,
       primaryColor,
       secondaryColor,
+      accentColor,
       // Button Colors
       buttonPrimaryBg,
       buttonPrimaryText,
@@ -130,6 +131,26 @@ export async function POST(request: NextRequest) {
       maintenanceMode,
       defaultLanguage,
       bannerImage,
+      // Dashboard Theme Colors
+      dashboardSidebarBg,
+      dashboardSidebarText,
+      dashboardSidebarActiveText,
+      dashboardSidebarActiveBg,
+      dashboardSidebarHoverBg,
+      dashboardHeaderBg,
+      dashboardHeaderText,
+      dashboardBodyBg,
+      dashboardCardBg,
+      dashboardCardBorder,
+      dashboardCardHeaderBg,
+      dashboardTextPrimary,
+      dashboardTextSecondary,
+      dashboardTextMuted,
+      dashboardBorderColor,
+      dashboardSuccessColor,
+      dashboardWarningColor,
+      dashboardDangerColor,
+      dashboardInfoColor,
       // Email Footer Settings
       emailFooterText,
       emailFooterCompany,
@@ -178,6 +199,7 @@ export async function POST(request: NextRequest) {
     if (siteFavicon !== undefined) updateData.siteFavicon = toNullIfEmpty(siteFavicon)
     if (primaryColor !== undefined) updateData.primaryColor = toNullIfEmpty(primaryColor)
     if (secondaryColor !== undefined) updateData.secondaryColor = toNullIfEmpty(secondaryColor)
+    if (accentColor !== undefined) updateData.accentColor = toNullIfEmpty(accentColor)
     if (buttonPrimaryBg !== undefined) updateData.buttonPrimaryBg = toNullIfEmpty(buttonPrimaryBg)
     if (buttonPrimaryText !== undefined) updateData.buttonPrimaryText = toNullIfEmpty(buttonPrimaryText)
     if (buttonSecondaryBg !== undefined) updateData.buttonSecondaryBg = toNullIfEmpty(buttonSecondaryBg)
@@ -200,6 +222,27 @@ export async function POST(request: NextRequest) {
     if (maintenanceMode !== undefined) updateData.maintenanceMode = maintenanceMode
     if (defaultLanguage !== undefined) updateData.defaultLanguage = toNullIfEmpty(defaultLanguage)
     if (bannerImage !== undefined) updateData.bannerImage = toNullIfEmpty(bannerImage)
+    
+    // Dashboard Theme Colors
+    if (dashboardSidebarBg !== undefined) updateData.dashboardSidebarBg = toNullIfEmpty(dashboardSidebarBg)
+    if (dashboardSidebarText !== undefined) updateData.dashboardSidebarText = toNullIfEmpty(dashboardSidebarText)
+    if (dashboardSidebarActiveText !== undefined) updateData.dashboardSidebarActiveText = toNullIfEmpty(dashboardSidebarActiveText)
+    if (dashboardSidebarActiveBg !== undefined) updateData.dashboardSidebarActiveBg = toNullIfEmpty(dashboardSidebarActiveBg)
+    if (dashboardSidebarHoverBg !== undefined) updateData.dashboardSidebarHoverBg = toNullIfEmpty(dashboardSidebarHoverBg)
+    if (dashboardHeaderBg !== undefined) updateData.dashboardHeaderBg = toNullIfEmpty(dashboardHeaderBg)
+    if (dashboardHeaderText !== undefined) updateData.dashboardHeaderText = toNullIfEmpty(dashboardHeaderText)
+    if (dashboardBodyBg !== undefined) updateData.dashboardBodyBg = toNullIfEmpty(dashboardBodyBg)
+    if (dashboardCardBg !== undefined) updateData.dashboardCardBg = toNullIfEmpty(dashboardCardBg)
+    if (dashboardCardBorder !== undefined) updateData.dashboardCardBorder = toNullIfEmpty(dashboardCardBorder)
+    if (dashboardCardHeaderBg !== undefined) updateData.dashboardCardHeaderBg = toNullIfEmpty(dashboardCardHeaderBg)
+    if (dashboardTextPrimary !== undefined) updateData.dashboardTextPrimary = toNullIfEmpty(dashboardTextPrimary)
+    if (dashboardTextSecondary !== undefined) updateData.dashboardTextSecondary = toNullIfEmpty(dashboardTextSecondary)
+    if (dashboardTextMuted !== undefined) updateData.dashboardTextMuted = toNullIfEmpty(dashboardTextMuted)
+    if (dashboardBorderColor !== undefined) updateData.dashboardBorderColor = toNullIfEmpty(dashboardBorderColor)
+    if (dashboardSuccessColor !== undefined) updateData.dashboardSuccessColor = toNullIfEmpty(dashboardSuccessColor)
+    if (dashboardWarningColor !== undefined) updateData.dashboardWarningColor = toNullIfEmpty(dashboardWarningColor)
+    if (dashboardDangerColor !== undefined) updateData.dashboardDangerColor = toNullIfEmpty(dashboardDangerColor)
+    if (dashboardInfoColor !== undefined) updateData.dashboardInfoColor = toNullIfEmpty(dashboardInfoColor)
     
     // Email Footer Settings - keep empty strings as empty strings, don't convert to null
     if (emailFooterText !== undefined) updateData.emailFooterText = emailFooterText || ''
