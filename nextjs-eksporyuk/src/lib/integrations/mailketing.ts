@@ -49,17 +49,45 @@ export class MailketingService {
   private apiUrl: string
   private fromEmail: string
   private fromName: string
+  private configLoaded: boolean = false
 
   constructor() {
+    // Initialize with env vars as fallback
     this.apiKey = process.env.MAILKETING_API_KEY || ''
-    this.apiUrl = process.env.MAILKETING_API_URL || 'https://api.mailketing.co.id/v1'
+    this.apiUrl = process.env.MAILKETING_API_URL || 'https://api.mailketing.co.id/api/v1'
     this.fromEmail = process.env.MAILKETING_FROM_EMAIL || 'noreply@eksporyuk.com'
     this.fromName = process.env.MAILKETING_FROM_NAME || 'EksporYuk'
+  }
 
-    if (!this.apiKey) {
-      console.warn('⚠️ MAILKETING_API_KEY not configured - using dev mode')
-    } else {
-      console.log('✅ Mailketing configured with API key')
+  /**
+   * Load configuration from database (IntegrationConfig)
+   * This will be called automatically by sendEmail if not yet loaded
+   */
+  private async loadConfig() {
+    if (this.configLoaded) return
+
+    try {
+      const { getMailketingConfig } = await import('@/lib/integration-config')
+      const dbConfig = await getMailketingConfig()
+      
+      if (dbConfig && dbConfig.MAILKETING_API_KEY) {
+        console.log('✅ Using Mailketing config from database (IntegrationConfig)')
+        this.apiKey = dbConfig.MAILKETING_API_KEY
+        this.fromEmail = dbConfig.MAILKETING_SENDER_EMAIL || this.fromEmail
+        this.fromName = dbConfig.MAILKETING_SENDER_NAME || this.fromName
+        this.configLoaded = true
+      } else if (this.apiKey) {
+        console.log('⚠️ Using Mailketing config from environment variables (fallback)')
+        this.configLoaded = true
+      } else {
+        console.warn('⚠️ No Mailketing configuration found - using dev mode')
+      }
+    } catch (error) {
+      console.error('❌ Error loading Mailketing config from database:', error)
+      if (this.apiKey) {
+        console.log('⚠️ Falling back to environment variables')
+        this.configLoaded = true
+      }
     }
   }
 
@@ -70,6 +98,9 @@ export class MailketingService {
    */
   async sendEmail(payload: MailketingEmailPayload): Promise<MailketingResponse> {
     try {
+      // Load config from database if not already loaded
+      await this.loadConfig()
+
       if (!this.apiKey) {
         console.log('📧 [MAILKETING - DEV MODE] Email would be sent:')
         console.log('   To:', payload.to)
