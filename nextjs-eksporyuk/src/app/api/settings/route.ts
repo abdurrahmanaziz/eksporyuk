@@ -4,17 +4,23 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { apiCache, CACHE_KEYS, CACHE_TTL } from '@/lib/api-cache'
 
-// Force this route to be dynamic
+// Force this route to be dynamic - no caching at edge
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 
 // GET /api/settings - Get current settings (public for website display)
 export async function GET() {
   try {
-    // Check cache first
+    // Use shorter cache TTL for settings (10 seconds)
     const cached = apiCache.get(CACHE_KEYS.SETTINGS)
     if (cached) {
-      return NextResponse.json(cached)
+      const response = NextResponse.json(cached)
+      // Add no-cache headers to prevent Vercel edge caching
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+      response.headers.set('Pragma', 'no-cache')
+      response.headers.set('Expires', '0')
+      return response
     }
 
     // Get or create default settings
@@ -149,13 +155,17 @@ export async function GET() {
         affiliateCommissionEnabled: true,
         mentorCommissionEnabled: true,
       }
-      apiCache.set(CACHE_KEYS.SETTINGS, defaultSettings, CACHE_TTL.LONG)
-      return NextResponse.json(defaultSettings)
+      apiCache.set(CACHE_KEYS.SETTINGS, defaultSettings, 10) // Short TTL: 10 seconds
+      const response = NextResponse.json(defaultSettings)
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+      return response
     }
 
-    // Cache settings for 1 minute
-    apiCache.set(CACHE_KEYS.SETTINGS, settings, CACHE_TTL.LONG)
-    return NextResponse.json(settings)
+    // Cache settings for 10 seconds only
+    apiCache.set(CACHE_KEYS.SETTINGS, settings, 10)
+    const response = NextResponse.json(settings)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    return response
   } catch (error) {
     console.error('Settings fetch error:', error)
     return NextResponse.json(

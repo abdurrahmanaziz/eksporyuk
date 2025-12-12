@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { apiCache, CACHE_KEYS } from '@/lib/api-cache'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -322,6 +323,10 @@ export async function POST(request: NextRequest) {
         followUpMessage48Hour: toNullIfEmpty(followUpMessage48Hour),
       }
     })
+
+    // Clear settings cache after update
+    apiCache.delete(CACHE_KEYS.SETTINGS)
+    console.log('[SETTINGS API] Cache cleared after update')
 
     return NextResponse.json({ success: true, settings })
   } catch (error) {
