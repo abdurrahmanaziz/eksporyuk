@@ -22,16 +22,38 @@ const providers: any[] = [
       }
 
       try {
-        // Check database first
+        // Check database first - MUST explicitly select password field
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            password: true,  // CRITICAL: Must select password for comparison
+            role: true,
+            avatar: true,
+            username: true,
+            whatsapp: true,
+            emailVerified: true,
+            isSuspended: true,
+            suspendReason: true,
+            isActive: true,
+          }
         })
 
-        console.log('[AUTH] User found:', !!user, 'Has password:', !!user?.password)
+        console.log('[AUTH] Database query result:', {
+          found: !!user,
+          email: user?.email,
+          hasPassword: !!user?.password,
+          passwordLength: user?.password?.length || 0,
+          role: user?.role,
+          isActive: user?.isActive,
+          isSuspended: user?.isSuspended
+        })
 
         if (!user) {
-          console.log('[AUTH] User not found')
-          throw new Error('User tidak ditemukan')
+          console.log('[AUTH] User not found in database for email:', credentials.email)
+          throw new Error('Email tidak terdaftar')
         }
 
         // Check if user is suspended
@@ -47,17 +69,18 @@ const providers: any[] = [
         }
 
         if (!user.password) {
-          console.log('[AUTH] User has no password')
-          throw new Error('Akun ini menggunakan metode login lain')
+          console.log('[AUTH] User has no password - likely Google OAuth account')
+          throw new Error('Akun ini terdaftar dengan Google. Silakan login dengan Google.')
         }
 
+        console.log('[AUTH] Comparing password - Input length:', credentials.password.length, 'Stored hash exists:', !!user.password)
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
         
-        console.log('[AUTH] Password valid:', isPasswordValid)
+        console.log('[AUTH] Password comparison result:', isPasswordValid)
         
         if (!isPasswordValid) {
-          console.log('[AUTH] Invalid password')
-          throw new Error('Password salah')
+          console.log('[AUTH] Invalid password for user:', user.email)
+          throw new Error('Password salah. Silakan coba lagi.')
         }
 
         console.log('[AUTH] Login successful for:', user.email, 'Role:', user.role)
@@ -188,12 +211,14 @@ export const authOptions: NextAuthOptions = {
                   username: username,
                   avatar: user.image,
                   role: 'MEMBER_FREE',
-                  isActive: true,
+                  isActive: true,  // CRITICAL: Active by default
+                  isSuspended: false,  // CRITICAL: Not suspended
                   emailVerified: true, // Auto-verify Google OAuth users
                   memberCode: memberCode,
                   wallet: {
                     create: {
                       balance: 0,
+                      balancePending: 0,
                     },
                   },
                 },
@@ -204,13 +229,17 @@ export const authOptions: NextAuthOptions = {
                   username: true,
                   role: true,
                   memberCode: true,
+                  isActive: true,
+                  isSuspended: true,
                 }
               })
               console.log(`[AUTH ${timestamp}] ✅ New Google user created successfully:`, {
                 id: newUser.id,
                 email: newUser.email,
                 memberCode: newUser.memberCode,
-                username: newUser.username
+                username: newUser.username,
+                isActive: newUser.isActive,
+                isSuspended: newUser.isSuspended
               })
               
               // Log activity for new user

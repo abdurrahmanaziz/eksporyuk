@@ -92,6 +92,16 @@ export async function POST(request: NextRequest) {
     // Create user with wallet
     let user
     try {
+      console.log('[Register] Creating user with data:', {
+        email,
+        name,
+        username: finalUsername,
+        hasPassword: !!hashedPassword,
+        passwordLength: hashedPassword?.length,
+        whatsapp: userWhatsapp,
+        memberCode,
+      })
+      
       user = await prisma.user.create({
         data: {
           email,
@@ -101,10 +111,13 @@ export async function POST(request: NextRequest) {
           whatsapp: userWhatsapp,
           role: 'MEMBER_FREE',
           emailVerified: false, // Set to false initially
+          isActive: true,  // CRITICAL: Set active by default
+          isSuspended: false,  // CRITICAL: Not suspended by default
           memberCode, // Auto-generated EY0001, EY0002, dst (or null if failed)
           wallet: {
             create: {
               balance: 0,
+              balancePending: 0,
             },
           },
         },
@@ -117,10 +130,19 @@ export async function POST(request: NextRequest) {
           role: true,
           emailVerified: true,
           memberCode: true,
+          isActive: true,
+          isSuspended: true,
           createdAt: true,
         },
       })
-      console.log('[Register] User created successfully:', user.id)
+      console.log('[Register] User created successfully:', {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        memberCode: user.memberCode,
+        isActive: user.isActive,
+        isSuspended: user.isSuspended
+      })
     } catch (createError: any) {
       console.error('[Register] Prisma create error:', createError)
       
