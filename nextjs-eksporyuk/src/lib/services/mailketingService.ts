@@ -137,65 +137,28 @@ class MailketingService {
         return { success: true, messageId: `sim_${Date.now()}` }
       }
 
-      console.log('[MAILKETING] Attempting to send via API:', {
-        url: `${this.mailketingApiUrl}/email/send`,
+      console.log('[MAILKETING] Attempting to send via correct API integration:', {
         to,
         subject: subject.substring(0, 50)
       })
 
-      // Send via Mailketing API
-      const response = await fetch(`${this.mailketingApiUrl}/email/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.mailketingApiKey}`,
-        },
-        body: JSON.stringify({
-          from_email: from || 'noreply@eksporyuk.com',
-          from_name: 'EksporYuk',
-          to,
-          subject,
-          html: finalHtml,
-          track_opens: true,
-          track_clicks: true,
-        }),
+      // Use correct Mailketing API via integration
+      const mailketing = await import('@/lib/integrations/mailketing')
+      const result = await mailketing.sendEmail({
+        recipient: to,
+        subject,
+        content: finalHtml,
+        fromEmail: from || 'noreply@eksporyuk.com',
+        fromName: 'EksporYuk'
       })
 
-      // Check content type before parsing
-      const contentType = response.headers.get('content-type')
-      
-      if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}`
-        
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            const errorData = await response.json()
-            errorMessage = errorData.message || errorData.error || errorMessage
-            console.error('[MAILKETING] API error:', errorData)
-          } catch (e) {
-            // Failed to parse JSON error
-            const text = await response.text()
-            console.error('[MAILKETING] API error (non-JSON):', text.substring(0, 200))
-          }
-        } else {
-          const text = await response.text()
-          console.error('[MAILKETING] API error (HTML response):', text.substring(0, 200))
-          errorMessage = 'API endpoint not found or returned invalid response'
-        }
-        
-        return { success: false, error: errorMessage }
+      if (!result.success) {
+        console.error('[MAILKETING] Failed to send:', result.error)
+        return { success: false, error: result.error }
       }
 
-      // Check if response is JSON
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text()
-        console.error('[MAILKETING] Success but non-JSON response:', text.substring(0, 200))
-        return { success: false, error: 'Invalid API response format' }
-      }
-
-      const result = await response.json()
-      console.log('[MAILKETING] Email sent successfully:', result)
-      return { success: true, messageId: result.message_id || result.id || `mk_${Date.now()}` }
+      console.log('[MAILKETING] Email sent successfully via integration')
+      return { success: true, messageId: result.messageId || `mk_${Date.now()}` }
     } catch (error: any) {
       console.error('[MAILKETING] Failed to send email:', error)
       return { success: false, error: error.message }
@@ -335,7 +298,7 @@ class MailketingService {
   }
 
   /**
-   * Send password reset email via Mailketing
+   * Send password reset email via Mailketing using branded template
    */
   async sendPasswordResetEmail({
     email,
@@ -351,10 +314,14 @@ class MailketingService {
         throw new Error('Invalid email address')
       }
 
+      // Use sendBrandedEmail helper with reset-password template
+      // If template doesn't exist, will use fallback
+      const { sendEmailWithFallback } = await import('@/lib/email-template-helper')
+      
       const appName = process.env.NEXT_PUBLIC_APP_NAME || 'EksporYuk'
 
-      // Email template untuk reset password
-      const htmlTemplate = `
+      // Fallback template if branded template doesn't exist
+      const fallbackHtml = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -408,34 +375,20 @@ class MailketingService {
         </html>
       `
 
-      // Jika API key ada, kirim via Mailketing API
-      if (this.mailketingApiKey) {
-        const response = await fetch(`${this.mailketingApiUrl}/emails/send`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.mailketingApiKey}`
-          },
-          body: JSON.stringify({
-            to: email,
-            subject: `🔐 Reset Password - ${appName}`,
-            html: htmlTemplate,
-            type: 'PASSWORD_RESET',
-            tags: ['password-reset', 'authentication']
-          })
-        })
+      // Try to use branded template first, fallback to hardcoded
+      await sendEmailWithFallback(
+        email,
+        'reset-password', // Slug template (create later if needed)
+        {
+          userName: name,
+          resetLink: resetLink,
+          expiryTime: '1 jam'
+        },
+        `🔐 Reset Password - ${appName}`,
+        fallbackHtml
+      )
 
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(`Mailketing API error: ${error.message}`)
-        }
-
-        console.log(`✅ [MAILKETING] Password reset email sent to ${email}`)
-      } else {
-        // Fallback: Log untuk development
-        console.log(`📧 [DEVELOPMENT] Password reset email would be sent to ${email}`)
-        console.log(`Reset link: ${resetLink}`)
-      }
+      console.log(`✅ [MAILKETING] Password reset email sent to ${email}`)
     } catch (error) {
       console.error(`❌ [MAILKETING] Failed to send password reset email:`, error)
       throw error
@@ -520,31 +473,28 @@ class MailketingService {
         </html>
       `
 
-      if (this.mailketingApiKey) {
-        const response = await fetch(`${this.mailketingApiUrl}/emails/send`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.mailketingApiKey}`
-          },
-          body: JSON.stringify({
-            to: email,
-            subject: `✅ Password Berhasil Direset - ${appName}`,
-            html: htmlTemplate,
-            type: 'PASSWORD_RESET_CONFIRMATION',
-            tags: ['password-reset', 'confirmation']
-          })
-        })
-
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(`Mailketing API error: ${error.message}`)
-        }
-
-        console.log(`✅ [MAILKETING] Password reset confirmation sent to ${email}`)
-      } else {
-        console.log(`📧 [DEVELOPMENT] Password reset confirmation would be sent to ${email}`)
-      }
+      // Use sendEmailWithFallback helper for correct API format
+      const { sendEmailWithFallback } = await import('@/lib/email-template-helper')
+      await sendEmailWithFallback(
+        email,
+        'password-reset-confirmation',
+        {
+          userName: name,
+          resetDate: new Date().toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          loginUrl
+        },
+        `✅ Password Berhasil Direset - ${appName}`,
+        htmlTemplate
+      )
+      
+      console.log(`✅ [MAILKETING] Password reset confirmation sent to ${email}`)
     } catch (error) {
       console.error(`❌ [MAILKETING] Failed to send password reset confirmation:`, error)
       throw error

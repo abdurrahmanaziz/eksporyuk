@@ -1,0 +1,195 @@
+import { prisma } from './prisma'
+import { mailketing } from './integrations/mailketing'
+
+/**
+ * Send email menggunakan BrandedTemplate system
+ * 
+ * @param to - Email recipient
+ * @param templateSlug - Slug dari template (e.g., 'welcome-email')
+ * @param variables - Object berisi key-value untuk replace {{variables}}
+ * @param options - Optional settings (cc, bcc, attachments, etc)
+ */
+export async function sendBrandedEmail(
+  to: string,
+  templateSlug: string,
+  variables: Record<string, string>,
+  options?: {
+    cc?: string
+    bcc?: string
+    replyTo?: string
+    attachments?: any[]
+  }
+) {
+  try {
+    // Fetch template dari database
+    const template = await prisma.brandedTemplate.findUnique({
+      where: { 
+        slug: templateSlug,
+        isActive: true 
+      }
+    })
+    
+    if (!template) {
+      throw new Error(`Template '${templateSlug}' not found or inactive`)
+    }
+    
+    // Fetch settings untuk logo dan footer
+    const settings = await prisma.settings.findFirst()
+    const logoUrl = settings?.siteLogo 
+      ? (settings.siteLogo.startsWith('http') 
+          ? settings.siteLogo 
+          : `${process.env.NEXTAUTH_URL}${settings.siteLogo}`)
+      : `${process.env.NEXTAUTH_URL}/logo-eksporyuk.png`
+    
+    // Auto-inject logo dan footer variables
+    const enhancedVariables = {
+      ...variables,
+      logoUrl,
+      footerCompany: settings?.emailFooterCompany || 'PT Ekspor Yuk Indonesia',
+      footerAddress: settings?.emailFooterAddress || 'Jakarta, Indonesia',
+      footerPhone: settings?.emailFooterPhone || '+62 812-3456-7890',
+      footerEmail: settings?.emailFooterEmail || 'admin@eksporyuk.com',
+      footerWebsite: settings?.emailFooterWebsiteUrl || 'https://eksporyuk.com',
+      footerInstagram: settings?.emailFooterInstagramUrl || 'https://instagram.com/eksporyuk',
+      footerFacebook: settings?.emailFooterFacebookUrl || 'https://facebook.com/eksporyuk',
+      footerLinkedin: settings?.emailFooterLinkedinUrl || 'https://linkedin.com/company/eksporyuk',
+      footerText: settings?.emailFooterText || 'Platform pembelajaran ekspor terpercaya',
+      footerCopyright: settings?.emailFooterCopyrightText || '© 2025 EksporYuk. All rights reserved.',
+      currentYear: new Date().getFullYear().toString()
+    }
+    
+    // Replace variables di subject dan content
+    let subject = template.subject
+    let content = template.content
+    
+    for (const [key, value] of Object.entries(enhancedVariables)) {
+      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
+      subject = subject.replace(regex, value || '')
+      content = content.replace(regex, value || '')
+    }
+    
+    // Log template usage (optional - untuk analytics)
+    await prisma.emailLog.create({
+      data: {
+        templateId: template.id,
+        recipient: to,
+        subject,
+        sentAt: new Date(),
+        status: 'SENDING'
+      }
+    }).catch(err => {
+      // Ignore error jika EmailLog table belum ada
+      console.log('Note: EmailLog table not available yet')
+    })
+    
+    // Send via Mailketing
+    const result = await mailketing.sendEmail({
+      to,
+      subject,
+      html: content,
+      cc: options?.cc,
+      bcc: options?.bcc,
+      replyTo: options?.replyTo
+    })
+    
+    console.log(`✅ Email sent using template '${templateSlug}' to ${to}`)
+    return result
+    
+  } catch (error) {
+    console.error(`❌ Failed to send branded email:`, error)
+    throw error
+  }
+}
+
+/**
+ * Send email dengan fallback ke hardcoded content jika template tidak ada
+ * Berguna untuk migration period - gradually move dari hardcoded ke template
+ */
+export async function sendEmailWithFallback(
+  to: string,
+  templateSlug: string,
+  variables: Record<string, string>,
+  fallbackSubject: string,
+  fallbackHtml: string
+) {
+  try {
+    // Try template first
+    return await sendBrandedEmail(to, templateSlug, variables)
+  } catch (error) {
+    // Fallback ke hardcoded
+    console.warn(`⚠️ Template '${templateSlug}' not available, using fallback`)
+    
+    return mailketing.sendEmail({
+      to,
+      subject: fallbackSubject,
+      html: fallbackHtml
+    })
+  }
+}
+
+/**
+ * Preview template dengan variables (untuk testing di admin panel)
+ */
+export async function previewTemplate(
+  templateSlug: string,
+  variables: Record<string, string>
+) {
+  const template = await prisma.brandedTemplate.findUnique({
+    where: { slug: templateSlug }
+  })
+  
+  if (!template) {
+    throw new Error(`Template '${templateSlug}' not found`)
+  }
+  
+  let subject = template.subject
+  let content = template.content
+  
+  for (const [key, value] of Object.entries(variables)) {
+    const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
+    subject = subject.replace(regex, value || `{{${key}}}`)
+    content = content.replace(regex, value || `{{${key}}}`)
+  }
+  
+  return {
+    subject,
+    content,
+    template: {
+      name: template.name,
+      slug: template.slug,
+      category: template.category
+    }
+  }
+}
+
+/**
+ * Get list of available variables untuk sebuah template
+ */
+export function extractTemplateVariables(content: string, subject: string): string[] {
+  const combined = `${subject} ${content}`
+  const matches = combined.match(/\{\{([^}]+)\}\}/g)
+  
+  if (!matches) return []
+  
+  const variables = matches.map(m => m.replace(/\{\{|\}\}/g, ''))
+  return [...new Set(variables)] // Remove duplicates
+}
+
+/**
+ * Validate bahwa semua required variables tersedia
+ */
+export function validateVariables(
+  templateContent: string,
+  templateSubject: string,
+  providedVariables: Record<string, string>
+): { valid: boolean; missing: string[] } {
+  const requiredVars = extractTemplateVariables(templateContent, templateSubject)
+  const providedKeys = Object.keys(providedVariables)
+  
+  const missing = requiredVars.filter(v => !providedKeys.includes(v))
+  
+  return {
+    valid: missing.length === 0,
+    missing
+  }
+}

@@ -1054,3 +1054,26 @@ export const addUserToMailketingList = async (
     }
   })
 }
+
+/**
+ * Simple helper: Send email with subject
+ * This is a convenience wrapper for mailketing.sendEmail()
+ */
+export const sendEmail = async (params: {
+  recipient: string | string[]
+  subject: string
+  content: string
+  fromEmail?: string
+  fromName?: string
+  replyTo?: string
+}): Promise<MailketingResponse> => {
+  return await mailketing.sendEmail({
+    to: params.recipient,
+    subject: params.subject,
+    html: params.content,
+    from_email: params.fromEmail,
+    from_name: params.fromName,
+    reply_to: params.replyTo
+  })
+}
+
