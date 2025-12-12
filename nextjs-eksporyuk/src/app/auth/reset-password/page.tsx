@@ -48,7 +48,7 @@ function ResetPasswordForm() {
     try {
       setLoading(true)
 
-      const response = await fetch('/api/auth/forgot-password', {
+      const response = await fetch('/api/auth/forgot-password-v2', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword }),

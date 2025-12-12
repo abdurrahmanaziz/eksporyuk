@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { mailketingService } from '@/lib/services/mailketingService'
+import bcrypt from 'bcryptjs'
 
 
 export const dynamic = 'force-dynamic';
@@ -9,6 +10,9 @@ export const dynamic = 'force-dynamic';
  * POST /api/auth/forgot-password-v2
  * Request password reset - generates token and sends email via Mailketing
  * Uses new PasswordResetToken model with Mailketing integration
+ * 
+ * PUT /api/auth/forgot-password-v2
+ * Reset password with valid token
  */
 export async function POST(request: NextRequest) {
   try {
@@ -78,9 +82,9 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Build reset link - use dynamic app URL
+    // Build reset link - use dynamic app URL with query parameter
     const appUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const resetLink = `${appUrl}/reset-password/${token}`
+    const resetLink = `${appUrl}/reset-password?token=${token}`
 
     // Send email via Mailketing with new template
     try {
@@ -100,6 +104,134 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: 'Terjadi kesalahan saat memproses permintaan' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * PUT /api/auth/forgot-password-v2
+ * Reset password with valid token
+ * Expects: { token: string, newPassword: string }
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { token, newPassword } = body
+
+    // Validate input
+    if (!token || typeof token !== 'string') {
+      return NextResponse.json(
+        { error: 'Token harus diisi' },
+        { status: 400 }
+      )
+    }
+
+    if (!newPassword || typeof newPassword !== 'string') {
+      return NextResponse.json(
+        { error: 'Password baru harus diisi' },
+        { status: 400 }
+      )
+    }
+
+    if (newPassword.length < 6) {
+      return NextResponse.json(
+        { error: 'Password minimal 6 karakter' },
+        { status: 400 }
+      )
+    }
+
+    // Find and validate token
+    const resetToken = await prisma.passwordResetToken.findUnique({
+      where: { token }
+    })
+
+    if (!resetToken) {
+      return NextResponse.json(
+        { error: 'Link reset password tidak valid' },
+        { status: 400 }
+      )
+    }
+
+    // Check if token is expired
+    if (resetToken.expiresAt < new Date()) {
+      // Delete expired token
+      await prisma.passwordResetToken.delete({
+        where: { token }
+      })
+
+      return NextResponse.json(
+        { error: 'Link reset password sudah kadaluarsa. Silakan minta link baru.' },
+        { status: 400 }
+      )
+    }
+
+    // Check if token already used
+    if (resetToken.used) {
+      return NextResponse.json(
+        { error: 'Link reset password sudah digunakan. Silakan minta link baru.' },
+        { status: 400 }
+      )
+    }
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: resetToken.email },
+      select: { id: true, email: true, name: true }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User tidak ditemukan' },
+        { status: 404 }
+      )
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    // Update password
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword }
+    })
+
+    // Mark token as used
+    await prisma.passwordResetToken.update({
+      where: { token },
+      data: { used: true }
+    })
+
+    // Delete all other unused tokens for this email
+    await prisma.passwordResetToken.deleteMany({
+      where: {
+        email: resetToken.email,
+        token: { not: token },
+        used: false
+      }
+    })
+
+    // Send confirmation email
+    try {
+      await mailketingService.sendPasswordResetConfirmationEmail({
+        email: user.email,
+        name: user.name || user.email
+      })
+    } catch (emailError) {
+      console.error('[RESET_PASSWORD] Confirmation email error:', emailError)
+      // Don't fail the request if confirmation email fails
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Password berhasil direset. Silakan login dengan password baru'
+    })
+
+  } catch (error) {
+    console.error('[RESET_PASSWORD_V2] Error:', error)
+
+    return NextResponse.json(
+      { error: 'Gagal mereset password' },
       { status: 500 }
     )
   }
