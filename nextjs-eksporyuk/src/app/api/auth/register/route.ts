@@ -79,37 +79,62 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Generate member code
-    const memberCode = await getNextMemberCode()
+    let memberCode
+    try {
+      memberCode = await getNextMemberCode()
+      console.log('[Register] Generated member code:', memberCode)
+    } catch (codeError) {
+      console.error('[Register] Failed to generate member code:', codeError)
+      // Continue without member code - can be generated later
+      memberCode = null
+    }
 
     // Create user with wallet
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        password: hashedPassword,
-        username: finalUsername,
-        whatsapp: userWhatsapp,
-        role: 'MEMBER_FREE',
-        emailVerified: false, // Set to false initially
-        memberCode, // Auto-generated EY0001, EY0002, dst
-        wallet: {
-          create: {
-            balance: 0,
+    let user
+    try {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          password: hashedPassword,
+          username: finalUsername,
+          whatsapp: userWhatsapp,
+          role: 'MEMBER_FREE',
+          emailVerified: false, // Set to false initially
+          memberCode, // Auto-generated EY0001, EY0002, dst (or null if failed)
+          wallet: {
+            create: {
+              balance: 0,
+            },
           },
         },
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        username: true,
-        whatsapp: true,
-        role: true,
-        emailVerified: true,
-        memberCode: true,
-        createdAt: true,
-      },
-    })
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          username: true,
+          whatsapp: true,
+          role: true,
+          emailVerified: true,
+          memberCode: true,
+          createdAt: true,
+        },
+      })
+      console.log('[Register] User created successfully:', user.id)
+    } catch (createError: any) {
+      console.error('[Register] Prisma create error:', createError)
+      
+      // Handle specific Prisma errors
+      if (createError.code === 'P2002') {
+        const field = createError.meta?.target?.[0] || 'field'
+        return NextResponse.json(
+          { success: false, error: `${field === 'email' ? 'Email' : field === 'username' ? 'Username' : 'Data'} sudah terdaftar` },
+          { status: 400 }
+        )
+      }
+      
+      throw createError
+    }
 
     // Create verification token and send email
     try {
@@ -160,26 +185,45 @@ export async function POST(request: NextRequest) {
     }
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: user.id,
-        action: 'USER_REGISTERED',
-        entity: 'USER',
-        entityId: user.id,
-      },
-    })
+    try {
+      await prisma.activityLog.create({
+        data: {
+          userId: user.id,
+          action: 'USER_REGISTERED',
+          entity: 'USER',
+          entityId: user.id,
+        },
+      })
+    } catch (logError) {
+      console.error('[Register] Failed to create activity log:', logError)
+      // Don't fail registration if activity log fails
+    }
 
+    console.log('[Register] Registration successful for:', email)
+    
     return NextResponse.json(
       { 
+        success: true,
         message: 'Registrasi berhasil! Silakan cek email Anda untuk verifikasi.',
         user 
       },
       { status: 201 }
     )
   } catch (error: any) {
-    console.error('Registration error:', error)
+    console.error('[Register] Registration error:', error)
+    console.error('[Register] Error details:', {
+      message: error.message,
+      code: error.code,
+      meta: error.meta,
+      stack: error.stack?.split('\n').slice(0, 3)
+    })
+    
+    // Return user-friendly error message
     return NextResponse.json(
-      { error: error.message || 'Terjadi kesalahan server' },
+      { 
+        success: false,
+        error: error.message || 'Terjadi kesalahan server. Silakan coba lagi.' 
+      },
       { status: 500 }
     )
   }

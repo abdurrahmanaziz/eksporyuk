@@ -163,20 +163,56 @@ export const authOptions: NextAuthOptions = {
               counter++
             }
             
-            console.log(`[AUTH ${timestamp}] Creating new Google user:`, user.email, 'username:', username)
+            // Ensure we have a valid name (required field)
+            const displayName = user.name || user.email?.split('@')[0] || username
             
-            const newUser = await prisma.user.create({
-              data: {
-                email: user.email,
-                name: user.name || username,
-                username: username,
-                avatar: user.image,
-                role: 'MEMBER_FREE',
-                isActive: true,
-                // No password for OAuth users
+            console.log(`[AUTH ${timestamp}] Creating new Google user:`, user.email, 'username:', username, 'name:', displayName)
+            
+            // Generate member code for new user
+            let memberCode = null
+            try {
+              const { getNextMemberCode } = require('@/lib/member-code')
+              memberCode = await getNextMemberCode()
+              console.log(`[AUTH ${timestamp}] Generated member code:`, memberCode)
+            } catch (codeError) {
+              console.error(`[AUTH ${timestamp}] Failed to generate member code:`, codeError)
+              // Continue without member code - can be generated later
+            }
+            
+            try {
+              const newUser = await prisma.user.create({
+                data: {
+                  email: user.email,
+                  name: displayName,
+                  username: username,
+                  avatar: user.image,
+                  role: 'MEMBER_FREE',
+                  isActive: true,
+                  emailVerified: true, // Auto-verify Google OAuth users
+                  memberCode: memberCode,
+                  wallet: {
+                    create: {
+                      balance: 0,
+                    },
+                  },
+                },
+              })
+              console.log(`[AUTH ${timestamp}] New Google user created successfully - ID:`, newUser.id, 'Member Code:', memberCode)
+            } catch (createError: any) {
+              console.error(`[AUTH ${timestamp}] Failed to create Google user:`, createError)
+              console.error(`[AUTH ${timestamp}] Prisma error code:`, createError.code)
+              console.error(`[AUTH ${timestamp}] Prisma error meta:`, createError.meta)
+              
+              // If it's a unique constraint violation, user might have been created by another request
+              if (createError.code === 'P2002') {
+                console.log(`[AUTH ${timestamp}] User already exists (race condition), allowing sign in`)
+                return true
               }
-            })
-            console.log(`[AUTH ${timestamp}] New Google user created successfully - ID:`, newUser.id)
+              
+              // For other errors, block sign in
+              console.error(`[AUTH ${timestamp}] ❌ BLOCKING sign in due to database error`)
+              return false
+            }
           } else {
             // Check if user is suspended
             if (existingUser.isSuspended) {
