@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --force",
+  "buildCommand": "rm -rf .next && npm run build",
+  "installCommand": "npm install --force && rm -rf .next node_modules/.cache",
   "framework": "nextjs",
   "regions": ["sin1"],
   "env": {
-    "FORCE_REBUILD": "v5.2.2-css-fix"
+    "FORCE_REBUILD": "v5.2.3-css-layer-fix",
+    "NEXT_DISABLE_SWC_CACHE": "1"
   },
   "functions": {
     "app/api/**/*.ts": {
