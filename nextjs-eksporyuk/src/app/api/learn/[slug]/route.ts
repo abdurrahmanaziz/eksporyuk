@@ -55,6 +55,48 @@ export async function GET(
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
+    // PRD: Check course status - DRAFT/ARCHIVED tidak bisa diakses kecuali admin
+    if (['DRAFT', 'ARCHIVED'].includes(course.status)) {
+      if (session.user.role !== 'ADMIN' && session.user.role !== 'MENTOR') {
+        return NextResponse.json({ 
+          error: 'Kursus ini belum dipublikasikan atau tidak tersedia' 
+        }, { status: 403 })
+      }
+    }
+
+    // PRD: Check roleAccess - validasi akses berdasarkan role
+    const courseRoleAccess = (course as any).roleAccess || 'PUBLIC'
+    
+    // AFFILIATE course - hanya affiliate yang bisa akses
+    if (courseRoleAccess === 'AFFILIATE' || course.affiliateOnly || course.isAffiliateTraining || course.isAffiliateMaterial) {
+      if (session.user.role !== 'ADMIN' && session.user.role !== 'AFFILIATE') {
+        return NextResponse.json({ 
+          error: 'Anda tidak memiliki izin untuk mengakses kelas ini. Kelas ini khusus untuk Affiliate.' 
+        }, { status: 403 })
+      }
+    }
+    
+    // MEMBER course - hanya member aktif yang bisa akses
+    if (courseRoleAccess === 'MEMBER') {
+      if (session.user.role !== 'ADMIN' && session.user.role !== 'MENTOR') {
+        // Check membership
+        const hasActiveMembership = await prisma.userMembership.findFirst({
+          where: {
+            userId: session.user.id,
+            isActive: true,
+            status: 'ACTIVE',
+            endDate: { gte: new Date() }
+          }
+        })
+        
+        if (!hasActiveMembership && !['MEMBER_PREMIUM', 'MEMBER_FREE'].includes(session.user.role)) {
+          return NextResponse.json({ 
+            error: 'Kelas ini hanya untuk Member Premium. Silakan upgrade membership.' 
+          }, { status: 403 })
+        }
+      }
+    }
+
     // Check if user has access to this course
     let hasAccess = false
     let progress = 0
@@ -162,7 +204,45 @@ export async function GET(
       }
     }
 
-    // 3. Get user progress
+    // 3. PRD: Check membershipIncluded - kursus yang gratis untuk member aktif
+    if (!hasAccess && (course as any).membershipIncluded) {
+      const hasActiveMembership = await prisma.userMembership.findFirst({
+        where: {
+          userId: session.user.id,
+          isActive: true,
+          status: 'ACTIVE',
+          endDate: { gte: new Date() }
+        }
+      })
+
+      if (hasActiveMembership) {
+        hasAccess = true
+        console.log(`✅ membershipIncluded access granted to: ${session.user.email}`)
+        
+        // Auto-enroll
+        const existingEnrollment = await prisma.courseEnrollment.findUnique({
+          where: {
+            userId_courseId: {
+              userId: session.user.id,
+              courseId: course.id
+            }
+          }
+        })
+
+        if (!existingEnrollment) {
+          await prisma.courseEnrollment.create({
+            data: {
+              userId: session.user.id,
+              courseId: course.id,
+              enrolledAt: new Date(),
+              progress: 0
+            }
+          })
+        }
+      }
+    }
+
+    // 4. Get user progress
     const userProgress = await prisma.userCourseProgress.findUnique({
       where: {
         userId_courseId: {
