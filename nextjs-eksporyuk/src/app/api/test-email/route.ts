@@ -32,13 +32,26 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  // Test connection to Mailketing
+  // Test connection to Mailketing and show config source
   try {
+    // Get database config
+    const { getMailketingConfig } = await import('@/lib/integration-config')
+    const dbConfig = await getMailketingConfig()
+    
     const result = await mailketing.getLists()
+    
     return NextResponse.json({
       status: 'connected',
-      hasApiKey: !!process.env.MAILKETING_API_KEY,
-      apiKeyPrefix: process.env.MAILKETING_API_KEY?.substring(0, 8) + '...',
+      configSource: dbConfig ? 'database' : 'environment',
+      config: {
+        hasApiKey: !!process.env.MAILKETING_API_KEY,
+        apiKeyPrefix: process.env.MAILKETING_API_KEY?.substring(0, 8) + '...',
+        fromDatabase: dbConfig ? {
+          senderEmail: dbConfig.MAILKETING_SENDER_EMAIL,
+          senderName: dbConfig.MAILKETING_SENDER_NAME,
+          replyTo: dbConfig.MAILKETING_REPLY_TO_EMAIL
+        } : null
+      },
       lists: result.success ? result.data : null,
       error: result.success ? null : result.error
     })
