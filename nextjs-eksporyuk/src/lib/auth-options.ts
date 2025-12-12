@@ -117,8 +117,9 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
-    signIn: '/login',
+    signIn: '/auth/login',
     error: '/auth/error',
+    newUser: '/dashboard', // Redirect new OAuth users to dashboard
   },
   debug: process.env.NODE_ENV === 'development', // Enable debugging in development
   providers,
@@ -196,12 +197,45 @@ export const authOptions: NextAuthOptions = {
                     },
                   },
                 },
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                  username: true,
+                  role: true,
+                  memberCode: true,
+                }
               })
-              console.log(`[AUTH ${timestamp}] New Google user created successfully - ID:`, newUser.id, 'Member Code:', memberCode)
+              console.log(`[AUTH ${timestamp}] ✅ New Google user created successfully:`, {
+                id: newUser.id,
+                email: newUser.email,
+                memberCode: newUser.memberCode,
+                username: newUser.username
+              })
+              
+              // Log activity for new user
+              try {
+                await prisma.activityLog.create({
+                  data: {
+                    userId: newUser.id,
+                    action: 'USER_REGISTERED_OAUTH',
+                    entity: 'USER',
+                    entityId: newUser.id,
+                    metadata: {
+                      provider: 'google',
+                      email: newUser.email,
+                    }
+                  },
+                })
+              } catch (logError) {
+                console.error(`[AUTH ${timestamp}] Failed to log activity:`, logError)
+              }
+              
             } catch (createError: any) {
-              console.error(`[AUTH ${timestamp}] Failed to create Google user:`, createError)
+              console.error(`[AUTH ${timestamp}] ❌ Failed to create Google user:`, createError)
               console.error(`[AUTH ${timestamp}] Prisma error code:`, createError.code)
               console.error(`[AUTH ${timestamp}] Prisma error meta:`, createError.meta)
+              console.error(`[AUTH ${timestamp}] Full error:`, JSON.stringify(createError, null, 2))
               
               // If it's a unique constraint violation, user might have been created by another request
               if (createError.code === 'P2002') {
@@ -209,7 +243,7 @@ export const authOptions: NextAuthOptions = {
                 return true
               }
               
-              // For other errors, block sign in
+              // For other errors, block sign in to prevent inconsistent state
               console.error(`[AUTH ${timestamp}] ❌ BLOCKING sign in due to database error`)
               return false
             }
@@ -249,8 +283,16 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async jwt({ token, user, account, profile }) {
+      const timestamp = new Date().toISOString()
+      console.log(`[AUTH ${timestamp}] ====== JWT callback START ======`)
+      console.log(`[AUTH ${timestamp}] Has user object:`, !!user)
+      console.log(`[AUTH ${timestamp}] Has account:`, !!account)
+      console.log(`[AUTH ${timestamp}] Provider:`, account?.provider)
+      console.log(`[AUTH ${timestamp}] Token email:`, token.email)
+      
       // First time JWT is created (sign in)
       if (user) {
+        console.log(`[AUTH ${timestamp}] JWT - Setting token from user object`)
         token.id = user.id
         token.role = user.role || 'MEMBER_FREE'
         token.username = user.username || user.email?.split('@')[0]
@@ -258,32 +300,73 @@ export const authOptions: NextAuthOptions = {
         token.emailVerified = user.emailVerified ? true : false
       }
       
-      // For Google OAuth, fetch user from database
+      // For Google OAuth, always fetch fresh user data from database
       if (account?.provider === 'google' && token.email) {
+        console.log(`[AUTH ${timestamp}] JWT - Google OAuth, fetching user from database`)
         try {
           const dbUser = await prisma.user.findUnique({
-            where: { email: token.email }
+            where: { email: token.email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              username: true,
+              role: true,
+              avatar: true,
+              whatsapp: true,
+              emailVerified: true,
+              memberCode: true,
+            }
           })
           
           if (dbUser) {
+            console.log(`[AUTH ${timestamp}] JWT - Found user in database:`, {
+              id: dbUser.id,
+              email: dbUser.email,
+              role: dbUser.role,
+              memberCode: dbUser.memberCode
+            })
+            
             token.id = dbUser.id
             token.role = dbUser.role
-            token.username = dbUser.username
+            token.username = dbUser.username || dbUser.email?.split('@')[0]
             token.whatsapp = dbUser.whatsapp
             token.emailVerified = dbUser.emailVerified
+            token.memberCode = dbUser.memberCode
+            token.isGoogleAuth = true
+          } else {
+            console.error(`[AUTH ${timestamp}] JWT - User not found in database for email:`, token.email)
           }
         } catch (error) {
-          console.error('Error fetching user in JWT callback:', error)
+          console.error(`[AUTH ${timestamp}] JWT - Error fetching user:`, error)
         }
       }
       
+      // Mark Google auth
       if (account?.provider === 'google') {
         token.isGoogleAuth = true
       }
       
+      console.log(`[AUTH ${timestamp}] JWT callback END - Token:`, {
+        id: token.id,
+        email: token.email,
+        role: token.role,
+        username: token.username,
+        isGoogleAuth: token.isGoogleAuth
+      })
+      
       return token
     },
     async session({ session, token }) {
+      const timestamp = new Date().toISOString()
+      console.log(`[AUTH ${timestamp}] ====== SESSION callback START ======`)
+      console.log(`[AUTH ${timestamp}] Token data:`, {
+        id: token.id,
+        email: token.email,
+        role: token.role,
+        username: token.username
+      })
+      
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
@@ -291,8 +374,41 @@ export const authOptions: NextAuthOptions = {
         session.user.whatsapp = token.whatsapp as string
         session.user.isGoogleAuth = token.isGoogleAuth as boolean
         session.user.emailVerified = token.emailVerified as boolean || false
+        
+        console.log(`[AUTH ${timestamp}] SESSION - Set session user:`, {
+          id: session.user.id,
+          email: session.user.email,
+          role: session.user.role,
+          username: session.user.username
+        })
       }
+      
+      console.log(`[AUTH ${timestamp}] ====== SESSION callback END ======`)
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      const timestamp = new Date().toISOString()
+      console.log(`[AUTH ${timestamp}] ====== REDIRECT callback ======`)
+      console.log(`[AUTH ${timestamp}] URL: ${url}`)
+      console.log(`[AUTH ${timestamp}] Base URL: ${baseUrl}`)
+      
+      // Handle relative URLs
+      if (url.startsWith('/')) {
+        const finalUrl = `${baseUrl}${url}`
+        console.log(`[AUTH ${timestamp}] Redirecting to relative: ${finalUrl}`)
+        return finalUrl
+      }
+      
+      // Handle absolute URLs - only allow same origin
+      if (url.startsWith(baseUrl)) {
+        console.log(`[AUTH ${timestamp}] Redirecting to same origin: ${url}`)
+        return url
+      }
+      
+      // Default to dashboard for successful OAuth
+      const defaultUrl = `${baseUrl}/dashboard`
+      console.log(`[AUTH ${timestamp}] Defaulting to dashboard: ${defaultUrl}`)
+      return defaultUrl
     },
   },
   events: {
