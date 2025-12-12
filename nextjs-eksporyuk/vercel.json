@@ -4,6 +4,9 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["sin1"],
+  "env": {
+    "FORCE_REBUILD": "v5.2.1"
+  },
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30,
