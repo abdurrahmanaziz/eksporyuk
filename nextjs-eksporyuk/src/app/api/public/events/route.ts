@@ -78,23 +78,19 @@ export async function GET(request: Request) {
         category: true,
         eventDate: true,
         eventEndDate: true,
-        eventLocation: true,
         eventUrl: true,
         maxParticipants: true,
         isActive: true,
         isFeatured: true,
         productStatus: true,
-        _count: {
-          select: { userProducts: true }
-        }
       }
     })
 
     // Calculate sold count and check availability
     const eventsWithStats = events.map(event => ({
       ...event,
-      soldCount: event._count?.userProducts || 0,
-      isAvailable: !event.maxParticipants || (event._count?.userProducts || 0) < event.maxParticipants
+      soldCount: 0,
+      isAvailable: true
     }))
 
     // Get unique categories

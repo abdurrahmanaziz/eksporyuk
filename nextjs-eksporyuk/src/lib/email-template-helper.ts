@@ -24,8 +24,7 @@ export async function sendBrandedEmail(
     // Fetch template dari database
     const template = await prisma.brandedTemplate.findUnique({
       where: { 
-        slug: templateSlug,
-        isActive: true 
+        slug: templateSlug
       }
     })
     
@@ -68,28 +67,17 @@ export async function sendBrandedEmail(
       content = content.replace(regex, value || '')
     }
     
-    // Log template usage (optional - untuk analytics)
-    await prisma.emailLog.create({
-      data: {
-        templateId: template.id,
-        recipient: to,
-        subject,
-        sentAt: new Date(),
-        status: 'SENDING'
-      }
-    }).catch(err => {
-      // Ignore error jika EmailLog table belum ada
-      console.log('Note: EmailLog table not available yet')
-    })
+    // Log template usage (skip if emailLog model not available)
+    console.log('[EMAIL] Sending template:', { templateSlug, to, subject })
     
     // Send via Mailketing
     const result = await mailketing.sendEmail({
       to,
       subject,
       html: content,
-      cc: options?.cc,
-      bcc: options?.bcc,
-      replyTo: options?.replyTo
+      cc: options?.cc ? [options.cc] : undefined,
+      bcc: options?.bcc ? [options.bcc] : undefined,
+      reply_to: options?.replyTo
     })
     
     console.log(`✅ Email sent using template '${templateSlug}' to ${to}`)

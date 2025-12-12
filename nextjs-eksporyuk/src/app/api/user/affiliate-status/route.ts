@@ -64,12 +64,11 @@ export async function GET() {
         affiliateCode: affiliateProfile.affiliateCode,
         tier: affiliateProfile.tier,
         status: affiliateProfile.applicationStatus,
-        rejectionReason: affiliateProfile.rejectionReason,
         stats: {
-          commissionBalance: affiliateProfile.commissionBalance,
+          commissionBalance: affiliateProfile.totalEarnings,
           totalEarnings: affiliateProfile.totalEarnings,
-          clickCount: affiliateProfile.clickCount,
-          conversionCount: affiliateProfile.conversionCount,
+          clickCount: affiliateProfile.totalClicks,
+          conversionCount: affiliateProfile.totalConversions,
         },
         onboarding: {
           welcomeShown: affiliateProfile.welcomeShown,

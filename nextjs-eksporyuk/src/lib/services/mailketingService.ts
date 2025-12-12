@@ -158,7 +158,7 @@ class MailketingService {
       }
 
       console.log('[MAILKETING] Email sent successfully via integration')
-      return { success: true, messageId: result.messageId || `mk_${Date.now()}` }
+      return { success: true, messageId: result.message || `mk_${Date.now()}` }
     } catch (error: any) {
       console.error('[MAILKETING] Failed to send email:', error)
       return { success: false, error: error.message }
