@@ -242,6 +242,45 @@ export const authOptions: NextAuthOptions = {
                 isSuspended: newUser.isSuspended
               })
               
+              // Send welcome email for Google OAuth user
+              try {
+                const { mailketing } = require('@/lib/integrations/mailketing')
+                await mailketing.sendEmail({
+                  to: newUser.email,
+                  subject: 'Selamat Datang di EksporYuk!',
+                  html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                      <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                        <h1 style="margin: 0; font-size: 28px;">Selamat Datang!</h1>
+                      </div>
+                      <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+                        <p style="font-size: 16px;">Halo <strong>${newUser.name}</strong>,</p>
+                        <p style="font-size: 16px;">Terima kasih telah bergabung dengan EksporYuk via Google!</p>
+                        <p style="font-size: 16px;">Akun Anda telah berhasil dibuat. Berikut adalah langkah selanjutnya:</p>
+                        <ul style="font-size: 14px; color: #4b5563;">
+                          <li>Lengkapi profil Anda</li>
+                          <li>Pilih membership yang sesuai dengan kebutuhan</li>
+                          <li>Mulai belajar ekspor!</li>
+                        </ul>
+                        <div style="text-align: center; margin: 30px 0;">
+                          <a href="https://app.eksporyuk.com/dashboard" 
+                             style="display: inline-block; background: #f97316; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                            Kunjungi Dashboard
+                          </a>
+                        </div>
+                        <p style="font-size: 14px; color: #6b7280;">Jika ada pertanyaan, hubungi kami via WhatsApp atau email.</p>
+                        <p style="font-size: 14px; color: #6b7280;">Salam sukses,<br><strong>Tim EksporYuk</strong></p>
+                      </div>
+                    </div>
+                  `,
+                  tags: ['welcome', 'google-oauth']
+                })
+                console.log(`[AUTH ${timestamp}] ✅ Welcome email sent to Google OAuth user`)
+              } catch (emailError) {
+                console.error(`[AUTH ${timestamp}] ❌ Failed to send welcome email:`, emailError)
+                // Don't block registration if email fails
+              }
+              
               // Log activity for new user
               try {
                 await prisma.activityLog.create({
