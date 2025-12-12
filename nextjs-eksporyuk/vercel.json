@@ -1,11 +1,11 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
+  "installCommand": "npm install --force",
   "framework": "nextjs",
   "regions": ["sin1"],
   "env": {
-    "FORCE_REBUILD": "v5.2.1"
+    "FORCE_REBUILD": "v5.2.2-css-fix"
   },
   "functions": {
     "app/api/**/*.ts": {
