@@ -3,6 +3,8 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from '@/lib/prisma'
 import { getGoogleOAuthConfig } from '@/lib/integration-config'
+import { getNextMemberCode } from '@/lib/member-code'
+import { mailketing } from '@/lib/integrations/mailketing'
 import bcrypt from 'bcryptjs'
 
 // Conditionally include Google provider only if credentials are configured
@@ -195,7 +197,6 @@ export const authOptions: NextAuthOptions = {
             // Generate member code for new user
             let memberCode = null
             try {
-              const { getNextMemberCode } = require('@/lib/member-code')
               memberCode = await getNextMemberCode()
               console.log(`[AUTH ${timestamp}] Generated member code:`, memberCode)
             } catch (codeError) {
@@ -244,7 +245,6 @@ export const authOptions: NextAuthOptions = {
               
               // Send welcome email for Google OAuth user
               try {
-                const { mailketing } = require('@/lib/integrations/mailketing')
                 await mailketing.sendEmail({
                   to: newUser.email,
                   subject: 'Selamat Datang di EksporYuk!',
