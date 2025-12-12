@@ -296,7 +296,9 @@ export default function AdminCourseDetailPage() {
           // PRD Perbaikan Fitur Kelas - field baru
           roleAccess: course.roleAccess,
           membershipIncluded: course.membershipIncluded,
-          isPublicListed: course.isPublicListed
+          isPublicListed: course.isPublicListed,
+          // PRD: Status & Publikasi (DRAFT/PUBLISHED/PRIVATE)
+          status: course.status
         })
       })
 
@@ -1138,6 +1140,80 @@ export default function AdminCourseDetailPage() {
                           Member dengan membership aktif tidak perlu bayar untuk kursus ini
                         </p>
                       </Label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PRD Perbaikan Fitur Kelas - Status & Publikasi */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-lg">📊 Status & Publikasi</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Kontrol status publikasi kursus - apakah sudah siap tampil atau masih draft
+                  </p>
+                  
+                  <div>
+                    <Label htmlFor="status">Status Kursus</Label>
+                    <Select
+                      value={course.status || 'DRAFT'}
+                      onValueChange={(value) => setCourse({ ...course, status: value })}
+                    >
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DRAFT">
+                          <span className="flex items-center gap-2">
+                            📝 Draft - Belum dipublikasikan
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="PUBLISHED">
+                          <span className="flex items-center gap-2">
+                            ✅ Published - Sudah dipublikasikan
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="PRIVATE">
+                          <span className="flex items-center gap-2">
+                            🔒 Private - Hanya bisa diakses via link langsung
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="PENDING_REVIEW">
+                          <span className="flex items-center gap-2">
+                            ⏳ Pending Review - Menunggu review
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="ARCHIVED">
+                          <span className="flex items-center gap-2">
+                            📦 Archived - Diarsipkan
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="mt-2 p-3 rounded-lg bg-muted/50">
+                      {course.status === 'DRAFT' && (
+                        <p className="text-sm text-muted-foreground">
+                          <strong>📝 Draft:</strong> Kursus tidak tampil ke publik dan tidak bisa diakses user. Hanya admin yang bisa melihat.
+                        </p>
+                      )}
+                      {course.status === 'PUBLISHED' && (
+                        <p className="text-sm text-green-600">
+                          <strong>✅ Published:</strong> Kursus aktif dan bisa diakses sesuai pengaturan role dan visibilitas.
+                        </p>
+                      )}
+                      {course.status === 'PRIVATE' && (
+                        <p className="text-sm text-orange-600">
+                          <strong>🔒 Private:</strong> Kursus tidak muncul di listing, tapi masih bisa diakses jika user punya link langsung dan memenuhi syarat akses.
+                        </p>
+                      )}
+                      {course.status === 'PENDING_REVIEW' && (
+                        <p className="text-sm text-yellow-600">
+                          <strong>⏳ Pending Review:</strong> Kursus sedang direview sebelum dipublikasikan.
+                        </p>
+                      )}
+                      {course.status === 'ARCHIVED' && (
+                        <p className="text-sm text-gray-600">
+                          <strong>📦 Archived:</strong> Kursus diarsipkan dan tidak aktif. Tidak bisa diakses oleh user.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -19,36 +19,54 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status')
     const roleAccess = searchParams.get('roleAccess')
     const includeAffiliate = searchParams.get('includeAffiliate') === 'true'
+    const slug = searchParams.get('slug')
 
     const where: any = {}
 
-    // 1. Status filter
-    if (status) {
-      where.status = status
-    } else {
-      // Default: only show published courses for non-admin
-      if (!session?.user || !['ADMIN', 'MENTOR'].includes(session.user.role)) {
-        where.status = { in: ['PUBLISHED', 'APPROVED'] }
-      }
-    }
-
-    // 2. Role-based filtering untuk public listing
-    if (!session?.user || !['ADMIN', 'MENTOR'].includes(session.user.role)) {
-      // Exclude affiliate-only courses dari listing publik
-      if (!includeAffiliate) {
-        where.affiliateOnly = false
-        where.isAffiliateTraining = false
-        where.isAffiliateMaterial = false
-        where.roleAccess = { not: 'AFFILIATE' }
-      }
+    // Query by specific slug (untuk course detail page)
+    if (slug) {
+      where.slug = slug
       
-      // Only show publicly listed courses
-      where.isPublicListed = true
-    }
+      // PRD: DRAFT hanya bisa dilihat admin
+      // PRIVATE bisa diakses via direct link jika user memenuhi syarat
+      if (!session?.user || !['ADMIN', 'MENTOR'].includes(session.user.role)) {
+        // Non-admin tidak bisa akses DRAFT atau ARCHIVED
+        where.status = { notIn: ['DRAFT', 'ARCHIVED'] }
+      }
+    } else {
+      // Listing courses
 
-    // 3. Specific roleAccess filter
-    if (roleAccess) {
-      where.roleAccess = roleAccess
+      // 1. Status filter - PRD: DRAFT tidak tampil, PRIVATE tidak tampil di listing
+      if (status) {
+        where.status = status
+      } else {
+        // Default: only show PUBLISHED/APPROVED courses for non-admin
+        // DRAFT = belum dipublikasikan, tidak tampil
+        // PRIVATE = tidak tampil di listing (hanya via direct link)
+        // ARCHIVED = diarsipkan, tidak aktif
+        if (!session?.user || !['ADMIN', 'MENTOR'].includes(session.user.role)) {
+          where.status = { in: ['PUBLISHED', 'APPROVED'] }
+        }
+      }
+
+      // 2. Role-based filtering untuk public listing
+      if (!session?.user || !['ADMIN', 'MENTOR'].includes(session.user.role)) {
+        // Exclude affiliate-only courses dari listing publik
+        if (!includeAffiliate) {
+          where.affiliateOnly = false
+          where.isAffiliateTraining = false
+          where.isAffiliateMaterial = false
+          where.roleAccess = { not: 'AFFILIATE' }
+        }
+        
+        // Only show publicly listed courses
+        where.isPublicListed = true
+      }
+
+      // 3. Specific roleAccess filter
+      if (roleAccess) {
+        where.roleAccess = roleAccess
+      }
     }
 
     const courses = await prisma.course.findMany({

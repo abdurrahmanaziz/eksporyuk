@@ -3179,4 +3179,349 @@ Fokus BRD versi ini adalah merangkum keseluruhan fitur inti secara bisnis, menca
 # **END OF BRD V1 — AFFILIATE BOOSTER SUITE**
 
 
+Baik, saya buatkan **PRD Perbaikan Fitur Kelas** (bukan membuat modul baru), sesuai permintaan:
+
+✔ Fitur Kelas **sudah ada**, tetapi **belum berfungsi**
+✔ PRD ini hanya mencakup **perbaikan**, **penyesuaian**, **penyempurnaan**, dan **integrasi**
+✔ Mengikuti **aturan kerja** yang kamu berikan
+✔ Tidak menghapus fitur lama kecuali tidak ada fungsinya
+✔ Bahasa Indonesia
+✔ Menggunakan tab (bukan popup)
+✔ Menggunakan ResponsivePageWrapper
+✔ Integrasi penuh dengan role, membership, database
+
+Berikut PRD-nya 👇
+
+---
+
+# 🟩 **PRD Perbaikan Fitur Kelas – Ekspor Yuk Platform**
+
+**Versi:** 1.1 (Perbaikan Fitur Yang Sudah Ada)
+**Tujuan:** Mengaktifkan semua fungsi kelas agar berjalan sesuai role, pricing, membership, dan publikasi.
+
+---
+
+# 📌 **1. Ruang Lingkup PRD Perbaikan**
+
+Dokumen ini hanya berisi:
+
+* Evaluasi fitur kelas yang sudah ada
+* Perbaikan fungsi yang belum berjalan
+* Penyempurnaan logic akses kelas
+* Optimalisasi UI sesuai aturan kerja
+* Integrasi ke membership & role affiliate
+* Penataan ulang setting kelas agar konsisten
+
+**Tidak membuat fitur baru**, kecuali diperlukan agar fitur berjalan sempurna.
+
+---
+
+# 📌 **2. Masalah Umum Pada Modul Kelas Saat Ini (Diketahui)**
+
+Berdasarkan permintaan:
+
+1. Role akses belum bekerja (affiliate/member)
+2. Status kelas (draft/publish/private) belum berfungsi
+3. Kelas berbayar belum terhubung ke sistem membership
+4. Kelas affiliate muncul di kelas umum
+5. Kelas member tidak membatasi akses non-member
+6. Tidak ada toggle tampil publik / non-publik
+7. UI belum memakai tab & ResponsivePageWrapper
+8. Security akses belum diterapkan (semua orang bisa akses jika tahu URL)
+9. Tidak terhubung ke database secara benar atau belum lengkap
+10. Tidak ada validasi — risiko error tinggi
+
+PRD ini memperbaiki semua poin tersebut.
+
+---
+
+# 🟩 **3. Perbaikan Fitur Kelas (Wajib Implementasi)**
+
+---
+
+# ⭐ **A. Perbaikan Akses Role Kelas (AFFILIATE / MEMBER / UMUM)**
+
+Fungsi akses harus bekerja 100%.
+
+### **1. Kelas Member**
+
+Perbaikan:
+
+* Hanya member aktif yang dapat akses kelas
+* Non-member melihat pesan:
+  **“Kelas ini hanya untuk Member Premium. Silakan upgrade membership.”**
+* Member tidak perlu bayar walaupun kelas punya harga
+* Member dapat akses secara otomatis via middleware
+
+---
+
+### **2. Kelas Affiliate**
+
+Perbaikan:
+
+* Hanya role affiliate yang bisa akses
+* Tidak tampil di halaman kelas publik
+* Tidak terlihat oleh non-affiliate
+* Jika non-affiliate buka URL:
+
+**“Anda tidak memiliki izin untuk mengakses kelas ini.”**
+
+---
+
+### **3. Kelas Umum**
+
+Perbaikan:
+
+* Tampil untuk semua user
+* Jika kelas gratis → langsung akses
+* Jika kelas berbayar → tampil tombol beli
+
+---
+
+# ⭐ **B. Perbaikan Status Kelas (Publish / Draft / Private)**
+
+Perbaikan fungsional:
+
+### **Draft**
+
+* Tidak tampil ke publik
+* Tidak bisa diakses user
+* Hanya admin bisa melihat
+
+### **Publish**
+
+* Tampil ke user yang sesuai role
+* Muncul di daftar kelas sesuai pengaturan tampil publik
+* Konten harus dapat diakses
+
+### **Private**
+
+* Tidak tampil ke publik
+* Hanya user role tertentu yang dapat melihat (member/affiliate)
+* Tetap tercatat dan aktif di DB
+
+**Pastikan state ini 100% aktif di FE, BE, dan DB.**
+
+---
+
+# ⭐ **C. Perbaikan Integrasi Membership & Harga Kelas**
+
+Jika kelas ada harga, perbaikan berikut wajib berlaku:
+
+### **Jika user adalah MEMBER AKTIF:**
+
+* Akses selalu gratis
+* Harga kelas hilang otomatis
+* Tombol beli diganti dengan:
+  **“Akses melalui Membership Anda.”**
+
+### **Jika user bukan member:**
+
+* User melihat harga
+* Bisa beli kelas secara individual
+
+### **Jika kelas gratis:**
+
+* Akses sesuai role tanpa pembelian
+
+---
+
+# ⭐ **D. Penambahan Setting: “Tampilkan di Publik”**
+
+Perbaikan:
+
+* Admin bisa toggle “Tampilkan untuk Publik”
+* Jika OFF → hanya internal (affiliate/member)
+* Jika ON → muncul di halaman kelas umum
+* Kelas affiliate **tidak boleh tampil publik walaupun toggle ON**
+* Kelas member **hanya tampil publik sebagai preview**, tetapi konten terkunci
+
+---
+
+# ⭐ **E. Perbaikan UI/UX Sesuai Aturan Kerja**
+
+Perbaikan wajib:
+
+* Semua halaman kelas harus memakai **ResponsivePageWrapper**
+* Tidak boleh ada popup → ganti dengan **tab form**
+* Tab untuk edit kelas:
+
+  * Informasi Kelas
+  * Materi Kelas
+  * Pengaturan Akses
+  * Pengaturan Harga
+  * Status & Publikasi
+* Pastikan desain ringan, bersih, dan aman
+
+---
+
+# ⭐ **F. Perbaikan Sistem Security Akses (IMPORTANT)**
+
+Middleware wajib aktif pada setiap kelas:
+
+1. **authCheck** → pastikan login
+2. **roleCheck** → validasi affiliate/member/publik
+3. **membershipCheck** → validasi membership aktif
+4. **priceCheck** → jika berbayar, pastikan sudah beli
+5. **statusCheck** → tidak boleh akses kelas draft
+6. **publicVisibilityCheck** → tampil publik atau tidak
+
+URL kelas **tidak boleh** bisa diakses hanya dengan link tanpa hak akses.
+
+---
+
+# ⭐ **G. Perbaikan Database (Sync Existing + Tambahan Minimal)**
+
+Pastikan tabel yang ada diperbaiki / dilengkapi:
+
+### Table: `classes`
+
+Perbaikan kolom wajib aktif:
+
+* roleAccess (enum: member, affiliate, public)
+* price (number / null)
+* membershipIncluded (boolean)
+* isPublic (boolean)
+* status (draft, publish, private)
+
+### Table: `class_access`
+
+Perbaikan logic:
+
+* Jika membership aktif → row otomatis terbaca
+* Jika beli kelas → row tercatat
+* Jika affiliate dan kelas affiliate → row otomatis terbaca
+
+**Tidak hapus data lama tanpa konfirmasi.**
+
+---
+
+# ⭐ **H. Sidebar Menu (Perbaikan, Bukan Tambahan Baru)**
+
+Pastikan menu tidak duplikat, tetapi diperbaiki:
+
+### Admin:
+
+* **Kelas**
+
+  * Semua Kelas
+  * Tambah Kelas
+
+### Member:
+
+* **Kelas Saya**
+
+### Affiliate:
+
+* **Kelas Affiliate**
+
+Jika menu sudah ada → jangan duplikasi, hanya perbaiki routing dan logic tampil.
+
+---
+
+# ⭐ **I. Perbaikan Routing & Logic Tampilan Kelas**
+
+### Admin
+
+* Dapat melihat semua kelas
+* Dapat edit semua kelas
+
+### Member
+
+* Lihat hanya kelas member & kelas umum
+* Lihat kelas berbayar yang sudah dibeli
+
+### Affiliate
+
+* Lihat kelas affiliate & kelas umum
+
+### Publik
+
+* Lihat kelas umum yang ditandai tampil publik
+* Tidak boleh lihat konten sebelum login jika kelas berbayar
+
+---
+
+# 📌 **4. Alur Sistem (Flow)**
+
+---
+
+## **A. Admin Mengedit Kelas**
+
+```
+Dashboard Admin → Kelas → Edit → Tab Form
+→ Perbaiki Informasi & Role → Simpan
+```
+
+---
+
+## **B. User Akses Kelas**
+
+1. Sistem cek status kelas
+2. Sistem cek role user
+3. Sistem cek membership aktif (jika role = member)
+4. Sistem cek akses pembelian (jika kelas berbayar)
+5. Sistem cek publik visibility
+6. Jika semua sesuai → tampilkan konten
+
+---
+
+## **C. User Melihat Daftar Kelas**
+
+* Publik hanya lihat kelas umum yang ON
+* Non-member lihat preview kelas member
+* Affiliate lihat kelas affiliate otomatis
+
+---
+
+# 📌 **5. Checklist Developer (WAJIB)**
+
+### Akses Role
+
+✔ Member hanya akses kelas member
+✔ Affiliate hanya akses kelas affiliate
+✔ Publik hanya lihat kelas umum
+
+### Harga & Membership
+
+✔ Member tidak bayar kelas berharga
+✔ Pembelian kelas bekerja
+✔ Harga hilang ketika akses via membership
+
+### UI / UX
+
+✔ Gunakan ResponsivePageWrapper
+✔ Gunakan tab, bukan popup
+✔ Semua form & field bersih
+
+### Database
+
+✔ Pastikan kolom wajib aktif
+✔ Tidak duplikasi tabel
+✔ Semua relasi kelas → user berjalan
+
+### Security
+
+✔ Semua akses pakai middleware
+✔ Tidak ada URL yang bisa diakses tanpa izin
+
+---
+
+# 📌 **6. Kesimpulan PRD Perbaikan**
+
+Modul kelas yang sudah ada harus:
+
+* Diaktifkan fungsinya
+* Diperbaiki logic role
+* Diperbaiki logic membership + harga
+* Disempurnakan status publish
+* Diproteksi dengan middleware
+* Dibuat ringan & bersih tampilannya
+* Menggunakan tab form + ResponsivePageWrapper
+* Terintegrasi penuh dengan database dan role lainnya
+
+**Tidak menambah fitur baru kecuali untuk membuat modul kelas berfungsi sempurna.**
+
+---
+
 
