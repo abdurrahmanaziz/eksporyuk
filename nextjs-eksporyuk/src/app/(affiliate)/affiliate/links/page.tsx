@@ -485,8 +485,8 @@ export default function AffiliateLinksPage() {
 
     setGeneratingCouponForLink(selectedLinkForCoupon.id)
     try {
-      // Get selected coupon
-      const selectedCoupon = affiliateCoupons.find(c => c.id === selectedCouponForLink)
+      // Get selected coupon from all available coupons (including admin coupons)
+      const selectedCoupon = coupons.find(c => c.id === selectedCouponForLink)
       if (!selectedCoupon) {
         toast.error('Kupon tidak ditemukan')
         return
