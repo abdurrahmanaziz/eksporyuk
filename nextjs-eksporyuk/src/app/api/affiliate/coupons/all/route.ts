@@ -61,7 +61,11 @@ export async function GET(request: NextRequest) {
         isActive: coupon.isActive,
         createdAt: coupon.createdAt,
         isOwnCoupon: true,
-        source: 'affiliate' as const
+        source: 'affiliate' as const,
+        // Include target IDs for filtering
+        membershipIds: coupon.membershipIds || [],
+        productIds: coupon.productIds || [],
+        courseIds: coupon.courseIds || [],
       })),
       ...adminCoupons.map(coupon => ({
         id: coupon.id,
@@ -75,7 +79,11 @@ export async function GET(request: NextRequest) {
         isActive: coupon.isActive,
         createdAt: coupon.createdAt,
         isOwnCoupon: false,
-        source: 'admin' as const
+        source: 'admin' as const,
+        // Include target IDs for filtering
+        membershipIds: coupon.membershipIds || [],
+        productIds: coupon.productIds || [],
+        courseIds: coupon.courseIds || [],
       }))
     ]
 
