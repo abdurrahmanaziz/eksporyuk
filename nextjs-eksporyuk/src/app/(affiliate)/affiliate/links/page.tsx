@@ -74,9 +74,7 @@ export default function AffiliateLinksPage() {
   const [generatingCouponForLink, setGeneratingCouponForLink] = useState<string | null>(null)
   const [showCouponModal, setShowCouponModal] = useState(false)
   const [selectedLinkForCoupon, setSelectedLinkForCoupon] = useState<AffiliateLink | null>(null)
-  const [couponTemplates, setCouponTemplates] = useState<any[]>([])
-  const [selectedTemplateId, setSelectedTemplateId] = useState('')
-  const [customCouponCode, setCustomCouponCode] = useState('')
+  const [selectedCouponForLink, setSelectedCouponForLink] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [mainTab, setMainTab] = useState<MainTabType>('list')
   const [filterTab, setFilterTab] = useState<FilterTabType>('all')
@@ -434,68 +432,81 @@ export default function AffiliateLinksPage() {
   }
 
   const quickGenerateCoupon = async (link: AffiliateLink) => {
-    try {
-      // Fetch available templates
-      const templatesResponse = await fetch('/api/affiliate/coupons/templates')
-      const templatesData = await templatesResponse.json()
-      
-      if (!templatesData.templates || templatesData.templates.length === 0) {
-        toast.error('Tidak ada template kupon yang tersedia')
-        return
-      }
-      
-      // Set templates and show modal
-      setCouponTemplates(templatesData.templates)
-      setSelectedLinkForCoupon(link)
-      
-      // Generate suggested code
-      const suggestedCode = `${link.code.replace('-', '')}CP${Date.now().toString().slice(-4)}`
-      setCustomCouponCode(suggestedCode.toUpperCase())
-      
-      // Pre-select first template
-      setSelectedTemplateId(templatesData.templates[0].id)
-      
-      // Show modal
-      setShowCouponModal(true)
-    } catch (error) {
-      console.error('Error fetching templates:', error)
-      toast.error('Gagal memuat template kupon')
+    // Check if affiliate has any coupons
+    if (affiliateCoupons.length === 0) {
+      toast.error('Anda belum memiliki kupon. Buat kupon terlebih dahulu di menu Kupon.')
+      return
     }
+    
+    // Filter coupons applicable to this link's target
+    let applicableCoupons = affiliateCoupons
+    
+    if (link.membership) {
+      applicableCoupons = affiliateCoupons.filter(coupon => {
+        const ids = coupon.membershipIds || []
+        return ids.length === 0 || ids.includes(link.membershipId)
+      })
+    } else if (link.product) {
+      applicableCoupons = affiliateCoupons.filter(coupon => {
+        const ids = coupon.productIds || []
+        return ids.length === 0 || ids.includes(link.productId)
+      })
+    } else if (link.course) {
+      applicableCoupons = affiliateCoupons.filter(coupon => {
+        const ids = coupon.courseIds || []
+        return ids.length === 0 || ids.includes(link.courseId)
+      })
+    }
+    
+    if (applicableCoupons.length === 0) {
+      toast.error('Tidak ada kupon yang berlaku untuk link ini')
+      return
+    }
+    
+    // Show modal with applicable coupons
+    setSelectedLinkForCoupon(link)
+    setSelectedCouponForLink('')
+    setShowCouponModal(true)
   }
 
-  const generateCouponWithSelection = async () => {
-    if (!selectedTemplateId || !customCouponCode || !selectedLinkForCoupon) {
-      toast.error('Pilih template dan masukkan kode kupon')
+  const attachCouponToLink = async () => {
+    if (!selectedCouponForLink || !selectedLinkForCoupon) {
+      toast.error('Pilih kupon terlebih dahulu')
       return
     }
 
     setGeneratingCouponForLink(selectedLinkForCoupon.id)
     try {
-      const response = await fetch('/api/affiliate/coupons/generate', {
-        method: 'POST',
+      // Get selected coupon
+      const selectedCoupon = affiliateCoupons.find(c => c.id === selectedCouponForLink)
+      if (!selectedCoupon) {
+        toast.error('Kupon tidak ditemukan')
+        return
+      }
+
+      // Update link with coupon
+      const response = await fetch(`/api/affiliate/links/${selectedLinkForCoupon.id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          templateId: selectedTemplateId,
-          customCode: customCouponCode.toUpperCase()
+          couponCode: selectedCoupon.code
         })
       })
       
-      const data = await response.json()
-      
       if (response.ok) {
-        toast.success(`Kupon ${data.coupon.code} berhasil dibuat!`)
+        toast.success(`Kupon ${selectedCoupon.code} berhasil ditambahkan ke link!`)
         // Close modal and refresh
         setShowCouponModal(false)
         setSelectedLinkForCoupon(null)
-        setCustomCouponCode('')
-        setSelectedTemplateId('')
-        fetchAffiliateCoupons()
+        setSelectedCouponForLink('')
+        fetchLinks()
       } else {
-        toast.error(data.error || 'Gagal membuat kupon')
+        const data = await response.json()
+        toast.error(data.error || 'Gagal menambahkan kupon')
       }
     } catch (error) {
-      console.error('Error generating coupon:', error)
-      toast.error('Terjadi kesalahan saat membuat kupon')
+      console.error('Error attaching coupon:', error)
+      toast.error('Terjadi kesalahan')
     } finally {
       setGeneratingCouponForLink(null)
     }
@@ -1526,8 +1537,8 @@ export default function AffiliateLinksPage() {
         )}
       </div>
 
-      {/* Modal Generate Coupon */}
-      {showCouponModal && (
+      {/* Modal Tambah Kupon ke Link */}
+      {showCouponModal && selectedLinkForCoupon && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Header */}
@@ -1535,14 +1546,13 @@ export default function AffiliateLinksPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Ticket className="h-6 w-6" />
-                  <h2 className="text-xl font-bold">Generate Kupon dari Link</h2>
+                  <h2 className="text-xl font-bold">Tambah Kupon ke Link</h2>
                 </div>
                 <button
                   onClick={() => {
                     setShowCouponModal(false)
                     setSelectedLinkForCoupon(null)
-                    setCustomCouponCode('')
-                    setSelectedTemplateId('')
+                    setSelectedCouponForLink('')
                   }}
                   className="p-2 hover:bg-white/20 rounded-lg transition-colors"
                 >
@@ -1556,97 +1566,142 @@ export default function AffiliateLinksPage() {
             {/* Content */}
             <div className="p-6 space-y-6">
               {/* Link Info */}
-              {selectedLinkForCoupon && (
-                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Link2 className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 mb-1">Link Affiliate</h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        Kode: <span className="font-mono font-bold text-orange-600">{selectedLinkForCoupon.code}</span>
-                      </p>
-                      <code className="text-xs text-gray-700 bg-white px-2 py-1 rounded break-all block">
-                        {selectedLinkForCoupon.url}
-                      </code>
-                    </div>
+              <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Link2 className="h-5 w-5 text-white" />
                   </div>
-                </div>
-              )}
-
-              {/* Template Selection */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                  Pilih Template Kupon
-                </label>
-                <div className="space-y-3">
-                  {couponTemplates.map((template) => (
-                    <button
-                      key={template.id}
-                      onClick={() => setSelectedTemplateId(template.id)}
-                      className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-                        selectedTemplateId === template.id
-                          ? 'border-purple-500 bg-purple-50 shadow-lg'
-                          : 'border-gray-200 hover:border-purple-300 bg-white'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-bold text-lg text-gray-900">{template.code}</span>
-                            {template.discountType === 'PERCENTAGE' ? (
-                              <span className="px-2 py-1 bg-green-100 text-green-700 text-sm font-bold rounded">
-                                {template.discountValue}% OFF
-                              </span>
-                            ) : (
-                              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-sm font-bold rounded">
-                                Rp {Number(template.discountValue).toLocaleString('id-ID')} OFF
-                              </span>
-                            )}
-                          </div>
-                          {template.description && (
-                            <p className="text-sm text-gray-600">{template.description}</p>
-                          )}
-                          {template.membershipIds && template.membershipIds.length > 0 && (
-                            <p className="text-xs text-gray-500 mt-2">
-                              ✅ Berlaku untuk {template.membershipIds.length} membership
-                            </p>
-                          )}
-                        </div>
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                          selectedTemplateId === template.id
-                            ? 'border-purple-500 bg-purple-500'
-                            : 'border-gray-300'
-                        }`}>
-                          {selectedTemplateId === template.id && (
-                            <Check className="h-3 w-3 text-white" />
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">Link Affiliate</h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Kode: <span className="font-mono font-bold text-orange-600">{selectedLinkForCoupon.code}</span>
+                    </p>
+                    {selectedLinkForCoupon.membership && (
+                      <p className="text-sm text-gray-600">
+                        Target: <span className="font-semibold">👑 {selectedLinkForCoupon.membership.name}</span>
+                      </p>
+                    )}
+                    {selectedLinkForCoupon.product && (
+                      <p className="text-sm text-gray-600">
+                        Target: <span className="font-semibold">📦 {selectedLinkForCoupon.product.name}</span>
+                      </p>
+                    )}
+                    {selectedLinkForCoupon.course && (
+                      <p className="text-sm text-gray-600">
+                        Target: <span className="font-semibold">📚 {selectedLinkForCoupon.course.title}</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Custom Code */}
+              {/* Coupon Selection */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                  Kode Kupon
+                  <Ticket className="h-5 w-5 text-purple-500" />
+                  Pilih Kupon dari Daftar Anda
                 </label>
-                <input
-                  type="text"
-                  value={customCouponCode}
-                  onChange={(e) => setCustomCouponCode(e.target.value.toUpperCase())}
-                  placeholder="Masukkan kode kupon"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-lg"
-                  maxLength={20}
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  💡 Tip: Gunakan kombinasi huruf dan angka unik (max 20 karakter)
-                </p>
+                
+                {(() => {
+                  // Filter applicable coupons
+                  let applicableCoupons = affiliateCoupons
+                  
+                  if (selectedLinkForCoupon.membership) {
+                    applicableCoupons = affiliateCoupons.filter(coupon => {
+                      const ids = coupon.membershipIds || []
+                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.membershipId)
+                    })
+                  } else if (selectedLinkForCoupon.product) {
+                    applicableCoupons = affiliateCoupons.filter(coupon => {
+                      const ids = coupon.productIds || []
+                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.productId)
+                    })
+                  } else if (selectedLinkForCoupon.course) {
+                    applicableCoupons = affiliateCoupons.filter(coupon => {
+                      const ids = coupon.courseIds || []
+                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.courseId)
+                    })
+                  }
+
+                  if (applicableCoupons.length === 0) {
+                    return (
+                      <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 text-center">
+                        <div className="text-yellow-600 mb-2">⚠️</div>
+                        <p className="text-gray-700 font-medium mb-2">Tidak ada kupon yang berlaku</p>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Buat kupon yang berlaku untuk {selectedLinkForCoupon.membership?.name || selectedLinkForCoupon.product?.name || selectedLinkForCoupon.course?.title} terlebih dahulu
+                        </p>
+                        <a
+                          href="/affiliate/coupons"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Buat Kupon Baru
+                        </a>
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {applicableCoupons.map((coupon) => (
+                        <button
+                          key={coupon.id}
+                          onClick={() => setSelectedCouponForLink(coupon.id)}
+                          className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                            selectedCouponForLink === coupon.id
+                              ? 'border-purple-500 bg-purple-50 shadow-lg'
+                              : 'border-gray-200 hover:border-purple-300 bg-white'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="font-bold text-lg text-gray-900">{coupon.code}</span>
+                                {coupon.discountType === 'PERCENTAGE' ? (
+                                  <span className="px-2 py-1 bg-green-100 text-green-700 text-sm font-bold rounded">
+                                    {coupon.discountValue}% OFF
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-sm font-bold rounded">
+                                    Rp {Number(coupon.discountValue).toLocaleString('id-ID')} OFF
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                {coupon.membershipIds && coupon.membershipIds.length > 0 && (
+                                  <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded">
+                                    👑 {coupon.membershipIds.length} Membership
+                                  </span>
+                                )}
+                                {coupon.productIds && coupon.productIds.length > 0 && (
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                                    📦 {coupon.productIds.length} Produk
+                                  </span>
+                                )}
+                                {coupon.courseIds && coupon.courseIds.length > 0 && (
+                                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
+                                    📚 {coupon.courseIds.length} Kelas
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                              selectedCouponForLink === coupon.id
+                                ? 'border-purple-500 bg-purple-500'
+                                : 'border-gray-300'
+                            }`}>
+                              {selectedCouponForLink === coupon.id && (
+                                <Check className="h-3 w-3 text-white" />
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )
+                })()}
               </div>
 
               {/* Action Buttons */}
@@ -1655,8 +1710,7 @@ export default function AffiliateLinksPage() {
                   onClick={() => {
                     setShowCouponModal(false)
                     setSelectedLinkForCoupon(null)
-                    setCustomCouponCode('')
-                    setSelectedTemplateId('')
+                    setSelectedCouponForLink('')
                   }}
                   className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors"
                   disabled={generatingCouponForLink !== null}
@@ -1664,19 +1718,19 @@ export default function AffiliateLinksPage() {
                   Batal
                 </button>
                 <button
-                  onClick={generateCouponWithSelection}
-                  disabled={!selectedTemplateId || !customCouponCode || generatingCouponForLink !== null}
+                  onClick={attachCouponToLink}
+                  disabled={!selectedCouponForLink || generatingCouponForLink !== null}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
                   {generatingCouponForLink ? (
                     <>
                       <RefreshCw className="h-5 w-5 animate-spin" />
-                      Membuat...
+                      Menambahkan...
                     </>
                   ) : (
                     <>
                       <Ticket className="h-5 w-5" />
-                      Generate Kupon
+                      Tambah Kupon
                     </>
                   )}
                 </button>
