@@ -160,7 +160,7 @@ function CourseCard({
         {/* Certificate */}
         {course.hasCertificate && (
           <Link
-            href="/certificates"
+            href="/dashboard/certificates"
             className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-green-600 hover:text-green-700"
           >
             <Award className="w-4 h-4" />
