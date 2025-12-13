@@ -145,10 +145,9 @@ export async function POST(request: NextRequest) {
     if (targetUrl) {
       url = targetUrl
     } else {
-      const baseUrl = process.env.NEXTAUTH_URL || 
-                     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                     process.env.NEXT_PUBLIC_APP_URL ||
-                     'https://eksporyuk.com'
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                     process.env.NEXTAUTH_URL ||
+                     'https://app.eksporyuk.com'
       
       // Get target details for slug and external URL
       let targetSlug = null

@@ -146,11 +146,10 @@ export async function POST(request: NextRequest) {
           linkTypes.push('SALESPAGE_INTERNAL', 'CHECKOUT')
         }
 
-        // Use consistent baseUrl - prioritize multiple environment variables
-        const baseUrl = process.env.NEXTAUTH_URL || 
-                       process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                       process.env.NEXT_PUBLIC_APP_URL ||
-                       'https://eksporyuk.com'
+        // Use live domain - prioritize production domain
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                       process.env.NEXTAUTH_URL ||
+                       'https://app.eksporyuk.com'
         
         for (const linkType of linkTypes) {
           // Check if link already exists
