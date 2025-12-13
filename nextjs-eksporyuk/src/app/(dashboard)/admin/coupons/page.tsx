@@ -59,6 +59,7 @@ interface SelectableItem {
   id: string
   name: string
   title?: string
+  isActive?: boolean
 }
 
 export default function AdminCouponsPage() {
@@ -647,7 +648,7 @@ export default function AdminCouponsPage() {
                     {/* Memberships Multi-Select */}
                     <div>
                       <Label>Paket Membership</Label>
-                      <div className="border rounded-lg p-3 max-h-32 overflow-y-auto mt-2">
+                      <div className="border rounded-lg p-3 max-h-40 overflow-y-auto mt-2">
                         {loadingData ? (
                           <p className="text-sm text-gray-500">Memuat membership...</p>
                         ) : memberships.length === 0 ? (
@@ -674,7 +675,12 @@ export default function AdminCouponsPage() {
                                   }}
                                   className="rounded border-gray-300"
                                 />
-                                <span className="text-sm">{membership.name}</span>
+                                <span className="text-sm flex items-center gap-2">
+                                  {membership.name}
+                                  {membership.isActive === false && (
+                                    <span className="text-xs px-1.5 py-0.5 bg-red-100 text-red-600 rounded">Nonaktif</span>
+                                  )}
+                                </span>
                               </label>
                             ))}
                           </div>
