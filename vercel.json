@@ -1,8 +1,0 @@
-{
-  "version": 2,
-  "buildCommand": "cd nextjs-eksporyuk && rm -rf .next && npm run build",
-  "installCommand": "cd nextjs-eksporyuk && npm install --force && rm -rf .next node_modules/.cache",
-  "outputDirectory": "nextjs-eksporyuk/.next",
-  "framework": "nextjs",
-  "regions": ["sin1"]
-}
