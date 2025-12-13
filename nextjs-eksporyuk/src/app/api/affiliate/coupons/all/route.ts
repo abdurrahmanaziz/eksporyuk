@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
         membershipIds: coupon.membershipIds || [],
         productIds: coupon.productIds || [],
         courseIds: coupon.courseIds || [],
+        basedOnCouponId: coupon.basedOnCouponId, // For dynamic inheritance
       })),
       ...adminCoupons.map(coupon => ({
         id: coupon.id,
@@ -84,6 +85,7 @@ export async function GET(request: NextRequest) {
         membershipIds: coupon.membershipIds || [],
         productIds: coupon.productIds || [],
         courseIds: coupon.courseIds || [],
+        basedOnCouponId: null, // Admin coupons don't have parent
       }))
     ]
 

@@ -42,6 +42,7 @@ interface Coupon {
   membershipIds?: string[]
   productIds?: string[]
   courseIds?: string[]
+  basedOnCouponId?: string | null
 }
 
 // Tab Types
@@ -204,26 +205,55 @@ export default function AffiliateLinksPage() {
   }
 
   // Filter available coupons based on selected target type and target id
+  // Child coupons inherit membershipIds/productIds/courseIds from parent dynamically
   const availableCoupons = useMemo(() => {
     if (!selectedTargetType) return []
     
     return coupons.filter(coupon => {
       if (selectedTargetType === 'membership') {
+        // If child coupon, inherit from parent
+        if (coupon.basedOnCouponId) {
+          const parentCoupon = coupons.find(c => c.id === coupon.basedOnCouponId)
+          if (parentCoupon) {
+            const parentIds = parentCoupon.membershipIds || []
+            if (!parentIds || parentIds.length === 0) return true
+            if (selectedTargetId) return parentIds.includes(selectedTargetId)
+            return true
+          }
+        }
+        // Otherwise use own membershipIds
         const ids = coupon.membershipIds || []
-        // If no membershipIds (empty array or null), coupon applies to ALL memberships
         if (!ids || ids.length === 0) return true
-        // If targetId is selected, check if coupon applies to that specific membership
         if (selectedTargetId) return ids.includes(selectedTargetId)
-        // If no targetId selected (generating for all), show all membership coupons
         return true
       }
       if (selectedTargetType === 'product') {
+        // If child coupon, inherit from parent
+        if (coupon.basedOnCouponId) {
+          const parentCoupon = coupons.find(c => c.id === coupon.basedOnCouponId)
+          if (parentCoupon) {
+            const parentIds = parentCoupon.productIds || []
+            if (!parentIds || parentIds.length === 0) return true
+            if (selectedTargetId) return parentIds.includes(selectedTargetId)
+            return true
+          }
+        }
         const ids = coupon.productIds || []
         if (!ids || ids.length === 0) return true
         if (selectedTargetId) return ids.includes(selectedTargetId)
         return true
       }
       if (selectedTargetType === 'course') {
+        // If child coupon, inherit from parent
+        if (coupon.basedOnCouponId) {
+          const parentCoupon = coupons.find(c => c.id === coupon.basedOnCouponId)
+          if (parentCoupon) {
+            const parentIds = parentCoupon.courseIds || []
+            if (!parentIds || parentIds.length === 0) return true
+            if (selectedTargetId) return parentIds.includes(selectedTargetId)
+            return true
+          }
+        }
         const ids = coupon.courseIds || []
         if (!ids || ids.length === 0) return true
         if (selectedTargetId) return ids.includes(selectedTargetId)
@@ -1615,20 +1645,46 @@ export default function AffiliateLinksPage() {
                 
                 {(() => {
                   // Filter applicable coupons (including admin coupons)
+                  // For child coupons, inherit membershipIds from parent
                   let applicableCoupons = coupons
                   
                   if (selectedLinkForCoupon.membership) {
                     applicableCoupons = coupons.filter(coupon => {
+                      // If coupon is child (has basedOnCouponId), find parent and use its membershipIds
+                      if (coupon.basedOnCouponId) {
+                        const parentCoupon = coupons.find(c => c.id === coupon.basedOnCouponId)
+                        if (parentCoupon) {
+                          const parentIds = parentCoupon.membershipIds || []
+                          return parentIds.length === 0 || parentIds.includes(selectedLinkForCoupon.membership.id)
+                        }
+                      }
+                      // Otherwise use coupon's own membershipIds
                       const ids = coupon.membershipIds || []
                       return ids.length === 0 || ids.includes(selectedLinkForCoupon.membership.id)
                     })
                   } else if (selectedLinkForCoupon.product) {
                     applicableCoupons = coupons.filter(coupon => {
+                      // If coupon is child (has basedOnCouponId), find parent and use its productIds
+                      if (coupon.basedOnCouponId) {
+                        const parentCoupon = coupons.find(c => c.id === coupon.basedOnCouponId)
+                        if (parentCoupon) {
+                          const parentIds = parentCoupon.productIds || []
+                          return parentIds.length === 0 || parentIds.includes(selectedLinkForCoupon.product.id)
+                        }
+                      }
                       const ids = coupon.productIds || []
                       return ids.length === 0 || ids.includes(selectedLinkForCoupon.product.id)
                     })
                   } else if (selectedLinkForCoupon.course) {
                     applicableCoupons = coupons.filter(coupon => {
+                      // If coupon is child (has basedOnCouponId), find parent and use its courseIds
+                      if (coupon.basedOnCouponId) {
+                        const parentCoupon = coupons.find(c => c.id === coupon.basedOnCouponId)
+                        if (parentCoupon) {
+                          const parentIds = parentCoupon.courseIds || []
+                          return parentIds.length === 0 || parentIds.includes(selectedLinkForCoupon.course.id)
+                        }
+                      }
                       const ids = coupon.courseIds || []
                       return ids.length === 0 || ids.includes(selectedLinkForCoupon.course.id)
                     })
