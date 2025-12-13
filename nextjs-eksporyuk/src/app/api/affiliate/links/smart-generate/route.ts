@@ -146,8 +146,11 @@ export async function POST(request: NextRequest) {
           linkTypes.push('SALESPAGE_INTERNAL', 'CHECKOUT')
         }
 
-        // Use consistent baseUrl like the regular link generation
-        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+        // Use consistent baseUrl - prioritize multiple environment variables
+        const baseUrl = process.env.NEXTAUTH_URL || 
+                       process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                       process.env.NEXT_PUBLIC_APP_URL ||
+                       'https://eksporyuk.com'
         
         for (const linkType of linkTypes) {
           // Check if link already exists
