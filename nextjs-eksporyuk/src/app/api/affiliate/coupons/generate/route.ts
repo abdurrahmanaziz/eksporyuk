@@ -10,22 +10,29 @@ export const dynamic = 'force-dynamic'
 // POST /api/affiliate/coupons/generate - Generate coupon from template
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔍 Starting coupon generation...')
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
+      console.log('❌ No session found')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    console.log(`👤 User: ${session.user.name} (${session.user.role})`)
+    
     // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
     const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
     if (!allowedRoles.includes(session.user.role)) {
+      console.log(`❌ Role ${session.user.role} not allowed`)
       return NextResponse.json({ error: 'Access denied. Affiliate access required.' }, { status: 403 })
     }
 
     const body = await request.json()
     const { templateId, customCode } = body
+    console.log(`📋 Request: templateId=${templateId}, customCode=${customCode}`)
 
     if (!templateId || !customCode) {
+      console.log('❌ Missing templateId or customCode')
       return NextResponse.json(
         { error: 'Template ID and custom code are required' },
         { status: 400 }
@@ -33,18 +40,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Get template coupon
+    console.log('🔍 Fetching template...')
     const template = await prisma.coupon.findUnique({
       where: { id: templateId },
     })
 
     if (!template) {
+      console.log('❌ Template not found')
       return NextResponse.json(
         { error: 'Template not found' },
         { status: 404 }
       )
     }
 
+    console.log(`✅ Template found: ${template.code}`)
+
     if (!template.isActive || !template.isAffiliateEnabled) {
+      console.log('❌ Template not available')
       return NextResponse.json(
         { error: 'Template is not available' },
         { status: 400 }
@@ -60,7 +72,10 @@ export async function POST(request: NextRequest) {
         },
       })
 
+      console.log(`📊 Generated: ${affiliateGeneratedCount}/${template.maxGeneratePerAffiliate}`)
+
       if (affiliateGeneratedCount >= template.maxGeneratePerAffiliate) {
+        console.log('❌ Generation limit reached')
         return NextResponse.json(
           { error: `You have reached the generation limit (${template.maxGeneratePerAffiliate})` },
           { status: 400 }
@@ -69,11 +84,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if custom code already exists
+    console.log('🔍 Checking code uniqueness...')
     const existingCoupon = await prisma.coupon.findUnique({
       where: { code: customCode.toUpperCase() },
     })
 
     if (existingCoupon) {
+      console.log('❌ Code already exists')
       return NextResponse.json(
         { error: 'Kode kupon sudah digunakan' },
         { status: 400 }
@@ -81,6 +98,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new coupon based on template
+    console.log('🚀 Creating new coupon...')
     const newCoupon = await prisma.coupon.create({
       data: {
         code: customCode.toUpperCase(),
@@ -111,9 +129,17 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    console.log(`✅ Coupon created successfully: ${newCoupon.code}`)
     return NextResponse.json({ coupon: newCoupon }, { status: 201 })
   } catch (error) {
-    console.error('Error generating coupon:', error)
+    console.error('❌ Error generating coupon:', error)
+    
+    // Log specific error details for debugging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
+    
     return NextResponse.json(
       { error: 'Failed to generate coupon' },
       { status: 500 }
