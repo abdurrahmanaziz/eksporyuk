@@ -12,12 +12,14 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (session.user.role !== 'AFFILIATE') {
-      return NextResponse.json({ error: 'Affiliate only' }, { status: 403 })
+    // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
+    const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
+    if (!allowedRoles.includes(session.user.role)) {
+      return NextResponse.json({ error: 'Access denied. Affiliate access required.' }, { status: 403 })
     }
 
     // Get all pending transactions where this affiliate is the referrer

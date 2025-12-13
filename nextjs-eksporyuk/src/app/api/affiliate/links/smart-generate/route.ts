@@ -134,86 +134,87 @@ export async function POST(request: NextRequest) {
       // Use selected coupon or no coupon
       const couponCode = selectedCoupon?.code || null
 
-      // Generate different link types
-      const linkTypes = []
-      
-      // For membership, generate specific patterns
-      if (targetType === 'membership') {
-        linkTypes.push('SALESPAGE_INTERNAL') // Sales page
-        linkTypes.push('CHECKOUT') // Individual checkout
-        linkTypes.push('CHECKOUT_PRO') // General checkout (/checkout/pro)
-      } else {
-        linkTypes.push('SALESPAGE_INTERNAL', 'CHECKOUT')
-      }
-      
-      for (const linkType of linkTypes) {
-        // Check if link already exists
-        const whereClause: any = {
-          affiliateId: affiliateProfile.id,
-          linkType,
+        // Generate different link types
+        const linkTypes = []
+        
+        // For membership, generate specific patterns
+        if (targetType === 'membership') {
+          linkTypes.push('SALESPAGE_INTERNAL') // Sales page
+          linkTypes.push('CHECKOUT') // Individual checkout
+          linkTypes.push('CHECKOUT_PRO') // General checkout (/checkout/pro)
+        } else {
+          linkTypes.push('SALESPAGE_INTERNAL', 'CHECKOUT')
         }
-        whereClause[`${targetType}Id`] = itemId
 
-        const existingLink = await prisma.affiliateLink.findFirst({
-          where: whereClause
-        })
+        // Use consistent baseUrl like the regular link generation
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+        
+        for (const linkType of linkTypes) {
+          // Check if link already exists
+          const whereClause: any = {
+            affiliateId: affiliateProfile.id,
+            linkType,
+          }
+          whereClause[`${targetType}Id`] = itemId
 
-        if (!existingLink) {
-          // Generate short code
-          let shortCode
-          do {
-            shortCode = Math.random().toString(36).substring(2, 8).toUpperCase()
-          } while (await prisma.affiliateLink.findUnique({ where: { shortCode } }))
+          const existingLink = await prisma.affiliateLink.findFirst({
+            where: whereClause
+          })
 
-          // Generate link code  
-          let linkCode
-          do {
-            linkCode = `${affiliateCode}-${shortCode}`
-          } while (await prisma.affiliateLink.findUnique({ where: { code: linkCode } }))
+          if (!existingLink) {
+            // Generate short code
+            let shortCode
+            do {
+              shortCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+            } while (await prisma.affiliateLink.findUnique({ where: { shortCode } }))
 
-          // Build URLs
-          let fullUrl = ''
-          if (linkType === 'SALESPAGE_INTERNAL') {
-            // Sales page URL
-            if (targetType === 'membership') {
-              fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/membership/${item.slug || item.checkoutSlug}?ref=${linkCode}`
-            } else if (targetType === 'product') {
-              fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/products/${item.slug}?ref=${linkCode}`
-            } else if (targetType === 'course') {
-              fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/courses/${item.slug}?ref=${linkCode}`
-            } else if (targetType === 'supplier') {
-              fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/suppliers/${item.slug}?ref=${linkCode}`
-            }
-            salesPageLinks++
-          } else if (linkType === 'CHECKOUT') {
-            // Individual/specific checkout URL
-            if (targetType === 'membership') {
-              if (item.checkoutSlug) {
-                fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout/${item.checkoutSlug}?ref=${linkCode}`
+            // Generate link code  
+            let linkCode
+            do {
+              linkCode = `${affiliateCode}-${shortCode}`
+            } while (await prisma.affiliateLink.findUnique({ where: { code: linkCode } }))
+
+            // Build URLs
+            let fullUrl = ''
+            if (linkType === 'SALESPAGE_INTERNAL') {
+              // Sales page URL
+              if (targetType === 'membership') {
+                fullUrl = `${baseUrl}/membership/${item.slug || item.checkoutSlug}?ref=${linkCode}`
+              } else if (targetType === 'product') {
+                fullUrl = `${baseUrl}/products/${item.slug}?ref=${linkCode}`
+              } else if (targetType === 'course') {
+                fullUrl = `${baseUrl}/courses/${item.slug}?ref=${linkCode}`
+              } else if (targetType === 'supplier') {
+                fullUrl = `${baseUrl}/suppliers/${item.slug}?ref=${linkCode}`
+              }
+              salesPageLinks++
+            } else if (linkType === 'CHECKOUT') {
+              // Individual/specific checkout URL
+              if (targetType === 'membership') {
+                if (item.checkoutSlug) {
+                  fullUrl = `${baseUrl}/checkout/${item.checkoutSlug}?ref=${linkCode}`
+                  if (couponCode) fullUrl += `&coupon=${couponCode}`
+                } else {
+                  fullUrl = `${baseUrl}/checkout/membership/${item.slug}?ref=${linkCode}`
+                  if (couponCode) fullUrl += `&coupon=${couponCode}`
+                }
+              } else if (targetType === 'product') {
+                fullUrl = `${baseUrl}/checkout/product/${item.slug}?ref=${linkCode}`
                 if (couponCode) fullUrl += `&coupon=${couponCode}`
-              } else {
-                fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout/membership/${item.slug}?ref=${linkCode}`
+              } else if (targetType === 'course') {
+                fullUrl = `${baseUrl}/checkout/course/${item.slug}?ref=${linkCode}`
+                if (couponCode) fullUrl += `&coupon=${couponCode}`
+              } else if (targetType === 'supplier') {
+                fullUrl = `${baseUrl}/checkout/supplier/${item.slug}?ref=${linkCode}`
                 if (couponCode) fullUrl += `&coupon=${couponCode}`
               }
-            } else if (targetType === 'product') {
-              fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout/product/${item.slug}?ref=${linkCode}`
+              checkoutLinks++
+            } else if (linkType === 'CHECKOUT_PRO') {
+              // General checkout for all memberships (/checkout/pro)
+              fullUrl = `${baseUrl}/checkout/pro?ref=${linkCode}`
               if (couponCode) fullUrl += `&coupon=${couponCode}`
-            } else if (targetType === 'course') {
-              fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout/course/${item.slug}?ref=${linkCode}`
-              if (couponCode) fullUrl += `&coupon=${couponCode}`
-            } else if (targetType === 'supplier') {
-              fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout/supplier/${item.slug}?ref=${linkCode}`
-              if (couponCode) fullUrl += `&coupon=${couponCode}`
-            }
-            checkoutLinks++
-          } else if (linkType === 'CHECKOUT_PRO') {
-            // General checkout for all memberships (/checkout/pro)
-            fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pro?ref=${linkCode}`
-            if (couponCode) fullUrl += `&coupon=${couponCode}`
-            checkoutLinks++
-          }
-
-          // Create affiliate link
+              checkoutLinks++
+            }          // Create affiliate link
           const linkData: any = {
             userId: session.user.id,
             affiliateId: affiliateProfile.id,

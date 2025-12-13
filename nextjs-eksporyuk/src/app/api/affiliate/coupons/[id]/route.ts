@@ -55,7 +55,9 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'AFFILIATE') {
+    // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
+    const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
+    if (!session || !allowedRoles.includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -97,7 +99,9 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'AFFILIATE') {
+    // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
+    const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
+    if (!session || !allowedRoles.includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

@@ -31,8 +31,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user is affiliate
-    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+    // Check if user has appropriate role
+    const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
+    if (!allowedRoles.includes(session.user.role || '')) {
+      return NextResponse.json(
+        { error: 'Access denied. Affiliate access required.' },
+        { status: 403 }
+      )
+    }
+
+    // Get or create affiliate profile for role testing
+    let affiliateProfile = await prisma.affiliateProfile.findUnique({
       where: { userId: session.user.id },
       select: { 
         id: true, 
@@ -40,9 +49,33 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // For non-AFFILIATE roles, create a temporary profile if needed (for testing)
+    if (!affiliateProfile && session.user.role !== 'AFFILIATE') {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, email: true }
+      })
+
+      if (user) {
+        affiliateProfile = await prisma.affiliateProfile.create({
+          data: {
+            userId: session.user.id,
+            affiliateCode: `${session.user.role}-${Date.now()}`,
+            totalClicks: 0,
+            totalConversions: 0,
+            totalEarnings: 0
+          },
+          select: {
+            id: true,
+            trainingCompleted: true
+          }
+        })
+      }
+    }
+
     if (!affiliateProfile) {
       return NextResponse.json(
-        { error: 'Affiliate profile not found' },
+        { error: 'Unable to create or find affiliate profile' },
         { status: 404 }
       )
     }
