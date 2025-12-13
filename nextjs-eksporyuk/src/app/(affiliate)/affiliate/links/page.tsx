@@ -39,6 +39,9 @@ interface Coupon {
   discountValue: number
   isOwnCoupon: boolean
   source: 'affiliate' | 'admin'
+  membershipIds?: string[]
+  productIds?: string[]
+  courseIds?: string[]
 }
 
 // Tab Types
