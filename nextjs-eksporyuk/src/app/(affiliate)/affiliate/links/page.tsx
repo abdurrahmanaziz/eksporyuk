@@ -207,16 +207,24 @@ export default function AffiliateLinksPage() {
     return affiliateCoupons.filter(coupon => {
       if (selectedTargetType === 'membership') {
         const ids = coupon.membershipIds || []
-        // Show if: empty array (applies to all) OR contains the specific ID (if selected)
-        return ids.length === 0 || !selectedTargetId || ids.includes(selectedTargetId)
+        // If no membershipIds (empty array or null), coupon applies to ALL memberships
+        if (!ids || ids.length === 0) return true
+        // If targetId is selected, check if coupon applies to that specific membership
+        if (selectedTargetId) return ids.includes(selectedTargetId)
+        // If no targetId selected (generating for all), show all membership coupons
+        return true
       }
       if (selectedTargetType === 'product') {
         const ids = coupon.productIds || []
-        return ids.length === 0 || !selectedTargetId || ids.includes(selectedTargetId)
+        if (!ids || ids.length === 0) return true
+        if (selectedTargetId) return ids.includes(selectedTargetId)
+        return true
       }
       if (selectedTargetType === 'course') {
         const ids = coupon.courseIds || []
-        return ids.length === 0 || !selectedTargetId || ids.includes(selectedTargetId)
+        if (!ids || ids.length === 0) return true
+        if (selectedTargetId) return ids.includes(selectedTargetId)
+        return true
       }
       if (selectedTargetType === 'supplier') {
         // Suppliers don't have specific coupon targeting yet
@@ -444,17 +452,17 @@ export default function AffiliateLinksPage() {
     if (link.membership) {
       applicableCoupons = affiliateCoupons.filter(coupon => {
         const ids = coupon.membershipIds || []
-        return ids.length === 0 || ids.includes(link.membershipId)
+        return ids.length === 0 || ids.includes(link.membership.id)
       })
     } else if (link.product) {
       applicableCoupons = affiliateCoupons.filter(coupon => {
         const ids = coupon.productIds || []
-        return ids.length === 0 || ids.includes(link.productId)
+        return ids.length === 0 || ids.includes(link.product.id)
       })
     } else if (link.course) {
       applicableCoupons = affiliateCoupons.filter(coupon => {
         const ids = coupon.courseIds || []
-        return ids.length === 0 || ids.includes(link.courseId)
+        return ids.length === 0 || ids.includes(link.course.id)
       })
     }
     
@@ -1609,17 +1617,17 @@ export default function AffiliateLinksPage() {
                   if (selectedLinkForCoupon.membership) {
                     applicableCoupons = affiliateCoupons.filter(coupon => {
                       const ids = coupon.membershipIds || []
-                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.membershipId)
+                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.membership.id)
                     })
                   } else if (selectedLinkForCoupon.product) {
                     applicableCoupons = affiliateCoupons.filter(coupon => {
                       const ids = coupon.productIds || []
-                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.productId)
+                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.product.id)
                     })
                   } else if (selectedLinkForCoupon.course) {
                     applicableCoupons = affiliateCoupons.filter(coupon => {
                       const ids = coupon.courseIds || []
-                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.courseId)
+                      return ids.length === 0 || ids.includes(selectedLinkForCoupon.course.id)
                     })
                   }
 
