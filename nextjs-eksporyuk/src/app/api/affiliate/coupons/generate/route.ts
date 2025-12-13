@@ -84,21 +84,21 @@ export async function POST(request: NextRequest) {
     const newCoupon = await prisma.coupon.create({
       data: {
         code: customCode.toUpperCase(),
-        description: template.description,
+        description: template.description || `Kupon diskon ${template.discountValue}${template.discountType === 'PERCENTAGE' ? '%' : 'K'}`,
         discountType: template.discountType,
-        discountValue: template.discountValue,
-        usageLimit: template.maxUsagePerCoupon,
+        discountValue: Number(template.discountValue), // Ensure it's a number
+        usageLimit: template.maxUsagePerCoupon || undefined,
         usageCount: 0,
-        validUntil: template.validUntil,
-        expiresAt: template.expiresAt,
+        validUntil: template.validUntil || undefined,
+        expiresAt: template.expiresAt || undefined,
         isActive: true,
-        minPurchase: template.minPurchase,
-        productIds: template.productIds,
-        membershipIds: template.membershipIds,
-        courseIds: template.courseIds,
+        minPurchase: template.minPurchase || undefined,
+        productIds: template.productIds || undefined, // Use undefined instead of null
+        membershipIds: template.membershipIds || undefined, // Use undefined instead of null
+        courseIds: template.courseIds || undefined, // Use undefined instead of null
         isAffiliateEnabled: false, // Generated coupons cannot be templates
-        maxGeneratePerAffiliate: null,
-        maxUsagePerCoupon: null,
+        maxGeneratePerAffiliate: undefined,
+        maxUsagePerCoupon: undefined,
         basedOnCouponId: template.id,
         createdBy: session.user.id as string,
       },
