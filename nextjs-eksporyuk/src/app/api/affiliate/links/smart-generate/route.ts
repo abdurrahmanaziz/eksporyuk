@@ -193,13 +193,10 @@ export async function POST(request: NextRequest) {
             } else if (linkType === 'CHECKOUT') {
               // Individual/specific checkout URL
               if (targetType === 'membership') {
-                if (item.checkoutSlug) {
-                  fullUrl = `${baseUrl}/checkout/${item.checkoutSlug}?ref=${linkCode}`
-                  if (couponCode) fullUrl += `&coupon=${couponCode}`
-                } else {
-                  fullUrl = `${baseUrl}/checkout/membership/${item.slug}?ref=${linkCode}`
-                  if (couponCode) fullUrl += `&coupon=${couponCode}`
-                }
+                // Always use checkoutSlug if available, fallback to slug
+                const slug = item.checkoutSlug || item.slug
+                fullUrl = `${baseUrl}/checkout/${slug}?ref=${linkCode}`
+                if (couponCode) fullUrl += `&coupon=${couponCode}`
               } else if (targetType === 'product') {
                 fullUrl = `${baseUrl}/checkout/product/${item.slug}?ref=${linkCode}`
                 if (couponCode) fullUrl += `&coupon=${couponCode}`

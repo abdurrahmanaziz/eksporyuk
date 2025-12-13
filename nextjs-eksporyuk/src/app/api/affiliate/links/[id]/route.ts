@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 
 
-// PATCH /api/affiliate/links/[id] - Archive/Unarchive a link
+// PATCH /api/affiliate/links/[id] - Update link (archive status or coupon)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -19,11 +19,17 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { isArchived } = await request.json()
+    const body = await request.json()
+    const { isArchived, couponCode } = body
 
     // Verify the link belongs to the user
     const link = await prisma.affiliateLink.findUnique({
       where: { id: params.id },
+      include: {
+        membership: true,
+        product: true,
+        course: true,
+      }
     })
 
     if (!link) {
@@ -34,18 +40,43 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Update archive status
+    // Prepare update data
+    const updateData: any = {}
+    
+    if (typeof isArchived === 'boolean') {
+      updateData.isArchived = isArchived
+    }
+
+    // If couponCode provided, update URL
+    if (couponCode !== undefined) {
+      let newUrl = link.url
+      
+      // Remove existing coupon parameter if any
+      newUrl = newUrl.replace(/[&?]coupon=[^&]*/, '')
+      
+      // Add new coupon if provided
+      if (couponCode) {
+        const separator = newUrl.includes('?') ? '&' : '?'
+        newUrl = `${newUrl}${separator}coupon=${couponCode}`
+      }
+      
+      updateData.url = newUrl
+    }
+
+    // Update link
     const updatedLink = await prisma.affiliateLink.update({
       where: { id: params.id },
-      data: { isArchived },
+      data: updateData,
+      include: {
+        membership: true,
+        product: true,
+        course: true,
+      }
     })
 
     return NextResponse.json({
       success: true,
-      link: {
-        id: updatedLink.id,
-        isArchived: updatedLink.isArchived,
-      },
+      link: updatedLink,
     })
   } catch (error) {
     console.error('Error updating link:', error)
