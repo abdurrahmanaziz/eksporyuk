@@ -440,27 +440,27 @@ export default function AffiliateLinksPage() {
   }
 
   const quickGenerateCoupon = async (link: AffiliateLink) => {
-    // Check if affiliate has any coupons
-    if (affiliateCoupons.length === 0) {
-      toast.error('Anda belum memiliki kupon. Buat kupon terlebih dahulu di menu Kupon.')
+    // Check if affiliate has any coupons (from all coupons including admin)
+    if (coupons.length === 0) {
+      toast.error('Belum ada kupon tersedia. Hubungi admin untuk membuat kupon.')
       return
     }
     
     // Filter coupons applicable to this link's target
-    let applicableCoupons = affiliateCoupons
+    let applicableCoupons = coupons
     
     if (link.membership) {
-      applicableCoupons = affiliateCoupons.filter(coupon => {
+      applicableCoupons = coupons.filter(coupon => {
         const ids = coupon.membershipIds || []
         return ids.length === 0 || ids.includes(link.membership.id)
       })
     } else if (link.product) {
-      applicableCoupons = affiliateCoupons.filter(coupon => {
+      applicableCoupons = coupons.filter(coupon => {
         const ids = coupon.productIds || []
         return ids.length === 0 || ids.includes(link.product.id)
       })
     } else if (link.course) {
-      applicableCoupons = affiliateCoupons.filter(coupon => {
+      applicableCoupons = coupons.filter(coupon => {
         const ids = coupon.courseIds || []
         return ids.length === 0 || ids.includes(link.course.id)
       })
@@ -1607,25 +1607,25 @@ export default function AffiliateLinksPage() {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                   <Ticket className="h-5 w-5 text-purple-500" />
-                  Pilih Kupon dari Daftar Anda
+                  Pilih Kupon dari Daftar
                 </label>
                 
                 {(() => {
-                  // Filter applicable coupons
-                  let applicableCoupons = affiliateCoupons
+                  // Filter applicable coupons (including admin coupons)
+                  let applicableCoupons = coupons
                   
                   if (selectedLinkForCoupon.membership) {
-                    applicableCoupons = affiliateCoupons.filter(coupon => {
+                    applicableCoupons = coupons.filter(coupon => {
                       const ids = coupon.membershipIds || []
                       return ids.length === 0 || ids.includes(selectedLinkForCoupon.membership.id)
                     })
                   } else if (selectedLinkForCoupon.product) {
-                    applicableCoupons = affiliateCoupons.filter(coupon => {
+                    applicableCoupons = coupons.filter(coupon => {
                       const ids = coupon.productIds || []
                       return ids.length === 0 || ids.includes(selectedLinkForCoupon.product.id)
                     })
                   } else if (selectedLinkForCoupon.course) {
-                    applicableCoupons = affiliateCoupons.filter(coupon => {
+                    applicableCoupons = coupons.filter(coupon => {
                       const ids = coupon.courseIds || []
                       return ids.length === 0 || ids.includes(selectedLinkForCoupon.course.id)
                     })
@@ -1637,7 +1637,7 @@ export default function AffiliateLinksPage() {
                         <div className="text-yellow-600 mb-2">⚠️</div>
                         <p className="text-gray-700 font-medium mb-2">Tidak ada kupon yang berlaku</p>
                         <p className="text-sm text-gray-600 mb-4">
-                          Buat kupon yang berlaku untuk {selectedLinkForCoupon.membership?.name || selectedLinkForCoupon.product?.name || selectedLinkForCoupon.course?.title} terlebih dahulu
+                          Kupon yang tersedia tidak berlaku untuk {selectedLinkForCoupon.membership?.name || selectedLinkForCoupon.product?.name || selectedLinkForCoupon.course?.title}
                         </p>
                         <a
                           href="/affiliate/coupons"
