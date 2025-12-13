@@ -1586,8 +1586,8 @@ export default function AffiliateLinksPage() {
             <div className="sticky top-0 bg-gradient-to-r from-purple-500 to-blue-500 text-white p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Ticket className="h-6 w-6" />
-                  <h2 className="text-xl font-bold">Tambah Kupon ke Link</h2>
+                  <Ticket className="h-6 w-6 text-white" />
+                  <h2 className="text-xl font-bold text-white">Tambah Kupon ke Link</h2>
                 </div>
                 <button
                   onClick={() => {
@@ -1597,7 +1597,7 @@ export default function AffiliateLinksPage() {
                   }}
                   className="p-2 hover:bg-white/20 rounded-lg transition-colors"
                 >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
