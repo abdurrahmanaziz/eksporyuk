@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 // PATCH /api/affiliate/links/[id] - Update link (archive status or coupon)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -19,12 +19,16 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Await params if it's a Promise (Next.js 15+)
+    const resolvedParams = params instanceof Promise ? await params : params
+    const linkId = resolvedParams.id
+
     const body = await request.json()
     const { isArchived, couponCode } = body
 
     // Verify the link belongs to the user
     const link = await prisma.affiliateLink.findUnique({
-      where: { id: params.id },
+      where: { id: linkId },
       include: {
         membership: true,
         product: true,
@@ -63,9 +67,17 @@ export async function PATCH(
       updateData.url = newUrl
     }
 
+    // Only update if there's data to update
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({
+        success: true,
+        link: link,
+      })
+    }
+
     // Update link
     const updatedLink = await prisma.affiliateLink.update({
-      where: { id: params.id },
+      where: { id: linkId },
       data: updateData,
       include: {
         membership: true,
@@ -78,10 +90,10 @@ export async function PATCH(
       success: true,
       link: updatedLink,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating link:', error)
     return NextResponse.json(
-      { error: 'Failed to update link' },
+      { error: 'Failed to update link', details: error.message },
       { status: 500 }
     )
   }
