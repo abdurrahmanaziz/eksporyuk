@@ -204,7 +204,7 @@ export default function AffiliateLinksPage() {
   const availableCoupons = useMemo(() => {
     if (!selectedTargetType) return []
     
-    return affiliateCoupons.filter(coupon => {
+    return coupons.filter(coupon => {
       if (selectedTargetType === 'membership') {
         const ids = coupon.membershipIds || []
         // If no membershipIds (empty array or null), coupon applies to ALL memberships
@@ -233,7 +233,7 @@ export default function AffiliateLinksPage() {
       
       return false
     })
-  }, [affiliateCoupons, selectedTargetType, selectedTargetId])
+  }, [coupons, selectedTargetType, selectedTargetId])
 
   // Filter links
   const filteredLinks = useMemo(() => {
