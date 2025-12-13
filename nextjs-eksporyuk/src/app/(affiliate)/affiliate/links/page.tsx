@@ -8,7 +8,7 @@ import FeatureLock from '@/components/affiliate/FeatureLock'
 import { 
   Copy, Check, Share2, ExternalLink, TrendingUp, Users, DollarSign, 
   Archive, ArchiveRestore, Link2, Package, BookOpen, Crown, Truck,
-  Search, RefreshCw, Plus, Eye, EyeOff
+  Search, RefreshCw, Plus, Eye, EyeOff, Ticket
 } from 'lucide-react'
 
 // Types
@@ -71,6 +71,7 @@ export default function AffiliateLinksPage() {
   const [generating, setGenerating] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
   const [archivingId, setArchivingId] = useState<string | null>(null)
+  const [generatingCouponForLink, setGeneratingCouponForLink] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [mainTab, setMainTab] = useState<MainTabType>('list')
   const [filterTab, setFilterTab] = useState<FilterTabType>('all')
@@ -427,6 +428,50 @@ export default function AffiliateLinksPage() {
     }
   }
 
+  const quickGenerateCoupon = async (link: AffiliateLink) => {
+    setGeneratingCouponForLink(link.id)
+    try {
+      // Check if there are any active templates available
+      const templatesResponse = await fetch('/api/affiliate/coupons/templates')
+      const templatesData = await templatesResponse.json()
+      
+      if (!templatesData.templates || templatesData.templates.length === 0) {
+        toast.error('Tidak ada template kupon yang tersedia')
+        return
+      }
+      
+      // Use first available template
+      const template = templatesData.templates[0]
+      
+      // Generate unique code from link code
+      const customCode = `${link.code.replace('-', '')}CP${Date.now().toString().slice(-4)}`
+      
+      const response = await fetch('/api/affiliate/coupons/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId: template.id,
+          customCode: customCode.toUpperCase()
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        toast.success(`Kupon ${data.coupon.code} berhasil dibuat!`)
+        // Optionally refresh coupons list
+        fetchAffiliateCoupons()
+      } else {
+        toast.error(data.error || 'Gagal membuat kupon')
+      }
+    } catch (error) {
+      console.error('Error generating coupon:', error)
+      toast.error('Terjadi kesalahan saat membuat kupon')
+    } finally {
+      setGeneratingCouponForLink(null)
+    }
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -439,7 +484,8 @@ export default function AffiliateLinksPage() {
     const badges: Record<string, { label: string; color: string }> = {
       SALESPAGE_INTERNAL: { label: '🔗 Salespage', color: 'bg-blue-100 text-blue-700' },
       CHECKOUT: { label: '💳 Checkout', color: 'bg-green-100 text-green-700' },
-      SALESPAGE_EXTERNAL: { label: '🔄 Alternatif', color: 'bg-purple-100 text-purple-700' },
+      CHECKOUT_PRO: { label: '🎯 Checkout Pro', color: 'bg-purple-100 text-purple-700' },
+      SALESPAGE_EXTERNAL: { label: '🔄 Alternatif', color: 'bg-gray-100 text-gray-700' },
     }
     const badge = badges[linkType || 'CHECKOUT'] || badges.CHECKOUT
     return (
@@ -756,6 +802,18 @@ export default function AffiliateLinksPage() {
                               <ExternalLink className="h-4 w-4" />
                             </a>
                             <button
+                              onClick={() => quickGenerateCoupon(link)}
+                              disabled={generatingCouponForLink === link.id}
+                              className="p-2 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 transition-colors disabled:opacity-50"
+                              title="Generate Kupon"
+                            >
+                              {generatingCouponForLink === link.id ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Ticket className="h-4 w-4" />
+                              )}
+                            </button>
+                            <button
                               onClick={() => toggleArchiveLink(link.id, link.isArchived)}
                               disabled={archivingId === link.id}
                               className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
@@ -890,6 +948,18 @@ export default function AffiliateLinksPage() {
                                   >
                                     <ExternalLink className="h-4 w-4" />
                                   </a>
+                                  <button
+                                    onClick={() => quickGenerateCoupon(link)}
+                                    disabled={generatingCouponForLink === link.id}
+                                    className="p-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 transition-colors disabled:opacity-50"
+                                    title="Generate Kupon"
+                                  >
+                                    {generatingCouponForLink === link.id ? (
+                                      <RefreshCw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Ticket className="h-4 w-4" />
+                                    )}
+                                  </button>
                                   <button
                                     onClick={() => toggleArchiveLink(link.id, link.isArchived)}
                                     disabled={archivingId === link.id}
