@@ -326,7 +326,212 @@ export default function AffiliateCouponsPage() {
           </Card>
         </div>
 
+        {/* Create Custom Coupon Section */}
+        <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-blue-900">
+                  <Plus className="w-5 h-5 text-blue-600" />
+                  Buat Kupon Custom
+                </CardTitle>
+                <CardDescription className="text-blue-700">
+                  Buat kupon diskon Anda sendiri dengan pengaturan custom
+                </CardDescription>
+              </div>
+              <Button 
+                onClick={() => setShowCustomCouponModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Buat Kupon
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white/60 p-4 rounded-lg">
+                <div className="text-blue-600 font-semibold text-sm mb-1">✨ Kode Custom</div>
+                <div className="text-xs text-gray-600">Buat kode kupon sesuai keinginan</div>
+              </div>
+              <div className="bg-white/60 p-4 rounded-lg">
+                <div className="text-green-600 font-semibold text-sm mb-1">🎯 Target Spesifik</div>
+                <div className="text-xs text-gray-600">Untuk membership, produk, atau semua</div>
+              </div>
+              <div className="bg-white/60 p-4 rounded-lg">
+                <div className="text-purple-600 font-semibold text-sm mb-1">⚡ Aktif Langsung</div>
+                <div className="text-xs text-gray-600">Kupon langsung bisa digunakan</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
+        {/* Custom Coupon Creation Modal */}
+        <Dialog open={showCustomCouponModal} onOpenChange={setShowCustomCouponModal}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-900">
+                Buat Kupon Custom
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                Buat kupon affiliate dengan parameter sesuai kebutuhan
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {/* Kode Kupon */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Kode Kupon *
+                </label>
+                <input
+                  type="text"
+                  value={customCouponData.code}
+                  onChange={(e) => setCustomCouponData({
+                    ...customCouponData,
+                    code: e.target.value.toUpperCase().replace(/[^A-Z0-9-_]/g, '')
+                  })}
+                  placeholder="DISKON50"
+                  maxLength={20}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Hanya huruf, angka, dan tanda - _ (min. 3 karakter)
+                </p>
+              </div>
+
+              {/* Deskripsi */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Deskripsi
+                </label>
+                <input
+                  type="text"
+                  value={customCouponData.description}
+                  onChange={(e) => setCustomCouponData({
+                    ...customCouponData,
+                    description: e.target.value
+                  })}
+                  placeholder="Otomatis dibuat jika kosong"
+                  maxLength={100}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Tipe & Nilai Diskon */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tipe Diskon
+                  </label>
+                  <select
+                    value={customCouponData.discountType}
+                    onChange={(e) => setCustomCouponData({
+                      ...customCouponData,
+                      discountType: e.target.value as 'PERCENTAGE' | 'FIXED'
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="PERCENTAGE">Persentase (%)</option>
+                    <option value="FIXED">Nominal (Rp)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nilai Diskon *
+                  </label>
+                  <input
+                    type="number"
+                    value={customCouponData.discountValue}
+                    onChange={(e) => setCustomCouponData({
+                      ...customCouponData,
+                      discountValue: parseInt(e.target.value) || 0
+                    })}
+                    min="1"
+                    max={customCouponData.discountType === 'PERCENTAGE' ? 100 : 1000000}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Target & Batas Penggunaan */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Target
+                  </label>
+                  <select
+                    value={customCouponData.targetType}
+                    onChange={(e) => setCustomCouponData({
+                      ...customCouponData,
+                      targetType: e.target.value
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="all">Semua Produk</option>
+                    <option value="membership">Membership Saja</option>
+                    <option value="product">Produk Saja</option>
+                    <option value="course">Course Saja</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Batas Pakai
+                  </label>
+                  <input
+                    type="number"
+                    value={customCouponData.usageLimit || ''}
+                    onChange={(e) => setCustomCouponData({
+                      ...customCouponData,
+                      usageLimit: e.target.value ? parseInt(e.target.value) : null
+                    })}
+                    min="1"
+                    placeholder="Tidak terbatas"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Tanggal Kedaluwarsa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Berlaku Sampai
+                </label>
+                <input
+                  type="date"
+                  value={customCouponData.validUntil}
+                  onChange={(e) => setCustomCouponData({
+                    ...customCouponData,
+                    validUntil: e.target.value
+                  })}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Kosongkan jika tidak ada batas waktu
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCustomCouponModal(false)}
+                disabled={generating}
+              >
+                Batal
+              </Button>
+              <Button
+                onClick={handleCreateCustomCoupon}
+                disabled={generating || !customCouponData.code || customCouponData.discountValue <= 0}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                {generating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Buat Kupon
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Available Templates */}
         <Card>
