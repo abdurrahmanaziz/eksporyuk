@@ -62,6 +62,7 @@ import {
   Book,
   GraduationCap,
   Sliders,
+  Shield,
 } from 'lucide-react'
 
 type NavItem = {
@@ -114,6 +115,7 @@ const navigationByRole = {
         { name: 'Semua Kursus', href: '/admin/courses', icon: BookOpen },
         { name: 'Pendaftaran Kursus', href: '/admin/enrollments', icon: Users },
         { name: 'Review Kursus', href: '/admin/course-reviews', icon: Star },
+        { name: 'Persetujuan Hak Cipta', href: '/admin/course-consents', icon: Shield },
         { name: 'Semua Sertifikat', href: '/admin/certificates', icon: Award },
         { name: 'Template Sertifikat', href: '/admin/certificate-templates', icon: FileCheck },
       ]

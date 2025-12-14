@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Save, ArrowLeft, Plus, Edit, Trash2, GripVertical,
   BookOpen, PlayCircle, FileText, Settings, FileQuestion, ClipboardList,
-  Upload, Download, X, File
+  Upload, Download, X, File, Shield
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -751,6 +751,12 @@ export default function AdminCourseDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Link href={`/admin/courses/${courseId}/consents`}>
+            <Button variant="outline">
+              <Shield className="h-4 w-4 mr-2" />
+              Persetujuan Hak Cipta
+            </Button>
+          </Link>
           <Link href={`/admin/courses/${courseId}/quiz`}>
             <Button variant="outline">
               <FileQuestion className="h-4 w-4 mr-2" />
