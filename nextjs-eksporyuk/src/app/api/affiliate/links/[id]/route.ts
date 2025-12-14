@@ -12,8 +12,12 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
+  let session: any = null
+  let linkId: string = ''
+  let body: any = {}
+  
   try {
-    const session = await getServerSession(authOptions)
+    session = await getServerSession(authOptions)
     
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -21,9 +25,9 @@ export async function PATCH(
 
     // Await params if it's a Promise (Next.js 15+)
     const resolvedParams = params instanceof Promise ? await params : params
-    const linkId = resolvedParams.id
+    linkId = resolvedParams.id
 
-    const body = await request.json()
+    body = await request.json()
     const { isArchived, couponCode } = body
 
     // Verify the link belongs to the user
@@ -91,7 +95,13 @@ export async function PATCH(
       link: updatedLink,
     })
   } catch (error: any) {
-    console.error('Error updating link:', error)
+    console.error('PATCH /api/affiliate/links/[id] ERROR:', {
+      linkId,
+      userId: session?.user?.id,
+      bodyReceived: body,
+      errorMessage: error.message,
+      errorStack: error.stack,
+    })
     return NextResponse.json(
       { error: 'Failed to update link', details: error.message },
       { status: 500 }
