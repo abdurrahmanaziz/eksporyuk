@@ -1,0 +1,216 @@
+{
+  "timestamp": "2025-12-14T10:20:52.883Z",
+  "stats": {
+    "totalAffiliates": 17,
+    "totalOrders": 6906,
+    "totalOrdersNoCommission": 4385,
+    "totalCommission": 1991950000
+  },
+  "commissionBreakdown": {
+    "0": {
+      "count": 4385,
+      "revenue": 0
+    },
+    "200000": {
+      "count": 814,
+      "revenue": 39132165
+    },
+    "250000": {
+      "count": 2010,
+      "revenue": 1174258148.5
+    },
+    "325000": {
+      "count": 4082,
+      "revenue": 2373825080
+    }
+  },
+  "affiliates": [
+    {
+      "email": "vandesan83@gmail.com",
+      "name": "Hasan F",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      }
+    },
+    {
+      "email": "all.truss.construction@gmail.com",
+      "name": "Syamsudin Yusup",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      }
+    },
+    {
+      "email": "yogasoneo@gmail.com",
+      "name": "Yoga Andrian",
+      "totalOrders": 341,
+      "totalCommission": 101925000,
+      "breakdown": {
+        "200000": 43,
+        "250000": 47,
+        "325000": 251
+      }
+    },
+    {
+      "email": "rahmatalfianto1997@gmail.com",
+      "name": "Rahmat Al Fianto",
+      "totalOrders": 607,
+      "totalCommission": 181575000,
+      "breakdown": {
+        "200000": 41,
+        "250000": 141,
+        "325000": 425
+      }
+    },
+    {
+      "email": "awlovenhoney78@gmail.com",
+      "name": "Masrur Arif",
+      "totalOrders": 75,
+      "totalCommission": 21600000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 37,
+        "325000": 38
+      }
+    },
+    {
+      "email": "azis.laacu.muslim@gmail.com",
+      "name": "azis muslim",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      }
+    },
+    {
+      "email": "umartrainerjualan@gmail.com",
+      "name": "Coach UTS",
+      "totalOrders": 38,
+      "totalCommission": 11675000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 9,
+        "325000": 29
+      }
+    },
+    {
+      "email": "witjakson@gmail.com",
+      "name": "Wisnu Witjaksono",
+      "totalOrders": 2,
+      "totalCommission": 650000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 0,
+        "325000": 2
+      }
+    },
+    {
+      "email": "rozi679@gmail.com",
+      "name": "rozi uno",
+      "totalOrders": 1,
+      "totalCommission": 325000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 0,
+        "325000": 1
+      }
+    },
+    {
+      "email": "dysukma7@gmail.com",
+      "name": "Sukmadi",
+      "totalOrders": 4,
+      "totalCommission": 1300000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 0,
+        "325000": 4
+      }
+    },
+    {
+      "email": "naniwatiutama@gmail.com",
+      "name": "Naniwati",
+      "totalOrders": 29,
+      "totalCommission": 6800000,
+      "breakdown": {
+        "200000": 21,
+        "250000": 0,
+        "325000": 8
+      }
+    },
+    {
+      "email": "agungharyanto4565@gmail.com",
+      "name": "Agung Haryanto",
+      "totalOrders": 11,
+      "totalCommission": 3325000,
+      "breakdown": {
+        "200000": 2,
+        "250000": 0,
+        "325000": 9
+      }
+    },
+    {
+      "email": "dherifkyalazhary29@gmail.com",
+      "name": "Fzrachman •",
+      "totalOrders": 44,
+      "totalCommission": 9925000,
+      "breakdown": {
+        "200000": 32,
+        "250000": 5,
+        "325000": 7
+      }
+    },
+    {
+      "email": "izat1104yt@gmail.com",
+      "name": "Habi Akmal",
+      "totalOrders": 22,
+      "totalCommission": 5525000,
+      "breakdown": {
+        "200000": 10,
+        "250000": 5,
+        "325000": 7
+      }
+    },
+    {
+      "email": "merihm41@gmail.com",
+      "name": "Meri hartati.m",
+      "totalOrders": 2,
+      "totalCommission": 650000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 0,
+        "325000": 2
+      }
+    },
+    {
+      "email": "rizqifirdaus2@gmail.com",
+      "name": "Moch Rizqi akbar Firdaos",
+      "totalOrders": 1,
+      "totalCommission": 325000,
+      "breakdown": {
+        "200000": 0,
+        "250000": 0,
+        "325000": 1
+      }
+    },
+    {
+      "email": "fajwatijariresources@gmail.com",
+      "name": "Deni Sutandi",
+      "totalOrders": 2,
+      "totalCommission": 400000,
+      "breakdown": {
+        "200000": 2,
+        "250000": 0,
+        "325000": 0
+      }
+    }
+  ]
+}

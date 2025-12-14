@@ -3,138 +3,139 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id                      String                       @id @default(cuid())
-  memberCode              String?                      @unique // Format: EY0001, EY0002, dst
-  email                   String                       @unique
-  username                String?                      @unique
-  name                    String
-  password                String?
-  role                    Role                         @default(MEMBER_FREE)
-  avatar                  String?
-  bio                     String?
-  phone                   String?
-  whatsapp                String?
-  province                String?
-  city                    String?
-  district                String?
-  address                 String?
-  postalCode              String?
-  latitude                Float?
-  longitude               Float?
-  locationVerified        Boolean                      @default(false)
-  profileCompleted        Boolean                      @default(false)
-  isOnline                Boolean                      @default(false)
-  lastSeenAt              DateTime?
-  lastActiveAt            DateTime?
-  emailVerified           Boolean                      @default(false)
-  isActive                Boolean                      @default(true)
-  isSuspended             Boolean                      @default(false)
-  suspendReason           String?
-  suspendedAt             DateTime?
-  suspendedBy             String?
-  isFounder               Boolean                      @default(false)
-  isCoFounder             Boolean                      @default(false)
-  affiliateMenuEnabled    Boolean                      @default(false)
-  revenueSharePercent     Float?
-  emailNotifications      Boolean                      @default(true)
-  whatsappNotifications   Boolean                      @default(false)
-  oneSignalPlayerId       String?
-  oneSignalSubscribedAt   DateTime?
-  oneSignalTags           Json?
-  createdAt               DateTime                     @default(now())
-  updatedAt               DateTime                     @updatedAt
-  referredById            String?
-  mailketingLists         Json?
-  mailketingSubscriberId  String?
-  withdrawalPin           String?
-  withdrawalPinSetAt      DateTime?
-  coverImage              String?
-  activities              ActivityLog[]
-  approvedChallenges      AffiliateChallengeProgress[]
-  affiliateLinks          AffiliateLink[]
-  affiliateProfile        AffiliateProfile?
-  assignmentSubmissions   AssignmentSubmission[]
-  bansIssued              BannedUser[]                 @relation("BansIssued")
-  bannedFrom              BannedUser[]
-  createdBrandedTemplates BrandedTemplate[]            @relation("BrandedTemplateCreator")
-  brandedTemplateUsages   BrandedTemplateUsage[]       @relation("BrandedTemplateUsageUser")
-  addedBuyers             Buyer[]
-  buyerLikes              BuyerLike[]
-  buyerViews              BuyerView[]
-  certificates            Certificate[]
-  challengeProgress       ChallengProgress[]
-  chatParticipants        ChatParticipant[]
-  commentReactions        CommentReaction[]
-  createdCoupons          Coupon[]
-  discussionThreads       CourseDiscussion[]           @relation("DiscussionAuthor")
-  courseEnrollments       CourseEnrollment[]
-  courseConsents          CourseConsent[]
-  courseNotes             CourseNote[]                 @relation("CourseNotes")
-  courseReviews           CourseReview[]               @relation("CourseReviews")
-  reviewHelpfulVotes      CourseReviewHelpful[]        @relation("ReviewHelpful")
-  documentDownloads       DocumentDownloadLog[]        @relation("DocumentDownloader")
-  createdEvents           Event[]                      @relation("EventCreator")
-  eventRSVPs              EventRSVP[]
-  expenses                Expense[]
-  createdDocTemplates     ExportDocument[]
-  followers               Follow[]                     @relation("Followers")
-  following               Follow[]                     @relation("Following")
-  addedForwarders         Forwarder[]
-  forwarderViews          ForwarderView[]
-  generatedDocuments      GeneratedDocument[]
-  ownedGroups             Group[]                      @relation("GroupOwner")
-  groupMemberships        GroupMember[]
-  createdGroupQuizzes     GroupQuiz[]                  @relation("QuizCreator")
-  groupQuizAttempts       GroupQuizAttempt[]           @relation("QuizAttempts")
-  groupResources          GroupResource[]
-  uploadedDocuments       MembershipDocument[]         @relation("DocumentUploader")
-  upgradeHistory          MembershipUpgradeLog[]
-  mentorProfile           MentorProfile?
-  sentMessages            Message[]                    @relation("MessageSender")
-  receivedMessages        Message[]                    @relation("MessageReceiver")
-  notifications           Notification[]
-  pointTransactions       PointTransaction[]
-  posts                   Post[]
-  postComments            PostComment[]
-  postLikes               PostLike[]
-  postReactions           PostReaction[]
-  createdProducts         Product[]                    @relation("ProductCreator")
-  quizAttempts            QuizAttempt[]
-  reminderLogs            ReminderLog[]
-  createdTemplates        ReminderTemplate[]
-  reportsReviewed         Report[]                     @relation("ReportsReviewed")
-  reportsReceived         Report[]                     @relation("ReportsReceived")
-  reportsMade             Report[]                     @relation("ReportsMade")
-  savedPosts              SavedPost[]
-  scheduledPosts          ScheduledPost[]
-  stories                 Story[]
-  storyViews              StoryView[]
-  addedSuppliers          Supplier[]
-  supplierMembership      SupplierMembership?
-  supplierProfile         SupplierProfile?
-  supplierViews           SupplierView[]
-  transactions            Transaction[]
-  referredBy              User?                        @relation("Referrals", fields: [referredById], references: [id])
-  referrals               User[]                       @relation("Referrals")
-  userBadges              UserBadge[]
-  courseProgress          UserCourseProgress[]
-  userMemberships         UserMembership[]
-  permissions             UserPermission[]
-  userPoints              UserPoints[]
-  userProducts            UserProduct[]
-  userRoles               UserRole[]
-  wallet                  Wallet?
+  id                       String                       @id @default(cuid())
+  memberCode               String?                      @unique
+  email                    String                       @unique
+  username                 String?                      @unique
+  name                     String
+  password                 String?
+  role                     Role                         @default(MEMBER_FREE)
+  avatar                   String?
+  bio                      String?
+  phone                    String?
+  whatsapp                 String?
+  province                 String?
+  city                     String?
+  district                 String?
+  address                  String?
+  postalCode               String?
+  latitude                 Float?
+  longitude                Float?
+  locationVerified         Boolean                      @default(false)
+  profileCompleted         Boolean                      @default(false)
+  isOnline                 Boolean                      @default(false)
+  lastSeenAt               DateTime?
+  lastActiveAt             DateTime?
+  emailVerified            Boolean                      @default(false)
+  isActive                 Boolean                      @default(true)
+  isSuspended              Boolean                      @default(false)
+  suspendReason            String?
+  suspendedAt              DateTime?
+  suspendedBy              String?
+  isFounder                Boolean                      @default(false)
+  isCoFounder              Boolean                      @default(false)
+  affiliateMenuEnabled     Boolean                      @default(false)
+  revenueSharePercent      Float?
+  emailNotifications       Boolean                      @default(true)
+  whatsappNotifications    Boolean                      @default(false)
+  oneSignalPlayerId        String?
+  oneSignalSubscribedAt    DateTime?
+  oneSignalTags            Json?
+  createdAt                DateTime                     @default(now())
+  updatedAt                DateTime                     @updatedAt
+  referredById             String?
+  mailketingLists          Json?
+  mailketingSubscriberId   String?
+  withdrawalPin            String?
+  withdrawalPinSetAt       DateTime?
+  coverImage               String?
+  activities               ActivityLog[]
+  approvedChallenges       AffiliateChallengeProgress[]
+  affiliateLinks           AffiliateLink[]
+  affiliateProfile         AffiliateProfile?
+  assignmentSubmissions    AssignmentSubmission[]
+  bansIssued               BannedUser[]                 @relation("BansIssued")
+  bannedFrom               BannedUser[]
+  createdBrandedTemplates  BrandedTemplate[]            @relation("BrandedTemplateCreator")
+  brandedTemplateUsages    BrandedTemplateUsage[]       @relation("BrandedTemplateUsageUser")
+  addedBuyers              Buyer[]
+  buyerLikes               BuyerLike[]
+  buyerViews               BuyerView[]
+  certificates             Certificate[]
+  challengeProgress        ChallengProgress[]
+  chatParticipants         ChatParticipant[]
+  commentReactions         CommentReaction[]
+  conversionEvents         ConversionEvent[]            @relation("ConversionEvents")
+  createdCoupons           Coupon[]
+  courseConsents           CourseConsent[]
+  discussionThreads        CourseDiscussion[]           @relation("DiscussionAuthor")
+  courseEnrollments        CourseEnrollment[]
+  courseNotes              CourseNote[]                 @relation("CourseNotes")
+  courseReviews            CourseReview[]               @relation("CourseReviews")
+  reviewHelpfulVotes       CourseReviewHelpful[]        @relation("ReviewHelpful")
+  documentDownloads        DocumentDownloadLog[]        @relation("DocumentDownloader")
+  createdDocumentations    Documentation[]              @relation("DocumentationAuthor")
+  editedDocumentations     Documentation[]              @relation("DocumentationEditor")
+  documentationRevisions   DocumentationRevision[]      @relation("DocumentationRevisionAuthor")
+  createdEvents            Event[]                      @relation("EventCreator")
+  eventRSVPs               EventRSVP[]
+  expenses                 Expense[]
+  createdDocTemplates      ExportDocument[]
+  following                Follow[]                     @relation("Following")
+  followers                Follow[]                     @relation("Followers")
+  addedForwarders          Forwarder[]
+  forwarderViews           ForwarderView[]
+  generatedDocuments       GeneratedDocument[]
+  ownedGroups              Group[]                      @relation("GroupOwner")
+  groupMemberships         GroupMember[]
+  createdGroupQuizzes      GroupQuiz[]                  @relation("QuizCreator")
+  groupQuizAttempts        GroupQuizAttempt[]           @relation("QuizAttempts")
+  groupResources           GroupResource[]
+  uploadedDocuments        MembershipDocument[]         @relation("DocumentUploader")
+  upgradeHistory           MembershipUpgradeLog[]
+  mentorProfile            MentorProfile?
+  receivedMessages         Message[]                    @relation("MessageReceiver")
+  sentMessages             Message[]                    @relation("MessageSender")
+  notifications            Notification[]
+  notificationConsent      NotificationConsent?         @relation("NotificationConsents")
   notificationDeliveryLogs NotificationDeliveryLog[]    @relation("NotificationDeliveryLogs")
-  conversionEvents        ConversionEvent[]            @relation("ConversionEvents")
-  notificationConsent     NotificationConsent?         @relation("NotificationConsents")
-  createdDocumentations   Documentation[]              @relation("DocumentationAuthor")
-  editedDocumentations    Documentation[]              @relation("DocumentationEditor")
-  documentationRevisions  DocumentationRevision[]      @relation("DocumentationRevisionAuthor")
+  pointTransactions        PointTransaction[]
+  posts                    Post[]
+  postComments             PostComment[]
+  postLikes                PostLike[]
+  postReactions            PostReaction[]
+  createdProducts          Product[]                    @relation("ProductCreator")
+  quizAttempts             QuizAttempt[]
+  reminderLogs             ReminderLog[]
+  createdTemplates         ReminderTemplate[]
+  reportsMade              Report[]                     @relation("ReportsMade")
+  reportsReviewed          Report[]                     @relation("ReportsReviewed")
+  reportsReceived          Report[]                     @relation("ReportsReceived")
+  savedPosts               SavedPost[]
+  scheduledPosts           ScheduledPost[]
+  stories                  Story[]
+  storyViews               StoryView[]
+  addedSuppliers           Supplier[]
+  supplierMembership       SupplierMembership?
+  supplierProfile          SupplierProfile?
+  supplierViews            SupplierView[]
+  transactions             Transaction[]
+  referredBy               User?                        @relation("Referrals", fields: [referredById], references: [id])
+  referrals                User[]                       @relation("Referrals")
+  userBadges               UserBadge[]
+  courseProgress           UserCourseProgress[]
+  userMemberships          UserMembership[]
+  permissions              UserPermission[]
+  userPoints               UserPoints[]
+  userProducts             UserProduct[]
+  userRoles                UserRole[]
+  wallet                   Wallet?
 
   @@index([email])
   @@index([username])
@@ -227,7 +228,7 @@ model AffiliateProfile {
   commissionRate        Decimal                      @default(10)
   totalClicks           Int                          @default(0)
   totalConversions      Int                          @default(0)
-  totalSales            Decimal                      @default(0) // Total omset dari sales
+  totalSales            Decimal                      @default(0)
   totalEarnings         Decimal                      @default(0)
   isActive              Boolean                      @default(true)
   applicationStatus     String                       @default("PENDING")
@@ -259,12 +260,12 @@ model AffiliateProfile {
   conversions           AffiliateConversion[]
   credit                AffiliateCredit?
   creditTransactions    AffiliateCreditTransaction[]
-  followUpLogs          FollowUpLog[]
   leads                 AffiliateLead[]
   links                 AffiliateLink[]
   optinForms            AffiliateOptinForm[]
   user                  User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
   shortLinks            AffiliateShortLink[]
+  followUpLogs          FollowUpLog[]
 
   @@index([affiliateCode])
   @@index([userId])
@@ -292,12 +293,12 @@ model AffiliateLink {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   clickRecords AffiliateClick[]
-  user         User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
   affiliate    AffiliateProfile?    @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  supplier     Supplier?            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  product      Product?             @relation(fields: [productId], references: [id], onDelete: Cascade)
-  membership   Membership?          @relation(fields: [membershipId], references: [id])
   course       Course?              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  membership   Membership?          @relation(fields: [membershipId], references: [id])
+  product      Product?             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier     Supplier?            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  user         User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
   shortLinks   AffiliateShortLink[]
 
   @@index([userId])
@@ -334,8 +335,8 @@ model AffiliateConversion {
   paidOut          Boolean          @default(false)
   paidOutAt        DateTime?
   createdAt        DateTime         @default(now())
-  transaction      Transaction      @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   affiliate        AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  transaction      Transaction      @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@index([affiliateId])
   @@index([transactionId])
@@ -358,8 +359,8 @@ model AffiliateChallenge {
   createdAt    DateTime                     @default(now())
   updatedAt    DateTime                     @updatedAt
   course       Course?                      @relation(fields: [courseId], references: [id])
-  product      Product?                     @relation(fields: [productId], references: [id])
   membership   Membership?                  @relation(fields: [membershipId], references: [id])
+  product      Product?                     @relation(fields: [productId], references: [id])
   progress     AffiliateChallengeProgress[]
 
   @@index([startDate, endDate])
@@ -383,9 +384,9 @@ model AffiliateChallengeProgress {
   rejectionReason String?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
+  affiliate       AffiliateProfile   @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
   approver        User?              @relation(fields: [approvedBy], references: [id])
   challenge       AffiliateChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  affiliate       AffiliateProfile   @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
 
   @@unique([challengeId, affiliateId])
   @@index([affiliateId])
@@ -433,24 +434,24 @@ model MentorProfile {
 }
 
 model Membership {
-  id                      String                 @id @default(cuid())
+  id                      String                    @id @default(cuid())
   name                    String
-  slug                    String?                @unique
-  checkoutSlug            String?                @unique
-  checkoutTemplate        String?                @default("modern")
+  slug                    String?                   @unique
+  checkoutSlug            String?                   @unique
+  checkoutTemplate        String?                   @default("modern")
   description             String
   duration                MembershipDuration
   price                   Decimal
   originalPrice           Decimal?
-  discount                Int                    @default(0)
-  commissionType          CommissionType         @default(PERCENTAGE)
-  affiliateCommissionRate Decimal                @default(30)
+  discount                Int                       @default(0)
+  commissionType          CommissionType            @default(PERCENTAGE)
+  affiliateCommissionRate Decimal                   @default(30)
   features                Json
-  isBestSeller            Boolean                @default(false)
-  isPopular               Boolean                @default(false)
-  isMostPopular           Boolean                @default(false)
-  isActive                Boolean                @default(true)
-  status                  MembershipStatus       @default(PUBLISHED)
+  isBestSeller            Boolean                   @default(false)
+  isPopular               Boolean                   @default(false)
+  isMostPopular           Boolean                   @default(false)
+  isActive                Boolean                   @default(true)
+  status                  MembershipStatus          @default(PUBLISHED)
   salesPageUrl            String?
   alternativeUrl          String?
   reminders               Json?
@@ -459,21 +460,21 @@ model Membership {
   formDescription         String?
   mailketingListId        String?
   mailketingListName      String?
-  autoAddToList           Boolean                @default(true)
-  autoRemoveOnExpire      Boolean                @default(false)
-  showInGeneralCheckout   Boolean                @default(true)
-  createdAt               DateTime               @default(now())
-  updatedAt               DateTime               @updatedAt
+  autoAddToList           Boolean                   @default(true)
+  autoRemoveOnExpire      Boolean                   @default(false)
+  showInGeneralCheckout   Boolean                   @default(true)
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
   bioCTAs                 AffiliateBioCTA[]
   affiliateChallenges     AffiliateChallenge[]
   affiliateLinks          AffiliateLink[]
   eventMemberships        EventMembership[]
   membershipCourses       MembershipCourse[]
+  membershipFeatures      MembershipFeatureAccess[]
+  membershipFollowUps     MembershipFollowUp[]
   membershipGroups        MembershipGroup[]
   membershipProducts      MembershipProduct[]
   membershipReminders     MembershipReminder[]
-  membershipFollowUps     MembershipFollowUp[]
-  membershipFeatures      MembershipFeatureAccess[]
   upgradeLogs             MembershipUpgradeLog[]
   userMemberships         UserMembership[]
 
@@ -513,22 +514,20 @@ model MembershipProduct {
   membershipId String
   productId    String
   createdAt    DateTime   @default(now())
-  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([membershipId, productId])
   @@index([membershipId])
   @@index([productId])
 }
 
-// Feature Access per Membership
-// Defines which features each membership provides
 model MembershipFeatureAccess {
   id           String     @id @default(cuid())
   membershipId String
-  featureKey   String     // Key from AVAILABLE_FEATURES (e.g., 'database_buyer_access')
+  featureKey   String
   enabled      Boolean    @default(true)
-  value        Json?      // Feature-specific config (e.g., { monthlyLimit: 50 })
+  value        Json?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
@@ -552,8 +551,8 @@ model UserMembership {
   transactionId String?      @unique
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-  transaction   Transaction? @relation(fields: [transactionId], references: [id])
   membership    Membership   @relation(fields: [membershipId], references: [id])
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, membershipId])
@@ -617,40 +616,24 @@ model MembershipReminder {
   @@index([isActive])
 }
 
-// ================================================
-// MEMBERSHIP FOLLOW UP
-// Template follow up untuk affiliate follow up lead secara manual
-// ================================================
 model MembershipFollowUp {
-  id           String     @id @default(cuid())
-  membershipId String
-  title        String
-  description  String?
-  
-  // Email content
-  emailSubject String
-  emailBody    String     
-  emailCTA     String?
-  emailCTALink String?
-  
-  // WhatsApp content (untuk copy-paste manual)
-  whatsappMessage String? 
-  
-  // Shortcodes info
-  shortcodes   Json?      // List shortcodes yang tersedia
-  
-  // Settings
-  sequenceOrder Int       @default(0)
-  isActive     Boolean    @default(true)
-  
-  // Analytics
-  usageCount   Int        @default(0)
-  
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  
-  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  logs         FollowUpLog[]
+  id              String        @id @default(cuid())
+  membershipId    String
+  title           String
+  description     String?
+  emailSubject    String
+  emailBody       String
+  emailCTA        String?
+  emailCTALink    String?
+  whatsappMessage String?
+  shortcodes      Json?
+  sequenceOrder   Int           @default(0)
+  isActive        Boolean       @default(true)
+  usageCount      Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  logs            FollowUpLog[]
+  membership      Membership    @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@unique([membershipId, title])
   @@index([membershipId])
@@ -658,23 +641,21 @@ model MembershipFollowUp {
   @@index([isActive])
 }
 
-// Log ketika affiliate kirim follow up ke lead
 model FollowUpLog {
-  id           String             @id @default(cuid())
-  followUpId   String
-  affiliateId  String
-  leadEmail    String
-  leadName     String?
-  leadPhone    String?
-  channel      ReminderChannel    @default(EMAIL)
-  status       ReminderStatus     @default(SENT)
-  sentAt       DateTime           @default(now())
-  transactionId String?           // Link ke transaksi jika ada
-  notes        String?
-  createdAt    DateTime           @default(now())
-  
-  followUp     MembershipFollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
-  affiliate    AffiliateProfile   @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  id            String             @id @default(cuid())
+  followUpId    String
+  affiliateId   String
+  leadEmail     String
+  leadName      String?
+  leadPhone     String?
+  channel       ReminderChannel    @default(EMAIL)
+  status        ReminderStatus     @default(SENT)
+  sentAt        DateTime           @default(now())
+  transactionId String?
+  notes         String?
+  createdAt     DateTime           @default(now())
+  affiliate     AffiliateProfile   @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  followUp      MembershipFollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
 
   @@index([followUpId])
   @@index([affiliateId])
@@ -1004,8 +985,8 @@ model UserProduct {
   transactionId String?      @unique
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-  transaction   Transaction? @relation(fields: [transactionId], references: [id])
   product       Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
@@ -1092,10 +1073,9 @@ model Course {
   affiliateOnly           Boolean                @default(false)
   isAffiliateTraining     Boolean                @default(false)
   isAffiliateMaterial     Boolean                @default(false)
-  // PRD Perbaikan Fitur Kelas - Field baru untuk role access
   roleAccess              CourseRoleAccess       @default(PUBLIC)
-  membershipIncluded      Boolean                @default(false) // Member aktif gratis akses
-  isPublicListed          Boolean                @default(true)  // Tampil di halaman publik
+  membershipIncluded      Boolean                @default(false)
+  isPublicListed          Boolean                @default(true)
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
   bioCTAs                 AffiliateBioCTA[]
@@ -1103,10 +1083,10 @@ model Course {
   affiliateLinks          AffiliateLink[]
   assignments             Assignment[]
   certificates            Certificate[]
-  consents                CourseConsent[]
-  mentor                  MentorProfile          @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  group                   Group?                 @relation(fields: [groupId], references: [id])
   certificateTemplate     CertificateTemplate?   @relation(fields: [certificateTemplateId], references: [id])
+  group                   Group?                 @relation(fields: [groupId], references: [id])
+  mentor                  MentorProfile          @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  consents                CourseConsent[]
   discussions             CourseDiscussion[]
   enrollments             CourseEnrollment[]
   modules                 CourseModule[]
@@ -1210,25 +1190,24 @@ model CourseEnrollment {
   transactionId String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   course        Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId], name: "userId_courseId")
   @@index([userId])
   @@index([courseId])
 }
 
-// Course Consent - Persetujuan Hak Cipta oleh Peserta
 model CourseConsent {
-  id           String   @id @default(cuid())
-  courseId     String
-  userId       String
-  consentText  String   @db.Text // Teks persetujuan yang disetujui
-  ipAddress    String?
-  userAgent    String?
-  agreedAt     DateTime @default(now())
-  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  courseId    String
+  userId      String
+  consentText String
+  ipAddress   String?
+  userAgent   String?
+  agreedAt    DateTime @default(now())
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@index([userId])
@@ -1290,8 +1269,8 @@ model GroupMember {
   userId   String
   role     GroupRole @default(MEMBER)
   joinedAt DateTime  @default(now())
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@index([groupId])
@@ -1348,8 +1327,8 @@ model PostLike {
   postId    String
   userId    String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@index([postId])
@@ -1372,8 +1351,8 @@ model PostComment {
   notifications    Notification[]
   parent           PostComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies          PostComment[]     @relation("CommentReplies")
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   post             Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   reports          Report[]
 
   @@index([postId])
@@ -1415,8 +1394,8 @@ model SavedPost {
   postId    String
   userId    String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@index([userId])
@@ -1446,12 +1425,12 @@ model Event {
   isFeatured      Boolean         @default(false)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  group           Group?          @relation(fields: [groupId], references: [id])
   creator         User            @relation("EventCreator", fields: [creatorId], references: [id])
+  group           Group?          @relation(fields: [groupId], references: [id])
   rsvps           EventRSVP[]
   eventReminders  EventReminder[]
-  transactions    Transaction[]
   notifications   Notification[]
+  transactions    Transaction[]
 
   @@index([creatorId])
   @@index([groupId])
@@ -1459,19 +1438,19 @@ model Event {
 }
 
 model EventRSVP {
-  id            String   @id @default(cuid())
+  id            String       @id @default(cuid())
   eventId       String
   userId        String
-  status        String   @default("GOING")
-  attended      Boolean  @default(false)
-  isPaid        Boolean  @default(false)
+  status        String       @default("GOING")
+  attended      Boolean      @default(false)
+  isPaid        Boolean      @default(false)
   paidAt        DateTime?
   transactionId String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
   @@index([eventId])
@@ -1514,16 +1493,16 @@ model Transaction {
   updatedAt           DateTime             @updatedAt
   invoiceNumber       String?              @unique
   affiliateConversion AffiliateConversion?
+  eventRsvps          EventRSVP[]
   notifications       Notification[]
   pendingRevenues     PendingRevenue[]
   coupon              Coupon?              @relation(fields: [couponId], references: [id])
   course              Course?              @relation(fields: [courseId], references: [id])
-  product             Product?             @relation(fields: [productId], references: [id])
   event               Event?               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  product             Product?             @relation(fields: [productId], references: [id])
   user                User                 @relation(fields: [userId], references: [id])
   membership          UserMembership?
   userProduct         UserProduct?
-  eventRsvps          EventRSVP[]
 
   @@index([userId])
   @@index([status])
@@ -1549,16 +1528,16 @@ model Coupon {
   membershipIds           Json?
   courseIds               Json?
   isAffiliateEnabled      Boolean       @default(false)
-  isForRenewal            Boolean       @default(false)  // Kupon untuk perpanjangan membership
+  isForRenewal            Boolean       @default(false)
   maxGeneratePerAffiliate Int?
   maxUsagePerCoupon       Int?
   basedOnCouponId         String?
   createdBy               String?
   createdAt               DateTime      @default(now())
   updatedAt               DateTime      @updatedAt
-  creator                 User?         @relation(fields: [createdBy], references: [id])
   basedOnCoupon           Coupon?       @relation("CouponTemplate", fields: [basedOnCouponId], references: [id])
   generatedCoupons        Coupon[]      @relation("CouponTemplate")
+  creator                 User?         @relation(fields: [createdBy], references: [id])
   transactions            Transaction[]
 
   @@index([code])
@@ -1572,8 +1551,8 @@ model Follow {
   followerId  String
   followingId String
   createdAt   DateTime @default(now())
-  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
   follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
   @@index([followerId])
@@ -1641,11 +1620,11 @@ model Message {
   updatedAt      DateTime  @updatedAt
   attachmentName String?
   attachmentSize Int?
-  room           ChatRoom? @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  sender         User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
   receiver       User?     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
   replyTo        Message?  @relation("MessageReplies", fields: [replyToId], references: [id])
   replies        Message[] @relation("MessageReplies")
+  room           ChatRoom? @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender         User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([senderId])
   @@index([receiverId])
@@ -1700,13 +1679,13 @@ model Notification {
   actorAvatar   String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post          Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
   comment       PostComment?     @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  event         Event?           @relation(fields: [eventId], references: [id], onDelete: Cascade)
   course        Course?          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  event         Event?           @relation(fields: [eventId], references: [id], onDelete: Cascade)
   group         Group?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  post          Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
   transaction   Transaction?     @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([type])
@@ -1874,8 +1853,8 @@ model BrandedTemplateUsage {
   error      String?
   metadata   Json?
   createdAt  DateTime        @default(now())
-  user       User?           @relation("BrandedTemplateUsageUser", fields: [userId], references: [id])
   template   BrandedTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user       User?           @relation("BrandedTemplateUsageUser", fields: [userId], references: [id])
 
   @@index([templateId])
   @@index([userId])
@@ -2168,8 +2147,8 @@ model GeneratedDocument {
   status       String         @default("DRAFT")
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  user         User           @relation(fields: [userId], references: [id])
   template     ExportDocument @relation(fields: [templateId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([templateId])
@@ -2227,8 +2206,8 @@ model BuyerView {
   userId   String
   buyerId  String
   viewedAt DateTime @default(now())
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   buyer    Buyer    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, viewedAt])
   @@index([buyerId])
@@ -2239,8 +2218,8 @@ model BuyerLike {
   userId  String
   buyerId String
   likedAt DateTime @default(now())
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   buyer   Buyer    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, buyerId])
   @@index([userId])
@@ -2357,10 +2336,6 @@ model Settings {
   checkoutSecondaryColor          String?  @default("#1e40af")
   checkoutSuccessColor            String?  @default("#22c55e")
   checkoutWarningColor            String?  @default("#eab308")
-  
-  // ===========================
-  // Dashboard/Admin Theme Colors
-  // ===========================
   dashboardSidebarBg              String?  @default("#1e293b")
   dashboardSidebarText            String?  @default("#e2e8f0")
   dashboardSidebarActiveText      String?  @default("#ffffff")
@@ -2380,23 +2355,13 @@ model Settings {
   dashboardWarningColor           String?  @default("#f59e0b")
   dashboardDangerColor            String?  @default("#ef4444")
   dashboardInfoColor              String?  @default("#3b82f6")
-  
-  // ===========================
-  // Branding V2 - Role-Based Logo & Typography
-  // ===========================
-  logoAffiliate                   String?  // Logo khusus untuk affiliate (berbeda dari siteLogo)
+  logoAffiliate                   String?
   brandName                       String?  @default("Eksporyuk")
   brandShortName                  String?  @default("EYK")
   tagline                         String?  @default("Platform Ekspor Indonesia")
   typographyHeadingSize           String?  @default("2rem")
   typographyBodySize              String?  @default("1rem")
   typographyFontFamily            String?  @default("Inter, sans-serif")
-  
-  // ===========================
-  // Platform Feature Settings
-  // ===========================
-  
-  // Global Features
   featureGroupEnabled             Boolean  @default(true)
   featureFeedEnabled              Boolean  @default(true)
   featureCommentEnabled           Boolean  @default(true)
@@ -2404,8 +2369,6 @@ model Settings {
   featureShareEnabled             Boolean  @default(true)
   featureChatEnabled              Boolean  @default(true)
   featureNotificationEnabled      Boolean  @default(true)
-  
-  // Affiliate Features
   featureAffiliateEnabled         Boolean  @default(true)
   featureAffiliateShortLink       Boolean  @default(true)
   featureAffiliateLeaderboard     Boolean  @default(true)
@@ -2415,46 +2378,32 @@ model Settings {
   featureAffiliateWithdraw        Boolean  @default(true)
   featureAffiliateStatistics      Boolean  @default(true)
   featureAffiliateMarketingKit    Boolean  @default(true)
-  
-  // Course Features
   featureCourseEnabled            Boolean  @default(true)
   featureCourseEnrollment         Boolean  @default(true)
   featureCourseCertificate        Boolean  @default(true)
   featureCourseProgress           Boolean  @default(true)
   featureCourseQuiz               Boolean  @default(true)
-  
-  // Supplier Features  
   featureSupplierEnabled          Boolean  @default(true)
   featureSupplierCatalog          Boolean  @default(true)
   featureSupplierSampleRequest    Boolean  @default(true)
   featureSupplierDirectOrder      Boolean  @default(true)
-  
-  // Transaction Features
   featureCheckoutEnabled          Boolean  @default(true)
   featureCouponEnabled            Boolean  @default(true)
   featureFlashSaleEnabled         Boolean  @default(true)
-  
-  // Member Premium Features
   featureMemberPremiumClass       Boolean  @default(true)
   featureMemberPremiumGroup       Boolean  @default(true)
   featureMemberPremiumSupplier    Boolean  @default(true)
   featureMemberPremiumDownload    Boolean  @default(true)
   featureMemberPremiumCertificate Boolean  @default(true)
-  
-  // Member Free Features
   featureMemberFreeClass          Boolean  @default(true)
   featureMemberFreeGroup          Boolean  @default(true)
   featureMemberFreeCatalog        Boolean  @default(true)
-  
-  // Mentor Features
   featureMentorCreateCourse       Boolean  @default(true)
   featureMentorCreateMaterial     Boolean  @default(true)
   featureMentorCreateGroup        Boolean  @default(true)
   featureMentorEditCourse         Boolean  @default(true)
   featureMentorAnalytics          Boolean  @default(true)
   featureMentorManageStudents     Boolean  @default(true)
-  
-  // Notification Channels
   notificationEmailEnabled        Boolean  @default(true)
   notificationWhatsappEnabled     Boolean  @default(true)
   notificationPushEnabled         Boolean  @default(true)
@@ -2472,56 +2421,38 @@ model IntegrationConfig {
   updatedAt    DateTime  @updatedAt
 }
 
-// Sales Page / Landing Page Settings
 model SalesPageSettings {
   id                   String   @id @default(cuid())
-  
-  // Hero Section
   heroTitle            String?  @default("Belajar Ekspor Mudah dan Praktis di Komunitas")
   heroHighlight        String?  @default("Mudah dan Praktis")
   heroDescription      String?  @default("Dibimbing langsung oleh praktisi ekspor berpengalaman. Mulai dari persiapan dokumen, mencari buyer, hingga pengiriman barang ke luar negeri.")
   heroBadgeText        String?  @default("7,000+ Calon Eksportir Bergabung")
   heroCtaText          String?  @default("Mulai Belajar Sekarang")
   heroCtaSecondaryText String?  @default("Lihat Fitur")
-  
-  // Navbar
   navbarLogo           String?
   navbarLogoText       String?  @default("Eksporyuk")
   navbarCtaText        String?  @default("Gabung Komunitas")
-  
-  // Features Section
   featuresTitle        String?  @default("Semua yang Anda Butuhkan untuk Sukses Ekspor")
   featuresSubtitle     String?  @default("Platform lengkap untuk belajar dan praktik ekspor dengan bimbingan mentor berpengalaman")
-  featuresData         Json?    // Array of {icon, title, description}
-  
-  // Pricing Section
+  featuresData         Json?
   pricingTitle         String?  @default("Pilih Paket Membership Anda")
   pricingSubtitle      String?  @default("Investasi terbaik untuk masa depan bisnis ekspor Anda")
-  pricingShowFromDb    Boolean  @default(true) // Jika true, ambil dari membership table
-  pricingCustomData    Json?    // Array of {duration, price, features[], popular}
-  
-  // Testimonials Section
+  pricingShowFromDb    Boolean  @default(true)
+  pricingCustomData    Json?
   testimonialsTitle    String?  @default("Apa Kata Mereka?")
   testimonialsSubtitle String?  @default("Kisah sukses dari member yang telah berhasil ekspor")
-  testimonialsData     Json?    // Array of {name, role, content, avatar}
-  
-  // FAQ Section
+  testimonialsData     Json?
   faqTitle             String?  @default("Pertanyaan yang Sering Ditanyakan")
-  faqData              Json?    // Array of {question, answer}
-  
-  // CTA Section
+  faqData              Json?
   ctaTitle             String?  @default("Siap Memulai Perjalanan Ekspor Anda?")
   ctaDescription       String?  @default("Bergabung sekarang dan dapatkan akses ke materi ekslusif serta bimbingan dari mentor berpengalaman.")
   ctaButtonText        String?  @default("Gabung Komunitas Sekarang!")
-  ctaStats             Json?    // Array of {value, label}
-  
-  // Footer
+  ctaStats             Json?
   footerDescription    String?  @default("Platform edukasi ekspor #1 di Indonesia untuk membantu UMKM go international.")
   footerEmail          String?  @default("info@eksporyuk.com")
   footerPhone          String?  @default("+62 812-3456-7890")
   footerAddress        String?
-  footerSocialLinks    Json?    // {instagram, facebook, linkedin, youtube, tiktok}
-  
+  footerSocialLinks    Json?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 }
@@ -2562,8 +2493,8 @@ model Quiz {
   isActive         Boolean        @default(true)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-  lesson           CourseLesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   course           Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson           CourseLesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   attempts         QuizAttempt[]
   questions        QuizQuestion[]
 
@@ -2602,8 +2533,8 @@ model QuizAttempt {
   completedAt DateTime?
   timeSpent   Int?
   answers     QuizAnswer[]
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([quizId])
   @@index([userId])
@@ -2623,8 +2554,8 @@ model QuizAnswer {
   gradedAt       DateTime?
   feedback       String?
   createdAt      DateTime     @default(now())
-  question       QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
   attempt        QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question       QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@index([attemptId])
   @@index([questionId])
@@ -2645,8 +2576,8 @@ model Assignment {
   isActive            Boolean                @default(true)
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
-  lesson              CourseLesson?          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   course              Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson              CourseLesson?          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   submissions         AssignmentSubmission[]
 
   @@index([courseId])
@@ -2667,8 +2598,8 @@ model AssignmentSubmission {
   gradedAt     DateTime?
   submittedAt  DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
-  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignment   Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([assignmentId])
   @@index([userId])
@@ -2684,8 +2615,8 @@ model CourseNote {
   timestamp Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation("CourseNotes", fields: [userId], references: [id], onDelete: Cascade)
   course    Course   @relation("CourseNotes", fields: [courseId], references: [id], onDelete: Cascade)
+  user      User     @relation("CourseNotes", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([courseId])
@@ -2708,9 +2639,9 @@ model CourseDiscussion {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   course         Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user           User               @relation("DiscussionAuthor", fields: [userId], references: [id], onDelete: Cascade)
   parent         CourseDiscussion?  @relation("DiscussionReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies        CourseDiscussion[] @relation("DiscussionReplies")
+  user           User               @relation("DiscussionAuthor", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([courseId])
   @@index([userId])
@@ -2772,9 +2703,9 @@ model Certificate {
   pdfUrl                String?
   isValid               Boolean              @default(true)
   verificationUrl       String?
-  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course                Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
   certificateTemplate   CertificateTemplate? @relation(fields: [certificateTemplateId], references: [id])
+  course                Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@index([userId])
@@ -2853,9 +2784,9 @@ model AffiliateShortLink {
   expiresAt       DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  affiliate       AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
   affiliateLink   AffiliateLink?   @relation(fields: [affiliateLinkId], references: [id])
   domain          ShortLinkDomain  @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  affiliate       AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
 
   @@unique([domainId, username, slug])
   @@index([affiliateId])
@@ -2927,11 +2858,11 @@ model AffiliateBioCTA {
   isActive         Boolean             @default(true)
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
-  optinForm        AffiliateOptinForm? @relation("CTAToOptinForm", fields: [optinFormId], references: [id])
-  course           Course?             @relation(fields: [courseId], references: [id])
-  product          Product?            @relation(fields: [productId], references: [id])
-  membership       Membership?         @relation(fields: [membershipId], references: [id])
   bioPage          AffiliateBioPage    @relation(fields: [bioPageId], references: [id], onDelete: Cascade)
+  course           Course?             @relation(fields: [courseId], references: [id])
+  membership       Membership?         @relation(fields: [membershipId], references: [id])
+  optinForm        AffiliateOptinForm? @relation("CTAToOptinForm", fields: [optinFormId], references: [id])
+  product          Product?            @relation(fields: [productId], references: [id])
 
   @@index([bioPageId])
   @@index([displayOrder])
@@ -2969,8 +2900,8 @@ model AffiliateOptinForm {
   updatedAt        DateTime          @updatedAt
   ctaButtons       AffiliateBioCTA[] @relation("CTAToOptinForm")
   leads            AffiliateLead[]
-  bioPage          AffiliateBioPage? @relation(fields: [bioPageId], references: [id])
   affiliate        AffiliateProfile  @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  bioPage          AffiliateBioPage? @relation(fields: [bioPageId], references: [id])
 
   @@index([affiliateId])
   @@index([bioPageId])
@@ -2995,8 +2926,8 @@ model AffiliateLead {
   automationJobs  AffiliateAutomationJob[]
   automationLogs  AffiliateAutomationLog[]
   broadcastLogs   AffiliateBroadcastLog[]
-  optinForm       AffiliateOptinForm?      @relation(fields: [optinFormId], references: [id])
   affiliate       AffiliateProfile         @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  optinForm       AffiliateOptinForm?      @relation(fields: [optinFormId], references: [id])
   tags            AffiliateLeadTag[]
 
   @@index([affiliateId])
@@ -3079,8 +3010,8 @@ model AffiliateBroadcast {
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
   recurringConfig Json?
-  template        AffiliateEmailTemplate? @relation(fields: [templateId], references: [id])
   affiliate       AffiliateProfile        @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  template        AffiliateEmailTemplate? @relation(fields: [templateId], references: [id])
   logs            AffiliateBroadcastLog[]
 
   @@index([affiliateId])
@@ -3101,8 +3032,8 @@ model AffiliateBroadcastLog {
   failedAt     DateTime?
   errorMessage String?
   createdAt    DateTime           @default(now())
-  lead         AffiliateLead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
   broadcast    AffiliateBroadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  lead         AffiliateLead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([broadcastId])
   @@index([leadId])
@@ -3211,9 +3142,9 @@ model AffiliateAutomationJob {
   createdAt      DateTime                @default(now())
   updatedAt      DateTime                @updatedAt
   affiliate      AffiliateProfile        @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  automation     AffiliateAutomation     @relation(fields: [automationId], references: [id], onDelete: Cascade)
   lead           AffiliateLead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
   step           AffiliateAutomationStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  automation     AffiliateAutomation     @relation(fields: [automationId], references: [id], onDelete: Cascade)
 
   @@index([automationId])
   @@index([stepId])
@@ -3243,8 +3174,8 @@ model AffiliateAutomationLog {
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   affiliate        AffiliateProfile    @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  lead             AffiliateLead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
   automation       AffiliateAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  lead             AffiliateLead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@unique([automationId, leadId])
   @@index([automationId])
@@ -3271,12 +3202,12 @@ model Report {
   reviewNote   String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  reviewedBy   User?        @relation("ReportsReviewed", fields: [reviewedById], references: [id])
-  group        Group?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  reportedUser User?        @relation("ReportsReceived", fields: [userId], references: [id], onDelete: Cascade)
   comment      PostComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  group        Group?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
   post         Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
   reporter     User         @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy   User?        @relation("ReportsReviewed", fields: [reviewedById], references: [id])
+  reportedUser User?        @relation("ReportsReceived", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([reporterId])
   @@index([type])
@@ -3310,8 +3241,8 @@ model Story {
   viewCount Int         @default(0)
   createdAt DateTime    @default(now())
   expiresAt DateTime
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   group     Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   viewers   StoryView[]
 
   @@index([groupId])
@@ -3325,8 +3256,8 @@ model StoryView {
   storyId  String
   userId   String
   viewedAt DateTime @default(now())
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([storyId, userId])
   @@index([storyId])
@@ -3345,8 +3276,8 @@ model GroupResource {
   fileSize      Int
   downloadCount Int      @default(0)
   createdAt     DateTime @default(now())
-  uploader      User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
   group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  uploader      User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
 
   @@index([groupId])
   @@index([uploaderId])
@@ -3380,11 +3311,11 @@ model SupplierPackage {
   affiliateCommissionRate Decimal              @default(30)
   features                Json
   description             String?
-  isActive      Boolean              @default(true)
-  displayOrder  Int                  @default(0)
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  subscriptions SupplierMembership[]
+  isActive                Boolean              @default(true)
+  displayOrder            Int                  @default(0)
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  subscriptions           SupplierMembership[]
 
   @@index([type])
   @@index([isActive])
@@ -3509,9 +3440,9 @@ model GroupQuiz {
   rewardBadgeId    String?
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
-  rewardBadge      BadgeDefinition?    @relation(fields: [rewardBadgeId], references: [id])
   creator          User                @relation("QuizCreator", fields: [creatorId], references: [id])
   group            Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  rewardBadge      BadgeDefinition?    @relation(fields: [rewardBadgeId], references: [id])
   attempts         GroupQuizAttempt[]
   questions        GroupQuizQuestion[]
 
@@ -3552,8 +3483,8 @@ model GroupQuizAttempt {
   completedAt DateTime?
   timeSpent   Int?
   answers     GroupQuizAnswer[]
-  user        User              @relation("QuizAttempts", fields: [userId], references: [id], onDelete: Cascade)
   quiz        GroupQuiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user        User              @relation("QuizAttempts", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([quizId])
   @@index([userId])
@@ -3568,8 +3499,8 @@ model GroupQuizAnswer {
   isCorrect      Boolean           @default(false)
   pointsEarned   Int               @default(0)
   createdAt      DateTime          @default(now())
-  question       GroupQuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
   attempt        GroupQuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question       GroupQuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@index([attemptId])
   @@index([questionId])
@@ -3603,8 +3534,8 @@ model UserBadge {
   awardedAt DateTime        @default(now())
   awardedBy String?
   reason    String?
-  group     Group?          @relation(fields: [groupId], references: [id])
   badge     BadgeDefinition @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  group     Group?          @relation(fields: [groupId], references: [id])
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId, groupId])
@@ -3680,8 +3611,8 @@ model ChallengProgress {
   rank        Int?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   challenge   GroupChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([challengeId, userId])
   @@index([challengeId])
@@ -3705,8 +3636,8 @@ model ScheduledPost {
   errorMessage     String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  group            Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   author           User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  group            Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@index([authorId])
   @@index([groupId])
@@ -3821,6 +3752,177 @@ model BannerClick {
   @@index([userId])
   @@index([sessionId])
   @@index([clickedAt])
+}
+
+model CourseSettings {
+  id                           String   @id @default(cuid())
+  defaultMentorCommission      Float    @default(50)
+  defaultAffiliateCommission   Float    @default(30)
+  minWithdrawalAmount          Decimal  @default(50000)
+  withdrawalProcessingDays     Int      @default(3)
+  maxWithdrawalPerDay          Decimal  @default(10000000)
+  withdrawalMethods            Json?
+  autoApproveCourses           Boolean  @default(false)
+  autoApproveEnrollments       Boolean  @default(true)
+  defaultCourseVisibility      String   @default("PUBLIC")
+  requireCertificateCompletion Boolean  @default(true)
+  certificateMinScore          Int      @default(80)
+  enableAffiliateProgram       Boolean  @default(true)
+  enableMentorProgram          Boolean  @default(true)
+  mentorCanCreateGroup         Boolean  @default(true)
+  mentorCanCreateCourse        Boolean  @default(true)
+  mentorCanCreateMaterial      Boolean  @default(true)
+  mentorCanEditOwnCourse       Boolean  @default(true)
+  mentorCanDeleteOwnCourse     Boolean  @default(false)
+  mentorCanViewAnalytics       Boolean  @default(true)
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+}
+
+model NotificationDeliveryLog {
+  id             String    @id @default(cuid())
+  notificationId String
+  playerId       String
+  userId         String?
+  status         String    @default("delivered")
+  platform       String?
+  openedAt       DateTime?
+  clickedAt      DateTime?
+  clickUrl       String?
+  ipAddress      String?
+  userAgent      String?
+  bounceReason   String?
+  timestamp      DateTime  @default(now())
+  user           User?     @relation("NotificationDeliveryLogs", fields: [userId], references: [id])
+
+  @@index([notificationId])
+  @@index([playerId])
+  @@index([userId])
+  @@index([status])
+  @@index([timestamp])
+}
+
+model ConversionEvent {
+  id              String   @id @default(cuid())
+  userId          String
+  notificationId  String?
+  conversionType  String
+  conversionValue Decimal?
+  conversionUrl   String?
+  metadata        Json?
+  timestamp       DateTime @default(now())
+  user            User     @relation("ConversionEvents", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([notificationId])
+  @@index([conversionType])
+  @@index([timestamp])
+}
+
+model NotificationConsent {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  consentGiven        Boolean   @default(true)
+  channels            Json
+  purpose             String    @default("marketing")
+  ipAddress           String?
+  userAgent           String?
+  consentTimestamp    DateTime  @default(now())
+  consentExpiry       DateTime
+  revocationTimestamp DateTime?
+  revocationReason    String?
+  user                User      @relation("NotificationConsents", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([consentTimestamp])
+  @@index([consentExpiry])
+}
+
+model OneSignalWebhookLog {
+  id               String    @id @default(cuid())
+  eventType        String
+  payload          Json
+  processingStatus String    @default("pending")
+  errorMessage     String?
+  retryCount       Int       @default(0)
+  lastRetryAt      DateTime?
+  processedAt      DateTime?
+  timestamp        DateTime  @default(now())
+
+  @@index([eventType])
+  @@index([processingStatus])
+  @@index([timestamp])
+}
+
+model Documentation {
+  id              String                  @id @default(cuid())
+  slug            String                  @unique
+  title           String
+  content         String
+  excerpt         String?
+  category        DocumentationCategory
+  targetRoles     Json
+  status          DocumentationStatus     @default(DRAFT)
+  isPublic        Boolean                 @default(false)
+  icon            String?
+  order           Int                     @default(0)
+  parentId        String?
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  featuredImage   String?
+  publishedAt     DateTime?
+  archivedAt      DateTime?
+  viewCount       Int                     @default(0)
+  authorId        String
+  lastEditedById  String?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  author          User                    @relation("DocumentationAuthor", fields: [authorId], references: [id])
+  lastEditedBy    User?                   @relation("DocumentationEditor", fields: [lastEditedById], references: [id])
+  parent          Documentation?          @relation("DocumentationHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children        Documentation[]         @relation("DocumentationHierarchy")
+  revisions       DocumentationRevision[] @relation("DocumentationRevisions")
+
+  @@index([slug])
+  @@index([category])
+  @@index([status])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([order])
+  @@index([parentId])
+}
+
+model DocumentationRevision {
+  id              String        @id @default(cuid())
+  documentationId String
+  content         String
+  title           String
+  excerpt         String?
+  changedById     String
+  changeNote      String?
+  version         Int
+  createdAt       DateTime      @default(now())
+  changedBy       User          @relation("DocumentationRevisionAuthor", fields: [changedById], references: [id])
+  documentation   Documentation @relation("DocumentationRevisions", fields: [documentationId], references: [id], onDelete: Cascade)
+
+  @@index([documentationId])
+  @@index([changedById])
+  @@index([version])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+
+  @@index([email])
+  @@index([token])
+  @@index([expiresAt])
 }
 
 enum DownloadStatus {
@@ -4054,11 +4156,10 @@ enum CourseStatus {
   PRIVATE
 }
 
-// Role akses untuk kelas sesuai PRD Perbaikan Fitur Kelas
 enum CourseRoleAccess {
-  PUBLIC    // Semua user bisa lihat
-  MEMBER    // Hanya member aktif
-  AFFILIATE // Hanya affiliate
+  PUBLIC
+  MEMBER
+  AFFILIATE
 }
 
 enum CourseMonetizationType {
@@ -4157,204 +4258,3 @@ enum DocumentationStatus {
   PUBLISHED
   ARCHIVED
 }
-
-model CourseSettings {
-  id                           String   @id @default(cuid())
-  defaultMentorCommission      Float    @default(50)
-  defaultAffiliateCommission   Float    @default(30)
-  minWithdrawalAmount          Decimal  @default(50000)
-  withdrawalProcessingDays     Int      @default(3)
-  maxWithdrawalPerDay          Decimal  @default(10000000)
-  withdrawalMethods            Json?
-  autoApproveCourses           Boolean  @default(false)
-  autoApproveEnrollments       Boolean  @default(true)
-  defaultCourseVisibility      String   @default("PUBLIC")
-  requireCertificateCompletion Boolean  @default(true)
-  certificateMinScore          Int      @default(80)
-  enableAffiliateProgram       Boolean  @default(true)
-  enableMentorProgram          Boolean  @default(true)
-  // Mentor Permissions
-  mentorCanCreateGroup         Boolean  @default(true)
-  mentorCanCreateCourse        Boolean  @default(true)
-  mentorCanCreateMaterial      Boolean  @default(true)
-  mentorCanEditOwnCourse       Boolean  @default(true)
-  mentorCanDeleteOwnCourse     Boolean  @default(false)
-  mentorCanViewAnalytics       Boolean  @default(true)
-  createdAt                    DateTime @default(now())
-  updatedAt                    DateTime @updatedAt
-}
-
-// ===========================
-// OneSignal Webhook Models
-// ===========================
-
-// NotificationDeliveryLog - Log semua delivery, open, click events dari OneSignal webhooks
-// Digunakan untuk tracking notification effectiveness
-model NotificationDeliveryLog {
-  id                    String    @id @default(cuid())
-  notificationId        String    // ID dari OneSignal notification
-  playerId              String    // Player ID yang menerima notifikasi
-  userId                String?   // User ID (jika bisa di-link)
-  status                String    @default("delivered") // delivered, opened, clicked, bounced
-  platform              String?   // web, iOS, Android
-  openedAt              DateTime? // Waktu notifikasi dibuka
-  clickedAt             DateTime? // Waktu notifikasi diklik
-  clickUrl              String?   // URL yang diklik (jika applicable)
-  ipAddress             String?   // IP address untuk audit
-  userAgent             String?   // User agent browser
-  bounceReason          String?   // Alasan bounce (jika bounced)
-  timestamp             DateTime  @default(now()) // Waktu event terjadi
-  
-  // Relations
-  user                  User?     @relation("NotificationDeliveryLogs", fields: [userId], references: [id], onDelete: SetNull)
-  
-  @@index([notificationId])
-  @@index([playerId])
-  @@index([userId])
-  @@index([status])
-  @@index([timestamp])
-}
-
-// ConversionEvent - Log conversion/action setelah click notifikasi
-// Menghubungkan notification click dengan actual conversion
-model ConversionEvent {
-  id                    String    @id @default(cuid())
-  userId                String
-  notificationId        String?   // ID OneSignal notification yang trigger conversion
-  conversionType        String    // purchase, enrollment, view, signup, etc
-  conversionValue       Decimal?  // Value dari conversion (e.g. harga produk)
-  conversionUrl         String?   // URL yang diakses saat conversion
-  metadata              Json?     // Additional metadata (product_id, course_id, etc)
-  timestamp             DateTime  @default(now())
-  
-  // Relations
-  user                  User      @relation("ConversionEvents", fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
-  @@index([notificationId])
-  @@index([conversionType])
-  @@index([timestamp])
-}
-
-// NotificationConsent - GDPR compliance: track consent history
-// Untuk audit trail dan compliance
-model NotificationConsent {
-  id                    String    @id @default(cuid())
-  userId                String    @unique
-  consentGiven          Boolean   @default(true)
-  channels              Json      // { email: true, push: true, sms: false, inapp: true }
-  purpose               String    @default("marketing") // marketing, transactional, both
-  ipAddress             String?   // IP saat consent diberikan
-  userAgent             String?   // Browser/device info
-  consentTimestamp      DateTime  @default(now())
-  consentExpiry         DateTime  // Kapan consent expire (biasanya 1 tahun)
-  revocationTimestamp   DateTime? // Kapan user revoke consent
-  revocationReason      String?   // Alasan revoke
-  
-  // Relations
-  user                  User      @relation("NotificationConsents", fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
-  @@index([consentTimestamp])
-  @@index([consentExpiry])
-}
-
-// OneSignalWebhookLog - Log semua webhook events untuk debugging
-// Jika ada webhook yg gagal, bisa di-retry
-model OneSignalWebhookLog {
-  id                    String    @id @default(cuid())
-  eventType             String    // notification.delivered, notification.opened, etc
-  payload               Json      // Raw webhook payload
-  processingStatus      String    @default("pending") // pending, success, failed
-  errorMessage          String?   // Error message jika failed
-  retryCount            Int       @default(0)
-  lastRetryAt           DateTime?
-  processedAt           DateTime?
-  timestamp             DateTime  @default(now())
-  
-  @@index([eventType])
-  @@index([processingStatus])
-  @@index([timestamp])
-}
-
-// Documentation - Sistem dokumentasi role-based dengan Nextra
-// Admin bisa CRUD, publish/draft, pisahkan per role
-model Documentation {
-  id                    String            @id @default(cuid())
-  slug                  String            @unique // URL slug untuk docs
-  title                 String            // Judul dokumentasi
-  content               String            // MDX content (Markdown + JSX)
-  excerpt               String?           // Ringkasan singkat
-  category              DocumentationCategory // Kategori utama
-  targetRoles           Json              // Array roles: ["ADMIN", "AFFILIATE", "MENTOR"]
-  status                DocumentationStatus @default(DRAFT) // DRAFT, PUBLISHED, ARCHIVED
-  isPublic              Boolean           @default(false) // Akses publik atau hanya login
-  icon                  String?           // Icon untuk sidebar
-  order                 Int               @default(0) // Urutan di sidebar
-  parentId              String?           // Untuk nested docs (parent-child)
-  metaTitle             String?           // SEO title
-  metaDescription       String?           // SEO description
-  keywords              String?           // SEO keywords
-  featuredImage         String?           // Gambar preview
-  publishedAt           DateTime?         // Waktu publish
-  archivedAt            DateTime?         // Waktu archived
-  viewCount             Int               @default(0) // Tracking views
-  authorId              String            // Admin yang buat
-  lastEditedById        String?           // Admin terakhir edit
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
-  
-  // Relations
-  author                User              @relation("DocumentationAuthor", fields: [authorId], references: [id], onDelete: Restrict)
-  lastEditedBy          User?             @relation("DocumentationEditor", fields: [lastEditedById], references: [id], onDelete: SetNull)
-  parent                Documentation?    @relation("DocumentationHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children              Documentation[]   @relation("DocumentationHierarchy")
-  revisions             DocumentationRevision[] @relation("DocumentationRevisions")
-  
-  @@index([slug])
-  @@index([category])
-  @@index([status])
-  @@index([authorId])
-  @@index([publishedAt])
-  @@index([order])
-  @@index([parentId])
-}
-
-// DocumentationRevision - Version history untuk rollback
-// Setiap edit tersimpan sebagai revision
-model DocumentationRevision {
-  id                    String            @id @default(cuid())
-  documentationId       String
-  content               String            // Snapshot content saat itu
-  title                 String            // Snapshot title
-  excerpt               String?
-  changedById           String            // Admin yang bikin revision ini
-  changeNote            String?           // Catatan perubahan
-  version               Int               // Version number (auto increment)
-  createdAt             DateTime          @default(now())
-  
-  // Relations
-  documentation         Documentation     @relation("DocumentationRevisions", fields: [documentationId], references: [id], onDelete: Cascade)
-  changedBy             User              @relation("DocumentationRevisionAuthor", fields: [changedById], references: [id], onDelete: Restrict)
-  
-  @@index([documentationId])
-  @@index([changedById])
-  @@index([version])
-}
-
-// PasswordResetToken - Token untuk reset password flow
-// Digunakan saat forgot password dan reset password
-model PasswordResetToken {
-  id              String    @id @default(cuid())
-  email           String
-  token           String    @unique
-  expiresAt       DateTime
-  createdAt       DateTime  @default(now())
-  used            Boolean   @default(false)
-  usedAt          DateTime?
-  
-  @@index([email])
-  @@index([token])
-  @@index([expiresAt])
-}
-

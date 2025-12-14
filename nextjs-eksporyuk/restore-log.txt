@@ -1,0 +1,205 @@
+
+🚀 FAST RESTORE - SEMUA DATA SEJOLI
+
+📂 Loading: ./scripts/migration/wp-data/sejolisa-full-18000users-1765279985617.json
+✅ Loaded: 18000 users, 18584 orders
+
+🔄 BATCH IMPORT USERS...
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 100 users imported
+   ✓ 51 users imported
+✅ Total users in DB: 17966
+
+🔄 IMPORT TRANSAKSI & MEMBERSHIP...
+✅ Total: 0 transactions, 0 memberships
+
+🔄 IMPORT AFFILIATE DATA...
+✅ Total: 0 affiliate commissions
+
+
+═══════════════════════════════════════
+🎉 RESTORE SELESAI!
+═══════════════════════════════════════
+👥 Users: 17966
+💳 Transactions: 4
+🎫 Memberships: 5
+🤝 Affiliates: 3
+═══════════════════════════════════════
+

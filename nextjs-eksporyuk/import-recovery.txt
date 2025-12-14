@@ -1,0 +1,9 @@
+════════════════════════════════════════════════════════════
+     COMPLETE SEJOLI DATA SYNC
+════════════════════════════════════════════════════════════
+
+📂 Loading data from: /Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/scripts/migration/wp-data/sejolisa-full-18000users-1765279985617.json
+✅ Loaded: 18000 users, 18584 orders
+
+🔄 IMPORTING USERS...
+Total WordPress users: 18000

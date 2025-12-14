@@ -99,7 +99,7 @@ async function importUsers(wpUsers) {
               balance: 0,
               balancePending: 0,
               totalEarnings: 0,
-              totalWithdrawn: 0,
+              totalPayout: 0,
             }
           }
         }

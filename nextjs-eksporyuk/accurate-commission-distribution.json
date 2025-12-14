@@ -1,0 +1,1421 @@
+{
+  "timestamp": "2025-12-14T10:38:16.748Z",
+  "stats": {
+    "totalAffiliates": 99,
+    "totalOrders": 6904,
+    "totalOrdersNoCommission": 4385,
+    "totalCommission": 1899740000,
+    "omsetKotor": 3586317367.5,
+    "omsetBersih": 3586317367.5
+  },
+  "commissionBreakdown": {
+    "0": {
+      "count": 4385,
+      "total": 0
+    },
+    "20000": {
+      "count": 497,
+      "total": 9940000
+    },
+    "200000": {
+      "count": 317,
+      "total": 63400000
+    },
+    "250000": {
+      "count": 2038,
+      "total": 509500000
+    },
+    "325000": {
+      "count": 4052,
+      "total": 1316900000
+    }
+  },
+  "affiliates": [
+    {
+      "affiliateId": "cmj54y86m002uitezopa8ioy0",
+      "email": "azizbiasa@gmail.com",
+      "totalOrders": 1918,
+      "totalCommission": 596525000,
+      "byRate": {
+        "20000": 0,
+        "200000": 4,
+        "250000": 351,
+        "325000": 1563
+      },
+      "name": "Abdurrahman Aziz",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pnu007kitut54hyeidj",
+      "email": "asep.abdurrahman.w@gmail.com",
+      "totalOrders": 687,
+      "totalCommission": 178440000,
+      "byRate": {
+        "20000": 72,
+        "200000": 18,
+        "250000": 275,
+        "325000": 322
+      },
+      "name": "Asep Abdurrahman Wahid",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5591dl02i4itut5x64ahvg",
+      "email": "rahmatalfianto1997@gmail.com",
+      "totalOrders": 607,
+      "totalCommission": 174540000,
+      "byRate": {
+        "20000": 37,
+        "200000": 4,
+        "250000": 146,
+        "325000": 420
+      },
+      "name": "Rahmat Al Fianto",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558psy0094itut4ir27747",
+      "email": "hamidbaidowi03@gmail.com",
+      "totalOrders": 536,
+      "totalCommission": 139915000,
+      "byRate": {
+        "20000": 37,
+        "200000": 10,
+        "250000": 290,
+        "325000": 199
+      },
+      "name": "Hamid Baidowi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5592br02o2itutv9p365za",
+      "email": "azzka42@gmail.com",
+      "totalOrders": 465,
+      "totalCommission": 121475000,
+      "byRate": {
+        "20000": 70,
+        "200000": 10,
+        "250000": 94,
+        "325000": 291
+      },
+      "name": "Sutisna",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558wmd01jritutyrlchsi2",
+      "email": "yogasoneo@gmail.com",
+      "totalOrders": 341,
+      "totalCommission": 94185000,
+      "byRate": {
+        "20000": 43,
+        "200000": 0,
+        "250000": 47,
+        "325000": 251
+      },
+      "name": "Yoga Andrian",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pzh00aiitut9ztjllss",
+      "email": "irmaprime01@gmail.com",
+      "totalOrders": 358,
+      "totalCommission": 86325000,
+      "byRate": {
+        "20000": 75,
+        "200000": 8,
+        "250000": 82,
+        "325000": 193
+      },
+      "name": "NgobrolinEkspor",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558ra200huituth9skqn3o",
+      "email": "rsaf924@gmail.com",
+      "totalOrders": 338,
+      "totalCommission": 79095000,
+      "byRate": {
+        "20000": 1,
+        "200000": 159,
+        "250000": 141,
+        "325000": 37
+      },
+      "name": "Muhamad safrizal",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558rak00i7ituty4l34xg0",
+      "email": "ekowibowo831@gmail.com",
+      "totalOrders": 285,
+      "totalCommission": 69385000,
+      "byRate": {
+        "20000": 43,
+        "200000": 6,
+        "250000": 125,
+        "325000": 111
+      },
+      "name": "eko wibowo",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559hai05jiitutnrb82lrj",
+      "email": "pintarekspor146@gmail.com",
+      "totalOrders": 188,
+      "totalCommission": 56975000,
+      "byRate": {
+        "20000": 0,
+        "200000": 3,
+        "250000": 50,
+        "325000": 135
+      },
+      "name": "PintarEkspor",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559kbi065kitutcaobcxou",
+      "email": "mentorpasukan@gmail.com",
+      "totalOrders": 124,
+      "totalCommission": 39250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 14,
+        "325000": 110
+      },
+      "name": "Brian",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558z9v022kitutd799a0av",
+      "email": "yuniarka@gmail.com",
+      "totalOrders": 137,
+      "totalCommission": 36255000,
+      "byRate": {
+        "20000": 4,
+        "200000": 3,
+        "250000": 89,
+        "325000": 41
+      },
+      "name": "Ikhsan Yuniarka",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558qqc00fcituteetwejpq",
+      "email": "andinoeg.sby@gmail.com",
+      "totalOrders": 143,
+      "totalCommission": 32060000,
+      "byRate": {
+        "20000": 33,
+        "200000": 15,
+        "250000": 33,
+        "325000": 62
+      },
+      "name": "Andi Nugroho",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558p37004vitut0o250e9o",
+      "email": "ergomatic.id@gmail.com",
+      "totalOrders": 88,
+      "totalCommission": 26275000,
+      "byRate": {
+        "20000": 0,
+        "200000": 3,
+        "250000": 26,
+        "325000": 59
+      },
+      "name": "Andhika Yudha",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5592fp02oiitut8rfdff0g",
+      "email": "awlovenhoney78@gmail.com",
+      "totalOrders": 75,
+      "totalCommission": 21600000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 37,
+        "325000": 38
+      },
+      "name": "Masrur Arif",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559zem0950itutrqc990rw",
+      "email": "fadlulrahmat19@gmail.com",
+      "totalOrders": 63,
+      "totalCommission": 16835000,
+      "byRate": {
+        "20000": 8,
+        "200000": 0,
+        "250000": 16,
+        "325000": 39
+      },
+      "name": "Fadlul Rahmat",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558qo000f6itutfawlubi6",
+      "email": "kurdikhan12@gmail.com",
+      "totalOrders": 53,
+      "totalCommission": 15100000,
+      "byRate": {
+        "20000": 0,
+        "200000": 2,
+        "250000": 25,
+        "325000": 26
+      },
+      "name": "Kurdi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55900j027yitutlh37dm3n",
+      "email": "umartrainerjualan@gmail.com",
+      "totalOrders": 38,
+      "totalCommission": 11675000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 9,
+        "325000": 29
+      },
+      "name": "Coach UTS",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5590my02cgituttjl02esd",
+      "email": "exportexpert.Indonesia@gmail.com",
+      "totalOrders": 30,
+      "totalCommission": 7825000,
+      "byRate": {
+        "20000": 0,
+        "200000": 1,
+        "250000": 24,
+        "325000": 5
+      },
+      "name": "Agung Haris Setiawan",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pgb005nitutllsyzpc9",
+      "email": "aminullahbambu@gmail.com",
+      "totalOrders": 30,
+      "totalCommission": 6200000,
+      "byRate": {
+        "20000": 0,
+        "200000": 26,
+        "250000": 4,
+        "325000": 0
+      },
+      "name": "Aminullah",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559v9p08ayitutxjfzho40",
+      "email": "sahandi760@gmail.com",
+      "totalOrders": 19,
+      "totalCommission": 6025000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 17
+      },
+      "name": "Sahandi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558z6a0220itut5hlzh67i",
+      "email": "msirojulmunir96@gmail.com",
+      "totalOrders": 18,
+      "totalCommission": 5625000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 3,
+        "325000": 15
+      },
+      "name": "M Sirojul Munir",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558yqt01yiitutyf7a97mz",
+      "email": "adiherdiansyah708@gmail.com",
+      "totalOrders": 21,
+      "totalCommission": 5400000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 19,
+        "325000": 2
+      },
+      "name": "Adi Herdiansyah",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55awwv0fjhitut8mbiz6tj",
+      "email": "kaplupyan8@gmail.com",
+      "totalOrders": 14,
+      "totalCommission": 4400000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 12
+      },
+      "name": "Supyanto",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558p4p0050ituty5dpb5sp",
+      "email": "nurasyikb@gmail.com",
+      "totalOrders": 19,
+      "totalCommission": 4050000,
+      "byRate": {
+        "20000": 0,
+        "200000": 14,
+        "250000": 5,
+        "325000": 0
+      },
+      "name": "Nur Asyik Budiyana",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55an4i0doaitutdr7vqdxv",
+      "email": "dherifkyalazhary29@gmail.com",
+      "totalOrders": 44,
+      "totalCommission": 4015000,
+      "byRate": {
+        "20000": 32,
+        "200000": 0,
+        "250000": 7,
+        "325000": 5
+      },
+      "name": "Fzrachman •",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5594sm036iitutnhpoczuq",
+      "email": "izat1104yt@gmail.com",
+      "totalOrders": 22,
+      "totalCommission": 3725000,
+      "byRate": {
+        "20000": 10,
+        "200000": 0,
+        "250000": 5,
+        "325000": 7
+      },
+      "name": "Habi Akmal",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5593a702v8ituttu7q17da",
+      "email": "agnpermadi@gmail.com",
+      "totalOrders": 13,
+      "totalCommission": 3250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 13,
+        "325000": 0
+      },
+      "name": "Agung Permadi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558seq00r0itutdghf2n9h",
+      "email": "irfanwill.co@gmail.com",
+      "totalOrders": 12,
+      "totalCommission": 3075000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 11,
+        "325000": 1
+      },
+      "name": "Irfan Akbar wildani",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559etg0526itutcku3d8z3",
+      "email": "agungharyanto4565@gmail.com",
+      "totalOrders": 11,
+      "totalCommission": 2965000,
+      "byRate": {
+        "20000": 2,
+        "200000": 0,
+        "250000": 0,
+        "325000": 9
+      },
+      "name": "Agung Haryanto",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559v4u089kitutghpgdjmh",
+      "email": "naniwatiutama@gmail.com",
+      "totalOrders": 29,
+      "totalCommission": 2945000,
+      "byRate": {
+        "20000": 21,
+        "200000": 0,
+        "250000": 1,
+        "325000": 7
+      },
+      "name": "Naniwati",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558qih00e0itut46ln6anz",
+      "email": "rayenaldo7@gmail.com",
+      "totalOrders": 11,
+      "totalCommission": 2750000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 11,
+        "325000": 0
+      },
+      "name": "Ryan Aldo",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55a39z09xcituteqt2j4qj",
+      "email": "kusriaa@gmail.com",
+      "totalOrders": 7,
+      "totalCommission": 2275000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 7
+      },
+      "name": "Kusria Arifino",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558s0t00nuitutkqdk62tu",
+      "email": "affrazy@gmail.com",
+      "totalOrders": 11,
+      "totalCommission": 2200000,
+      "byRate": {
+        "20000": 0,
+        "200000": 11,
+        "250000": 0,
+        "325000": 0
+      },
+      "name": "Eksporpreneur ID",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pgc005yitutp9y7nemp",
+      "email": "m.bramnugroho@gmail.com",
+      "totalOrders": 8,
+      "totalCommission": 2000000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 8,
+        "325000": 0
+      },
+      "name": "Muhammad Ibrahim Nugroho",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj54ybpb003yitez056al3vi",
+      "email": "cscirebonteknik2@gmail.com",
+      "totalOrders": 9,
+      "totalCommission": 1850000,
+      "byRate": {
+        "20000": 0,
+        "200000": 8,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Casdik Iman",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pju006iitut5a0g0gbr",
+      "email": "christianindrajaya777@gmail.com",
+      "totalOrders": 8,
+      "totalCommission": 1750000,
+      "byRate": {
+        "20000": 0,
+        "200000": 5,
+        "250000": 3,
+        "325000": 0
+      },
+      "name": "Christian Indrajaya",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558vjv01csitut5z5scb84",
+      "email": "cs.ezdigital@gmail.com",
+      "totalOrders": 7,
+      "totalCommission": 1650000,
+      "byRate": {
+        "20000": 0,
+        "200000": 2,
+        "250000": 5,
+        "325000": 0
+      },
+      "name": "Ezdigital",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559zem094yitutezmjrpcr",
+      "email": "squadekspor@gmail.com",
+      "totalOrders": 5,
+      "totalCommission": 1550000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 4
+      },
+      "name": "Squad Ekspor",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558uox0160itutf7rhmj35",
+      "email": "haryo98@gmail.com",
+      "totalOrders": 6,
+      "totalCommission": 1500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 6,
+        "325000": 0
+      },
+      "name": "Imam Rifa'i",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559d4z04qzitutvis0ca3e",
+      "email": "robertsusanto2003@gmail.com",
+      "totalOrders": 4,
+      "totalCommission": 1300000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 4
+      },
+      "name": "robert susanto",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55c33n0nu6itutxi3yj9nu",
+      "email": "muda1miliar@gmail.com",
+      "totalOrders": 4,
+      "totalCommission": 1300000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 4
+      },
+      "name": "Tim Muda1M",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5593fj02w4itutfgpf9g7k",
+      "email": "dysukma7@gmail.com",
+      "totalOrders": 4,
+      "totalCommission": 1300000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 4
+      },
+      "name": "Sukmadi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5590qs02dcitutoy7pyk8i",
+      "email": "momosaka00@gmail.com",
+      "totalOrders": 5,
+      "totalCommission": 1250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 5,
+        "325000": 0
+      },
+      "name": "Saiful Anwar",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5598oh03v2itut7dy287il",
+      "email": "sugiyem912@gmail.com",
+      "totalOrders": 4,
+      "totalCommission": 1225000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 3
+      },
+      "name": "SUGIYEM",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559g8405ckitutm4g434c0",
+      "email": "kaplupyan@gmail.com",
+      "totalOrders": 4,
+      "totalCommission": 1225000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 3
+      },
+      "name": "Supyanto",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558q7800bqitut862e2x1i",
+      "email": "rahmatt727@gmail.com",
+      "totalOrders": 5,
+      "totalCommission": 1000000,
+      "byRate": {
+        "20000": 0,
+        "200000": 5,
+        "250000": 0,
+        "325000": 0
+      },
+      "name": "Rahmatullah",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559alf048iitut6olnf1y1",
+      "email": "riswantio16@gmail.com",
+      "totalOrders": 3,
+      "totalCommission": 975000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 3
+      },
+      "name": "Ahmad Riswantio",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pgc005uitutw8txg06x",
+      "email": "mizzuddiin.naafi@gmail.com",
+      "totalOrders": 3,
+      "totalCommission": 750000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 3,
+        "325000": 0
+      },
+      "name": "Muhammad 'Izzuddiin Naafi'",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558qjo00esitutdvyjiegq",
+      "email": "firmanwidodo4732@gmail.com",
+      "totalOrders": 3,
+      "totalCommission": 750000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 3,
+        "325000": 0
+      },
+      "name": "Firman widodo",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pk7006uitutfp1k3w5y",
+      "email": "nurdine94@gmail.com",
+      "totalOrders": 7,
+      "totalCommission": 750000,
+      "byRate": {
+        "20000": 5,
+        "200000": 0,
+        "250000": 0,
+        "325000": 2
+      },
+      "name": "Endang Nurdin",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559g7b05c4itut5hbnxb2p",
+      "email": "witjakson@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 650000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 2
+      },
+      "name": "Wisnu Witjaksono",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559jg905zeitutlg4i5rfq",
+      "email": "ssarteda2000@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 650000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 2
+      },
+      "name": "Satori Maksum",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5597b603lwitut1gbvykeq",
+      "email": "merihm41@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 650000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 2
+      },
+      "name": "Meri hartati.m",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pgd0067itut7m8t6b6q",
+      "email": "farhanghazali1812@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 0
+      },
+      "name": "Farhan Maulana",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj54y7mb002oitez1qotbcjq",
+      "email": "agus_aff@ymail.com",
+      "totalOrders": 2,
+      "totalCommission": 500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 0
+      },
+      "name": "Agus",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj54yb6s003sitezrjumos0o",
+      "email": "tbrianpermadi911@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 0
+      },
+      "name": "Tubagus Rian Permadi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pvu009qitutjviu71ss",
+      "email": "hendyswardika@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 0
+      },
+      "name": "Hendy Swardika",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558qjn00ekitutrr5f7cxx",
+      "email": "suparnomyid@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 0
+      },
+      "name": "Suparno",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pgc0064itutyr9y2i55",
+      "email": "trapesiumdigital@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 0
+      },
+      "name": "Aroma Firdaus Putra",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558ptf009aitutq5axoxzu",
+      "email": "johansmart325@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 0
+      },
+      "name": "yohanes santoso",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj5598oh03v4itutpaqcmvjn",
+      "email": "kawansuksesbersama@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 500000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 2,
+        "325000": 0
+      },
+      "name": "Aditya Putra Pradana",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558z180211itut1eppbrjt",
+      "email": "Wadiw3784@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 325000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 1
+      },
+      "name": "wadi wadi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55aauk0bgmitut2cxsmga9",
+      "email": "rizqifirdaus2@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 325000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 1
+      },
+      "name": "Moch Rizqi akbar Firdaos",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55c6om0oiuitutypvfgr6u",
+      "email": "gina.rahmi.latifah@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 325000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 1
+      },
+      "name": "Gina Rahmi Latifah",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559dw404waitutnqxhhlbu",
+      "email": "angeliaduaa@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 325000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 1
+      },
+      "name": "Angelia",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559k7r064qituty9nz3t2r",
+      "email": "affiliate.teukutaufik@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 325000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 1
+      },
+      "name": "Teuku Taufik",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559qcq07biitutlpizs3tg",
+      "email": "rozi679@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 325000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 0,
+        "325000": 1
+      },
+      "name": "rozi uno",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pk6006qitut6q9720j4",
+      "email": "arighy97@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "arighi hidayat",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558po8007ritutxwme69gf",
+      "email": "christiantampang@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Christian",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pk6006ritut6nm93o31",
+      "email": "asepcyberindo@yahoo.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Asep Iman Firmansyah",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj54ycf90046itezh8m5xhsl",
+      "email": "adibmahdy@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Adib M",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55aj7h0cxeitutk27ie0sr",
+      "email": "saputra7376@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "saputra putra",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pku0078itutp72axw74",
+      "email": "saputramutadi@yahoo.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Mutadi Saputra",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558qjn00eoitutamtqkuwv",
+      "email": "nurcahyoherman@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "HERMAN NURCAHYO",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558p9t0058itutwbnmsk6i",
+      "email": "inthenetmatketer@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Cahyo Sindhu Setiawan",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pni007gitutsu1qs94p",
+      "email": "zhenalayubi@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Zh",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558qqc00feitutug5xukmc",
+      "email": "akbarisakti2@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Akbari Sakti",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558p4p0051itutfv2el9gk",
+      "email": "jeprypratama96@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Jepry Pratama",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pkq0074itutfmtrt3ls",
+      "email": "muegye.gyeonogye@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Mugy Gionogi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558p4p0052itutx62b7qo2",
+      "email": "erwinfakhrani@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Erwin fakhrani",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558roa00lcitutuz80rhbn",
+      "email": "all.truss.construction@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Syamsudin Yusup",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558qn100f2itutufy0qa9f",
+      "email": "roller.circle@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Wahyu Suwarso",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558sq600sqitut7u96de8w",
+      "email": "vandesan83@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Hasan F",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pgd006gitutjhbkgdxw",
+      "email": "dzarukusuma123@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Dzaru Adi Kusuma",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558zsa025witutbdt5cu47",
+      "email": "helloummina@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Ana Nafsi Muthmainnah",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558pwd009zitutfhx5p0qb",
+      "email": "rudhimaya@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Maya",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558yjk01wqitut95cg6lne",
+      "email": "azisenunik@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Muhammad Azis",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558ysg01zaitut1sfixwvh",
+      "email": "syihab.fahmi1997@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "fahmi syihab",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558ze9023situt89nt477l",
+      "email": "denimajo@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "deni",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55985903rvitutohvsfhu6",
+      "email": "azis.laacu.muslim@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "azis muslim",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj558zsa025titute7gtqyih",
+      "email": "triwanto.hendri@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Hendri Triwanto",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559ffa056aitutqaokbfl0",
+      "email": "infoeventsentrepreneur@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Evententrepreneurid",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559id505r5itut6rhetxyr",
+      "email": "Panjisantos489@gmqil.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Panji Santoso",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559jwe062bitutkbhia083",
+      "email": "sigitpram1976@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Sigit Pramono",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj559tso080oitut0ra7ce8u",
+      "email": "addam21pambudi@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 250000,
+      "byRate": {
+        "20000": 0,
+        "200000": 0,
+        "250000": 1,
+        "325000": 0
+      },
+      "name": "Addam Pambudi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55cl9y0rciitutkf3isjht",
+      "email": "fajwatijariresources@gmail.com",
+      "totalOrders": 2,
+      "totalCommission": 40000,
+      "byRate": {
+        "20000": 2,
+        "200000": 0,
+        "250000": 0,
+        "325000": 0
+      },
+      "name": "Deni Sutandi",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55auky0f6yitut5ixnsc41",
+      "email": "enutanwar48@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 20000,
+      "byRate": {
+        "20000": 1,
+        "200000": 0,
+        "250000": 0,
+        "325000": 0
+      },
+      "name": "Enut anwar",
+      "role": "MEMBER_FREE"
+    },
+    {
+      "affiliateId": "cmj55atu50f1mitutqfvoxqvd",
+      "email": "ahmadumar.syamsuri129@gmail.com",
+      "totalOrders": 1,
+      "totalCommission": 20000,
+      "byRate": {
+        "20000": 1,
+        "200000": 0,
+        "250000": 0,
+        "325000": 0
+      },
+      "name": "Ahmad Umar Syamsuri",
+      "role": "MEMBER_FREE"
+    }
+  ]
+}
