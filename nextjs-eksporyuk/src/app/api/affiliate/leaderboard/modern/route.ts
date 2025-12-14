@@ -19,10 +19,16 @@ export async function GET() {
     console.log('🔄 Fetching affiliate leaderboard with REAL period-based data...')
 
     const now = new Date()
-    const weekAgo = new Date(now)
-    weekAgo.setDate(weekAgo.getDate() - 7)
-    const monthAgo = new Date(now)
-    monthAgo.setDate(monthAgo.getDate() - 30)
+    
+    // Current week (Monday to today)
+    const dayOfWeek = now.getDay()
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+    const weekStart = new Date(now)
+    weekStart.setDate(now.getDate() - daysToMonday)
+    weekStart.setHours(0, 0, 0, 0)
+    
+    // Current month (1st of current month to today)
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
 
     // Function to aggregate conversions by period
     async function getLeaderboardForPeriod(startDate?: Date) {
@@ -116,8 +122,8 @@ export async function GET() {
     // Fetch all three periods in parallel
     const [allTimeData, weeklyData, monthlyData] = await Promise.all([
       getLeaderboardForPeriod(), // No date filter = all time
-      getLeaderboardForPeriod(weekAgo),
-      getLeaderboardForPeriod(monthAgo)
+      getLeaderboardForPeriod(weekStart),
+      getLeaderboardForPeriod(monthStart)
     ])
 
     const endTime = Date.now()
