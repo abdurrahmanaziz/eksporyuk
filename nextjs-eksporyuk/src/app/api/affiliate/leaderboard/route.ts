@@ -13,30 +13,41 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions)
     
     const { searchParams } = new URL(req.url)
-    const period = searchParams.get('period') || 'weekly' // weekly, monthly
+    const period = searchParams.get('period') || 'weekly' // weekly, monthly, all-time
     const limit = parseInt(searchParams.get('limit') || '10')
 
     // Calculate date range
-    let startDate: Date
+    let startDate: Date | undefined
     const now = new Date()
     
     if (period === 'weekly') {
       startDate = new Date(now)
       startDate.setDate(startDate.getDate() - 7)
-    } else {
-      // monthly
+    } else if (period === 'monthly') {
       startDate = new Date(now)
       startDate.setDate(startDate.getDate() - 30)
+    } else if (period === 'all-time') {
+      startDate = undefined // No date filter for all-time
+    } else {
+      // default to weekly
+      startDate = new Date(now)
+      startDate.setDate(startDate.getDate() - 7)
     }
 
     // Get affiliate conversions with transaction data
+    const whereClause: any = {
+      transaction: {
+        status: 'SUCCESS'
+      }
+    }
+    
+    // Only add date filter if not all-time
+    if (startDate) {
+      whereClause.createdAt = { gte: startDate }
+    }
+    
     const conversions = await prisma.affiliateConversion.findMany({
-      where: {
-        createdAt: { gte: startDate },
-        transaction: {
-          status: 'SUCCESS'
-        }
-      },
+      where: whereClause,
       select: {
         affiliateId: true,
         commissionAmount: true,

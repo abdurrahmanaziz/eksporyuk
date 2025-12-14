@@ -15,65 +15,126 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const currentUserId = session.user.id
+    const startTime = Date.now()
+    console.log('🔄 Fetching affiliate leaderboard with REAL period-based data...')
 
-    // Get ALL affiliates ordered by totalEarnings (same as /admin/affiliates)
-    const allAffiliates = await prisma.affiliateProfile.findMany({
-      where: {
-        totalEarnings: { gt: 0 }
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
+    const now = new Date()
+    const weekAgo = new Date(now)
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    const monthAgo = new Date(now)
+    monthAgo.setDate(monthAgo.getDate() - 30)
+
+    // Function to aggregate conversions by period
+    async function getLeaderboardForPeriod(startDate?: Date) {
+      const whereClause: any = {
+        transaction: { status: 'SUCCESS' }
+      }
+      
+      if (startDate) {
+        whereClause.createdAt = { gte: startDate }
+      }
+      
+      const conversions = await prisma.affiliateConversion.findMany({
+        where: whereClause,
+        select: {
+          affiliateId: true,
+          commissionAmount: true,
+          affiliate: {
+            select: {
+              userId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true
+                }
+              }
+            }
           }
         }
-      },
-      orderBy: {
-        totalEarnings: 'desc'
+      })
+      
+      // Aggregate by affiliate
+      const aggregateMap = new Map<string, {
+        affiliateId: string
+        userId: string
+        name: string
+        avatar: string | null
+        totalCommission: number
+        conversions: number
+      }>()
+      
+      for (const conv of conversions) {
+        if (!conv.affiliate) continue
+        
+        const existing = aggregateMap.get(conv.affiliateId)
+        const commission = Number(conv.commissionAmount)
+        
+        if (existing) {
+          existing.totalCommission += commission
+          existing.conversions += 1
+        } else {
+          aggregateMap.set(conv.affiliateId, {
+            affiliateId: conv.affiliateId,
+            userId: conv.affiliate.userId,
+            name: conv.affiliate.user?.name || 'Unknown',
+            avatar: conv.affiliate.user?.avatar || null,
+            totalCommission: commission,
+            conversions: 1
+          })
+        }
       }
-    })
-
-    // Find current user's rank
-    const currentUserAffiliate = await prisma.affiliateProfile.findUnique({
-      where: { userId: currentUserId }
-    })
-
-    let currentUserRank = undefined
-    if (currentUserAffiliate) {
-      const userIndex = allAffiliates.findIndex(a => a.id === currentUserAffiliate.id)
-      if (userIndex >= 0) {
-        currentUserRank = userIndex + 1
+      
+      // Sort and format - top 10
+      const sorted = Array.from(aggregateMap.values())
+        .sort((a, b) => b.totalCommission - a.totalCommission)
+      
+      const leaderboard = sorted
+        .slice(0, 10)
+        .map((entry, index) => ({
+          rank: index + 1,
+          userId: entry.userId,
+          affiliateId: entry.affiliateId,
+          name: entry.name,
+          avatar: entry.avatar,
+          points: entry.totalCommission,
+          conversions: entry.conversions
+        }))
+      
+      // Find current user rank
+      let currentUserRank: number | undefined
+      if (session?.user?.id) {
+        const userIndex = sorted.findIndex(e => e.userId === session.user.id)
+        if (userIndex !== -1) {
+          currentUserRank = userIndex + 1
+        }
       }
+      
+      return { leaderboard, currentUserRank }
     }
 
-    // Format top 10 data
-    const leaderboardData = allAffiliates.slice(0, 10).map((aff, index) => ({
-      rank: index + 1,
-      userId: aff.userId,
-      affiliateId: aff.id,
-      name: aff.user?.name || 'Unknown',
-      avatar: aff.user?.avatar,
-      points: Number(aff.totalEarnings),
-      conversions: aff.totalConversions
-    }))
+    // Fetch all three periods in parallel
+    const [allTimeData, weeklyData, monthlyData] = await Promise.all([
+      getLeaderboardForPeriod(), // No date filter = all time
+      getLeaderboardForPeriod(weekAgo),
+      getLeaderboardForPeriod(monthAgo)
+    ])
 
-    // Return SAME data for all tabs
+    const endTime = Date.now()
+    console.log(`✅ Fetched in ${endTime - startTime}ms`)
+    console.log(`📊 All-Time Top: ${allTimeData.leaderboard[0]?.name} - Rp ${allTimeData.leaderboard[0]?.points.toLocaleString('id-ID')}`)
+    console.log(`📊 Weekly Top: ${weeklyData.leaderboard[0]?.name} - Rp ${weeklyData.leaderboard[0]?.points.toLocaleString('id-ID')}`)
+
+    // Return REAL period-based data with current user ranks
     return NextResponse.json(
       {
-        allTime: [],
-        weekly: leaderboardData,
-        monthly: leaderboardData,
+        allTime: allTimeData.leaderboard,
+        weekly: weeklyData.leaderboard,
+        monthly: monthlyData.leaderboard,
         currentUserRank: {
-          weekly: currentUserRank,
-          monthly: currentUserRank,
-          allTime: currentUserRank
-        },
-        totalAffiliates: {
-          weekly: allAffiliates.length,
-          monthly: allAffiliates.length
+          allTime: allTimeData.currentUserRank,
+          weekly: weeklyData.currentUserRank,
+          monthly: monthlyData.currentUserRank
         },
         timestamp: new Date().toISOString()
       },

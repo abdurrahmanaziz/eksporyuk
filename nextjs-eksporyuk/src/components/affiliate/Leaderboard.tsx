@@ -20,7 +20,7 @@ interface LeaderboardEntry {
 }
 
 interface LeaderboardProps {
-  period?: 'weekly' | 'monthly'
+  period?: 'weekly' | 'monthly' | 'all-time'
   limit?: number
   showCurrentUser?: boolean
 }
@@ -33,7 +33,7 @@ export default function Leaderboard({
   const [loading, setLoading] = useState(true)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [currentUserRank, setCurrentUserRank] = useState<any>(null)
-  const [selectedPeriod, setSelectedPeriod] = useState(period)
+  const [selectedPeriod, setSelectedPeriod] = useState<'weekly' | 'monthly' | 'all-time'>(period)
 
   useEffect(() => {
     fetchLeaderboard()

@@ -20,51 +20,109 @@ export async function GET() {
     }
 
     const startTime = Date.now()
-    console.log('🔄 Fetching leaderboard from AffiliateProfile.totalEarnings...')
+    console.log('🔄 Fetching leaderboard with REAL period-based data...')
 
-    // Get all affiliates ordered by totalEarnings
-    // This is the ACCURATE data synced from WordPress (same as /admin/affiliates)
-    const allAffiliates = await prisma.affiliateProfile.findMany({
-      where: {
-        totalEarnings: { gt: 0 }
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
+    const now = new Date()
+    const weekAgo = new Date(now)
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    const monthAgo = new Date(now)
+    monthAgo.setDate(monthAgo.getDate() - 30)
+
+    // Function to aggregate conversions by period
+    async function getLeaderboardForPeriod(startDate?: Date) {
+      const whereClause: any = {
+        transaction: { status: 'SUCCESS' }
+      }
+      
+      if (startDate) {
+        whereClause.createdAt = { gte: startDate }
+      }
+      
+      const conversions = await prisma.affiliateConversion.findMany({
+        where: whereClause,
+        select: {
+          affiliateId: true,
+          commissionAmount: true,
+          affiliate: {
+            select: {
+              userId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true
+                }
+              }
+            }
           }
         }
-      },
-      orderBy: {
-        totalEarnings: 'desc'
-      },
-      take: 10
-    })
+      })
+      
+      // Aggregate by affiliate
+      const aggregateMap = new Map<string, {
+        affiliateId: string
+        userId: string
+        name: string
+        avatar: string | null
+        totalCommission: number
+        conversions: number
+      }>()
+      
+      for (const conv of conversions) {
+        if (!conv.affiliate) continue
+        
+        const existing = aggregateMap.get(conv.affiliateId)
+        const commission = Number(conv.commissionAmount)
+        
+        if (existing) {
+          existing.totalCommission += commission
+          existing.conversions += 1
+        } else {
+          aggregateMap.set(conv.affiliateId, {
+            affiliateId: conv.affiliateId,
+            userId: conv.affiliate.userId,
+            name: conv.affiliate.user?.name || 'Unknown',
+            avatar: conv.affiliate.user?.avatar || null,
+            totalCommission: commission,
+            conversions: 1
+          })
+        }
+      }
+      
+      // Sort and format
+      return Array.from(aggregateMap.values())
+        .sort((a, b) => b.totalCommission - a.totalCommission)
+        .slice(0, 10)
+        .map((entry, index) => ({
+          rank: index + 1,
+          userId: entry.userId,
+          affiliateId: entry.affiliateId,
+          name: entry.name,
+          avatar: entry.avatar,
+          points: entry.totalCommission,
+          conversions: entry.conversions
+        }))
+    }
 
-    console.log(`✅ Top: ${allAffiliates[0]?.user?.name} - Rp ${Number(allAffiliates[0]?.totalEarnings).toLocaleString('id-ID')}`)
-
-    // Format data - SAME for all tabs
-    const leaderboardData = allAffiliates.map((aff, index) => ({
-      rank: index + 1,
-      userId: aff.userId,
-      affiliateId: aff.id,
-      name: aff.user?.name || 'Unknown',
-      avatar: aff.user?.avatar,
-      points: Number(aff.totalEarnings),
-      conversions: aff.totalConversions
-    }))
+    // Fetch all three periods in parallel
+    const [allTime, weekly, monthly] = await Promise.all([
+      getLeaderboardForPeriod(), // No date filter = all time
+      getLeaderboardForPeriod(weekAgo),
+      getLeaderboardForPeriod(monthAgo)
+    ])
 
     const endTime = Date.now()
     console.log(`✅ Fetched in ${endTime - startTime}ms`)
+    console.log(`📊 All-Time Top: ${allTime[0]?.name} - Rp ${allTime[0]?.points.toLocaleString('id-ID')}`)
+    console.log(`📊 Weekly Top: ${weekly[0]?.name} - Rp ${weekly[0]?.points.toLocaleString('id-ID')}`)
+    console.log(`📊 Monthly Top: ${monthly[0]?.name} - Rp ${monthly[0]?.points.toLocaleString('id-ID')}`)
 
-    // Return SAME data for all tabs - from AffiliateProfile.totalEarnings
+    // Return REAL period-based data
     return NextResponse.json(
       {
-        allTime: leaderboardData,
-        weekly: leaderboardData,
-        monthly: leaderboardData,
+        allTime,
+        weekly,
+        monthly,
         timestamp: new Date().toISOString()
       },
       {
