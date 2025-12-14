@@ -73,6 +73,7 @@ model User {
   createdCoupons          Coupon[]
   discussionThreads       CourseDiscussion[]           @relation("DiscussionAuthor")
   courseEnrollments       CourseEnrollment[]
+  courseConsents          CourseConsent[]
   courseNotes             CourseNote[]                 @relation("CourseNotes")
   courseReviews           CourseReview[]               @relation("CourseReviews")
   reviewHelpfulVotes      CourseReviewHelpful[]        @relation("ReviewHelpful")
@@ -1102,6 +1103,7 @@ model Course {
   affiliateLinks          AffiliateLink[]
   assignments             Assignment[]
   certificates            Certificate[]
+  consents                CourseConsent[]
   mentor                  MentorProfile          @relation(fields: [mentorId], references: [id], onDelete: Cascade)
   group                   Group?                 @relation(fields: [groupId], references: [id])
   certificateTemplate     CertificateTemplate?   @relation(fields: [certificateTemplateId], references: [id])
@@ -1214,6 +1216,24 @@ model CourseEnrollment {
   @@unique([userId, courseId], name: "userId_courseId")
   @@index([userId])
   @@index([courseId])
+}
+
+// Course Consent - Persetujuan Hak Cipta oleh Peserta
+model CourseConsent {
+  id           String   @id @default(cuid())
+  courseId     String
+  userId       String
+  consentText  String   @db.Text // Teks persetujuan yang disetujui
+  ipAddress    String?
+  userAgent    String?
+  agreedAt     DateTime @default(now())
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@index([agreedAt])
 }
 
 model Group {

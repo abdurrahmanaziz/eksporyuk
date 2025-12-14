@@ -21,6 +21,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Separator } from '@/components/ui/separator'
+import ProtectedYouTubePlayer from '@/components/learn/ProtectedYouTubePlayer'
+import CourseConsentModal from '@/components/learn/CourseConsentModal'
 
 // Dynamic import for video player (client-side only)
 const EnhancedVideoPlayer = dynamic(
@@ -212,6 +214,11 @@ export default function CoursePlayerPage() {
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [expandedModules, setExpandedModules] = useState<string[]>([]) // Track which modules are expanded
   
+  // Consent state
+  const [hasConsented, setHasConsented] = useState<boolean | null>(null)
+  const [showConsentModal, setShowConsentModal] = useState(false)
+  const [checkingConsent, setCheckingConsent] = useState(true)
+  
   const hasFetchedRef = useRef(false)
 
   useEffect(() => {
@@ -267,6 +274,35 @@ export default function CoursePlayerPage() {
     }
   }
 
+  // Check if user has consented to course copyright terms
+  const checkConsent = async (courseId: string) => {
+    try {
+      setCheckingConsent(true)
+      const response = await fetch(`/api/courses/consent?courseId=${courseId}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setHasConsented(data.hasConsented)
+        if (!data.hasConsented) {
+          setShowConsentModal(true)
+        }
+      }
+    } catch (error) {
+      console.error('Error checking consent:', error)
+      // Default to showing consent modal if check fails
+      setHasConsented(false)
+      setShowConsentModal(true)
+    } finally {
+      setCheckingConsent(false)
+    }
+  }
+
+  // Handle consent submission
+  const handleConsentSubmit = () => {
+    setHasConsented(true)
+    setShowConsentModal(false)
+  }
+
   useEffect(() => {
     if (!course) return
     
@@ -303,6 +339,9 @@ export default function CoursePlayerPage() {
       fetchLessonNotes(firstLesson.id)
       fetchLessonComments(firstLesson.id)
     }, 100)
+    
+    // Check consent when course is loaded
+    checkConsent(course.id)
   }, [course])
 
   // Auto-expand current module
@@ -1032,6 +1071,24 @@ export default function CoursePlayerPage() {
         </div>
       </div>
 
+      {/* Consent Modal */}
+      {course && session?.user && (
+        <CourseConsentModal
+          isOpen={showConsentModal}
+          onClose={() => {
+            // If user closes without consent, redirect back
+            if (!hasConsented) {
+              router.push('/dashboard/my-courses')
+            }
+          }}
+          onConsent={handleConsentSubmit}
+          courseTitle={course.title}
+          courseId={course.id}
+          userName={session.user.name || ''}
+          userEmail={session.user.email || ''}
+        />
+      )}
+
       <div className="container mx-auto px-0 sm:px-4 py-0 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-0 lg:gap-6">
           {/* Main Content */}
@@ -1042,23 +1099,13 @@ export default function CoursePlayerPage() {
                 {currentLesson.videoUrl ? (
                   <div className="relative bg-black">
                     {currentLesson.videoUrl.includes('youtube.com') || currentLesson.videoUrl.includes('youtu.be') ? (
-                      <div className="aspect-video">
-                        <iframe
-                          className="w-full h-full"
-                          src={(() => {
-                            let url = currentLesson.videoUrl
-                            if (url.includes('watch?v=')) {
-                              url = url.replace('watch?v=', 'embed/')
-                            } else if (url.includes('youtu.be/')) {
-                              url = url.replace('youtu.be/', 'youtube.com/embed/')
-                            }
-                            return url
-                          })()}
-                          title={currentLesson.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
+                      /* Protected YouTube Player with overlay and legal notice */
+                      <ProtectedYouTubePlayer
+                        videoUrl={currentLesson.videoUrl}
+                        title={currentLesson.title}
+                        userName={session?.user?.name}
+                        userEmail={session?.user?.email}
+                      />
                     ) : currentLesson.videoUrl.includes('vimeo.com') ? (
                       <div className="aspect-video">
                         <iframe
