@@ -121,12 +121,6 @@ interface Transaction {
       }
     }
   } | null;
-  affiliateInfo?: {
-    email: string;
-    name: string;
-    commissionAmount: number;
-    productId: number;
-  } | null;
 }
 
 interface FollowUpTemplate {
@@ -236,8 +230,8 @@ export default function AdminSalesPage() {
       tx.status,
       tx.paymentMethod || '',
       tx.coupon?.code || '',
-      tx.affiliateInfo?.name || tx.affiliateConversion?.affiliate.user.name || '',
-      tx.affiliateInfo?.commissionAmount || tx.affiliateConversion?.commissionAmount || 0,
+      tx.affiliateConversion?.affiliate.user.name || '',
+      tx.affiliateConversion?.commissionAmount || 0,
     ]);
     return [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
   };
@@ -859,11 +853,7 @@ export default function AdminSalesPage() {
 
                         {/* Affiliate */}
                         <TableCell className="text-sm">
-                          {tx.affiliateInfo ? (
-                            <div className="font-medium">
-                              {tx.affiliateInfo.name}
-                            </div>
-                          ) : tx.affiliateConversion ? (
+                          {tx.affiliateConversion ? (
                             <div className="font-medium">
                               {tx.affiliateConversion.affiliate.user.name}
                             </div>
@@ -881,19 +871,7 @@ export default function AdminSalesPage() {
 
                         {/* Komisi */}
                         <TableCell>
-                          {tx.affiliateInfo ? (
-                            <div>
-                              <div className="font-semibold text-sm text-orange-600">
-                                Rp {tx.affiliateInfo.commissionAmount.toLocaleString('id-ID')}
-                              </div>
-                              <Badge 
-                                variant="default"
-                                className="text-xs mt-1"
-                              >
-                                VALID
-                              </Badge>
-                            </div>
-                          ) : tx.affiliateConversion ? (
+                          {tx.affiliateConversion ? (
                             <div>
                               <div className="font-semibold text-sm text-orange-600">
                                 Rp {Number(tx.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
@@ -1322,7 +1300,7 @@ export default function AdminSalesPage() {
                 </Card>
 
                 {/* Affiliate Info */}
-                {(selectedTransaction.affiliateInfo || selectedTransaction.affiliateConversion) && (
+                {selectedTransaction.affiliateConversion && (
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center gap-2">
@@ -1334,33 +1312,23 @@ export default function AdminSalesPage() {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Nama Affiliate:</span>
                         <span className="font-medium">
-                          {selectedTransaction.affiliateInfo?.name || selectedTransaction.affiliateConversion?.affiliate.user.name}
+                          {selectedTransaction.affiliateConversion.affiliate.user.name}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Komisi:</span>
                         <span className="font-bold text-orange-600">
-                          Rp {(selectedTransaction.affiliateInfo?.commissionAmount || selectedTransaction.affiliateConversion?.commissionAmount || 0).toLocaleString('id-ID')}
+                          Rp {Number(selectedTransaction.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
                         </span>
                       </div>
-                      {selectedTransaction.affiliateInfo && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Product ID (Sejoli):</span>
-                          <Badge variant="outline">
-                            #{selectedTransaction.affiliateInfo.productId}
-                          </Badge>
-                        </div>
-                      )}
-                      {selectedTransaction.affiliateConversion && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Status Komisi:</span>
-                          <Badge 
-                            variant={selectedTransaction.affiliateConversion.commissionStatus === 'PAID' ? 'default' : 'secondary'}
-                          >
-                            {selectedTransaction.affiliateConversion.commissionStatus}
-                          </Badge>
-                        </div>
-                      )}
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Status Komisi:</span>
+                        <Badge 
+                          variant={selectedTransaction.affiliateConversion.commissionStatus === 'PAID' ? 'default' : 'secondary'}
+                        >
+                          {selectedTransaction.affiliateConversion.commissionStatus}
+                        </Badge>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
