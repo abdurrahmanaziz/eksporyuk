@@ -3810,3 +3810,120 @@ Halaman **/admin/settings/branding**:
 * Siap production
 
 
+
+---
+
+## 📊 DATA MIGRASI SEJOLI → NEXT.JS
+
+### STRUKTUR DATA SEJOLI
+Data yang tersedia dari export Sejoli (`sejolisa-full-18000users-1765279985617.json`):
+
+✅ **Produk** - Ada di `order.product_id` (contoh: 179, 13401, 3840, dll)
+✅ **Harga** - Ada di `order.grand_total` per transaksi  
+✅ **User pembeli** - Ada di `order.user_id`
+✅ **Affiliate** - Ada di `order.affiliate_id` dan bisa di-lookup ke tabel `affiliates` untuk dapat nama & email
+✅ **Status transaksi** - Ada di `order.status` (completed, cancelled, refunded, payment-confirm, on-hold)
+
+### KOMISI SISTEM
+✅ **Komisi sudah tersimpan di**:
+- **Database**: `AffiliateConversion.commissionAmount` (sudah benar)
+- **File**: `flat-commission-final.json` (total per affiliate - 97 affiliates, Rp 1.232.435.000 total)
+- **Mapping**: `product-membership-mapping.js` (komisi per product_id)
+
+✅ **Setiap produk beda-beda komisi**:
+- Product 179 → Rp 250.000
+- Product 13401 → Rp 325.000
+- Product 3840 → Rp 300.000
+- Product 8683 → Rp 300.000
+- Product 8684 → Rp 250.000
+- dll (total 54 produk dengan komisi Rp 0 - Rp 325.000)
+
+### KATEGORI PRODUK & MEMBERSHIP MAPPING
+
+#### 📦 LIFETIME MEMBERSHIP (15 produk) → User dapat membership LIFETIME
+**Product IDs**: 28, 93, 179, 1529, 3840, 4684, 6068, 6810, 11207, 13401, 15234, 16956, 17920, 19296, 20852
+**Komisi**: Rp 0 - Rp 325.000 (tergantung produk)
+
+#### 📅 12 BULAN MEMBERSHIP (2 produk) → User dapat membership 12 BULAN
+**Product IDs**: 8683, 13399
+**Komisi**: Rp 250.000 - Rp 300.000
+
+#### 📅 6 BULAN MEMBERSHIP (2 produk) → User dapat membership 6 BULAN
+**Product IDs**: 8684, 13400
+**Komisi**: Rp 200.000 - Rp 250.000
+
+#### 🔄 RENEWAL (3 produk) → Perpanjangan membership existing
+**Product IDs**: 8910, 8914, 8915
+**Komisi**: Rp 0 (no commission)
+
+#### 🎤 EVENT/WEBINAR/ZOOMINAR (19 produk) → User GRATIS/FREE di web baru
+**Product IDs**: 397, 488, 12994, 13039, 13045, 16130, 16860, 16963, 17227, 17322, 17767, 18358, 18528, 18705, 18893, 19042, 20130, 20336, 21476
+**Komisi**: Rp 0 - Rp 100.000
+**Catatan**: User yang beli event/webinar tetap bisa akses platform tapi TIDAK dapat membership premium.
+
+#### 🛠️ TOOL/APLIKASI (4 produk) → Tidak dapat membership
+**Product IDs**: 2910, 3764, 4220, 8686
+**Komisi**: Rp 0 - Rp 85.000
+
+#### 💼 JASA (6 produk) → Tidak dapat membership
+**Product IDs**: 5928, 5932, 5935, 16581, 16587, 16592
+**Komisi**: Rp 0 - Rp 150.000
+
+#### 🆓 GRATIS (1 produk) → Tidak dapat membership
+**Product ID**: 300 (Kelas Ekspor Gratis)
+
+#### 🎯 LAINNYA (1 produk)
+**Product ID**: 16826 (Paket Umroh 1 Bulan + Cari Buyer Ekspor)
+
+### STATISTIK DATA
+- **Total Users**: 18,000
+- **Total Orders**: 18,584
+- **Completed Orders**: 12,539
+- **Total Affiliates**: 12,585
+- **Orders dengan Affiliate**: 11,291
+- **Affiliates dengan Komisi**: 97 affiliates
+- **Total Commission Paid**: Rp 1.232.435.000
+- **Total Revenue**: Rp 3.950.660.373
+
+### FILE MAPPING & HELPER
+- **Product Mapping**: `/scripts/migration/product-membership-mapping.js`
+- **Commission Data**: `/scripts/migration/flat-commission-final.json`
+- **Sejoli Export**: `/scripts/migration/wp-data/sejolisa-full-18000users-1765279985617.json`
+- **Commission Helper**: `/src/lib/sejoli-commission.ts` - `getCommissionBySejolProductId(productId)`
+
+📊 DATA YANG SAYA KETAHUI LENGKAP:
+1. PRODUK & KATEGORI (54 produk total)
+15 produk → Lifetime Membership (komisi Rp 0 - Rp 325.000)
+2 produk → 12 Bulan Membership (komisi Rp 250.000 - Rp 300.000)
+2 produk → 6 Bulan Membership (komisi Rp 200.000 - Rp 250.000)
+19 produk → Event/Webinar (user jadi FREE, komisi Rp 0 - Rp 100.000)
+3 produk → Renewal (komisi Rp 0)
+6 produk → Jasa (komisi Rp 0 - Rp 150.000)
+4 produk → Tools/Aplikasi (komisi Rp 0 - Rp 85.000)
+1 produk → Gratis
+1 produk → Lainnya
+1 produk → Paket Umroh
+2. DATA TRANSAKSI SEJOLI
+Total Orders: 18,584
+Completed Orders: 12,539
+Total Revenue: Rp 3.950.660.373
+Orders dengan Affiliate: 11,291
+3. DATA AFFILIATE & KOMISI
+Total Affiliates di Sejoli: 12,585
+Affiliates yang dapat komisi: 97 orang
+Total Komisi Dibayar: Rp 1.232.435.000
+4. CONTOH KOMISI PER PRODUK
+Product 13401 → Rp 325.000 (komisi tertinggi)
+Product 179 → Rp 250.000
+Product 3840 → Rp 300.000
+Product 8683 → Rp 300.000 (12 bulan)
+Product 8684 → Rp 250.000 (6 bulan)
+5. FILE YANG SUDAH ADA
+✅ product-membership-mapping.js - Mapping 54 produk
+✅ flat-commission-final.json - Total komisi 97 affiliates
+✅ sejolisa-full-18000users-1765279985617.json - Export lengkap
+✅ Database AffiliateConversion.commissionAmount - Data sudah benar
+6. SISTEM KOMISI SUDAH FIXED
+✅ API /admin/transactions sudah pakai database saja
+✅ Frontend menampilkan affiliateConversion.commissionAmount yang benar
+✅ Tidak lagi pakai perhitungan 30% yang salah
