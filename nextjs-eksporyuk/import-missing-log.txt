@@ -1,0 +1,31 @@
+(node:77484) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/import-missing-sejoli-orders.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+🔄 INCREMENTAL IMPORT - Missing Sejoli Orders
+
+📂 Loaded:
+  - 19246 orders from TSV
+  - 18605 users from TSV
+  - 16843 commissions from TSV
+
+🔍 Checking existing transactions...
+  Found 18591 existing sejoliOrderIds
+
+👥 Building user mappings...
+  Mapped 17965 emails to user IDs
+
+💰 Building commission mappings...
+  Mapped 11133 orders with affiliate commission
+
+🔍 Filtering missing orders...
+
+📊 Import Summary:
+  Total orders in TSV: 19246
+  Already exists: 18591
+  No user match: 655
+  Ready to import: 0
+  With affiliate commission: 0
+
+✅ No new orders to import!
