@@ -567,6 +567,7 @@ export default function DashboardPage() {
 
       <div className="mt-4 sm:mt-6">
         <Leaderboard period="weekly" limit={10} showCurrentUser={true} />
+      </div>
     </div>
   )
 }
