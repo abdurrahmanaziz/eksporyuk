@@ -610,8 +610,8 @@ export default function AffiliateLinksPage() {
 
   return (
     <FeatureLock feature="links">
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 px-3 sm:px-4 md:px-6 lg:px-12">
-      <div className="max-w-full mx-auto">
+    <div className="min-h-screen bg-gray-50 px-4 py-4 sm:px-6 sm:py-6">
+      <div className="max-w-full mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Link Affiliate</h1>

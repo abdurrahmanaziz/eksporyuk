@@ -202,7 +202,7 @@ export default function AffiliateShortLinksPage() {
 
   return (
     <FeatureLock feature="short-links">
-    <div className="p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-50 px-4 py-4 sm:px-6 sm:py-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
         <div>
           <h1 className="text-xl sm:text-3xl font-bold">My Short Links</h1>

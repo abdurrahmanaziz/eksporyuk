@@ -175,7 +175,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-4 sm:px-6 sm:py-6 space-y-4 sm:space-y-6">
       {/* Modern Header - Mobile Optimized */}
       <div className="flex flex-col gap-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-start justify-between">
