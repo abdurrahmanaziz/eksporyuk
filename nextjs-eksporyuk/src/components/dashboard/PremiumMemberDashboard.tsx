@@ -189,20 +189,20 @@ export default function PremiumMemberDashboard() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">✌️</span>
-                  <p className="text-blue-100 text-sm font-medium">{getGreeting()}</p>
+                  <p className="text-white/90 text-sm font-medium">{getGreeting()}</p>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold mb-2 text-white">
                   Welcome back, {userName}!
                 </h1>
-                <p className="text-blue-100 max-w-md">
-                  Fantastic Progress! 🎉 Kamu sudah menyelesaikan <span className="text-white font-semibold">{data?.stats.totalLessons ? Math.round((data.stats.completedLessons / data.stats.totalLessons) * 100) : 0}%</span> dari target belajar mingguan!
+                <p className="text-white/90 max-w-md">
+                  Fantastic Progress! 🎉 Kamu sudah menyelesaikan <span className="text-yellow-300 font-bold">{data?.stats.totalLessons ? Math.round((data.stats.completedLessons / data.stats.totalLessons) * 100) : 0}%</span> dari target belajar mingguan!
                 </p>
                 
                 {/* Progress indicator */}
                 <div className="mt-4 max-w-xs">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-blue-100">Progress Belajar</span>
-                    <span className="font-semibold">
+                    <span className="text-white/80">Progress Belajar</span>
+                    <span className="font-bold text-yellow-300">
                       {data?.stats.totalLessons ? Math.round((data.stats.completedLessons / data.stats.totalLessons) * 100) : 0}%
                     </span>
                   </div>
@@ -229,7 +229,7 @@ export default function PremiumMemberDashboard() {
                 <Link href="/learn">
                   <Button 
                     size="lg" 
-                    className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg"
+                    className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg font-semibold"
                   >
                     <PlayCircle className="w-5 h-5 mr-2" />
                     Lanjut Belajar
@@ -238,6 +238,126 @@ export default function PremiumMemberDashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ✨ SPOTLIGHT SECTION - Quick Access to Class & Group */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Spotlight: Kelas Utama */}
+          {data?.courses && data.courses.length > 0 ? (
+            <Link href={`/learn/${data.courses[0].slug}`} className="group">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 h-[200px] shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-black/10" />
+                <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full" />
+                <div className="absolute right-4 top-4 w-20 h-20 bg-white/10 rounded-full" />
+                
+                <div className="relative h-full flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                        <GraduationCap className="w-6 h-6" />
+                      </div>
+                      <Badge className="bg-white/20 text-white border-0">
+                        {data.courses[0].status === 'IN_PROGRESS' ? '🔥 Lanjutkan' : '📚 Mulai Belajar'}
+                      </Badge>
+                    </div>
+                    <h3 className="text-xl font-bold mb-1 line-clamp-2 group-hover:underline decoration-2 underline-offset-2">
+                      {data.courses[0].title}
+                    </h3>
+                    <p className="text-white/80 text-sm">
+                      {data.courses[0].completedLessons}/{data.courses[0].totalLessons} materi selesai
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Progress 
+                        value={data.courses[0].progress} 
+                        className="w-24 h-2 bg-white/20"
+                      />
+                      <span className="text-sm font-semibold">{data.courses[0].progress}%</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-white font-semibold group-hover:gap-2 transition-all">
+                      Masuk Kelas <ArrowRight className="w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <Link href="/courses" className="group">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 h-[200px] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-black/10" />
+                <div className="relative h-full flex flex-col items-center justify-center text-center">
+                  <GraduationCap className="w-12 h-12 mb-3 opacity-80" />
+                  <h3 className="text-xl font-bold mb-2">Mulai Belajar</h3>
+                  <p className="text-white/80 text-sm mb-3">Jelajahi kursus ekspor yang tersedia</p>
+                  <div className="flex items-center gap-1 font-semibold">
+                    Lihat Kursus <ArrowRight className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )}
+
+          {/* Spotlight: Grup Utama */}
+          {data?.groups && data.groups.length > 0 ? (
+            <Link href={`/community/groups/${data.groups[0].slug}`} className="group">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white p-6 h-[200px] shadow-lg shadow-violet-500/20 hover:shadow-xl hover:shadow-violet-500/30 transition-all duration-300 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-black/10" />
+                <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full" />
+                <div className="absolute right-4 top-4 w-20 h-20 bg-white/10 rounded-full" />
+                
+                <div className="relative h-full flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                        <Users className="w-6 h-6" />
+                      </div>
+                      <Badge className="bg-white/20 text-white border-0">
+                        💬 Komunitas Aktif
+                      </Badge>
+                    </div>
+                    <h3 className="text-xl font-bold mb-1 line-clamp-2 group-hover:underline decoration-2 underline-offset-2">
+                      {data.groups[0].name}
+                    </h3>
+                    <p className="text-white/80 text-sm">
+                      {data.groups[0].memberCount.toLocaleString()} member aktif
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-2">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="w-8 h-8 rounded-full bg-white/30 border-2 border-violet-500 flex items-center justify-center text-xs font-bold">
+                            {String.fromCharCode(65 + i)}
+                          </div>
+                        ))}
+                      </div>
+                      <span className="text-sm text-white/80">+{Math.max(0, data.groups[0].memberCount - 4)}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-white font-semibold group-hover:gap-2 transition-all">
+                      Masuk Grup <ArrowRight className="w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <Link href="/community/groups" className="group">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white p-6 h-[200px] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-black/10" />
+                <div className="relative h-full flex flex-col items-center justify-center text-center">
+                  <Users className="w-12 h-12 mb-3 opacity-80" />
+                  <h3 className="text-xl font-bold mb-2">Gabung Komunitas</h3>
+                  <p className="text-white/80 text-sm mb-3">Temukan grup diskusi eksportir</p>
+                  <div className="flex items-center gap-1 font-semibold">
+                    Lihat Grup <ArrowRight className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )}
         </div>
 
         {/* Announcements Banner */}
