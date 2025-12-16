@@ -17,16 +17,17 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     
-    // Filter parameters
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
+    // Filter parameters (support both old/new param names)
+    const startDate = searchParams.get('startDate') || searchParams.get('dateFrom')
+    const endDate = searchParams.get('endDate') || searchParams.get('dateTo')
     const status = searchParams.get('status')
     const type = searchParams.get('type')
     const membershipDuration = searchParams.get('membershipDuration') // NEW: Filter by membership duration
     const userId = searchParams.get('userId')
     const affiliateId = searchParams.get('affiliateId')
     const productId = searchParams.get('productId')
-    const search = searchParams.get('search')
+    const search = searchParams.get('search') || searchParams.get('invoice') || ''
+    const paymentMethod = searchParams.get('paymentMethod')
     const membershipName = searchParams.get('membershipName')
     const productName = searchParams.get('productName')
     const courseName = searchParams.get('courseName')
@@ -50,6 +51,11 @@ export async function GET(request: NextRequest) {
     
     if (status && status !== 'ALL') {
       where.status = status
+    }
+    
+    // Filter by payment method if provided (VA | EWALLET | QRIS | RETAIL | MANUAL)
+    if (paymentMethod && paymentMethod !== 'ALL') {
+      where.paymentMethod = paymentMethod
     }
     
     // Handle type filter with membership duration
@@ -158,7 +164,7 @@ export async function GET(request: NextRequest) {
               select: {
                 id: true,
                 name: true,
-                duration: true,
+                // duration intentionally omitted to avoid enum decode errors from legacy values
                 price: true,
                 reminders: true,
               }
@@ -213,19 +219,51 @@ export async function GET(request: NextRequest) {
               select: {
                 id: true,
                 name: true,
-                duration: true,
+                // duration intentionally omitted to avoid enum decode errors
                 price: true,
                 reminders: true,
               }
             })
+            // Safely fetch duration via raw SQL
+            let derivedDuration: string | null = null
+            try {
+              const dRows: any[] = await prisma.$queryRaw`SELECT duration FROM Membership WHERE id = ${membershipId} LIMIT 1`
+              derivedDuration = (dRows?.[0]?.duration as string) || null
+            } catch (_) {
+              derivedDuration = null
+            }
             
             if (membership) {
               return {
                 ...tx,
+                // attach relation without enum duration
                 membership: {
                   membership: membership
+                },
+                // ensure metadata carries duration for UI grouping/filtering
+                metadata: {
+                  ...(tx.metadata as any || {}),
+                  membershipDuration: (tx.metadata as any)?.membershipDuration || derivedDuration || null,
                 }
               }
+            }
+          }
+        }
+        // If it has membership relation but no metadata duration, try to derive
+        if (tx.type === 'MEMBERSHIP' && tx.membership && !((tx.metadata as any)?.membershipDuration)) {
+          const mId = tx.membership.membership.id
+          let derivedDuration: string | null = null
+          try {
+            const dRows: any[] = await prisma.$queryRaw`SELECT duration FROM Membership WHERE id = ${mId} LIMIT 1`
+            derivedDuration = (dRows?.[0]?.duration as string) || null
+          } catch (_) {
+            derivedDuration = null
+          }
+          return {
+            ...tx,
+            metadata: {
+              ...(tx.metadata as any || {}),
+              membershipDuration: derivedDuration,
             }
           }
         }
@@ -238,20 +276,27 @@ export async function GET(request: NextRequest) {
     if (filterDuration) {
       filteredTransactions = enrichedTransactions.filter(tx => {
         if (tx.type !== 'MEMBERSHIP') return false
-        
-        // Get duration from membership relation or metadata
-        const duration = tx.membership?.membership?.duration || (tx.metadata as any)?.membershipDuration || (tx.metadata as any)?.duration
-        return duration === filterDuration
+        // Prefer metadata-derived duration to avoid enum decoding on relation
+        const duration = (tx.metadata as any)?.membershipDuration 
+          || (tx.metadata as any)?.duration 
+          || tx.membership?.membership?.duration
+        return String(duration) === String(filterDuration)
       })
     }
     
     // Debug: Log full first transaction to see data structure
     if (filteredTransactions.length > 0) {
+      const firstTx = filteredTransactions[0]
       console.log('[Sales API] First enriched transaction:', JSON.stringify({
-        id: filteredTransactions[0].id,
-        type: filteredTransactions[0].type,
-        membership: filteredTransactions[0].membership,
-        metadata: (filteredTransactions[0].metadata as any)?.membershipId,
+        id: firstTx.id,
+        type: firstTx.type,
+        amount: firstTx.amount,
+        hasAffiliateConversion: !!firstTx.affiliateConversion,
+        affiliateConversion: firstTx.affiliateConversion ? {
+          id: firstTx.affiliateConversion.id,
+          commissionAmount: firstTx.affiliateConversion.commissionAmount,
+          affiliateName: firstTx.affiliateConversion.affiliate?.user?.name,
+        } : null,
       }, null, 2))
     }
     
@@ -418,7 +463,7 @@ export async function POST(request: NextRequest) {
               select: {
                 id: true,
                 name: true,
-                duration: true,
+                // duration intentionally omitted to avoid enum decode errors from legacy values
                 price: true,
                 reminders: true,
               }

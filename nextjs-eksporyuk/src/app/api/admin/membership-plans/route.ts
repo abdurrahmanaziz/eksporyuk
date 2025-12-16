@@ -26,6 +26,19 @@ export async function GET(request: NextRequest) {
     const plans = await prisma.membership.findMany({
       include: {
         membershipFeatures: true,
+        userMemberships: {
+          take: 1,
+          orderBy: {
+            createdAt: 'desc'
+          },
+          include: {
+            transaction: {
+              select: {
+                createdAt: true
+              }
+            }
+          }
+        },
         _count: {
           select: {
             userMemberships: true,
@@ -40,10 +53,29 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Sort plans by latest transaction date
+    const sortedPlans = plans.sort((a, b) => {
+      const aLatestTx = a.userMemberships[0]?.transaction?.createdAt
+      const bLatestTx = b.userMemberships[0]?.transaction?.createdAt
+      
+      // If both have transactions, sort by latest transaction date
+      if (aLatestTx && bLatestTx) {
+        return new Date(bLatestTx).getTime() - new Date(aLatestTx).getTime()
+      }
+      
+      // Plans with transactions come first
+      if (aLatestTx && !bLatestTx) return -1
+      if (!aLatestTx && bLatestTx) return 1
+      
+      // If neither has transactions, sort by creation date
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+
     // Parse features as prices for frontend
-    const plansWithPrices = plans.map(plan => {
+    const plansWithPrices = sortedPlans.map(plan => {
       let prices: any[] = []
       let benefits: any[] = []
+      let featureTags: any[] = []
       
       if (plan.features) {
         try {
@@ -54,8 +86,27 @@ export async function GET(request: NextRequest) {
             featuresData = JSON.parse(featuresData)
           }
           
-          // Check if array
-          if (Array.isArray(featuresData) && featuresData.length > 0) {
+          // New format: { tags: [], benefits: [] }
+          if (featuresData && typeof featuresData === 'object' && !Array.isArray(featuresData) && 'benefits' in featuresData) {
+            featureTags = Array.isArray(featuresData.tags) ? featuresData.tags : []
+            benefits = Array.isArray(featuresData.benefits) ? featuresData.benefits : []
+            
+            const basePrice = parseFloat(plan.price?.toString() || '0')
+            const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
+            
+            prices = [{
+              duration: plan.duration || 'ONE_MONTH',
+              label: plan.name,
+              price: basePrice,
+              originalPrice: originalPrice,
+              discount: plan.discount || 0,
+              benefits: benefits,
+              badge: '',
+              isPopular: plan.isPopular || false
+            }]
+          }
+          // Check if array (old format)
+          else if (Array.isArray(featuresData) && featuresData.length > 0) {
             const firstItem = featuresData[0]
             
             // Type A: Price objects
@@ -90,6 +141,8 @@ export async function GET(request: NextRequest) {
         ...plan,
         prices,
         benefits,
+        featureTags,
+        features: [...featureTags, ...benefits], // Backward compatible flat array
         affiliateCommission: parseFloat(plan.affiliateCommissionRate?.toString() || '0.30'),
         salespage: plan.salesPageUrl || ''
       }

@@ -110,13 +110,13 @@ export default function EditMembershipPlanPage() {
     slug: "",
     description: "",
     price: 0,
-    duration: 30,
-    durationType: "DAYS",
+    duration: "SIX_MONTHS" as "SIX_MONTHS" | "TWELVE_MONTHS" | "LIFETIME",
     status: "DRAFT",
     features: [] as string[],
     
     // Access & Benefits
     groupId: "",
+    groups: [] as string[],
     courses: [] as string[],
     products: [] as string[],
     benefits: [] as string[],
@@ -179,20 +179,18 @@ export default function EditMembershipPlanPage() {
         setProducts(productsData.products || []);
       }
       
-      // Helper function to ensure array
-      const ensureArray = (value: any): any[] => {
-        if (!value) return [];
-        if (Array.isArray(value)) return value;
-        if (typeof value === 'string') {
-          try {
-            const parsed = JSON.parse(value);
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return [];
+      // Parse features from DB (always flat array)
+      let benefitsFromDB: string[] = [];
+      if (Array.isArray(membership.features)) {
+        benefitsFromDB = [...new Set(membership.features as string[])]; // Remove any duplicates
+      } else if (typeof membership.features === 'string') {
+        try {
+          const parsed = JSON.parse(membership.features);
+          if (Array.isArray(parsed)) {
+            benefitsFromDB = [...new Set(parsed as string[])];
           }
-        }
-        return [];
-      };
+        } catch {}
+      }
       
       // Set form data
       setFormData({
@@ -200,14 +198,14 @@ export default function EditMembershipPlanPage() {
         slug: membership.slug || "",
         description: membership.description || "",
         price: membership.price || 0,
-        duration: membership.duration || 30,
-        durationType: membership.durationType || "DAYS",
+        duration: membership.duration || "SIX_MONTHS",
         status: membership.status || "DRAFT",
-        features: ensureArray(membership.features),
+        features: [], // Empty - features are display only (badges)
         groupId: membership.groupId || "",
+        groups: membership.membershipGroups?.map((mg: any) => mg.groupId) || [],
         courses: membership.membershipCourses?.map((mc: any) => mc.courseId) || [],
         products: membership.membershipProducts?.map((mp: any) => mp.productId) || [],
-        benefits: ensureArray(membership.benefits),
+        benefits: benefitsFromDB,
         salesPageUrl: membership.salesPageUrl || "",
         buttonText: membership.buttonText || "Beli Membership",
         formLogo: membership.formLogo || "",
@@ -283,13 +281,38 @@ export default function EditMembershipPlanPage() {
         }
       }
 
+      // Combine features and benefits as flat array (benefits go to DB, features are just display)
+      // Use Set to remove duplicates before saving
+      const allBenefits = [
+        ...(Array.isArray(formData.features) ? formData.features : []),
+        ...(Array.isArray(formData.benefits) ? formData.benefits : [])
+      ];
+      const uniqueBenefits = [...new Set(allBenefits)];
+
+      // Only send fields that exist in the Membership schema
+      const updatePayload = {
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        price: formData.price,
+        duration: formData.duration,
+        status: formData.status,
+        isActive: formData.isActive,
+        salesPageUrl: formData.salesPageUrl || '',
+        formLogo: formData.formLogo || '',
+        formBanner: formData.formBanner || '',
+        showInGeneralCheckout: formData.showInGeneralCheckout,
+        features: uniqueBenefits,
+        featureAccess: selectedFeatureAccess,
+        groups: formData.groups,
+        courses: formData.courses,
+        products: formData.products,
+      };
+
       const response = await fetch(`/api/admin/membership-plans/${membershipId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          featureAccess: selectedFeatureAccess, // Include selected feature access
-        }),
+        body: JSON.stringify(updatePayload),
       });
 
       const data = await response.json();
@@ -380,6 +403,13 @@ export default function EditMembershipPlanPage() {
       ? formData.products.filter(id => id !== productId)
       : [...formData.products, productId];
     setFormData({ ...formData, products });
+  };
+
+  const toggleGroup = (groupId: string) => {
+    const groups = formData.groups.includes(groupId)
+      ? formData.groups.filter(id => id !== groupId)
+      : [...formData.groups, groupId];
+    setFormData({ ...formData, groups });
   };
 
   if (loadingData) {
@@ -526,48 +556,28 @@ export default function EditMembershipPlanPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="duration">Durasi</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      value={formData.duration}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          duration: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      placeholder="30"
-                      disabled={formData.durationType === "LIFETIME"}
-                    />
-                    {formData.durationType === "LIFETIME" && (
-                      <p className="text-xs text-muted-foreground">
-                        Durasi otomatis unlimited untuk lifetime
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="durationType">Tipe Durasi</Label>
-                    <Select
-                      value={formData.durationType}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, durationType: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DAYS">Hari</SelectItem>
-                        <SelectItem value="MONTHS">Bulan</SelectItem>
-                        <SelectItem value="YEARS">Tahun</SelectItem>
-                        <SelectItem value="LIFETIME">Lifetime</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="duration">Durasi Membership</Label>
+                  <Select
+                    value={formData.duration}
+                    onValueChange={(value: "SIX_MONTHS" | "TWELVE_MONTHS" | "LIFETIME") =>
+                      setFormData({ ...formData, duration: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SIX_MONTHS">6 Bulan</SelectItem>
+                      <SelectItem value="TWELVE_MONTHS">12 Bulan</SelectItem>
+                      <SelectItem value="LIFETIME">Lifetime</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    {formData.duration === 'SIX_MONTHS' && '180 hari akses member'}
+                    {formData.duration === 'TWELVE_MONTHS' && '365 hari akses member'}
+                    {formData.duration === 'LIFETIME' && 'Akses selamanya tanpa batas waktu'}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -617,26 +627,42 @@ export default function EditMembershipPlanPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="groupId">Grup Komunitas</Label>
-                  <Select
-                    value={formData.groupId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, groupId: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih grup..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="NONE">Tidak ada grup</SelectItem>
-                      {groups.map((group) => (
-                        <SelectItem key={group.id} value={group.id}>
-                          {group.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-3">
+                  <Label>Grup Komunitas</Label>
+                  <div className="border rounded-lg p-4 max-h-60 overflow-y-auto">
+                    {groups.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Tidak ada grup tersedia
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {groups.map((group) => (
+                          <div
+                            key={group.id}
+                            className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md cursor-pointer"
+                            onClick={() => toggleGroup(group.id)}
+                          >
+                            <input
+                              type="checkbox"
+                              id={`group-${group.id}`}
+                              checked={formData.groups.includes(group.id)}
+                              onChange={() => {}}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <Label
+                              htmlFor={`group-${group.id}`}
+                              className="flex-1 cursor-pointer font-normal"
+                            >
+                              {group.name}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {formData.groups.length} grup dipilih
+                  </p>
                 </div>
 
                 <div className="space-y-3">

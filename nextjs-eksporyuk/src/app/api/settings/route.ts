@@ -23,73 +23,17 @@ export async function GET() {
       return response
     }
 
-    // Get or create default settings
-    let settings = await prisma.settings.findUnique({
-      where: { id: 1 },
-      select: {
-        siteTitle: true,
-        siteDescription: true,
-        siteLogo: true,
-        siteFavicon: true,
-        primaryColor: true,
-        secondaryColor: true,
-        accentColor: true,
-        buttonPrimaryBg: true,
-        buttonPrimaryText: true,
-        buttonSecondaryBg: true,
-        buttonSecondaryText: true,
-        buttonSuccessBg: true,
-        buttonSuccessText: true,
-        buttonDangerBg: true,
-        buttonDangerText: true,
-        buttonBorderRadius: true,
-        headerText: true,
-        footerText: true,
-        contactEmail: true,
-        contactPhone: true,
-        whatsappNumber: true,
-        instagramUrl: true,
-        facebookUrl: true,
-        linkedinUrl: true,
-        maintenanceMode: true,
-        defaultLanguage: true,
-        bannerImage: true,
-        // Dashboard Theme Colors
-        dashboardSidebarBg: true,
-        dashboardSidebarText: true,
-        dashboardSidebarActiveText: true,
-        dashboardSidebarActiveBg: true,
-        dashboardSidebarHoverBg: true,
-        dashboardHeaderBg: true,
-        dashboardHeaderText: true,
-        dashboardBodyBg: true,
-        dashboardCardBg: true,
-        dashboardCardBorder: true,
-        dashboardCardHeaderBg: true,
-        dashboardTextPrimary: true,
-        dashboardTextSecondary: true,
-        dashboardTextMuted: true,
-        dashboardBorderColor: true,
-        dashboardSuccessColor: true,
-        dashboardWarningColor: true,
-        dashboardDangerColor: true,
-        dashboardInfoColor: true,
-        // Email Footer Settings
-        emailFooterText: true,
-        emailFooterCompany: true,
-        emailFooterAddress: true,
-        emailFooterPhone: true,
-        emailFooterEmail: true,
-        emailFooterWebsiteUrl: true,
-        emailFooterInstagramUrl: true,
-        emailFooterFacebookUrl: true,
-        emailFooterLinkedinUrl: true,
-        emailFooterCopyrightText: true,
-        revenueEnabled: true,
-        affiliateCommissionEnabled: true,
-        mentorCommissionEnabled: true,
-      }
-    })
+    // Get or create default settings - fetch all columns dynamically
+    let settings: any = null
+    try {
+      settings = await prisma.settings.findUnique({
+        where: { id: 1 }
+      })
+    } catch (dbError: any) {
+      console.error('Settings fetch error:', dbError)
+      // Return defaults if database query fails
+      settings = null
+    }
 
     if (!settings) {
       // Return default settings if none exist

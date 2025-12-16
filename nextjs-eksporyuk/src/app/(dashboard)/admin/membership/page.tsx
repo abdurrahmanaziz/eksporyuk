@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { AlertTriangle, Users, Clock, Check, X, Search, Plus, Edit, Trash2, Eye, RefreshCw } from 'lucide-react'
+import { AlertTriangle, Users, Clock, Check, X, Search, Plus, Edit, Trash2, Eye, RefreshCw, Calendar, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface UserMembership {
@@ -55,13 +55,26 @@ interface Membership {
   }
 }
 
+interface MembershipStats {
+  id: string
+  name: string
+  price: number
+  duration: string
+  active: number
+  expired: number
+  pending: number
+  total: number
+}
+
 export default function AdminMembershipPage() {
   const { data: session } = useSession()
   const [userMemberships, setUserMemberships] = useState<UserMembership[]>([])
   const [memberships, setMemberships] = useState<Membership[]>([])
+  const [membershipStats, setMembershipStats] = useState<MembershipStats[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
+  const [planFilter, setPlanFilter] = useState('ALL')
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -93,6 +106,13 @@ export default function AdminMembershipPage() {
         const plansData = await plansResponse.json()
         setMemberships(plansData.memberships || [])
       }
+
+      // Fetch membership stats per plan
+      const statsResponse = await fetch('/api/admin/membership/stats')
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json()
+        setMembershipStats(statsData.stats || [])
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
       toast.error('Failed to load membership data')
@@ -107,8 +127,10 @@ export default function AdminMembershipPage() {
       membership.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       membership.membership.name.toLowerCase().includes(searchTerm.toLowerCase())
     
-    if (statusFilter === 'ALL') return matchesSearch
-    return matchesSearch && membership.status === statusFilter
+    const matchesStatus = statusFilter === 'ALL' || membership.status === statusFilter
+    const matchesPlan = planFilter === 'ALL' || membership.membership.id === planFilter
+    
+    return matchesSearch && matchesStatus && matchesPlan
   })
 
   const getStatusColor = (status: string) => {
@@ -269,11 +291,169 @@ export default function AdminMembershipPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="memberships" className="space-y-4">
+      <Tabs defaultValue="langganan" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="memberships">User Memberships</TabsTrigger>
-          <TabsTrigger value="plans">Membership Plans</TabsTrigger>
+          <TabsTrigger value="langganan">
+            <Calendar className="h-4 w-4 mr-2" />
+            Langganan
+          </TabsTrigger>
+          <TabsTrigger value="memberships">
+            <Users className="h-4 w-4 mr-2" />
+            User Memberships
+          </TabsTrigger>
+          <TabsTrigger value="plans">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Membership Plans
+          </TabsTrigger>
         </TabsList>
+
+        {/* Tab Langganan - Overview per paket */}
+        <TabsContent value="langganan" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ringkasan Langganan per Paket</CardTitle>
+              <CardDescription>
+                Lihat jumlah member aktif dan expired untuk setiap paket membership
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                {membershipStats.map((stat) => (
+                  <Card key={stat.id} className="border-2">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">{stat.name}</CardTitle>
+                      <CardDescription>
+                        {formatCurrency(stat.price)} / {stat.duration.replace('_', ' ')}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Total Member</span>
+                        <Badge variant="outline" className="text-lg font-bold">{stat.total}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm flex items-center gap-1">
+                          <Check className="h-4 w-4 text-green-600" />
+                          Aktif
+                        </span>
+                        <Badge className="bg-green-100 text-green-800">{stat.active}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm flex items-center gap-1">
+                          <X className="h-4 w-4 text-red-600" />
+                          Expired
+                        </span>
+                        <Badge className="bg-red-100 text-red-800">{stat.expired}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm flex items-center gap-1">
+                          <Clock className="h-4 w-4 text-yellow-600" />
+                          Pending
+                        </span>
+                        <Badge className="bg-yellow-100 text-yellow-800">{stat.pending}</Badge>
+                      </div>
+                      <div className="pt-2 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => {
+                            setPlanFilter(stat.id)
+                            setStatusFilter('ALL')
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Lihat Detail
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Summary Table */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-4">Daftar Member Expired (Perlu Followup)</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Paket</TableHead>
+                      <TableHead>Expired Sejak</TableHead>
+                      <TableHead>Hari</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {userMemberships
+                      .filter(m => m.status === 'EXPIRED')
+                      .sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime())
+                      .slice(0, 10)
+                      .map((membership) => {
+                        const daysExpired = Math.floor((new Date().getTime() - new Date(membership.endDate).getTime()) / (1000 * 60 * 60 * 24))
+                        return (
+                          <TableRow key={membership.id}>
+                            <TableCell>
+                              <div className="font-medium">{membership.user.name}</div>
+                              <div className="text-sm text-muted-foreground">{membership.user.email}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{membership.membership.name}</Badge>
+                            </TableCell>
+                            <TableCell>{formatDate(membership.endDate)}</TableCell>
+                            <TableCell>
+                              <Badge className={daysExpired > 30 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}>
+                                {daysExpired} hari
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedMembership(membership)
+                                    setDialogOpen(true)
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => extendMembership(membership.id, 30)}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                  </TableBody>
+                </Table>
+                {userMemberships.filter(m => m.status === 'EXPIRED').length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Tidak ada member expired saat ini
+                  </div>
+                )}
+                {userMemberships.filter(m => m.status === 'EXPIRED').length > 10 && (
+                  <div className="text-center py-4">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setStatusFilter('EXPIRED')
+                        setPlanFilter('ALL')
+                      }}
+                    >
+                      Lihat Semua ({userMemberships.filter(m => m.status === 'EXPIRED').length} member expired)
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="memberships" className="space-y-4">
           {/* Filters */}
@@ -292,6 +472,20 @@ export default function AdminMembershipPage() {
                       className="pl-8"
                     />
                   </div>
+                </div>
+                <div>
+                  <Label>Filter Paket</Label>
+                  <Select value={planFilter} onValueChange={setPlanFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">Semua Paket</SelectItem>
+                      {memberships.map((plan) => (
+                        <SelectItem key={plan.id} value={plan.id}>{plan.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label>Status Filter</Label>

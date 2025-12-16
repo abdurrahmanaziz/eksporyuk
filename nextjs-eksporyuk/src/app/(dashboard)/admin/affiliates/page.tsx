@@ -20,6 +20,8 @@ import {
   Wallet,
   ArrowUpRight,
   ArrowDownRight,
+  Zap,
+  PlayCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -94,6 +96,26 @@ export default function AffiliatesManagementPage() {
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
+  const [batchActionLoading, setBatchActionLoading] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  // Select all toggle
+  const handleSelectAll = () => {
+    if (selectedIds.length === affiliates.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(affiliates.map(a => a.id))
+    }
+  }
+
+  // Toggle single selection
+  const handleSelectOne = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) 
+        ? prev.filter(i => i !== id) 
+        : [...prev, id]
+    )
+  }
 
   // Check admin access
   useEffect(() => {
@@ -108,6 +130,16 @@ export default function AffiliatesManagementPage() {
       fetchData()
     }
   }, [status, session, statusFilter])
+
+  // Realtime refresh every 30 seconds
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
+      const interval = setInterval(() => {
+        fetchData()
+      }, 30000) // Refresh every 30 seconds
+      return () => clearInterval(interval)
+    }
+  }, [status, session])
 
   const fetchData = async () => {
     try {
@@ -239,6 +271,56 @@ export default function AffiliatesManagementPage() {
     })
   }
 
+  // Batch actions
+  const handleBatchAction = async (action: string, useSelected: boolean = false) => {
+    const actionLabels: Record<string, string> = {
+      'approve-all': 'approve semua affiliate pending',
+      'activate-all': 'aktifkan semua affiliate yang sudah di-approve',
+      'approve-selected': `approve ${selectedIds.length} affiliate terpilih`,
+      'activate-selected': `aktifkan ${selectedIds.length} affiliate terpilih`,
+      'deactivate-selected': `nonaktifkan ${selectedIds.length} affiliate terpilih`
+    }
+    
+    if (useSelected && selectedIds.length === 0) {
+      alert('⚠️ Pilih minimal 1 affiliate terlebih dahulu')
+      return
+    }
+    
+    if (!confirm(`Yakin ingin ${actionLabels[action] || action}?`)) {
+      return
+    }
+
+    try {
+      setBatchActionLoading(true)
+      
+      const body: any = { action }
+      if (useSelected) {
+        body.affiliateIds = selectedIds
+      }
+      
+      const response = await fetch('/api/admin/affiliates/batch-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert(`✅ ${data.message}`)
+        setSelectedIds([]) // Clear selection
+        fetchData()
+      } else {
+        alert('❌ Error: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Error performing batch action:', error)
+      alert('❌ Terjadi kesalahan')
+    } finally {
+      setBatchActionLoading(false)
+    }
+  }
+
   if (status === 'loading' || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -276,106 +358,114 @@ export default function AffiliatesManagementPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Modern Gradient Design */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Total Affiliate
-              </CardTitle>
-              <Users className="w-4 h-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalAffiliates}</div>
-              <p className="text-xs text-gray-500 mt-1">
-                {stats.activeAffiliates} aktif
-              </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Total Affiliate Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-blue-500 to-blue-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">{stats.totalAffiliates}</div>
+              <p className="text-sm text-blue-100 mb-3">Total Affiliate</p>
+              <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span className="text-blue-100">{stats.activeAffiliates} Aktif</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Pending Approval
-              </CardTitle>
-              <Clock className="w-4 h-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
-                {stats.pendingApproval}
+          {/* Pending Approval Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-orange-500 to-amber-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                  <Clock className="h-6 w-6 text-white" />
+                </div>
+                {stats.pendingApproval > 0 && (
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-red-400/30 text-white animate-pulse">
+                    Perlu Review
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Menunggu review
-              </p>
+              <div className="text-3xl font-bold text-white mb-1">{stats.pendingApproval}</div>
+              <p className="text-sm text-orange-100 mb-3">Pending Approval</p>
+              <div className="text-xs text-orange-100">Menunggu review admin</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Total Omset
-              </CardTitle>
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {formatCurrency(stats.totalSales || 0)}
+          {/* Total Omset Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-indigo-500 to-violet-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-green-400/20 text-green-100">
+                  <ArrowUpRight className="h-3 w-3" />
+                  Live
+                </div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Total penjualan via affiliate
-              </p>
+              <div className="text-2xl font-bold text-white mb-1">{formatCurrency(stats.totalSales || 0)}</div>
+              <p className="text-sm text-indigo-100 mb-3">Total Omset</p>
+              <div className="text-xs text-indigo-100">Total penjualan via affiliate</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Total Komisi
-              </CardTitle>
-              <DollarSign className="w-4 h-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(stats.totalEarnings)}
+          {/* Total Komisi Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-green-500 to-emerald-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                  <DollarSign className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-green-400/20 text-green-100">
+                  <ArrowUpRight className="h-3 w-3" />
+                  Realtime
+                </div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Dari semua penjualan affiliate
-              </p>
+              <div className="text-2xl font-bold text-white mb-1">{formatCurrency(stats.totalEarnings)}</div>
+              <p className="text-sm text-green-100 mb-3">Total Komisi</p>
+              <div className="text-xs text-green-100">Dari semua penjualan affiliate</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Saldo Pending
-              </CardTitle>
-              <Wallet className="w-4 h-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">
-                {formatCurrency(stats.pendingPayouts)}
+          {/* Saldo Pending Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-purple-500 to-fuchsia-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                  <Wallet className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Siap untuk ditarik
-              </p>
+              <div className="text-2xl font-bold text-white mb-1">{formatCurrency(stats.pendingPayouts)}</div>
+              <p className="text-sm text-purple-100 mb-3">Saldo Pending</p>
+              <div className="text-xs text-purple-100">Siap untuk ditarik</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Total Payout
-              </CardTitle>
-              <ArrowDownRight className="w-4 h-4 text-indigo-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-indigo-600">
-                {formatCurrency(stats.totalPayouts)}
+          {/* Total Payout Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-teal-500 to-cyan-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                  <CheckCircle className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Sudah dicairkan
-              </p>
+              <div className="text-2xl font-bold text-white mb-1">{formatCurrency(stats.totalPayouts)}</div>
+              <p className="text-sm text-teal-100 mb-3">Total Payout</p>
+              <div className="text-xs text-teal-100">Sudah dicairkan</div>
             </CardContent>
           </Card>
         </div>
@@ -417,19 +507,108 @@ export default function AffiliatesManagementPage() {
               Export CSV
             </Button>
           </div>
+
+          {/* Batch Actions */}
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
+            <span className="text-sm text-gray-500 flex items-center mr-2">
+              <Zap className="w-4 h-4 mr-1" />
+              Aksi Cepat:
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBatchAction('approve-all')}
+              disabled={batchActionLoading || !stats?.pendingApproval}
+              className="border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+            >
+              <CheckCircle className="w-4 h-4 mr-1" />
+              Approve Semua Pending ({stats?.pendingApproval || 0})
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBatchAction('activate-all')}
+              disabled={batchActionLoading}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+            >
+              <PlayCircle className="w-4 h-4 mr-1" />
+              Aktifkan Semua
+            </Button>
+            
+            {/* Selected Actions */}
+            {selectedIds.length > 0 && (
+              <>
+                <div className="h-6 w-px bg-gray-300 mx-2"></div>
+                <span className="text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                  {selectedIds.length} dipilih
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBatchAction('approve-selected', true)}
+                  disabled={batchActionLoading}
+                  className="border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+                >
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Approve Terpilih
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBatchAction('activate-selected', true)}
+                  disabled={batchActionLoading}
+                  className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+                >
+                  <PlayCircle className="w-4 h-4 mr-1" />
+                  Aktifkan Terpilih
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBatchAction('deactivate-selected', true)}
+                  disabled={batchActionLoading}
+                  className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+                >
+                  <XCircle className="w-4 h-4 mr-1" />
+                  Nonaktifkan Terpilih
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedIds([])}
+                  className="text-gray-500"
+                >
+                  Batal Pilih
+                </Button>
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
 
       {/* Affiliates Table - Compact Design */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Daftar Affiliate</CardTitle>
+          {affiliates.length > 0 && (
+            <span className="text-sm text-gray-500">
+              {selectedIds.length > 0 ? `${selectedIds.length} dari ${affiliates.length} dipilih` : `${affiliates.length} affiliate`}
+            </span>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b bg-gray-50/50">
+                  <th className="text-center p-4 w-12">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.length === affiliates.length && affiliates.length > 0}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    />
+                  </th>
                   <th className="text-left p-4 font-medium text-gray-600">Affiliate</th>
                   <th className="text-left p-4 font-medium text-gray-600">Kode</th>
                   <th className="text-center p-4 font-medium text-gray-600">Status</th>
@@ -440,13 +619,24 @@ export default function AffiliatesManagementPage() {
               <tbody>
                 {affiliates.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center p-8 text-gray-500">
+                    <td colSpan={6} className="text-center p-8 text-gray-500">
                       Tidak ada data affiliate
                     </td>
                   </tr>
                 ) : (
                   affiliates.map((affiliate) => (
-                    <tr key={affiliate.id} className="border-b hover:bg-gray-50/50 transition-colors">
+                    <tr 
+                      key={affiliate.id} 
+                      className={`border-b hover:bg-gray-50/50 transition-colors ${selectedIds.includes(affiliate.id) ? 'bg-indigo-50/50' : ''}`}
+                    >
+                      <td className="p-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(affiliate.id)}
+                          onChange={() => handleSelectOne(affiliate.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                        />
+                      </td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">

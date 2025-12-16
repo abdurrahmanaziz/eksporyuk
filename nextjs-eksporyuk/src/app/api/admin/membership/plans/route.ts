@@ -15,22 +15,38 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const memberships = await prisma.membership.findMany({
-      include: {
-        _count: {
-          select: {
-            userMemberships: {
-              where: {
-                status: 'ACTIVE'
-              }
-            }
+    // Ambil data via SQL mentah agar aman dari enum lama
+    const rawMemberships = await prisma.$queryRawUnsafe<Array<{
+      id: string;
+      name: string;
+      slug: string | null;
+      description: string | null;
+      duration: string;
+      price: any;
+      isActive: boolean;
+      createdAt: Date;
+    }>>(`SELECT id, name, slug, description, duration, price, "isActive", "createdAt" FROM "Membership" ORDER BY "createdAt" DESC`)
+
+    // Hitung jumlah ACTIVE userMemberships per plan
+    const memberships = await Promise.all(
+      rawMemberships.map(async (m) => {
+        const activeCount = await prisma.userMembership.count({
+          where: { membershipId: m.id, status: 'ACTIVE' }
+        })
+        return {
+          id: m.id,
+          name: m.name,
+          slug: m.slug,
+          description: m.description || '',
+          duration: m.duration,
+          price: m.price,
+          isActive: m.isActive,
+          _count: {
+            userMemberships: activeCount
           }
         }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+      })
+    )
 
     return NextResponse.json({
       memberships

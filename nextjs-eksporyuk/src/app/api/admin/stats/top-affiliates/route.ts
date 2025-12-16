@@ -18,12 +18,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Get top 10 affiliates by total earnings (active affiliates only)
+    // Get top 10 affiliates by total earnings (ALL affiliates - regardless of status)
     const topAffiliates = await prisma.affiliateProfile.findMany({
-      where: {
-        isActive: true,
-        approvedAt: { not: null }
-      },
       include: {
         user: {
           select: {

@@ -221,6 +221,23 @@ export default function CoursePlayerPage() {
   
   const hasFetchedRef = useRef(false)
 
+  // Make links clickable and open in new tab
+  useEffect(() => {
+    const handleLinkClicks = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === 'A' && target.getAttribute('href')) {
+        const href = target.getAttribute('href')
+        if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+          e.preventDefault()
+          window.open(href, '_blank', 'noopener,noreferrer')
+        }
+      }
+    }
+
+    document.addEventListener('click', handleLinkClicks)
+    return () => document.removeEventListener('click', handleLinkClicks)
+  }, [])
+
   useEffect(() => {
     if (status === 'loading') {
       return // Wait for session to load
@@ -1316,7 +1333,7 @@ export default function CoursePlayerPage() {
                     <div className="p-4">
                       {materiSubTab === 'deskripsi' && (
                         <div className="space-y-4">
-                          <div className="prose prose-sm max-w-none">
+                          <div className="prose prose-sm max-w-none [&_a]:text-blue-600 [&_a]:underline [&_a]:cursor-pointer hover:[&_a]:text-blue-800 [&_a]:break-all">
                             <div dangerouslySetInnerHTML={{ __html: currentLesson.content || '<p>Konten tidak tersedia</p>' }} />
                           </div>
                           
@@ -1558,7 +1575,7 @@ export default function CoursePlayerPage() {
                 
                 <CardContent className="px-6">
                   <TabsContent value="overview" className="space-y-4 mt-0">
-                    <div className="prose prose-sm max-w-none">
+                    <div className="prose prose-sm max-w-none [&_a]:text-blue-600 [&_a]:underline [&_a]:cursor-pointer hover:[&_a]:text-blue-800 [&_a]:break-all">
                       <div dangerouslySetInnerHTML={{ __html: currentLesson.content || '<p>Konten tidak tersedia</p>' }} />
                     </div>
                     

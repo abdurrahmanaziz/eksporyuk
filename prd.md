@@ -3927,3 +3927,16 @@ Product 8684 → Rp 250.000 (6 bulan)
 ✅ API /admin/transactions sudah pakai database saja
 ✅ Frontend menampilkan affiliateConversion.commissionAmount yang benar
 ✅ Tidak lagi pakai perhitungan 30% yang salah
+
+WEBINAR 35K - Ada 4 product berbeda:
+
+Product 19042: Komisi 50k ✓
+Product 21476: Komisi 50k ✓
+Product 18528: Komisi 20k ← 
+Product 20130: Komisi 50k ✓
+KELAS 899K - Ada 4 product berbeda:
+
+Product 8683: Komisi 300k
+Product 17920: Komisi 250k ← Ini lifetime promo, bukan 12 bulan
+Product 13399: Komisi 250k ← 
+Product 20852: Komisi 280k

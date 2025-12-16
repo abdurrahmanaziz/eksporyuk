@@ -73,9 +73,9 @@ export async function GET(
       return NextResponse.json({ error: 'Membership plan not found' }, { status: 404 })
     }
 
-    // Parse features as prices
-    let prices = []
-    let benefits = []
+    // Parse features - handle flat array format
+    let prices: any[] = []
+    let benefits: string[] = []
     
     if (plan.features) {
       try {
@@ -86,32 +86,22 @@ export async function GET(
           featuresData = JSON.parse(featuresData)
         }
         
-        // Check if array
-        if (Array.isArray(featuresData) && featuresData.length > 0) {
-          const firstItem = featuresData[0]
+        // Handle flat array (default format)
+        if (Array.isArray(featuresData)) {
+          benefits = featuresData
+          const basePrice = parseFloat(plan.price?.toString() || '0')
+          const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
           
-          // Type A: Price objects
-          if (typeof firstItem === 'object' && 'price' in firstItem) {
-            prices = featuresData
-            benefits = firstItem.benefits || []
-          }
-          // Type B: Benefit strings - build price from DB fields
-          else if (typeof firstItem === 'string') {
-            benefits = featuresData
-            const basePrice = parseFloat(plan.price?.toString() || '0')
-            const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
-            
-            prices = [{
-              duration: plan.duration || 'ONE_MONTH',
-              label: plan.name,
-              price: basePrice,
-              originalPrice: originalPrice,
-              discount: plan.discount || 0,
-              benefits: benefits,
-              badge: '',
-              isPopular: plan.isPopular || false
-            }]
-          }
+          prices = [{
+            duration: plan.duration || 'ONE_MONTH',
+            label: plan.name,
+            price: basePrice,
+            originalPrice: originalPrice,
+            discount: plan.discount || 0,
+            benefits: benefits,
+            badge: '',
+            isPopular: plan.isPopular || false
+          }]
         }
       } catch (e) {
         console.error('Error parsing features:', e)
@@ -122,6 +112,7 @@ export async function GET(
       ...plan,
       prices,
       benefits,
+      features: benefits, // Flat array for backward compatibility
       affiliateCommission: parseFloat(plan.affiliateCommissionRate?.toString() || '0.30'),
       salespage: plan.salesPageUrl || '',
       followUpMessages: plan.reminders || []
@@ -158,6 +149,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
+    
     const {
       name,
       description,
@@ -172,8 +164,14 @@ export async function PATCH(
       status,
       salesPageUrl,
       features,
+      formLogo,
+      formBanner,
+      showInGeneralCheckout,
       membershipFeatures, // Legacy: Feature access configurations as objects
-      featureAccess // New: Feature access as array of string keys
+      featureAccess, // New: Feature access as array of string keys
+      groups, // Array of group IDs
+      courses, // Array of course IDs
+      products // Array of product IDs
     } = body
 
     // Check if plan exists
@@ -185,7 +183,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Membership plan tidak ditemukan' }, { status: 404 })
     }
 
-    // Build update data
+    // Build update data - only include fields that exist in schema
     const updateData: any = {}
 
     if (name !== undefined && name.trim()) {
@@ -212,7 +210,16 @@ export async function PATCH(
     }
 
     if (description !== undefined) updateData.description = description?.trim() || ''
-    if (duration !== undefined) updateData.duration = duration
+    
+    // Handle duration - only update if it's a valid enum value
+    if (duration !== undefined) {
+      const validDurations = ['SIX_MONTHS', 'TWELVE_MONTHS', 'LIFETIME']
+      if (validDurations.includes(duration)) {
+        updateData.duration = duration
+      }
+      // Ignore numeric duration values (from legacy UI) - they're not compatible with enum
+    }
+    
     if (price !== undefined) updateData.price = price
     if (originalPrice !== undefined) updateData.originalPrice = originalPrice
     if (discount !== undefined) updateData.discount = discount
@@ -223,6 +230,9 @@ export async function PATCH(
     if (status !== undefined) updateData.status = status
     if (salesPageUrl !== undefined) updateData.salesPageUrl = salesPageUrl?.trim() || null
     if (features !== undefined) updateData.features = features
+    if (formLogo !== undefined) updateData.formLogo = formLogo || null
+    if (formBanner !== undefined) updateData.formBanner = formBanner || null
+    if (showInGeneralCheckout !== undefined) updateData.showInGeneralCheckout = showInGeneralCheckout
 
     // Update membership plan
     const updatedPlan = await prisma.membership.update({
@@ -272,6 +282,60 @@ export async function PATCH(
         
         await prisma.membershipFeatureAccess.createMany({
           data: featureData
+        })
+      }
+    }
+
+    // Update groups if provided
+    if (groups !== undefined && Array.isArray(groups)) {
+      // Delete existing group associations
+      await prisma.membershipGroup.deleteMany({
+        where: { membershipId: id }
+      })
+      
+      // Create new group associations
+      if (groups.length > 0) {
+        await prisma.membershipGroup.createMany({
+          data: groups.map((groupId: string) => ({
+            membershipId: id,
+            groupId: groupId
+          }))
+        })
+      }
+    }
+
+    // Update courses if provided
+    if (courses !== undefined && Array.isArray(courses)) {
+      // Delete existing course associations
+      await prisma.membershipCourse.deleteMany({
+        where: { membershipId: id }
+      })
+      
+      // Create new course associations
+      if (courses.length > 0) {
+        await prisma.membershipCourse.createMany({
+          data: courses.map((courseId: string) => ({
+            membershipId: id,
+            courseId: courseId
+          }))
+        })
+      }
+    }
+
+    // Update products if provided
+    if (products !== undefined && Array.isArray(products)) {
+      // Delete existing product associations
+      await prisma.membershipProduct.deleteMany({
+        where: { membershipId: id }
+      })
+      
+      // Create new product associations
+      if (products.length > 0) {
+        await prisma.membershipProduct.createMany({
+          data: products.map((productId: string) => ({
+            membershipId: id,
+            productId: productId
+          }))
         })
       }
     }

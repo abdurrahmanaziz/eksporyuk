@@ -79,6 +79,8 @@ interface Transaction {
   paymentMethod: string | null;
   paymentUrl: string | null;
   reference: string | null;
+  affiliateId: string | null;
+  affiliateShare: number | null;
   createdAt: string;
   paidAt: string | null;
   metadata?: any;
@@ -117,6 +119,7 @@ interface Transaction {
       user: {
         id: string;
         name: string;
+        email: string;
         whatsapp: string | null;
       }
     }
@@ -183,6 +186,17 @@ export default function AdminSalesPage() {
       const data = await response.json();
 
       if (data.success) {
+        // Debug: Log first transaction to verify affiliate data
+        if (data.transactions.length > 0) {
+          console.log('[Admin Sales] Sample transaction:', {
+            id: data.transactions[0].id,
+            amount: data.transactions[0].amount,
+            affiliateConversion: data.transactions[0].affiliateConversion ? {
+              affiliateName: data.transactions[0].affiliateConversion.affiliate?.user?.name,
+              commissionAmount: data.transactions[0].affiliateConversion.commissionAmount,
+            } : null
+          });
+        }
         setTransactions(data.transactions);
         setStats(data.stats);
         setPagination(data.pagination);
@@ -433,9 +447,17 @@ export default function AdminSalesPage() {
   };
 
   const getProductName = (tx: Transaction) => {
-    // Check membership first
+    // Check metadata.productName first (from Sejoli import)
+    if (tx.metadata?.productName) {
+      return tx.metadata.productName;
+    }
+    // Check membership relation
     if (tx.membership?.membership?.name) {
       return tx.membership.membership.name;
+    }
+    // Check metadata for membership name
+    if (tx.type === 'MEMBERSHIP' && tx.metadata?.membershipName) {
+      return tx.metadata.membershipName;
     }
     // Then product
     if (tx.product?.name) {
@@ -445,15 +467,40 @@ export default function AdminSalesPage() {
     if (tx.course?.title) {
       return tx.course.title;
     }
-    // Fallback to transaction type
-    return tx.type || '-';
+    // Then event
+    if (tx.event?.title) {
+      return tx.event.title;
+    }
+    // Fallback based on type
+    const typeLabels: Record<string, string> = {
+      'MEMBERSHIP': 'Membership',
+      'EVENT': 'Event',
+      'PRODUCT': 'Produk Digital',
+      'COURSE': 'Kursus Online',
+    };
+    return typeLabels[tx.type] || tx.type || '-';
   };
 
-  // Get transaction type label with membership duration
+  // Get transaction type label with membership duration or event category
   const getTransactionTypeLabel = (tx: Transaction) => {
     if (tx.type === 'MEMBERSHIP') {
-      // Get duration from membership relation first, then metadata
+      // Get duration from membership relation, metadata membershipTier, or metadata duration
+      const tier = tx.metadata?.membershipTier;
       const duration = tx.membership?.membership?.duration || tx.metadata?.membershipDuration;
+      
+      // Handle membershipTier from Sejoli import
+      if (tier) {
+        const tierLabels: Record<string, string> = {
+          '1_MONTH': '1 Bulan',
+          '3_MONTH': '3 Bulan',
+          '6_MONTH': '6 Bulan',
+          '12_MONTH': '1 Tahun',
+          'LIFETIME': 'Selamanya',
+          'FREE': 'Gratis',
+        };
+        const tierText = tierLabels[tier] || tier;
+        return `Membership ${tierText}`;
+      }
       
       if (duration) {
         // Convert enum to readable format
@@ -476,8 +523,35 @@ export default function AdminSalesPage() {
       return 'Membership';
     }
     
+    if (tx.type === 'EVENT') {
+      // Get event category from metadata
+      const eventCategory = tx.metadata?.eventCategory;
+      
+      const categoryLabels: Record<string, string> = {
+        'WEBINAR': 'Webinar',
+        'KOPDAR': 'Kopdar/Meetup',
+        'WORKSHOP': 'Workshop',
+        'TRADE_EXPO': 'Trade Expo',
+      };
+      
+      const categoryText = eventCategory ? categoryLabels[eventCategory] || eventCategory : 'Event';
+      return categoryText;
+    }
+    
     if (tx.type === 'PRODUCT') {
-      return 'Produk Digital';
+      // Get product category from metadata
+      const productCategory = tx.metadata?.productCategory;
+      
+      const categoryLabels: Record<string, string> = {
+        'JASA_WEBSITE': 'Jasa Website',
+        'JASA_DESIGN': 'Jasa Design',
+        'JASA_LEGAL': 'Jasa Legal',
+        'UMROH': 'Paket Umroh',
+        'MERCHANDISE': 'Merchandise',
+        'DONASI': 'Donasi',
+      };
+      
+      return categoryLabels[productCategory] || 'Produk/Jasa';
     }
     
     if (tx.type === 'COURSE') {
@@ -508,24 +582,24 @@ export default function AdminSalesPage() {
 
   return (
     <ResponsivePageWrapper>
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-8">
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <ShoppingBag className="w-8 h-8 text-blue-600" />
-              Laporan Penjualan
-            </h1>
-            <p className="text-gray-600 mt-1">Monitor semua transaksi produk, membership, dan course</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-8">
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <ShoppingBag className="w-8 h-8 text-blue-600" />
+                Laporan Penjualan
+              </h1>
+              <p className="text-gray-600 mt-1">Monitor semua transaksi produk, membership, dan course</p>
+            </div>
+            <Button onClick={handleExport} disabled={exporting} className="bg-green-600 hover:bg-green-700">
+              {exporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+              Export CSV
+            </Button>
           </div>
-          <Button onClick={handleExport} disabled={exporting} className="bg-green-600 hover:bg-green-700">
-            {exporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-            Export CSV
-          </Button>
-        </div>
 
-        {/* Stats */}
+          {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -627,11 +701,9 @@ export default function AdminSalesPage() {
                 <option value="ALL">Semua Tipe Produk</option>
                 <optgroup label="Membership">
                   <option value="MEMBERSHIP">Semua Membership</option>
-                  <option value="MEMBERSHIP_ONE_MONTH">Membership 1 Bulan</option>
-                  <option value="MEMBERSHIP_THREE_MONTHS">Membership 3 Bulan</option>
                   <option value="MEMBERSHIP_SIX_MONTHS">Membership 6 Bulan</option>
-                  <option value="MEMBERSHIP_TWELVE_MONTHS">Membership 1 Tahun</option>
-                  <option value="MEMBERSHIP_LIFETIME">Membership Selamanya</option>
+                  <option value="MEMBERSHIP_TWELVE_MONTHS">Membership 12 Bulan</option>
+                  <option value="MEMBERSHIP_LIFETIME">Membership Lifetime</option>
                 </optgroup>
                 <optgroup label="Produk Digital">
                   <option value="PRODUCT">Semua Produk Digital</option>
@@ -814,24 +886,33 @@ export default function AdminSalesPage() {
 
                         {/* Tipe Produk */}
                         <TableCell>
-                          <div className="space-y-1">
-                            <div className="text-sm text-gray-900 font-semibold">{productName}</div>
-                            <div className="flex items-center gap-2 flex-wrap">
+                          <div className="space-y-1.5">
+                            {/* Product Badge & Name */}
+                            <div className="space-y-1">
                               <Badge 
                                 variant="outline" 
                                 className={
-                                  tx.type === 'MEMBERSHIP' ? 'bg-purple-50 text-purple-700 border-purple-300' :
-                                  tx.type === 'COURSE' ? 'bg-blue-50 text-blue-700 border-blue-300' :
-                                  'bg-green-50 text-green-700 border-green-300'
+                                  tx.type === 'MEMBERSHIP' ? 'bg-purple-50 text-purple-700 border-purple-300 font-semibold text-xs' :
+                                  tx.type === 'COURSE' ? 'bg-blue-50 text-blue-700 border-blue-300 text-xs' :
+                                  tx.type === 'EVENT' ? 'bg-orange-50 text-orange-700 border-orange-300 text-xs' :
+                                  'bg-green-50 text-green-700 border-green-300 text-xs'
                                 }
                               >
-                                {getTransactionTypeLabel(tx)}
+                                {tx.type === 'MEMBERSHIP' ? 'Membership' :
+                                 tx.type === 'EVENT' ? 'Event' :
+                                 tx.type === 'PRODUCT' ? 'Produk Digital' :
+                                 tx.type === 'COURSE' ? 'Kursus' : tx.type}
                               </Badge>
+                              
+                              {/* Product Name - Nama/Judul dari Membership/Produk */}
+                              <div className="text-sm font-medium text-gray-900">{productName}</div>
+                              
+                              {/* Payment Button if pending */}
                               {paymentUrl && (
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-6 px-2 text-xs bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
+                                  className="h-7 px-2 text-xs bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100 mt-1"
                                   onClick={() => window.open(paymentUrl, '_blank')}
                                   title="Buka Link Pembayaran"
                                 >
@@ -854,8 +935,12 @@ export default function AdminSalesPage() {
                         {/* Affiliate */}
                         <TableCell className="text-sm">
                           {tx.affiliateConversion ? (
-                            <div className="font-medium">
+                            <div className="font-medium text-gray-900">
                               {tx.affiliateConversion.affiliate.user.name}
+                            </div>
+                          ) : tx.affiliateId ? (
+                            <div className="text-xs text-gray-500">
+                              ID: {tx.affiliateId}
                             </div>
                           ) : (
                             <span className="text-gray-400">-</span>
@@ -872,16 +957,12 @@ export default function AdminSalesPage() {
                         {/* Komisi */}
                         <TableCell>
                           {tx.affiliateConversion ? (
-                            <div>
-                              <div className="font-semibold text-sm text-orange-600">
-                                Rp {Number(tx.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
-                              </div>
-                              <Badge 
-                                variant={tx.affiliateConversion.paidOut ? 'default' : 'secondary'}
-                                className="text-xs mt-1"
-                              >
-                                {tx.affiliateConversion.paidOut ? 'PAID' : 'PENDING'}
-                              </Badge>
+                            <div className="font-semibold text-sm text-orange-600">
+                              Rp {Number(tx.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
+                            </div>
+                          ) : tx.affiliateShare ? (
+                            <div className="font-semibold text-sm text-orange-600">
+                              Rp {Number(tx.affiliateShare).toLocaleString('id-ID')}
                             </div>
                           ) : (
                             <span className="text-gray-400">-</span>

@@ -606,7 +606,7 @@ export default function AdminPage() {
             </CardContent>
           </Card>
 
-          {/* Top Affiliates List */}
+          {/* Top Affiliates List - Top 10 */}
           <Card className="border-0 shadow-lg lg:col-span-2">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -615,38 +615,42 @@ export default function AdminPage() {
                     <Award className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Top Affiliates</CardTitle>
+                    <CardTitle className="text-lg">Top 10 Affiliates</CardTitle>
                     <CardDescription>{affiliatesPeriod || 'Bulan ini'}</CardDescription>
                   </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <span className="text-xs font-medium text-amber-700 dark:text-amber-300">{topAffiliates.length} affiliate</span>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0 px-5">
               {affiliatesLoading ? (
                 <div className="space-y-2">
-                  {[1, 2, 3, 4, 5].map((i) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
                     <Skeleton key={i} className="h-10 w-full" />
                   ))}
                 </div>
               ) : topAffiliates.length > 0 ? (
-                <div>
-                  {topAffiliates.map((affiliate) => (
-                    <div key={affiliate.rank} className="flex items-center gap-2 py-[5px] hover:bg-gray-50 rounded-lg px-1 -mx-1 transition-colors">
-                      <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                <div className="max-h-[480px] overflow-y-auto pr-2 -mr-2 space-y-1">
+                  {topAffiliates.slice(0, 10).map((affiliate) => (
+                    <div key={affiliate.rank} className="flex items-center gap-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg px-2 -mx-2 transition-colors">
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                         affiliate.rank === 1 ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-amber-900 shadow-sm' :
                         affiliate.rank === 2 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700 shadow-sm' :
                         affiliate.rank === 3 ? 'bg-gradient-to-br from-orange-300 to-orange-400 text-orange-800 shadow-sm' :
-                        'bg-gray-100 text-gray-500'
+                        'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                       }`}>
                         {affiliate.rank}
                       </div>
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0 shadow-sm">
-                        {affiliate.name.charAt(0)}
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 shadow-sm">
+                        {affiliate.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-gray-900 text-[15px] truncate block">{affiliate.name}</span><span className="text-[11px] text-gray-400">{affiliate.sales} sales</span>
+                        <span className="font-semibold text-gray-900 dark:text-white text-sm truncate block">{affiliate.name}</span>
+                        <span className="text-xs text-gray-400">{affiliate.sales.toLocaleString('id-ID')} sales</span>
                       </div>
-                      <p className="font-bold text-green-600 text-sm flex-shrink-0">{formatCurrency(affiliate.commission)}</p>
+                      <p className="font-bold text-green-600 dark:text-green-400 text-sm flex-shrink-0">{formatCurrency(affiliate.commission)}</p>
                     </div>
                   ))}
                 </div>
@@ -655,9 +659,9 @@ export default function AdminPage() {
                   Belum ada data affiliate bulan ini
                 </div>
               )}
-              <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <Link href="/admin/affiliates">
-                  <Button variant="ghost" size="sm" className="w-full justify-center gap-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50">
+                  <Button variant="ghost" size="sm" className="w-full justify-center gap-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/20">
                     Lihat Semua Affiliate
                     <ArrowUpRight className="w-4 h-4" />
                   </Button>

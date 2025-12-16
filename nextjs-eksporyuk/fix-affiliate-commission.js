@@ -1,116 +1,125 @@
 const { PrismaClient } = require('@prisma/client');
-const fs = require('fs');
-const { getCommissionForProduct } = require('./scripts/migration/product-membership-mapping.js');
-
 const prisma = new PrismaClient();
 
-async function fixAffiliateCommissions() {
-  console.log('🔧 FIXING AFFILIATE COMMISSIONS BERDASARKAN PRODUK SEJOLI\n');
-  console.log('═══════════════════════════════════════════════════════════\n');
-
-  try {
-    // Load Sejoli data untuk dapat product_id per order
-    const sejoli = JSON.parse(
-      fs.readFileSync('scripts/migration/wp-data/sejolisa-full-18000users-1765279985617.json', 'utf8')
-    );
-
-    // Get all AffiliateConversion records
-    const conversions = await prisma.affiliateConversion.findMany({
-      include: {
-        transaction: {
-          select: {
-            externalId: true,
-            amount: true
-          }
-        },
-        affiliate: {
-          include: {
-            user: {
-              select: {
-                email: true,
-                name: true
-              }
-            }
-          }
-        }
+async function main() {
+  console.log('=== Fixing Affiliate Commission from Transaction Metadata ===\n');
+  
+  // Get all transactions
+  const transactions = await prisma.transaction.findMany({
+    select: {
+      amount: true,
+      metadata: true,
+      status: true
+    }
+  });
+  
+  console.log('Total transactions:', transactions.length);
+  
+  // Group by affiliate name and calculate totals
+  const affiliateStats = {};
+  let totalCommissionAll = 0;
+  let completedCount = 0;
+  
+  transactions.forEach(tx => {
+    const meta = tx.metadata || {};
+    const affName = meta.affiliateName;
+    const commission = Number(meta.commissionAmount || 0);
+    const amount = Number(tx.amount || 0);
+    
+    // Only count completed transactions (not cancelled, pending, on-hold)
+    if (meta.originalStatus === 'cancelled' || meta.originalStatus === 'pending' || meta.originalStatus === 'on-hold' || meta.originalStatus === 'refunded') {
+      return;
+    }
+    
+    completedCount++;
+    
+    if (affName && commission > 0) {
+      if (!affiliateStats[affName]) {
+        affiliateStats[affName] = { 
+          name: affName, 
+          totalCommission: 0, 
+          totalSales: 0, 
+          count: 0,
+          sejoliAffiliateId: meta.affiliateId 
+        };
       }
-    });
-
-    console.log(`📦 Total AffiliateConversion records: ${conversions.length}\n`);
-
-    let fixed = 0;
-    let alreadyCorrect = 0;
-    let notFound = 0;
-    let errors = [];
-
-    for (const conv of conversions) {
-      try {
-        // Find order di Sejoli berdasarkan externalId
-        const sejOrder = sejoli.orders.find(o => o.id == conv.transaction.externalId);
-        
-        if (!sejOrder) {
-          notFound++;
-          errors.push({
-            convId: conv.id,
-            externalId: conv.transaction.externalId,
-            reason: 'Order not found in Sejoli'
-          });
-          continue;
-        }
-
-        // Get correct commission based on product
-        const correctCommission = getCommissionForProduct(sejOrder.product_id);
-        
-        // Check if commission is correct
-        if (conv.commissionAmount === correctCommission) {
-          alreadyCorrect++;
-        } else {
-          // Update commission
-          await prisma.affiliateConversion.update({
-            where: { id: conv.id },
-            data: { commissionAmount: correctCommission }
-          });
-          
-          fixed++;
-          
-          if (fixed <= 5) {
-            console.log(`✅ Fixed conversion ${conv.id}`);
-            console.log(`   Order: ${conv.transaction.externalId} | Product: ${sejOrder.product_id}`);
-            console.log(`   Old: Rp ${conv.commissionAmount.toLocaleString('id-ID')} → New: Rp ${correctCommission.toLocaleString('id-ID')}`);
-            console.log('');
-          }
-        }
-      } catch (err) {
-        errors.push({
-          convId: conv.id,
-          externalId: conv.transaction.externalId,
-          reason: err.message
-        });
+      affiliateStats[affName].totalCommission += commission;
+      affiliateStats[affName].totalSales += amount;
+      affiliateStats[affName].count++;
+      totalCommissionAll += commission;
+    }
+  });
+  
+  console.log('Completed transactions:', completedCount);
+  console.log('Total Komisi Semua:', totalCommissionAll.toLocaleString('id-ID'));
+  
+  // Sort by commission
+  const sorted = Object.values(affiliateStats).sort((a, b) => b.totalCommission - a.totalCommission);
+  
+  console.log('\n=== TOP 15 Affiliates (from Transaction Metadata) ===');
+  sorted.slice(0, 15).forEach((a, i) => {
+    console.log((i+1) + '.', a.name.substring(0, 25).padEnd(25), '| Komisi:', a.totalCommission.toLocaleString('id-ID').padStart(15), '| Sales:', a.count);
+  });
+  
+  // Now update AffiliateProfile with correct data
+  console.log('\n=== Updating AffiliateProfile ===');
+  
+  // Get all affiliate profiles with user name
+  const profiles = await prisma.affiliateProfile.findMany({
+    include: {
+      user: {
+        select: { name: true }
       }
     }
-
-    console.log('\n📊 SUMMARY:');
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log(`✅ Already Correct: ${alreadyCorrect}`);
-    console.log(`🔧 Fixed: ${fixed}`);
-    console.log(`❌ Not Found: ${notFound}`);
-    console.log(`⚠️  Errors: ${errors.length}`);
+  });
+  
+  let updatedCount = 0;
+  
+  for (const profile of profiles) {
+    const userName = profile.user?.name;
+    if (!userName) continue;
     
-    if (errors.length > 0 && errors.length <= 10) {
-      console.log('\n❌ ERRORS:');
-      errors.forEach(e => {
-        console.log(`  - Conv ${e.convId} (Order ${e.externalId}): ${e.reason}`);
+    // Find matching stats by name
+    const stats = affiliateStats[userName];
+    
+    if (stats) {
+      await prisma.affiliateProfile.update({
+        where: { id: profile.id },
+        data: {
+          totalEarnings: stats.totalCommission,
+          totalSales: stats.totalSales,
+          totalConversions: stats.count
+        }
+      });
+      updatedCount++;
+    } else {
+      // No transactions found, set to 0
+      await prisma.affiliateProfile.update({
+        where: { id: profile.id },
+        data: {
+          totalEarnings: 0,
+          totalSales: 0,
+          totalConversions: 0
+        }
       });
     }
-
-    console.log('\n✅ DONE! Commission data diperbaiki berdasarkan produk Sejoli.');
-    
-  } catch (error) {
-    console.error('❌ ERROR:', error);
-    throw error;
-  } finally {
-    await prisma.$disconnect();
   }
+  
+  console.log('Updated', updatedCount, 'affiliate profiles');
+  
+  // Show final top 10
+  const top10 = await prisma.affiliateProfile.findMany({
+    orderBy: { totalEarnings: 'desc' },
+    take: 10,
+    include: {
+      user: { select: { name: true } }
+    }
+  });
+  
+  console.log('\n=== Final TOP 10 Affiliates ===');
+  top10.forEach((a, i) => {
+    console.log((i+1) + '.', (a.user?.name || 'Unknown').substring(0, 25).padEnd(25), '| Komisi:', Number(a.totalEarnings).toLocaleString('id-ID').padStart(15), '| Konversi:', a.totalConversions);
+  });
 }
 
-fixAffiliateCommissions();
+main().catch(console.error).finally(() => prisma.$disconnect());

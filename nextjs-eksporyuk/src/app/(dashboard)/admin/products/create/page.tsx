@@ -308,6 +308,7 @@ export default function CreateProductPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="DIGITAL">Digital Product</SelectItem>
+                        <SelectItem value="EVENT">Event/Webinar</SelectItem>
                         <SelectItem value="COURSE_BUNDLE">Bundle Kelas</SelectItem>
                         <SelectItem value="EBOOK">Ebook</SelectItem>
                         <SelectItem value="TEMPLATE">Template/Resource</SelectItem>

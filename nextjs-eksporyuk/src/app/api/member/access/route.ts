@@ -32,7 +32,12 @@ export async function GET() {
       },
       include: {
         membership: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            price: true,
+            features: true,
             membershipCourses: {
               include: {
                 course: {
@@ -46,7 +51,7 @@ export async function GET() {
                 }
               }
             },
-              membershipGroups: {
+            membershipGroups: {
               include: {
                 group: {
                   select: {
@@ -78,29 +83,12 @@ export async function GET() {
       }
     })
 
-    // Get all available memberships for comparison
-    const allMemberships = await prisma.membership.findMany({
-      where: { isActive: true },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        duration: true,
-        price: true,
-        features: true,
-        _count: {
-          select: {
-            membershipCourses: true,
-            membershipGroups: true,
-            membershipProducts: true,
-          }
-        }
-      },
-      orderBy: { price: 'asc' }
-    })
+    // Get all available memberships for comparison (raw to avoid enum decode issues)
+    const allMembershipsRaw: any[] = await prisma.$queryRaw`SELECT id, name, slug, duration, price, features, isActive FROM Membership ORDER BY price ASC`
+    const allMemberships = allMembershipsRaw.filter((m: any) => m.isActive)
 
     // Parse features for all memberships
-    const membershipComparison = allMemberships.map(m => {
+    const membershipComparison = allMemberships.map((m: any) => {
       let features: string[] = []
       try {
         if (typeof m.features === 'string') {
@@ -119,9 +107,9 @@ export async function GET() {
         duration: m.duration,
         price: Number(m.price),
         features: features,
-        coursesCount: m._count.membershipCourses,
-        groupsCount: m._count.membershipGroups,
-        productsCount: m._count.membershipProducts,
+        coursesCount: 0,
+        groupsCount: 0,
+        productsCount: 0,
       }
     })
 
@@ -150,13 +138,17 @@ export async function GET() {
       })
     }
 
-    // Parse features from membership
+    // Parse features from membership (flat array format)
     let membershipFeatures: string[] = []
     try {
-      if (typeof userMembership.membership.features === 'string') {
-        membershipFeatures = JSON.parse(userMembership.membership.features)
-      } else if (Array.isArray(userMembership.membership.features)) {
-        membershipFeatures = userMembership.membership.features as string[]
+      let featuresData = userMembership.membership.features
+      
+      if (typeof featuresData === 'string') {
+        featuresData = JSON.parse(featuresData)
+      }
+      
+      if (Array.isArray(featuresData)) {
+        membershipFeatures = featuresData as string[]
       }
     } catch (e) {
       membershipFeatures = []
@@ -168,7 +160,14 @@ export async function GET() {
     const accessibleProducts = userMembership.membership.membershipProducts.map(mp => mp.product)
 
     // Determine locked features based on membership tier
-    const duration = userMembership.membership.duration
+    // Safely fetch membership duration via raw SQL to avoid enum decode issues
+    let duration: string | null = null
+    try {
+      const durationRow: any[] = await prisma.$queryRaw`SELECT duration FROM Membership WHERE id = ${userMembership?.membership?.id} LIMIT 1`
+      duration = (durationRow?.[0]?.duration as string) || null
+    } catch (_) {
+      duration = null
+    }
     const isLifetime = duration === 'LIFETIME'
     const isYearly = duration === 'TWELVE_MONTHS' || duration === 'SIX_MONTHS'
     
@@ -198,7 +197,7 @@ export async function GET() {
         id: userMembership.id,
         name: userMembership.membership.name,
         slug: userMembership.membership.slug,
-        duration: userMembership.membership.duration,
+        duration: duration,
         startDate: userMembership.startDate,
         endDate: userMembership.endDate,
         isLifetime,

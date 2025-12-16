@@ -53,8 +53,8 @@ interface FollowUpMessage {
 }
 
 interface PriceOption {
-  duration: 'ONE_MONTH' | 'THREE_MONTHS' | 'SIX_MONTHS' | 'TWELVE_MONTHS' | 'LIFETIME'
-  label: string // Display name: "1 Bulan", "3 Bulan", dst
+  duration: 'SIX_MONTHS' | 'TWELVE_MONTHS' | 'LIFETIME'
+  label: string // Display name: "6 Bulan", "12 Bulan", "Lifetime"
   price: number
   discount?: number
   pricePerMonth?: number // Auto-calculated harga per bulan
@@ -92,8 +92,8 @@ export default function MembershipPlansPage() {
   
   const [prices, setPrices] = useState<PriceOption[]>([
     { 
-      duration: 'ONE_MONTH', 
-      label: '1 Bulan',
+      duration: 'SIX_MONTHS', 
+      label: 'Membership 6 Bulan',
       price: 0,
       benefits: [],
       badge: '',
@@ -205,8 +205,8 @@ export default function MembershipPlansPage() {
     // Properly handle prices with default values to avoid NaN errors
     if (Array.isArray(plan.prices) && plan.prices.length > 0) {
       setPrices(plan.prices.map(p => ({
-        duration: p.duration || 'ONE_MONTH',
-        label: p.label || getDurationLabel(p.duration || 'ONE_MONTH'),
+        duration: p.duration || 'SIX_MONTHS',
+        label: p.label || getDurationLabel(p.duration || 'SIX_MONTHS'),
         price: typeof p.price === 'number' ? p.price : parseFloat(p.price || '0'),
         discount: p.discount,
         pricePerMonth: p.pricePerMonth,
@@ -216,8 +216,8 @@ export default function MembershipPlansPage() {
       })))
     } else {
       setPrices([{ 
-        duration: 'ONE_MONTH',
-        label: '1 Bulan',
+        duration: 'SIX_MONTHS',
+        label: 'Membership 6 Bulan',
         price: 0,
         benefits: [],
         badge: '',
@@ -277,8 +277,8 @@ export default function MembershipPlansPage() {
       autoRemoveOnExpire: false
     })
     setPrices([{ 
-      duration: 'ONE_MONTH',
-      label: '1 Bulan',
+      duration: 'SIX_MONTHS',
+      label: '6 Bulan',
       price: 0,
       benefits: [],
       badge: '',
@@ -395,8 +395,8 @@ export default function MembershipPlansPage() {
 
   const addPrice = () => {
     setPrices([...prices, { 
-      duration: 'ONE_MONTH', 
-      label: '1 Bulan',
+      duration: 'SIX_MONTHS', 
+      label: 'Membership 6 Bulan',
       price: 0,
       benefits: [],
       badge: '',
@@ -416,9 +416,7 @@ export default function MembershipPlansPage() {
     if (field === 'price' || field === 'duration') {
       const p = newPrices[index]
       if (p.duration !== 'LIFETIME') {
-        const months = p.duration === 'ONE_MONTH' ? 1 : 
-                       p.duration === 'THREE_MONTHS' ? 3 :
-                       p.duration === 'SIX_MONTHS' ? 6 : 12
+        const months = p.duration === 'SIX_MONTHS' ? 6 : 12
         p.pricePerMonth = Math.round(p.price / months)
       }
     }
@@ -450,13 +448,15 @@ export default function MembershipPlansPage() {
 
   const getDurationLabel = (duration: string) => {
     const labels: Record<string, string> = {
-      'ONE_MONTH': '1 Bulan',
-      'THREE_MONTHS': '3 Bulan',
-      'SIX_MONTHS': '6 Bulan',
-      'TWELVE_MONTHS': '12 Bulan',
-      'LIFETIME': 'Lifetime'
+      'SIX_MONTHS': 'Membership 6 Bulan',
+      'TWELVE_MONTHS': 'Membership 12 Bulan',
+      'LIFETIME': 'Membership Selamanya',
+      // Support for imported Sejoli tiers
+      '6_MONTH': 'Membership 6 Bulan',
+      '12_MONTH': 'Membership 12 Bulan',
+      'FREE': 'Membership Gratis'
     }
-    return labels[duration] || duration
+    return labels[duration] || `Membership ${duration}`
   }
 
   if (!session || session.user.role !== 'ADMIN') {
@@ -557,10 +557,10 @@ export default function MembershipPlansPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nama Paket</TableHead>
-                <TableHead>Harga</TableHead>
+                <TableHead>Paket Membership</TableHead>
+                <TableHead>Transaksi</TableHead>
                 <TableHead>Fitur</TableHead>
                 <TableHead>Marketing</TableHead>
-                <TableHead>Link Checkout</TableHead>
                 <TableHead>Pengguna</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Aksi</TableHead>
@@ -593,19 +593,48 @@ export default function MembershipPlansPage() {
                     ) : Array.isArray(plan.prices) && plan.prices.length > 0 ? (
                       <div className="space-y-1">
                         {plan.prices.slice(0, 2).map((price: PriceOption, i: number) => (
-                          <div key={i} className="text-sm">
-                            {getDurationLabel(price.duration)}: {formatCurrency(price.price)}
+                          <div key={i} className="flex flex-col">
+                            <span className="font-medium text-gray-800 text-sm">
+                              {getDurationLabel(price.duration)}
+                            </span>
+                            <span className="text-blue-600 text-xs font-semibold">
+                              {formatCurrency(price.price)}
+                            </span>
                           </div>
                         ))}
                         {plan.prices.length > 2 && (
-                          <div className="text-xs text-muted-foreground">
-                            +{plan.prices.length - 2} more
+                          <div className="text-xs text-blue-600 font-medium mt-1">
+                            +{plan.prices.length - 2} paket lainnya
                           </div>
                         )}
                       </div>
                     ) : (
                       <span className="text-muted-foreground">Tidak ada harga</span>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {(plan as any)._count?.userMemberships > 0 ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                              {(plan as any)._count.userMemberships} Member
+                            </Badge>
+                          </div>
+                          {(plan as any).userMemberships?.[0]?.transaction?.createdAt && (
+                            <div className="text-xs text-gray-500">
+                              Terakhir: {new Date((plan as any).userMemberships[0].transaction.createdAt).toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-xs text-gray-400">Belum ada member</span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2 flex-wrap">
@@ -674,33 +703,6 @@ export default function MembershipPlansPage() {
                           Salespage
                         </Button>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-2">
-                      <a 
-                        href={`/checkout/${plan.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Link className="h-3 w-3" />
-                        /checkout/{plan.slug}
-                      </a>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 w-full text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          const link = `${window.location.origin}/checkout/${plan.slug}`
-                          navigator.clipboard.writeText(link)
-                          toast.success('Link copied to clipboard!')
-                        }}
-                      >
-                        <span className="mr-1">📋</span> Copy Link
-                      </Button>
                     </div>
                   </TableCell>
                   <TableCell>

@@ -281,6 +281,7 @@ export default function AdminProductsPage() {
               <SelectContent>
                 <SelectItem value="ALL">Semua Tipe</SelectItem>
                 <SelectItem value="DIGITAL">Digital</SelectItem>
+                <SelectItem value="EVENT">Event/Webinar</SelectItem>
                 <SelectItem value="COURSE_BUNDLE">Bundle Kelas</SelectItem>
                 <SelectItem value="EBOOK">Ebook</SelectItem>
                 <SelectItem value="TEMPLATE">Template</SelectItem>
