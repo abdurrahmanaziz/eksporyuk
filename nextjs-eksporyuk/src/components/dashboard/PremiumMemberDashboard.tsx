@@ -245,7 +245,7 @@ export default function PremiumMemberDashboard() {
           {/* Spotlight: Kelas Utama */}
           {data?.courses && data.courses.length > 0 ? (
             <Link href={`/learn/${data.courses[0].slug}`} className="group">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 h-[200px] shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 hover:scale-[1.02]">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white p-6 h-[200px] shadow-lg shadow-sky-500/20 hover:shadow-xl hover:shadow-sky-500/30 transition-all duration-300 hover:scale-[1.02]">
                 <div className="absolute inset-0 bg-black/10" />
                 <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full" />
                 <div className="absolute right-4 top-4 w-20 h-20 bg-white/10 rounded-full" />
@@ -285,7 +285,7 @@ export default function PremiumMemberDashboard() {
             </Link>
           ) : (
             <Link href="/courses" className="group">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 h-[200px] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white p-6 h-[200px] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
                 <div className="absolute inset-0 bg-black/10" />
                 <div className="relative h-full flex flex-col items-center justify-center text-center">
                   <GraduationCap className="w-12 h-12 mb-3 opacity-80" />
@@ -302,7 +302,7 @@ export default function PremiumMemberDashboard() {
           {/* Spotlight: Grup Utama */}
           {data?.groups && data.groups.length > 0 ? (
             <Link href={`/community/groups/${data.groups[0].slug}`} className="group">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white p-6 h-[200px] shadow-lg shadow-violet-500/20 hover:shadow-xl hover:shadow-violet-500/30 transition-all duration-300 hover:scale-[1.02]">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white p-6 h-[200px] shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-300 hover:scale-[1.02]">
                 <div className="absolute inset-0 bg-black/10" />
                 <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full" />
                 <div className="absolute right-4 top-4 w-20 h-20 bg-white/10 rounded-full" />
@@ -329,7 +329,7 @@ export default function PremiumMemberDashboard() {
                     <div className="flex items-center gap-2">
                       <div className="flex -space-x-2">
                         {[...Array(4)].map((_, i) => (
-                          <div key={i} className="w-8 h-8 rounded-full bg-white/30 border-2 border-violet-500 flex items-center justify-center text-xs font-bold">
+                          <div key={i} className="w-8 h-8 rounded-full bg-white/30 border-2 border-indigo-500 flex items-center justify-center text-xs font-bold">
                             {String.fromCharCode(65 + i)}
                           </div>
                         ))}
@@ -345,7 +345,7 @@ export default function PremiumMemberDashboard() {
             </Link>
           ) : (
             <Link href="/community/groups" className="group">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white p-6 h-[200px] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white p-6 h-[200px] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
                 <div className="absolute inset-0 bg-black/10" />
                 <div className="relative h-full flex flex-col items-center justify-center text-center">
                   <Users className="w-12 h-12 mb-3 opacity-80" />
@@ -454,11 +454,11 @@ export default function PremiumMemberDashboard() {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <Users className="w-6 h-6 text-purple-600" />
+                    <Users className="w-6 h-6 text-indigo-600" />
                     Grup Komunitas
                   </CardTitle>
                   <Link href="/community/groups">
-                    <Button variant="ghost" size="sm" className="text-purple-600">
+                    <Button variant="ghost" size="sm" className="text-indigo-600">
                       Lihat Semua <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </Link>
