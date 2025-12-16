@@ -260,10 +260,10 @@ export default function PremiumMemberDashboard() {
                         {data.courses[0].status === 'IN_PROGRESS' ? '🔥 Lanjutkan' : '📚 Mulai Belajar'}
                       </Badge>
                     </div>
-                    <h3 className="text-xl font-bold mb-1 line-clamp-2 group-hover:underline decoration-2 underline-offset-2">
+                    <h3 className="text-xl font-bold mb-1 line-clamp-2 text-white group-hover:underline decoration-2 underline-offset-2">
                       {data.courses[0].title}
                     </h3>
-                    <p className="text-white/80 text-sm">
+                    <p className="text-white/90 text-sm">
                       {data.courses[0].completedLessons}/{data.courses[0].totalLessons} materi selesai
                     </p>
                   </div>
@@ -317,10 +317,10 @@ export default function PremiumMemberDashboard() {
                         💬 Komunitas Aktif
                       </Badge>
                     </div>
-                    <h3 className="text-xl font-bold mb-1 line-clamp-2 group-hover:underline decoration-2 underline-offset-2">
+                    <h3 className="text-xl font-bold mb-1 line-clamp-2 text-white group-hover:underline decoration-2 underline-offset-2">
                       {data.groups[0].name}
                     </h3>
-                    <p className="text-white/80 text-sm">
+                    <p className="text-white/90 text-sm">
                       {data.groups[0].memberCount.toLocaleString()} member aktif
                     </p>
                   </div>
