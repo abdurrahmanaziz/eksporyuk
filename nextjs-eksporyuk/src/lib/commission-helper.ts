@@ -103,6 +103,21 @@ export async function processTransactionCommission(
           reference: transactionId,
         },
       })
+
+      // Update affiliateProfile statistics for realtime sync
+      const affiliateProfile = await prisma.affiliateProfile.findUnique({
+        where: { userId: affiliateUserId },
+      })
+      
+      if (affiliateProfile) {
+        await prisma.affiliateProfile.update({
+          where: { userId: affiliateUserId },
+          data: {
+            totalEarnings: { increment: commission.affiliateCommission },
+            totalConversions: { increment: 1 },
+          },
+        })
+      }
     }
     
     // 2. Admin Fee (ke balancePending)

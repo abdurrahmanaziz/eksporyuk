@@ -33,33 +33,53 @@ export async function GET() {
       )
     }
 
-    // Get wallet balance
+    // Get wallet balance (source of truth for realtime earnings)
     const wallet = await prisma.wallet.findUnique({
       where: { userId: session.user.id },
     })
 
-    // Get pending conversions
-    const pendingConversions = await prisma.affiliateConversion.findMany({
+    // Calculate actual total earnings from all conversions (realtime data)
+    const totalConversionsData = await prisma.affiliateConversion.aggregate({
+      where: {
+        affiliateId: affiliateProfile.id,
+      },
+      _sum: { commissionAmount: true },
+      _count: true,
+    })
+
+    // Get pending conversions (not yet paid out)
+    const pendingConversionsData = await prisma.affiliateConversion.aggregate({
       where: {
         affiliateId: affiliateProfile.id,
         paidOut: false,
       },
+      _sum: { commissionAmount: true },
     })
 
-    const pendingEarnings = pendingConversions.reduce(
-      (sum, conv) => sum + Number(conv.commissionAmount),
-      0
-    )
+    // Get actual clicks from AffiliateClick table (realtime)
+    const actualClicks = await prisma.affiliateClick.count({
+      where: {
+        affiliateId: affiliateProfile.id,
+      },
+    })
 
-    const conversionRate =
-      affiliateProfile.totalClicks > 0
-        ? (affiliateProfile.totalConversions / affiliateProfile.totalClicks) * 100
-        : 0
+    // Use wallet.totalEarnings as primary source (updated by commission-helper)
+    // Fallback to sum of conversions if wallet doesn't exist
+    const totalEarnings = Number(wallet?.totalEarnings || 0) || 
+                         Number(totalConversionsData._sum.commissionAmount || 0)
+    
+    const totalClicks = actualClicks || affiliateProfile.totalClicks
+    const totalConversions = totalConversionsData._count || affiliateProfile.totalConversions
+    const pendingEarnings = Number(pendingConversionsData._sum.commissionAmount || 0)
+
+    const conversionRate = totalClicks > 0
+      ? (totalConversions / totalClicks) * 100
+      : 0
 
     return NextResponse.json({
-      totalEarnings: Number(affiliateProfile.totalEarnings),
-      totalClicks: affiliateProfile.totalClicks,
-      totalConversions: affiliateProfile.totalConversions,
+      totalEarnings,
+      totalClicks,
+      totalConversions,
       conversionRate,
       pendingEarnings,
       availableBalance: Number(wallet?.balance || 0),
