@@ -202,11 +202,11 @@ export default function AffiliateShortLinksPage() {
 
   return (
     <FeatureLock feature="short-links">
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 sm:p-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-3xl font-bold">My Short Links</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-xl sm:text-3xl font-bold">My Short Links</h1>
+          <p className="text-gray-600 text-xs sm:text-base mt-1 sm:mt-2">
             Create and manage your affiliate short links
           </p>
         </div>
@@ -215,7 +215,7 @@ export default function AffiliateShortLinksPage() {
             resetForm()
             setShowModal(true)
           }}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          className="w-full sm:w-auto bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base"
           disabled={domains.length === 0}
         >
           + Create Short Link
@@ -223,102 +223,104 @@ export default function AffiliateShortLinksPage() {
       </div>
 
       {domains.length === 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-          <p className="text-yellow-800">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+          <p className="text-yellow-800 text-xs sm:text-base">
             No domains available yet. Please contact admin to set up short link domains.
           </p>
         </div>
       )}
 
       {shortLinks.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <div className="text-6xl mb-4">🔗</div>
-          <p className="text-gray-500 mb-4">No short links created yet.</p>
+        <div className="bg-white rounded-lg shadow p-6 sm:p-8 text-center">
+          <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🔗</div>
+          <p className="text-gray-500 text-sm sm:text-base mb-3 sm:mb-4">No short links created yet.</p>
           <button
             onClick={() => {
               resetForm()
               setShowModal(true)
             }}
-            className="text-blue-600 hover:underline"
+            className="text-blue-600 hover:underline text-sm sm:text-base"
             disabled={domains.length === 0}
           >
             Create your first short link
           </button>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4">
           {shortLinks.map((link) => (
-            <div key={link.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-xl font-bold font-mono flex-1">{link.fullShortUrl}</h3>
+            <div key={link.id} className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
+                    <h3 className="text-sm sm:text-xl font-bold font-mono truncate">{link.fullShortUrl}</h3>
                     {link.isActive ? (
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                      <span className="bg-green-100 text-green-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                         Active
                       </span>
                     ) : (
-                      <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                      <span className="bg-gray-100 text-gray-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                         Inactive
                       </span>
                     )}
                     {link.expiresAt && new Date(link.expiresAt) < new Date() && (
-                      <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
+                      <span className="bg-red-100 text-red-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                         ⏰ Expired
                       </span>
                     )}
                     {link.expiresAt && new Date(link.expiresAt) >= new Date() && (
-                      <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
-                        📅 Expires {new Date(link.expiresAt).toLocaleDateString()}
+                      <span className="bg-yellow-100 text-yellow-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                        📅 {new Date(link.expiresAt).toLocaleDateString()}
                       </span>
                     )}
                   </div>
                   
-                  <div className="text-sm text-gray-600 mb-4">
+                  <div className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                     <span className="font-semibold">Target:</span>{' '}
-                    {link.targetType === 'custom' ? link.targetUrl : `${link.targetType} (ID: ${link.targetId})`}
+                    <span className="break-all">
+                      {link.targetType === 'custom' ? link.targetUrl : `${link.targetType} (ID: ${link.targetId})`}
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
-                      <p className="text-sm text-gray-500">Clicks</p>
-                      <p className="text-2xl font-bold text-blue-600">{link.clicks}</p>
+                      <p className="text-[10px] sm:text-sm text-gray-500">Clicks</p>
+                      <p className="text-lg sm:text-2xl font-bold text-blue-600">{link.clicks}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Conversions</p>
-                      <p className="text-2xl font-bold text-green-600">{link.conversions}</p>
+                      <p className="text-[10px] sm:text-sm text-gray-500">Conversions</p>
+                      <p className="text-lg sm:text-2xl font-bold text-green-600">{link.conversions}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Conversion Rate</p>
-                      <p className="text-2xl font-bold text-purple-600">
+                      <p className="text-[10px] sm:text-sm text-gray-500">Rate</p>
+                      <p className="text-lg sm:text-2xl font-bold text-purple-600">
                         {link.clicks > 0 ? ((link.conversions / link.clicks) * 100).toFixed(1) : 0}%
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-xs text-gray-500 mt-4">
+                  <div className="text-[10px] sm:text-xs text-gray-500 mt-3 sm:mt-4">
                     Created: {new Date(link.createdAt).toLocaleDateString()}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex sm:flex-col gap-2 w-full sm:w-auto">
                   <button
                     onClick={() => window.location.href = `/affiliate/short-links/${link.id}/stats`}
-                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center gap-2"
+                    className="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                   >
-                    📊 View Stats
+                    📊 <span className="hidden sm:inline">View Stats</span>
                   </button>
                   <button
                     onClick={() => copyToClipboard(link.fullShortUrl)}
-                    className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 flex items-center gap-2"
+                    className="flex-1 sm:flex-none bg-blue-100 text-blue-700 px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-200 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                   >
-                    📋 Copy
+                    📋 <span className="hidden sm:inline">Copy</span>
                   </button>
                   <button
                     onClick={() => showQR(link)}
-                    className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 flex items-center gap-2"
+                    className="flex-1 sm:flex-none bg-purple-100 text-purple-700 px-3 sm:px-4 py-2 rounded-lg hover:bg-purple-200 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                   >
-                    📱 QR
+                    📱 <span className="hidden sm:inline">QR</span>
                   </button>
                 </div>
               </div>
@@ -329,9 +331,9 @@ export default function AffiliateShortLinksPage() {
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6">Create New Short Link</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Create New Short Link</h2>
             
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
@@ -519,38 +521,38 @@ export default function AffiliateShortLinksPage() {
 
       {/* QR Code Modal */}
       {showQRModal && selectedLink && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">QR Code</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-8 w-full max-w-md">
+            <h2 className="text-lg sm:text-2xl font-bold mb-3 sm:mb-4">QR Code</h2>
             
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">Short Link:</p>
-              <p className="font-mono text-sm bg-gray-100 p-2 rounded break-all">
+            <div className="mb-3 sm:mb-4">
+              <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Short Link:</p>
+              <p className="font-mono text-xs sm:text-sm bg-gray-100 p-2 rounded break-all">
                 {selectedLink.fullShortUrl}
               </p>
             </div>
 
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-4 sm:mb-6">
               {loadingQR ? (
-                <div className="w-64 h-64 flex items-center justify-center bg-gray-100 rounded">
-                  <p className="text-gray-500">Generating QR Code...</p>
+                <div className="w-48 h-48 sm:w-64 sm:h-64 flex items-center justify-center bg-gray-100 rounded">
+                  <p className="text-gray-500 text-sm">Generating QR Code...</p>
                 </div>
               ) : qrCode ? (
-                <img src={qrCode} alt="QR Code" className="w-64 h-64" />
+                <img src={qrCode} alt="QR Code" className="w-48 h-48 sm:w-64 sm:h-64" />
               ) : (
-                <div className="w-64 h-64 flex items-center justify-center bg-gray-100 rounded">
-                  <p className="text-gray-500">Failed to generate</p>
+                <div className="w-48 h-48 sm:w-64 sm:h-64 flex items-center justify-center bg-gray-100 rounded">
+                  <p className="text-gray-500 text-sm">Failed to generate</p>
                 </div>
               )}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={downloadQR}
                 disabled={!qrCode || loadingQR}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
-                Download QR Code
+                Download QR
               </button>
               <button
                 onClick={() => {
@@ -558,7 +560,7 @@ export default function AffiliateShortLinksPage() {
                   setSelectedLink(null)
                   setQrCode(null)
                 }}
-                className="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-gray-300"
+                className="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-gray-300 text-sm sm:text-base"
               >
                 Close
               </button>
