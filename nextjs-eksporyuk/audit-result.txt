@@ -1,0 +1,579 @@
+🔍 COMPREHENSIVE SYSTEM AUDIT - Eksporyuk Platform
+
+================================================================================
+
+📋 1. MEMBERSHIP SYSTEM AUDIT
+
+   Total Active Memberships: 3
+   - Lifetime: Rp 999,000 (4064 users)
+     Commission Rate: 325000% (undefined)
+   - 12 Bulan: Rp 899,000 (488 users)
+     Commission Rate: 250000% (undefined)
+   - 6 Bulan: Rp 699,000 (255 users)
+     Commission Rate: 200000% (undefined)
+
+
+💳 2. XENDIT PAYMENT GATEWAY CHECK
+
+   Recent Transactions (last 10):
+
+   1. 2025-12-16 - harryjunaidi02@gmail.com
+      Status: PENDING | Amount: Rp 300,000
+      Type: MEMBERSHIP | Payment: manual
+   2. 2025-12-15 - nopitasalon@gmail.com
+      Status: SUCCESS | Amount: Rp 999,000
+      Type: MEMBERSHIP | Payment: xendit
+   3. 2025-12-15 - parmosarya@gmail.com
+      Status: SUCCESS | Amount: Rp 699,000
+      Type: MEMBERSHIP | Payment: manual
+   4. 2025-12-14 - sholatunsholatun@gmail.com
+      Status: PENDING | Amount: Rp 999,000
+      Type: MEMBERSHIP | Payment: xendit
+   5. 2025-12-14 - bohay5969@gmail.com
+      Status: PENDING | Amount: Rp 999,000
+      Type: MEMBERSHIP | Payment: xendit
+   6. 2025-12-14 - indriyantimelly3@gmail.com
+      Status: PENDING | Amount: Rp 999,000
+      Type: MEMBERSHIP | Payment: xendit
+   7. 2025-12-13 - rahmatdwinugroho95@gmail.com
+      Status: PENDING | Amount: Rp 999,000
+      Type: MEMBERSHIP | Payment: xendit
+   8. 2025-12-13 - jevojeco303@gmail.com
+      Status: PENDING | Amount: Rp 999,000
+      Type: MEMBERSHIP | Payment: manual
+   9. 2025-12-13 - ardiansyahk169@gmail.com
+      Status: PENDING | Amount: Rp 999,000
+      Type: MEMBERSHIP | Payment: xendit
+   10. 2025-12-13 - alfianhu1509@gmail.com
+      Status: SUCCESS | Amount: Rp 999,000
+      Type: MEMBERSHIP | Payment: xendit
+
+   Transaction Status Breakdown:
+   - PENDING: 22
+   - SUCCESS: 12816
+   - FAILED: 6371
+
+
+💰 3. COMMISSION DISTRIBUTION FLOW
+
+
+   Affiliate Conversion Stats:
+   - Pending: 3731 conversions, Rp 968,420,000
+
+
+💼 4. WALLET & BALANCE SYSTEM
+
+   Wallets with Balance: 99
+
+   affiliate.teukutaufik@gmail.com (MEMBER_FREE)
+     Balance: Rp 325,000
+     Total Earnings: Rp 325,000
+     Pending: Rp 0
+   Panjisantos489@gmqil.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   addam21pambudi@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   rozi679@gmail.com (MEMBER_FREE)
+     Balance: Rp 325,000
+     Total Earnings: Rp 325,000
+     Pending: Rp 0
+   dysukma7@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 1,300,000
+     Total Earnings: Rp 1,300,000
+     Pending: Rp 0
+   irfanwill.co@gmail.com (MEMBER_FREE)
+     Balance: Rp 3,075,000
+     Total Earnings: Rp 3,075,000
+     Pending: Rp 0
+   dzarukusuma123@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   all.truss.construction@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   andinoeg.sby@gmail.com (MEMBER_FREE)
+     Balance: Rp 32,425,000
+     Total Earnings: Rp 32,425,000
+     Pending: Rp 0
+   cs.ezdigital@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,650,000
+     Total Earnings: Rp 1,650,000
+     Pending: Rp 0
+   yuniarka@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 36,255,000
+     Total Earnings: Rp 36,255,000
+     Pending: Rp 0
+   roller.circle@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   rahmatt727@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,000,000
+     Total Earnings: Rp 1,000,000
+     Pending: Rp 0
+   pintarekspor146@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 58,275,000
+     Total Earnings: Rp 58,275,000
+     Pending: Rp 0
+   adiherdiansyah708@gmail.com (MEMBER_FREE)
+     Balance: Rp 5,400,000
+     Total Earnings: Rp 5,400,000
+     Pending: Rp 0
+   helloummina@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   cscirebonteknik2@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 1,850,000
+     Total Earnings: Rp 1,850,000
+     Pending: Rp 0
+   azzka42@gmail.com (MEMBER_FREE)
+     Balance: Rp 143,120,000
+     Total Earnings: Rp 143,120,000
+     Pending: Rp 0
+   rudhimaya@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   azisenunik@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   yogasoneo@gmail.com (MEMBER_FREE)
+     Balance: Rp 97,400,000
+     Total Earnings: Rp 97,400,000
+     Pending: Rp 0
+   affrazy@gmail.com (MEMBER_FREE)
+     Balance: Rp 2,200,000
+     Total Earnings: Rp 2,200,000
+     Pending: Rp 0
+   umartrainerjualan@gmail.com (MENTOR)
+     Balance: Rp 11,675,000
+     Total Earnings: Rp 11,675,000
+     Pending: Rp 0
+   mentorpasukan@gmail.com (MEMBER_FREE)
+     Balance: Rp 39,250,000
+     Total Earnings: Rp 39,250,000
+     Pending: Rp 0
+   ssarteda2000@gmail.com (MEMBER_FREE)
+     Balance: Rp 650,000
+     Total Earnings: Rp 650,000
+     Pending: Rp 0
+   witjakson@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 650,000
+     Total Earnings: Rp 650,000
+     Pending: Rp 0
+   sigitpram1976@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   Wadiw3784@gmail.com (MEMBER_FREE)
+     Balance: Rp 325,000
+     Total Earnings: Rp 325,000
+     Pending: Rp 0
+   kawansuksesbersama@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 500,000
+     Total Earnings: Rp 500,000
+     Pending: Rp 0
+   agus_aff@ymail.com (MEMBER_FREE)
+     Balance: Rp 500,000
+     Total Earnings: Rp 500,000
+     Pending: Rp 0
+   ergomatic.id@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 26,275,000
+     Total Earnings: Rp 26,275,000
+     Pending: Rp 0
+   mizzuddiin.naafi@gmail.com (MEMBER_FREE)
+     Balance: Rp 750,000
+     Total Earnings: Rp 750,000
+     Pending: Rp 0
+   trapesiumdigital@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 500,000
+     Total Earnings: Rp 500,000
+     Pending: Rp 0
+   gina.rahmi.latifah@gmail.com (MEMBER_FREE)
+     Balance: Rp 355,000
+     Total Earnings: Rp 0
+     Pending: Rp 0
+   fajwatijariresources@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 20,000
+     Total Earnings: Rp 0
+     Pending: Rp 0
+   agungharyanto4565@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 2,965,000
+     Total Earnings: Rp 2,965,000
+     Pending: Rp 0
+   fadlulrahmat19@gmail.com (MEMBER_FREE)
+     Balance: Rp 26,410,000
+     Total Earnings: Rp 26,410,000
+     Pending: Rp 0
+   asep.abdurrahman.w@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 180,965,000
+     Total Earnings: Rp 180,965,000
+     Pending: Rp 0
+   farhanghazali1812@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 500,000
+     Total Earnings: Rp 500,000
+     Pending: Rp 0
+   nurdine94@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,700,000
+     Total Earnings: Rp 1,700,000
+     Pending: Rp 0
+   rizqifirdaus2@gmail.com (MENTOR)
+     Balance: Rp 650,000
+     Total Earnings: Rp 650,000
+     Pending: Rp 0
+   ahmadumar.syamsuri129@gmail.com (MEMBER_FREE)
+     Balance: Rp 20,000
+     Total Earnings: Rp 20,000
+     Pending: Rp 0
+   riswantio16@gmail.com (MEMBER_FREE)
+     Balance: Rp 975,000
+     Total Earnings: Rp 975,000
+     Pending: Rp 0
+   saputra7376@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   squadekspor@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,550,000
+     Total Earnings: Rp 1,550,000
+     Pending: Rp 0
+   sahandi760@gmail.com (MEMBER_FREE)
+     Balance: Rp 6,025,000
+     Total Earnings: Rp 6,025,000
+     Pending: Rp 0
+   merihm41@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 650,000
+     Total Earnings: Rp 650,000
+     Pending: Rp 0
+   kaplupyan8@gmail.com (MEMBER_FREE)
+     Balance: Rp 9,700,000
+     Total Earnings: Rp 9,700,000
+     Pending: Rp 0
+   dherifkyalazhary29@gmail.com (MEMBER_FREE)
+     Balance: Rp 5,335,000
+     Total Earnings: Rp 5,335,000
+     Pending: Rp 0
+   naniwatiutama@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 2,945,000
+     Total Earnings: Rp 2,945,000
+     Pending: Rp 0
+   izat1104yt@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 3,725,000
+     Total Earnings: Rp 3,725,000
+     Pending: Rp 0
+   enutanwar48@gmail.com (MEMBER_FREE)
+     Balance: Rp 20,000
+     Total Earnings: Rp 20,000
+     Pending: Rp 0
+   kusriaa@gmail.com (MEMBER_FREE)
+     Balance: Rp 2,275,000
+     Total Earnings: Rp 2,275,000
+     Pending: Rp 0
+   johansmart325@gmail.com (MEMBER_FREE)
+     Balance: Rp 500,000
+     Total Earnings: Rp 500,000
+     Pending: Rp 0
+   m.bramnugroho@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 2,000,000
+     Total Earnings: Rp 2,000,000
+     Pending: Rp 0
+   muda1miliar@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,420,000
+     Total Earnings: Rp 0
+     Pending: Rp 0
+   aminullahbambu@gmail.com (MEMBER_FREE)
+     Balance: Rp 6,200,000
+     Total Earnings: Rp 6,200,000
+     Pending: Rp 0
+   erwinfakhrani@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   rayenaldo7@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 2,750,000
+     Total Earnings: Rp 2,750,000
+     Pending: Rp 0
+   vandesan83@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   hendyswardika@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 500,000
+     Total Earnings: Rp 500,000
+     Pending: Rp 0
+   irmaprime01@gmail.com (MEMBER_FREE)
+     Balance: Rp 91,375,000
+     Total Earnings: Rp 91,375,000
+     Pending: Rp 0
+   inthenetmatketer@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   muegye.gyeonogye@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   nurasyikb@gmail.com (MEMBER_FREE)
+     Balance: Rp 4,050,000
+     Total Earnings: Rp 4,050,000
+     Pending: Rp 0
+   christiantampang@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   zhenalayubi@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   momosaka00@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,250,000
+     Total Earnings: Rp 1,250,000
+     Pending: Rp 0
+   exportexpert.Indonesia@gmail.com (MEMBER_FREE)
+     Balance: Rp 7,825,000
+     Total Earnings: Rp 7,825,000
+     Pending: Rp 0
+   firmanwidodo4732@gmail.com (MEMBER_FREE)
+     Balance: Rp 750,000
+     Total Earnings: Rp 750,000
+     Pending: Rp 0
+   azizbiasa@gmail.com (AFFILIATE)
+     Balance: Rp 23,835,000
+     Total Earnings: Rp 23,835,000
+     Pending: Rp 0
+   saputramutadi@yahoo.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   akbarisakti2@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   hamidbaidowi03@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 140,115,000
+     Total Earnings: Rp 140,115,000
+     Pending: Rp 0
+   jeprypratama96@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   arighy97@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   asepcyberindo@yahoo.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   rsaf924@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 79,095,000
+     Total Earnings: Rp 79,095,000
+     Pending: Rp 0
+   suparnomyid@gmail.com (MEMBER_FREE)
+     Balance: Rp 500,000
+     Total Earnings: Rp 500,000
+     Pending: Rp 0
+   nurcahyoherman@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   ekowibowo831@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 69,585,000
+     Total Earnings: Rp 69,585,000
+     Pending: Rp 0
+   tbrianpermadi911@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 500,000
+     Total Earnings: Rp 500,000
+     Pending: Rp 0
+   adibmahdy@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   awlovenhoney78@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 21,600,000
+     Total Earnings: Rp 21,600,000
+     Pending: Rp 0
+   triwanto.hendri@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   infoeventsentrepreneur@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   kaplupyan@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,150,000
+     Total Earnings: Rp 1,150,000
+     Pending: Rp 0
+   angeliaduaa@gmail.com (MEMBER_FREE)
+     Balance: Rp 325,000
+     Total Earnings: Rp 325,000
+     Pending: Rp 0
+   sugiyem912@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,225,000
+     Total Earnings: Rp 1,225,000
+     Pending: Rp 0
+   christianindrajaya777@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 1,750,000
+     Total Earnings: Rp 1,750,000
+     Pending: Rp 0
+   azis.laacu.muslim@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   kurdikhan12@gmail.com (MEMBER_FREE)
+     Balance: Rp 15,100,000
+     Total Earnings: Rp 15,100,000
+     Pending: Rp 0
+   agnpermadi@gmail.com (MEMBER_FREE)
+     Balance: Rp 3,250,000
+     Total Earnings: Rp 3,250,000
+     Pending: Rp 0
+   rahmatalfianto1997@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 179,840,000
+     Total Earnings: Rp 179,840,000
+     Pending: Rp 0
+   denimajo@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+   msirojulmunir96@gmail.com (MEMBER_FREE)
+     Balance: Rp 5,625,000
+     Total Earnings: Rp 5,625,000
+     Pending: Rp 0
+   haryo98@gmail.com (MEMBER_PREMIUM)
+     Balance: Rp 1,500,000
+     Total Earnings: Rp 1,500,000
+     Pending: Rp 0
+   robertsusanto2003@gmail.com (MEMBER_FREE)
+     Balance: Rp 1,300,000
+     Total Earnings: Rp 1,300,000
+     Pending: Rp 0
+   syihab.fahmi1997@gmail.com (MEMBER_FREE)
+     Balance: Rp 250,000
+     Total Earnings: Rp 250,000
+     Pending: Rp 0
+
+   TOTALS:
+   - Total Balance: Rp 1,384,375,000
+   - Total Earnings: Rp 1,382,580,000
+   - Total Pending: Rp 0
+
+
+💸 5. WITHDRAWAL (PAYOUT) SYSTEM
+
+   Recent Payouts (last 10):
+
+   No payouts found in system
+
+   Payout Status Breakdown:
+
+
+👥 6. USER ACCESS & MEMBERSHIP FEATURES
+
+   Active User Memberships: 10
+
+   1. biwan7614@gmail.com (MEMBER_PREMIUM)
+      Membership: Lifetime
+      Status: ACTIVE
+      Start: 2025-09-13
+      End: 2125-09-13
+      Features: 10 configured
+   2. khoirulumami.1984@gmail.com (MEMBER_PREMIUM)
+      Membership: Lifetime
+      Status: ACTIVE
+      Start: 2025-05-18
+      End: 2125-05-18
+      Features: 10 configured
+   3. megasartika067@gmail.com (MEMBER_PREMIUM)
+      Membership: 12 Bulan
+      Status: PENDING
+      Start: 2023-07-08
+      End: 2024-07-08
+      Features: 8 configured
+   4. mbarnes1979@gmail.com (MEMBER_PREMIUM)
+      Membership: 12 Bulan
+      Status: PENDING
+      Start: 2023-08-17
+      End: 2024-08-17
+      Features: 8 configured
+   5. aparubak1@gmail.com (MEMBER_PREMIUM)
+      Membership: 12 Bulan
+      Status: PENDING
+      Start: 2023-04-22
+      End: 2024-04-22
+      Features: 8 configured
+   6. roby.jibeng@gmail.com (MEMBER_PREMIUM)
+      Membership: 6 Bulan
+      Status: PENDING
+      Start: 2022-04-04
+      End: 2022-10-04
+      Features: 6 configured
+   7. abdi.hpai@gmail.com (MEMBER_PREMIUM)
+      Membership: 6 Bulan
+      Status: PENDING
+      Start: 2022-03-31
+      End: 2022-10-01
+      Features: 6 configured
+   8. apretoyurry@yahoo.co.id (MEMBER_PREMIUM)
+      Membership: 6 Bulan
+      Status: PENDING
+      Start: 2022-04-05
+      End: 2022-10-05
+      Features: 6 configured
+   9. ulamrahayu@gmail.com (MEMBER_PREMIUM)
+      Membership: 6 Bulan
+      Status: PENDING
+      Start: 2022-04-01
+      End: 2022-10-01
+      Features: 6 configured
+   10. wahyu.age@gmail.com (MEMBER_PREMIUM)
+      Membership: 6 Bulan
+      Status: PENDING
+      Start: 2022-04-04
+      End: 2022-10-04
+      Features: 6 configured
+
+
+🔍 7. DATA INTEGRITY CHECKS
+
+PrismaClientValidationError: 
+Invalid `prisma.affiliateConversion.count()` invocation in
+/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/audit-complete-flow.js:256:64
+
+  253 console.log('\n\n🔍 7. DATA INTEGRITY CHECKS\n');
+  254 
+  255 // Check for orphaned records
+→ 256 const orphanedConversions = await prisma.affiliateConversion.count({
+        select: {
+          _count: {
+            select: {
+              _all: true
+            }
+          }
+        },
+        where: {
+          transaction: null
+                       ~~~~
+        }
+      })
+
+Argument transaction for where.transaction must not be null. Please use undefined instead.
+
+
+    at Ui.validate (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:148:73)
+    at gn.createMessage (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:164:1298)
+    at /Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:177:11600
+    at Object.runInChildSpan (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:174:1394)
+    at t._executeRequest (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:177:11577)
+    at async auditCompleteFlow (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/audit-complete-flow.js:256:31) {
+  clientVersion: '4.16.2'
+}
