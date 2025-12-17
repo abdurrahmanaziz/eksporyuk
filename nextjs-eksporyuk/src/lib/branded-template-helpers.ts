@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/prisma'
-import { createBrandedEmail, processShortcodes, TemplateData } from './branded-template-engine'
+import { createBrandedEmailAsync, processShortcodes, TemplateData } from './branded-template-engine'
 import { mailketing } from './integrations/mailketing'
 
 /**
  * Fungsi helper untuk mengirim email menggunakan branded template
- * Uses Mailketing API for delivery
+ * Uses Mailketing API for delivery with logo & footer from database settings
  */
 export async function sendBrandedEmail({
   templateSlug,
@@ -40,8 +40,8 @@ export async function sendBrandedEmail({
       ...data
     }
 
-    // Generate branded HTML using the correct function signature
-    const emailHtml = createBrandedEmail(
+    // Generate branded HTML using ASYNC version (loads settings from DB)
+    const emailHtml = await createBrandedEmailAsync(
       template.subject,
       template.content,
       template.ctaText || undefined,
