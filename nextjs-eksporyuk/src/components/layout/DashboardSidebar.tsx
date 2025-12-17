@@ -213,6 +213,12 @@ const navigationByRole = {
       ]
     },
     {
+      title: 'Bantuan',
+      items: [
+        { name: 'Tiket Support', href: '/admin/support', icon: Ticket },
+      ]
+    },
+    {
       title: 'Pengaturan',
       items: [
         { name: 'Pengaturan Platform', href: '/admin/settings/platform', icon: Sliders },
@@ -310,6 +316,12 @@ const navigationByRole = {
         { name: 'Pengaturan Notifikasi', href: '/profile/notifications', icon: Bell },
         { name: 'Pengaturan Mentor', href: '/mentor/profile', icon: Settings },
       ]
+    },
+    {
+      title: 'Bantuan',
+      items: [
+        { name: 'Tiket Support', href: '/dashboard/bantuan', icon: Ticket },
+      ]
     }
   ],
   AFFILIATE: [
@@ -368,6 +380,12 @@ const navigationByRole = {
         { name: 'Profil Saya', href: '/profile', icon: User },
         { name: 'Pengaturan Notifikasi', href: '/profile/notifications', icon: Bell },
         { name: 'Pengaturan Affiliate', href: '/affiliate/profile', icon: Settings },
+      ]
+    },
+    {
+      title: 'Bantuan',
+      items: [
+        { name: 'Tiket Support', href: '/dashboard/bantuan', icon: Ticket },
       ]
     }
   ],
@@ -437,6 +455,12 @@ const navigationByRole = {
         { name: 'Profil Saya', href: '/profile', icon: User },
         { name: 'Pengaturan Notifikasi', href: '/profile/notifications', icon: Bell },
       ]
+    },
+    {
+      title: 'Bantuan',
+      items: [
+        { name: 'Tiket Support', href: '/dashboard/bantuan', icon: Ticket },
+      ]
     }
   ],
   MEMBER_FREE: [
@@ -466,6 +490,12 @@ const navigationByRole = {
         { name: '🚀 Upgrade Premium', href: '/dashboard/upgrade', icon: Zap, badge: '🔥' },
       ]
     },
+    {
+      title: 'Bantuan',
+      items: [
+        { name: 'Tiket Support', href: '/dashboard/bantuan', icon: Ticket },
+      ]
+    }
   ]
 }
 
