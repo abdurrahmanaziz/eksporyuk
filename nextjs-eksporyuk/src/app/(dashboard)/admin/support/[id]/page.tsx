@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ResponsivePageWrapper } from '@/components/ui/responsive-page-wrapper'
+import { ResponsivePageWrapper } from '@/components/layout/ResponsivePageWrapper'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
