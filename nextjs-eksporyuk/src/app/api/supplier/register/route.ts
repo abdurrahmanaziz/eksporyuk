@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -96,50 +94,48 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create upload directory
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'suppliers')
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
-
-    // Handle file uploads
+    // Handle file uploads to Vercel Blob (production) or local (development)
     let logoPath: string | null = null
     let bannerPath: string | null = null
     let legalityPath: string | null = null
     let nibPath: string | null = null
 
-    const timestamp = Date.now()
-
-    if (logoFile) {
-      const buffer = Buffer.from(await logoFile.arrayBuffer())
-      const filename = `logo-${timestamp}-${logoFile.name}`
-      const filepath = join(uploadDir, filename)
-      await writeFile(filepath, buffer)
-      logoPath = `/uploads/suppliers/${filename}`
+    if (logoFile && logoFile.size > 0) {
+      const result = await uploadFile(logoFile, {
+        folder: 'suppliers',
+        prefix: 'logo',
+        maxSize: 5 * 1024 * 1024, // 5MB
+      })
+      logoPath = result.url
     }
 
-    if (bannerFile) {
-      const buffer = Buffer.from(await bannerFile.arrayBuffer())
-      const filename = `banner-${timestamp}-${bannerFile.name}`
-      const filepath = join(uploadDir, filename)
-      await writeFile(filepath, buffer)
-      bannerPath = `/uploads/suppliers/${filename}`
+    if (bannerFile && bannerFile.size > 0) {
+      const result = await uploadFile(bannerFile, {
+        folder: 'suppliers',
+        prefix: 'banner',
+        maxSize: 10 * 1024 * 1024, // 10MB
+      })
+      bannerPath = result.url
     }
 
-    if (legalityFile) {
-      const buffer = Buffer.from(await legalityFile.arrayBuffer())
-      const filename = `legality-${timestamp}-${legalityFile.name}`
-      const filepath = join(uploadDir, filename)
-      await writeFile(filepath, buffer)
-      legalityPath = `/uploads/suppliers/${filename}`
+    if (legalityFile && legalityFile.size > 0) {
+      const result = await uploadFile(legalityFile, {
+        folder: 'suppliers/documents',
+        prefix: 'legality',
+        maxSize: 10 * 1024 * 1024, // 10MB
+        allowedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+      })
+      legalityPath = result.url
     }
 
-    if (nibFile) {
-      const buffer = Buffer.from(await nibFile.arrayBuffer())
-      const filename = `nib-${timestamp}-${nibFile.name}`
-      const filepath = join(uploadDir, filename)
-      await writeFile(filepath, buffer)
-      nibPath = `/uploads/suppliers/${filename}`
+    if (nibFile && nibFile.size > 0) {
+      const result = await uploadFile(nibFile, {
+        folder: 'suppliers/documents',
+        prefix: 'nib',
+        maxSize: 10 * 1024 * 1024, // 10MB
+        allowedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+      })
+      nibPath = result.url
     }
 
     // Create supplier profile and membership in transaction

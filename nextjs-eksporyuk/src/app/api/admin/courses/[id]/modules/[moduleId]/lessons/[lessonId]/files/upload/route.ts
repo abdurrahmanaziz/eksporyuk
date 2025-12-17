@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -36,27 +34,13 @@ export async function POST(
       )
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'lessons', lessonId)
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now()
-    const originalName = file.name
-    const extension = originalName.substring(originalName.lastIndexOf('.'))
-    const safeName = originalName.substring(0, originalName.lastIndexOf('.')).replace(/[^a-zA-Z0-9]/g, '-')
-    const fileName = `${safeName}-${timestamp}${extension}`
-    
-    // Save file to disk
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const filePath = join(uploadsDir, fileName)
-    await writeFile(filePath, buffer)
-
-    // Generate public URL
-    const fileUrl = `/uploads/lessons/${lessonId}/${fileName}`
+    // Upload to Vercel Blob (production) or local (development)
+    const result = await uploadFile(file, {
+      folder: `lessons/${lessonId}`,
+      prefix: 'file',
+      maxSize: 50 * 1024 * 1024, // 50MB for lesson files
+      allowedTypes: [], // Allow all types for lesson materials
+    })
 
     // Get current max order
     const maxOrderFile = await prisma.lessonFile.findFirst({
@@ -72,8 +56,8 @@ export async function POST(
       data: {
         lessonId,
         title,
-        fileName: originalName,
-        fileUrl,
+        fileName: file.name,
+        fileUrl: result.url,
         fileSize: file.size,
         fileType: file.type,
         order: nextOrder
@@ -82,7 +66,8 @@ export async function POST(
 
     return NextResponse.json({ 
       success: true, 
-      file: lessonFile 
+      file: lessonFile,
+      storage: result.storage
     }, { status: 201 })
   } catch (error) {
     console.error('Upload file error:', error)

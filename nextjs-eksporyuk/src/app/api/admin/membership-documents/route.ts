@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -119,22 +117,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
     }
 
-    // Create upload directory if not exists
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'membership-documents')
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now()
-    const filename = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-    const filepath = join(uploadDir, filename)
-    const fileUrl = `/uploads/membership-documents/${filename}`
-
-    // Save file
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
+    // Upload to Vercel Blob (production) or local (development)
+    const result = await uploadFile(file, {
+      folder: 'membership-documents',
+      prefix: 'doc',
+      maxSize: 50 * 1024 * 1024, // 50MB
+      allowedTypes,
+    })
 
     // Create document record
     const document = await prisma.membershipDocument.create({
@@ -144,7 +133,7 @@ export async function POST(request: NextRequest) {
         category,
         minimumLevel,
         isActive,
-        fileUrl,
+        fileUrl: result.url,
         fileName: file.name,
         fileSize: file.size,
         fileType: file.type,

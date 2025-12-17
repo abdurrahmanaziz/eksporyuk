@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
-import { existsSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -30,11 +28,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'File must be an image' }, { status: 400 })
     }
 
-    // Validate file size (10MB for cover images - larger than avatar)
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size must be less than 10MB' }, { status: 400 })
-    }
-
     // Get user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email }
@@ -44,33 +37,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Create upload directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'covers')
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now()
-    const ext = path.extname(file.name)
-    const filename = `${user.id}-${timestamp}${ext}`
-    const filepath = path.join(uploadDir, filename)
-
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
+    // Upload to Vercel Blob (production) or local (development)
+    const result = await uploadFile(file, {
+      folder: 'covers',
+      prefix: `cover-${user.id}`,
+      maxSize: 10 * 1024 * 1024, // 10MB for cover images
+    })
 
     // Update user cover image in database
-    const coverUrl = `/uploads/covers/${filename}`
     await prisma.user.update({
       where: { id: user.id },
-      data: { coverImage: coverUrl }
+      data: { coverImage: result.url }
     })
 
     return NextResponse.json({
       success: true,
-      coverUrl
+      coverUrl: result.url,
+      storage: result.storage
     })
 
   } catch (error) {

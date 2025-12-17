@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -41,44 +39,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File harus berupa gambar' }, { status: 400 })
     }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      console.log('❌ File too large:', file.size)
-      return NextResponse.json({ error: 'Ukuran file maksimal 2MB' }, { status: 400 })
-    }
-
     console.log('✅ File validation passed')
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    // Generate unique filename with user ID for security
-    const timestamp = Date.now()
-    const extension = file.name.split('.').pop()
+    // Upload to Vercel Blob (production) or local (development)
     const sanitizedType = type.replace(/[^a-z0-9]/gi, '_')
-    const filename = `${session.user.id}_${sanitizedType}_${timestamp}.${extension}`
+    const result = await uploadFile(file, {
+      folder: 'bio',
+      prefix: `${session.user.id}_${sanitizedType}`,
+      maxSize: 2 * 1024 * 1024, // 2MB
+    })
 
-    console.log('🔵 Generated filename:', filename)
-
-    // Create upload directory if it doesn't exist
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'bio')
-    if (!existsSync(uploadDir)) {
-      console.log('📁 Creating upload directory:', uploadDir)
-      await mkdir(uploadDir, { recursive: true })
-    }
-
-    // Write the file
-    const filepath = join(uploadDir, filename)
-    console.log('💾 Writing file to:', filepath)
-    await writeFile(filepath, buffer)
-
-    // Return the public URL
-    const url = `/uploads/bio/${filename}`
-    console.log('✅ File uploaded successfully:', url)
+    console.log('✅ File uploaded successfully:', result.url)
 
     return NextResponse.json({ 
       success: true, 
-      url: url,
+      url: result.url,
+      storage: result.storage,
       message: 'File uploaded successfully' 
     })
 

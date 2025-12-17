@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -35,33 +33,28 @@ export async function POST(
     const legalityFile = formData.get('legalityFile') as File | null
     const nibFile = formData.get('nibFile') as File | null
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'suppliers', id)
-    
-    // Create upload directory if it doesn't exist
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
-
     const updateData: any = {}
 
-    // Handle legality file upload
-    if (legalityFile) {
-      const legalityFileName = `legality-${Date.now()}.${legalityFile.name.split('.').pop()}`
-      const legalityPath = join(uploadDir, legalityFileName)
-      const bytes = await legalityFile.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      await writeFile(legalityPath, buffer)
-      updateData.legalityDoc = `/uploads/suppliers/${id}/${legalityFileName}`
+    // Handle legality file upload to Vercel Blob
+    if (legalityFile && legalityFile.size > 0) {
+      const result = await uploadFile(legalityFile, {
+        folder: `suppliers/${id}`,
+        prefix: 'legality',
+        maxSize: 10 * 1024 * 1024, // 10MB
+        allowedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+      })
+      updateData.legalityDoc = result.url
     }
 
-    // Handle NIB file upload
-    if (nibFile) {
-      const nibFileName = `nib-${Date.now()}.${nibFile.name.split('.').pop()}`
-      const nibPath = join(uploadDir, nibFileName)
-      const bytes = await nibFile.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      await writeFile(nibPath, buffer)
-      updateData.nibDoc = `/uploads/suppliers/${id}/${nibFileName}`
+    // Handle NIB file upload to Vercel Blob
+    if (nibFile && nibFile.size > 0) {
+      const result = await uploadFile(nibFile, {
+        folder: `suppliers/${id}`,
+        prefix: 'nib',
+        maxSize: 10 * 1024 * 1024, // 10MB
+        allowedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+      })
+      updateData.nibDoc = result.url
     }
 
     // Update supplier with file paths

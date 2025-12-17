@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -38,46 +36,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml']
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Allowed: JPEG, PNG, WebP, SVG' },
-        { status: 400 }
-      )
-    }
-
-    // Validate file size (max 2MB)
-    const maxSize = 2 * 1024 * 1024 // 2MB
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: 'File too large. Maximum size is 2MB' },
-        { status: 400 }
-      )
-    }
-
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'payment-logos')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${channelCode}-${Date.now()}.${fileExt}`
-    const filePath = join(uploadsDir, fileName)
-
-    // Save file
-    await writeFile(filePath, buffer)
-
-    // Return public URL
-    const logoUrl = `/uploads/payment-logos/${fileName}`
+    // Upload to Vercel Blob (production) or local (development)
+    const result = await uploadFile(file, {
+      folder: 'payment-logos',
+      prefix: channelCode,
+      maxSize: 2 * 1024 * 1024, // 2MB
+      allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml'],
+    })
 
     return NextResponse.json({
       success: true,
-      logoUrl
+      logoUrl: result.url,
+      storage: result.storage
     })
   } catch (error) {
     console.error('Upload payment logo error:', error)

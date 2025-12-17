@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -147,25 +145,15 @@ export async function POST(request: NextRequest) {
       const imageFiles = formData.getAll('images') as File[]
       
       if (imageFiles && imageFiles.length > 0) {
-        const uploadDir = join(process.cwd(), 'public', 'uploads', 'posts')
-        
-        // Create upload directory if it doesn't exist
-        if (!existsSync(uploadDir)) {
-          await mkdir(uploadDir, { recursive: true })
-        }
-
         for (const file of imageFiles) {
           if (file && file.size > 0) {
-            const bytes = await file.arrayBuffer()
-            const buffer = Buffer.from(bytes)
-
-            // Generate unique filename
-            const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`
-            const filename = `${uniqueSuffix}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-            const filepath = join(uploadDir, filename)
-
-            await writeFile(filepath, buffer)
-            images.push(`/uploads/posts/${filename}`)
+            // Upload to Vercel Blob (production) or local (development)
+            const result = await uploadFile(file, {
+              folder: 'posts',
+              prefix: 'post',
+              maxSize: 10 * 1024 * 1024, // 10MB
+            })
+            images.push(result.url)
           }
         }
       }

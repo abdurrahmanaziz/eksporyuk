@@ -11,9 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { chatService } from '@/lib/services/chatService'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
-import { existsSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Allowed file types
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
@@ -80,25 +78,13 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Create upload directory if not exists
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'chat', roomId)
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
-    
-    // Generate unique filename
-    const timestamp = Date.now()
-    const ext = path.extname(file.name) || `.${mimeType.split('/')[1]}`
-    const fileName = `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`
-    const filePath = path.join(uploadDir, fileName)
-    
-    // Write file
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
-    
-    // Generate URL
-    const attachmentUrl = `/uploads/chat/${roomId}/${fileName}`
+    // Upload to Vercel Blob (production) or local (development)
+    const result = await uploadFile(file, {
+      folder: `chat/${roomId}`,
+      prefix: 'chat',
+      maxSize: MAX_FILE_SIZE,
+      allowedTypes: [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES, ...ALLOWED_FILE_TYPES],
+    })
     
     // Create message
     const message = await chatService.sendMessage({
@@ -106,7 +92,7 @@ export async function POST(request: NextRequest) {
       senderId: session.user.id,
       content: file.name,
       type: messageType.toLowerCase(),
-      attachmentUrl,
+      attachmentUrl: result.url,
       attachmentType,
       attachmentSize: file.size,
       attachmentName: file.name,
@@ -116,7 +102,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message,
-      url: attachmentUrl,
+      url: result.url,
+      storage: result.storage,
     })
   } catch (error: any) {
     console.error('[API] Upload error:', error)

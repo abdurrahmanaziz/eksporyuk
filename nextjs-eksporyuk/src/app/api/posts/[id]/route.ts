@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -140,24 +141,16 @@ export async function PATCH(
       // Handle image uploads
       const imageFiles = formData.getAll('images')
       if (imageFiles.length > 0) {
-        const fs = require('fs')
-        const path = require('path')
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'posts')
-        
-        // Ensure upload directory exists
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true })
-        }
-
         images = []
         for (const file of imageFiles) {
-          if (file instanceof File) {
-            const buffer = Buffer.from(await file.arrayBuffer())
-            const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name}`
-            const filepath = path.join(uploadDir, filename)
-            
-            fs.writeFileSync(filepath, buffer)
-            images.push(`/uploads/posts/${filename}`)
+          if (file instanceof File && file.size > 0) {
+            // Upload to Vercel Blob (production) or local (development)
+            const result = await uploadFile(file, {
+              folder: 'posts',
+              prefix: 'post',
+              maxSize: 10 * 1024 * 1024, // 10MB
+            })
+            images.push(result.url)
           }
         }
       } else {

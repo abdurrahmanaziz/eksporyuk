@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
-import { writeFile } from 'fs/promises'
-import path from 'path'
-import { existsSync, mkdirSync } from 'fs'
+import { uploadFile } from '@/lib/upload-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -13,7 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'MENTOR')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -25,30 +23,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
-    // Generate filename
-    const timestamp = Date.now()
-    const ext = path.extname(file.name)
-    const filename = `course-${courseId}-${timestamp}${ext}`
-    
-    // Create upload directory if not exists
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'courses')
-    if (!existsSync(uploadDir)) {
-      mkdirSync(uploadDir, { recursive: true })
-    }
-    
-    // Save file
-    const filepath = path.join(uploadDir, filename)
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
-    
-    // Return public URL
-    const url = `/uploads/courses/${filename}`
+    // Upload to Vercel Blob (production) or local (development)
+    const result = await uploadFile(file, {
+      folder: 'courses',
+      prefix: `course-${courseId || 'new'}`,
+      maxSize: 5 * 1024 * 1024, // 5MB for thumbnails
+    })
     
     return NextResponse.json({ 
       success: true,
-      url,
-      filename
+      url: result.url,
+      filename: result.filename,
+      storage: result.storage
     })
     
   } catch (error) {
