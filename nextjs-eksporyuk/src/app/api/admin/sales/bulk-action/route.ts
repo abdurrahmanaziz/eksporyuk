@@ -3,9 +3,12 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { starsenderService } from '@/lib/starsender'
-import { sendEmail } from '@/lib/email'
+import { sendBrandedEmail } from '@/lib/email-template-helper'
 import { notificationService } from '@/lib/services/notificationService'
-import { createBrandedEmailAsync } from '@/lib/branded-template-engine'
+import { pusherService } from '@/lib/pusher'
+import { onesignal } from '@/lib/integrations/onesignal'
+import { getXenditConfig } from '@/lib/integration-config'
+import Xendit from 'xendit-node'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -47,6 +50,7 @@ export async function POST(request: NextRequest) {
       case 'FAILED':
       case 'cancel':
         updateData = { status: 'FAILED' }
+        shouldSendNotification = true
         break
       case 'RESEND_NOTIFICATION':
         // Will handle notification sending below
@@ -84,6 +88,31 @@ export async function POST(request: NextRequest) {
         },
         data: updateData
       })
+
+      // If status is FAILED, cancel Xendit invoices
+      if (action === 'FAILED' || action === 'cancel') {
+        const xenditConfig = await getXenditConfig()
+        if (xenditConfig) {
+          const xendit = new Xendit({ secretKey: xenditConfig.XENDIT_SECRET_KEY })
+          const { Invoice } = xendit
+          
+          const transactions = await prisma.transaction.findMany({
+            where: { id: { in: transactionIds } },
+            select: { id: true, externalId: true }
+          })
+          
+          for (const tx of transactions) {
+            if (tx.externalId) {
+              try {
+                await Invoice.expireInvoice({ invoiceId: tx.externalId })
+                console.log(`✓ Xendit invoice ${tx.externalId} expired for transaction ${tx.id}`)
+              } catch (error: any) {
+                console.error(`✗ Failed to expire Xendit invoice ${tx.externalId}:`, error.message)
+              }
+            }
+          }
+        }
+      }
 
       // If status is SUCCESS, activate access for each transaction
       if (action === 'SUCCESS' || action === 'payment_confirmed') {
@@ -164,8 +193,8 @@ export async function POST(request: NextRequest) {
               console.log(`✓ Enrolled user ${tx.userId} in course ${tx.courseId}`)
             }
 
-            // 3. Grant Product Access (if digital product)
-            if (tx.type === 'PRODUCT' && tx.product?.isDigital && tx.productId) {
+            // 3. Grant Product Access
+            if (tx.type === 'PRODUCT' && tx.productId) {
               await prisma.userProduct.upsert({
                 where: {
                   userId_productId: {
@@ -176,14 +205,18 @@ export async function POST(request: NextRequest) {
                 create: {
                   userId: tx.userId,
                   productId: tx.productId,
-                  purchasedAt: new Date()
+                  price: tx.amount,
+                  transactionId: tx.id,
+                  purchaseDate: new Date()
                 },
                 update: {
-                  purchasedAt: new Date()
+                  price: tx.amount,
+                  transactionId: tx.id,
+                  purchaseDate: new Date()
                 }
               })
 
-              console.log(`✓ Granted product access ${tx.product.name} for user ${tx.userId}`)
+              console.log(`✓ Granted product access ${tx.product?.name} for user ${tx.userId}`)
             }
 
             // 4. Send In-App Notification
@@ -207,21 +240,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Send notifications if needed
+    // Send comprehensive notifications if needed
     if (shouldSendNotification) {
       const transactions = await prisma.transaction.findMany({
-        where: {
-          id: {
-            in: transactionIds
-          }
-        },
+        where: { id: { in: transactionIds } },
         include: {
           user: true,
-          membership: {
-            include: {
-              membership: true
-            }
-          },
+          membership: { include: { membership: true } },
           product: true,
           course: true
         }
@@ -230,116 +255,205 @@ export async function POST(request: NextRequest) {
       let successCount = 0
       let failedCount = 0
 
-      // Send WhatsApp notifications
       for (const transaction of transactions) {
         try {
-          // Get product/membership name
-          let productName = ''
-          if (transaction.membership?.membership) {
-            productName = transaction.membership.membership.name
-          } else if (transaction.product) {
-            productName = transaction.product.name
-          } else if (transaction.course) {
-            productName = transaction.course.title
-          }
-
-          // Create notification message based on action
-          let message = ''
+          // Determine transaction status and type
+          const currentStatus = transaction.status
+          let targetStatus = currentStatus
+          
           if (action === 'SUCCESS' || action === 'payment_confirmed') {
-            message = `Halo ${transaction.user?.name || 'Bapak/Ibu'},\n\nPembayaran Anda untuk *${productName}* senilai *Rp ${Number(transaction.amount).toLocaleString('id-ID')}* telah dikonfirmasi!\n\nTerima kasih telah bergabung bersama kami. 🎉\n\nSalam,\nEksporYuk`
-          } else if (action === 'RESEND_NOTIFICATION') {
-            if (transaction.status === 'PENDING') {
-              message = `Halo ${transaction.user?.name || 'Bapak/Ibu'},\n\n*Reminder Pembayaran*\n\nAnda memiliki transaksi pending untuk *${productName}* senilai *Rp ${Number(transaction.amount).toLocaleString('id-ID')}*.\n\nMohon segera lakukan pembayaran agar order Anda dapat diproses.\n\nTerima kasih!\n\nSalam,\nEksporYuk`
-            } else if (transaction.status === 'SUCCESS') {
-              message = `Halo ${transaction.user?.name || 'Bapak/Ibu'},\n\nPembayaran Anda untuk *${productName}* senilai *Rp ${Number(transaction.amount).toLocaleString('id-ID')}* telah dikonfirmasi!\n\nTerima kasih telah bergabung bersama kami. 🎉\n\nSalam,\nEksporYuk`
-            }
+            targetStatus = 'SUCCESS'
+          } else if (action === 'PENDING' || action === 'await_payment') {
+            targetStatus = 'PENDING'
+          } else if (action === 'FAILED' || action === 'cancel') {
+            targetStatus = 'FAILED'
           }
 
-          if (message) {
-            const phone = transaction.user?.whatsapp || transaction.user?.phone || ''
-            
-            if (!phone) {
-              console.warn(`No phone number for transaction ${transaction.id}`)
-              failedCount++
-              continue
+          // Get transaction details
+          let itemName = ''
+          let transactionType = ''
+          let accessMessage = ''
+          
+          if (transaction.membership?.membership) {
+            itemName = transaction.membership.membership.name
+            transactionType = 'Membership'
+            accessMessage = 'Akses membership Anda sudah aktif! Silakan login ke dashboard untuk mulai belajar.'
+          } else if (transaction.product) {
+            itemName = transaction.product.name
+            transactionType = 'Product'
+            accessMessage = 'Product Anda sudah tersedia di dashboard!'
+          } else if (transaction.course) {
+            itemName = transaction.course.title
+            transactionType = 'Course'
+            accessMessage = 'Anda sudah terdaftar di course ini. Selamat belajar!'
+          }
+
+          const formattedAmount = `Rp ${Number(transaction.amount).toLocaleString('id-ID')}`
+          const userName = transaction.user?.name || 'Member'
+          const userEmail = transaction.user?.email || ''
+          const userPhone = transaction.user?.whatsapp || transaction.user?.phone || ''
+
+          // === 1. EMAIL NOTIFICATION (Using BrandedTemplate) ===
+          try {
+            let emailTemplateSlug = ''
+            const emailVariables: Record<string, string> = {
+              userName,
+              invoiceNumber: transaction.invoiceNumber || transaction.id.slice(0, 8).toUpperCase(),
+              transactionType,
+              itemName,
+              amount: formattedAmount,
+              transactionDate: new Date(transaction.createdAt).toLocaleString('id-ID', {
+                dateStyle: 'long',
+                timeStyle: 'short'
+              }),
+              paymentMethod: transaction.paymentMethod || 'Xendit Payment Gateway',
+              dashboardUrl: `${process.env.NEXTAUTH_URL}/dashboard`
             }
 
-            // Send via Starsender (WhatsApp)
-            const result = await starsenderService.sendWhatsApp({
-              to: phone,
-              message
+            if (targetStatus === 'SUCCESS') {
+              emailTemplateSlug = 'transaction-success'
+              emailVariables.accessMessage = accessMessage
+            } else if (targetStatus === 'PENDING') {
+              emailTemplateSlug = 'transaction-pending'
+              emailVariables.expiryDate = transaction.expiredAt 
+                ? new Date(transaction.expiredAt).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' })
+                : '24 jam dari sekarang'
+              emailVariables.paymentInstructions = 'Silakan transfer ke nomor Virtual Account yang tertera pada halaman pembayaran.'
+              emailVariables.paymentUrl = `${process.env.NEXTAUTH_URL}/checkout/payment/${transaction.id}`
+            } else if (targetStatus === 'FAILED') {
+              emailTemplateSlug = 'transaction-failed'
+              emailVariables.cancelDate = new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' })
+              emailVariables.cancelReason = 'Transaksi dibatalkan oleh admin atau pembayaran tidak diterima dalam batas waktu'
+              emailVariables.retryUrl = `${process.env.NEXTAUTH_URL}/memberships`
+            }
+
+            if (emailTemplateSlug && userEmail) {
+              await sendBrandedEmail(userEmail, emailTemplateSlug, emailVariables)
+              console.log(`✅ Email (${emailTemplateSlug}) sent to ${userEmail}`)
+            }
+          } catch (emailError: any) {
+            console.error(`❌ Email error for transaction ${transaction.id}:`, emailError.message)
+          }
+
+          // === 2. IN-APP NOTIFICATION ===
+          try {
+            let notifTitle = ''
+            let notifMessage = ''
+            let notifLink = '/dashboard'
+
+            if (targetStatus === 'SUCCESS') {
+              notifTitle = '✅ Pembayaran Berhasil'
+              notifMessage = `Pembayaran untuk ${itemName} telah dikonfirmasi. Akses Anda sudah aktif!`
+            } else if (targetStatus === 'PENDING') {
+              notifTitle = '⏳ Menunggu Pembayaran'
+              notifMessage = `Transaksi ${itemName} menunggu pembayaran. Silakan selesaikan pembayaran Anda.`
+              notifLink = `/checkout/payment/${transaction.id}`
+            } else if (targetStatus === 'FAILED') {
+              notifTitle = '❌ Transaksi Dibatalkan'
+              notifMessage = `Transaksi ${itemName} telah dibatalkan. Anda dapat mencoba lagi kapan saja.`
+              notifLink = '/memberships'
+            }
+
+            await notificationService.send({
+              userId: transaction.userId,
+              type: 'TRANSACTION',
+              title: notifTitle,
+              message: notifMessage,
+              link: notifLink
             })
-
-            if (result.success) {
-              successCount++
-              console.log(`✓ WhatsApp sent to ${phone} for transaction ${transaction.id}`)
-            } else {
-              failedCount++
-              console.error(`✗ Failed to send WhatsApp to ${phone}: ${result.error}`)
-            }
-
-            // Also send Email Notification
-            try {
-              const emailSubject = action === 'SUCCESS' || action === 'payment_confirmed'
-                ? `Pembayaran Dikonfirmasi - ${productName}`
-                : `Reminder Pembayaran - ${productName}`
-              
-              const emailContent = action === 'SUCCESS' || action === 'payment_confirmed' ? `
-Halo ${transaction.user?.name || 'Bapak/Ibu'},
-
-Pembayaran Anda untuk ${productName} senilai Rp ${Number(transaction.amount).toLocaleString('id-ID')} telah dikonfirmasi!
-
-✓ Akses Anda Sudah Aktif
-Anda dapat langsung menggunakan layanan yang telah Anda beli.
-
-Terima kasih telah bergabung bersama kami. Jika ada pertanyaan, jangan ragu untuk menghubungi kami.
-              ` : `
-Halo ${transaction.user?.name || 'Bapak/Ibu'},
-
-Anda memiliki transaksi pending untuk ${productName} senilai Rp ${Number(transaction.amount).toLocaleString('id-ID')}.
-
-⚠️ Menunggu Pembayaran
-Mohon segera lakukan pembayaran agar order Anda dapat diproses.
-
-Terima kasih atas perhatiannya.
-              `
-
-              // Use branded email template
-              const emailHtml = await createBrandedEmailAsync(
-                emailSubject,
-                emailContent,
-                action === 'SUCCESS' || action === 'payment_confirmed' ? 'Akses Dashboard' : 'Bayar Sekarang',
-                action === 'SUCCESS' || action === 'payment_confirmed' 
-                  ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-                  : `${process.env.NEXT_PUBLIC_APP_URL}/transactions/${transaction.id}`,
-                {
-                  name: transaction.user?.name || '',
-                  email: transaction.user?.email || '',
-                  invoice: transaction.invoiceNumber || transaction.id.slice(0, 8).toUpperCase()
-                }
-              )
-
-              await sendEmail({
-                to: transaction.user?.email || '',
-                subject: emailSubject,
-                html: emailHtml
-              })
-
-              console.log(`✓ Email sent to ${transaction.user?.email}`)
-            } catch (emailError) {
-              console.error(`✗ Failed to send email:`, emailError)
-            }
-
-            // Rate limit: wait 1 second between messages
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            console.log(`✅ In-app notification sent to user ${transaction.userId}`)
+          } catch (notifError: any) {
+            console.error(`❌ In-app notification error:`, notifError.message)
           }
-        } catch (error) {
+
+          // === 3. PUSHER REAL-TIME UPDATE ===
+          try {
+            await pusherService.notifyUser(transaction.userId, 'transaction-update', {
+              transactionId: transaction.id,
+              status: targetStatus,
+              itemName,
+              amount: formattedAmount,
+              message: targetStatus === 'SUCCESS' 
+                ? 'Pembayaran berhasil!' 
+                : targetStatus === 'PENDING' 
+                ? 'Menunggu pembayaran' 
+                : 'Transaksi dibatalkan',
+              timestamp: new Date().toISOString()
+            })
+            console.log(`✅ Pusher notification sent to user-${transaction.userId}`)
+          } catch (pusherError: any) {
+            console.error(`❌ Pusher error:`, pusherError.message)
+          }
+
+          // === 4. ONESIGNAL PUSH NOTIFICATION ===
+          try {
+            let pushHeading = ''
+            let pushContent = ''
+            let pushUrl = `${process.env.NEXTAUTH_URL}/dashboard`
+
+            if (targetStatus === 'SUCCESS') {
+              pushHeading = '✅ Pembayaran Berhasil'
+              pushContent = `${itemName} - ${formattedAmount} telah dikonfirmasi!`
+            } else if (targetStatus === 'PENDING') {
+              pushHeading = '⏳ Menunggu Pembayaran'
+              pushContent = `Segera selesaikan pembayaran untuk ${itemName}`
+              pushUrl = `${process.env.NEXTAUTH_URL}/checkout/payment/${transaction.id}`
+            } else if (targetStatus === 'FAILED') {
+              pushHeading = '❌ Transaksi Dibatalkan'
+              pushContent = `Transaksi ${itemName} telah dibatalkan`
+              pushUrl = `${process.env.NEXTAUTH_URL}/memberships`
+            }
+
+            await onesignal.sendToUser(transaction.userId, {
+              headings: { en: pushHeading, id: pushHeading },
+              contents: { en: pushContent, id: pushContent },
+              url: pushUrl,
+              data: {
+                transactionId: transaction.id,
+                status: targetStatus,
+                type: 'transaction_update'
+              }
+            })
+            console.log(`✅ OneSignal push sent to user ${transaction.userId}`)
+          } catch (pushError: any) {
+            console.error(`❌ OneSignal error:`, pushError.message)
+          }
+
+          // === 5. WHATSAPP NOTIFICATION (Optional) ===
+          if (userPhone) {
+            try {
+              let waMessage = ''
+              
+              if (targetStatus === 'SUCCESS') {
+                waMessage = `Halo *${userName}*! 🎉\n\nPembayaran Anda untuk *${itemName}* senilai *${formattedAmount}* telah dikonfirmasi!\n\nAkses Anda sudah aktif. Silakan login ke dashboard:\n${process.env.NEXTAUTH_URL}/dashboard\n\nTerima kasih!\n\n_EksporYuk Team_`
+              } else if (targetStatus === 'PENDING') {
+                waMessage = `Halo *${userName}*,\n\n⏳ Transaksi Anda untuk *${itemName}* senilai *${formattedAmount}* sedang menunggu pembayaran.\n\nMohon segera selesaikan pembayaran agar akses dapat diaktifkan.\n\nLihat detail: ${process.env.NEXTAUTH_URL}/checkout/payment/${transaction.id}\n\n_EksporYuk Team_`
+              } else if (targetStatus === 'FAILED') {
+                waMessage = `Halo *${userName}*,\n\n❌ Transaksi Anda untuk *${itemName}* telah dibatalkan.\n\nAnda dapat mencoba kembali kapan saja di:\n${process.env.NEXTAUTH_URL}/memberships\n\nJika ada pertanyaan, silakan hubungi support kami.\n\n_EksporYuk Team_`
+              }
+
+              await starsenderService.sendWhatsApp({
+                to: userPhone,
+                message: waMessage
+              })
+              console.log(`✅ WhatsApp sent to ${userPhone}`)
+            } catch (waError: any) {
+              console.error(`❌ WhatsApp error:`, waError.message)
+            }
+          }
+
+          successCount++
+          
+          // Rate limit: 500ms antara notifikasi
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+        } catch (error: any) {
           failedCount++
-          console.error('Error sending notification for transaction:', transaction.id, error)
+          console.error(`❌ Error sending notifications for transaction ${transaction.id}:`, error.message)
         }
       }
 
-      console.log(`Notification summary: ${successCount} sent, ${failedCount} failed`)
+      console.log(`\n📊 Notification Summary: ${successCount} sukses, ${failedCount} gagal\n`)
     }
 
     return NextResponse.json({

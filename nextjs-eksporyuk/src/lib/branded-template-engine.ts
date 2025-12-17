@@ -34,7 +34,7 @@ interface EmailSettings {
 const DEFAULT_BRAND_CONFIG = {
   name: 'EksporYuk',
   tagline: 'Platform Pembelajaran & Komunitas Ekspor Terbaik di Indonesia',
-  logoUrl: '/images/logo-eksporyuk.png',
+  logoUrl: 'https://via.placeholder.com/150x60/3B82F6/FFFFFF?text=EksporYuk', // Accessible placeholder logo
   primaryColor: '#3B82F6', // Blue from settings
   secondaryColor: '#1F2937',
   buttonBg: '#3B82F6',
@@ -97,10 +97,25 @@ export async function getBrandConfig() {
   const settings = await getEmailSettings()
   
   if (settings) {
+    // Ensure logo URL is accessible (not relative path)
+    let logoUrl = settings.siteLogo || DEFAULT_BRAND_CONFIG.logoUrl
+    
+    // If logo is relative path, convert to absolute URL
+    if (logoUrl && logoUrl.startsWith('/')) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.eksporyuk.com'
+      logoUrl = `${appUrl}${logoUrl}`
+    }
+    
+    // If logo is localhost, use default (email clients can't access localhost)
+    if (logoUrl && (logoUrl.includes('localhost') || logoUrl.startsWith('http://localhost'))) {
+      console.warn('[BrandConfig] Logo URL contains localhost, using default logo')
+      logoUrl = DEFAULT_BRAND_CONFIG.logoUrl
+    }
+    
     return {
       name: settings.emailFooterCompany || DEFAULT_BRAND_CONFIG.name,
       tagline: settings.emailFooterText || DEFAULT_BRAND_CONFIG.tagline,
-      logoUrl: settings.siteLogo || DEFAULT_BRAND_CONFIG.logoUrl,
+      logoUrl: logoUrl,
       primaryColor: settings.buttonPrimaryBg || DEFAULT_BRAND_CONFIG.primaryColor,
       secondaryColor: settings.secondaryColor || DEFAULT_BRAND_CONFIG.secondaryColor,
       buttonBg: settings.buttonPrimaryBg || DEFAULT_BRAND_CONFIG.buttonBg,
@@ -346,57 +361,188 @@ export interface TemplateData {
 export function processShortcodes(content: string, data: TemplateData): string {
   let processedContent = content
   
-  // Replace user data
-  if (data.name) processedContent = processedContent.replace(/{name}/g, data.name)
-  if (data.firstName) processedContent = processedContent.replace(/{first_name}/g, data.firstName)
-  if (data.lastName) processedContent = processedContent.replace(/{last_name}/g, data.lastName)
-  if (data.email) processedContent = processedContent.replace(/{email}/g, data.email)
-  if (data.phone) processedContent = processedContent.replace(/{phone}/g, data.phone)
-  if (data.whatsapp) processedContent = processedContent.replace(/{whatsapp}/g, data.whatsapp)
-  if (data.role) processedContent = processedContent.replace(/{role}/g, data.role)
-  if (data.registrationDate) processedContent = processedContent.replace(/{registration_date}/g, data.registrationDate)
-  if (data.lastLogin) processedContent = processedContent.replace(/{last_login}/g, data.lastLogin)
+  // Replace user data - support both {name} and {{name}} format
+  if (data.name) {
+    processedContent = processedContent.replace(/{name}/g, data.name)
+    processedContent = processedContent.replace(/\{\{name\}\}/g, data.name)
+    processedContent = processedContent.replace(/\{\{userName\}\}/g, data.name)
+  }
+  if (data.firstName) {
+    processedContent = processedContent.replace(/{first_name}/g, data.firstName)
+    processedContent = processedContent.replace(/\{\{firstName\}\}/g, data.firstName)
+  }
+  if (data.lastName) {
+    processedContent = processedContent.replace(/{last_name}/g, data.lastName)
+    processedContent = processedContent.replace(/\{\{lastName\}\}/g, data.lastName)
+  }
+  if (data.email) {
+    processedContent = processedContent.replace(/{email}/g, data.email)
+    processedContent = processedContent.replace(/\{\{email\}\}/g, data.email)
+    processedContent = processedContent.replace(/\{\{userEmail\}\}/g, data.email)
+  }
+  if (data.phone) {
+    processedContent = processedContent.replace(/{phone}/g, data.phone)
+    processedContent = processedContent.replace(/\{\{phone\}\}/g, data.phone)
+  }
+  if (data.whatsapp) {
+    processedContent = processedContent.replace(/{whatsapp}/g, data.whatsapp)
+    processedContent = processedContent.replace(/\{\{whatsapp\}\}/g, data.whatsapp)
+  }
+  if (data.role) {
+    processedContent = processedContent.replace(/{role}/g, data.role)
+    processedContent = processedContent.replace(/\{\{role\}\}/g, data.role)
+  }
+  if (data.registrationDate) {
+    processedContent = processedContent.replace(/{registration_date}/g, data.registrationDate)
+    processedContent = processedContent.replace(/\{\{registrationDate\}\}/g, data.registrationDate)
+  }
+  if (data.lastLogin) {
+    processedContent = processedContent.replace(/{last_login}/g, data.lastLogin)
+    processedContent = processedContent.replace(/\{\{lastLogin\}\}/g, data.lastLogin)
+  }
   
   // Replace membership data
-  if (data.membershipPlan) processedContent = processedContent.replace(/{membership_plan}/g, data.membershipPlan)
-  if (data.membershipStatus) processedContent = processedContent.replace(/{membership_status}/g, data.membershipStatus)
-  if (data.membershipType) processedContent = processedContent.replace(/{membership_type}/g, data.membershipType)
-  if (data.expiryDate) processedContent = processedContent.replace(/{expiry_date}/g, data.expiryDate)
-  if (data.startDate) processedContent = processedContent.replace(/{start_date}/g, data.startDate)
-  if (data.daysLeft !== undefined) processedContent = processedContent.replace(/{days_left}/g, data.daysLeft.toString())
-  if (data.daysSinceStart !== undefined) processedContent = processedContent.replace(/{days_since_start}/g, data.daysSinceStart.toString())
-  if (data.renewalDate) processedContent = processedContent.replace(/{renewal_date}/g, data.renewalDate)
+  if (data.membershipPlan) {
+    processedContent = processedContent.replace(/{membership_plan}/g, data.membershipPlan)
+    processedContent = processedContent.replace(/\{\{membershipPlan\}\}/g, data.membershipPlan)
+  }
+  if (data.membershipStatus) {
+    processedContent = processedContent.replace(/{membership_status}/g, data.membershipStatus)
+    processedContent = processedContent.replace(/\{\{membershipStatus\}\}/g, data.membershipStatus)
+  }
+  if (data.membershipType) {
+    processedContent = processedContent.replace(/{membership_type}/g, data.membershipType)
+    processedContent = processedContent.replace(/\{\{membershipType\}\}/g, data.membershipType)
+  }
+  if (data.expiryDate) {
+    processedContent = processedContent.replace(/{expiry_date}/g, data.expiryDate)
+    processedContent = processedContent.replace(/\{\{expiryDate\}\}/g, data.expiryDate)
+  }
+  if (data.startDate) {
+    processedContent = processedContent.replace(/{start_date}/g, data.startDate)
+    processedContent = processedContent.replace(/\{\{startDate\}\}/g, data.startDate)
+  }
+  if (data.daysLeft !== undefined) {
+    processedContent = processedContent.replace(/{days_left}/g, data.daysLeft.toString())
+    processedContent = processedContent.replace(/\{\{daysLeft\}\}/g, data.daysLeft.toString())
+  }
+  if (data.daysSinceStart !== undefined) {
+    processedContent = processedContent.replace(/{days_since_start}/g, data.daysSinceStart.toString())
+    processedContent = processedContent.replace(/\{\{daysSinceStart\}\}/g, data.daysSinceStart.toString())
+  }
+  if (data.renewalDate) {
+    processedContent = processedContent.replace(/{renewal_date}/g, data.renewalDate)
+    processedContent = processedContent.replace(/\{\{renewalDate\}\}/g, data.renewalDate)
+  }
   
   // Replace transaction data
-  if (data.invoiceNumber) processedContent = processedContent.replace(/{invoice_number}/g, data.invoiceNumber)
-  if (data.transactionId) processedContent = processedContent.replace(/{transaction_id}/g, data.transactionId)
-  if (data.amountFormatted) processedContent = processedContent.replace(/{amount}/g, data.amountFormatted)
-  if (data.amount !== undefined) processedContent = processedContent.replace(/{amount_raw}/g, data.amount.toString())
-  if (data.paymentMethod) processedContent = processedContent.replace(/{payment_method}/g, data.paymentMethod)
-  if (data.paymentStatus) processedContent = processedContent.replace(/{payment_status}/g, data.paymentStatus)
-  if (data.transactionDate) processedContent = processedContent.replace(/{transaction_date}/g, data.transactionDate)
-  if (data.dueDate) processedContent = processedContent.replace(/{due_date}/g, data.dueDate)
-  if (data.productName) processedContent = processedContent.replace(/{product_name}/g, data.productName)
-  if (data.productDescription) processedContent = processedContent.replace(/{product_description}/g, data.productDescription)
+  if (data.invoiceNumber) {
+    processedContent = processedContent.replace(/{invoice_number}/g, data.invoiceNumber)
+    processedContent = processedContent.replace(/\{\{invoiceNumber\}\}/g, data.invoiceNumber)
+  }
+  if (data.transactionId) {
+    processedContent = processedContent.replace(/{transaction_id}/g, data.transactionId)
+    processedContent = processedContent.replace(/\{\{transactionId\}\}/g, data.transactionId)
+  }
+  if (data.amountFormatted) {
+    processedContent = processedContent.replace(/{amount}/g, data.amountFormatted)
+    processedContent = processedContent.replace(/\{\{amount\}\}/g, data.amountFormatted)
+  }
+  if (data.amount !== undefined) {
+    processedContent = processedContent.replace(/{amount_raw}/g, data.amount.toString())
+    processedContent = processedContent.replace(/\{\{amountRaw\}\}/g, data.amount.toString())
+  }
+  if (data.paymentMethod) {
+    processedContent = processedContent.replace(/{payment_method}/g, data.paymentMethod)
+    processedContent = processedContent.replace(/\{\{paymentMethod\}\}/g, data.paymentMethod)
+  }
+  if (data.paymentStatus) {
+    processedContent = processedContent.replace(/{payment_status}/g, data.paymentStatus)
+    processedContent = processedContent.replace(/\{\{paymentStatus\}\}/g, data.paymentStatus)
+  }
+  if (data.transactionDate) {
+    processedContent = processedContent.replace(/{transaction_date}/g, data.transactionDate)
+    processedContent = processedContent.replace(/\{\{transactionDate\}\}/g, data.transactionDate)
+  }
+  if (data.dueDate) {
+    processedContent = processedContent.replace(/{due_date}/g, data.dueDate)
+    processedContent = processedContent.replace(/\{\{dueDate\}\}/g, data.dueDate)
+  }
+  if (data.productName) {
+    processedContent = processedContent.replace(/{product_name}/g, data.productName)
+    processedContent = processedContent.replace(/\{\{productName\}\}/g, data.productName)
+  }
+  if (data.productDescription) {
+    processedContent = processedContent.replace(/{product_description}/g, data.productDescription)
+    processedContent = processedContent.replace(/\{\{productDescription\}\}/g, data.productDescription)
+  }
   
   // Replace affiliate data
-  if (data.affiliateCode) processedContent = processedContent.replace(/{affiliate_code}/g, data.affiliateCode)
-  if (data.commissionFormatted) processedContent = processedContent.replace(/{commission}/g, data.commissionFormatted)
-  if (data.commissionRate !== undefined) processedContent = processedContent.replace(/{commission_rate}/g, data.commissionRate.toString() + '%')
-  if (data.referralCount !== undefined) processedContent = processedContent.replace(/{referral_count}/g, data.referralCount.toString())
-  if (data.totalEarnings !== undefined) processedContent = processedContent.replace(/{total_earnings}/g, formatCurrency(data.totalEarnings))
-  if (data.tierLevel !== undefined) processedContent = processedContent.replace(/{tier_level}/g, data.tierLevel.toString())
-  if (data.tierName) processedContent = processedContent.replace(/{tier_name}/g, data.tierName)
-  if (data.referralLink) processedContent = processedContent.replace(/{referral_link}/g, data.referralLink)
-  if (data.affiliateDashboard) processedContent = processedContent.replace(/{affiliate_dashboard}/g, data.affiliateDashboard)
+  if (data.affiliateCode) {
+    processedContent = processedContent.replace(/{affiliate_code}/g, data.affiliateCode)
+    processedContent = processedContent.replace(/\{\{affiliateCode\}\}/g, data.affiliateCode)
+  }
+  if (data.commissionFormatted) {
+    processedContent = processedContent.replace(/{commission}/g, data.commissionFormatted)
+    processedContent = processedContent.replace(/\{\{commission\}\}/g, data.commissionFormatted)
+  }
+  if (data.commissionRate !== undefined) {
+    const rateStr = data.commissionRate.toString() + '%'
+    processedContent = processedContent.replace(/{commission_rate}/g, rateStr)
+    processedContent = processedContent.replace(/\{\{commissionRate\}\}/g, rateStr)
+  }
+  if (data.referralCount !== undefined) {
+    processedContent = processedContent.replace(/{referral_count}/g, data.referralCount.toString())
+    processedContent = processedContent.replace(/\{\{referralCount\}\}/g, data.referralCount.toString())
+  }
+  if (data.totalEarnings !== undefined) {
+    const earningsStr = formatCurrency(data.totalEarnings)
+    processedContent = processedContent.replace(/{total_earnings}/g, earningsStr)
+    processedContent = processedContent.replace(/\{\{totalEarnings\}\}/g, earningsStr)
+  }
+  if (data.tierLevel !== undefined) {
+    processedContent = processedContent.replace(/{tier_level}/g, data.tierLevel.toString())
+    processedContent = processedContent.replace(/\{\{tierLevel\}\}/g, data.tierLevel.toString())
+  }
+  if (data.tierName) {
+    processedContent = processedContent.replace(/{tier_name}/g, data.tierName)
+    processedContent = processedContent.replace(/\{\{tierName\}\}/g, data.tierName)
+  }
+  if (data.referralLink) {
+    processedContent = processedContent.replace(/{referral_link}/g, data.referralLink)
+    processedContent = processedContent.replace(/\{\{referralLink\}\}/g, data.referralLink)
+  }
+  if (data.affiliateDashboard) {
+    processedContent = processedContent.replace(/{affiliate_dashboard}/g, data.affiliateDashboard)
+    processedContent = processedContent.replace(/\{\{affiliateDashboard\}\}/g, data.affiliateDashboard)
+  }
   
   // Replace course data
-  if (data.courseName) processedContent = processedContent.replace(/{course_name}/g, data.courseName)
-  if (data.courseProgress !== undefined) processedContent = processedContent.replace(/{course_progress}/g, data.courseProgress.toString() + '%')
-  if (data.courseCompletionDate) processedContent = processedContent.replace(/{course_completion_date}/g, data.courseCompletionDate)
-  if (data.certificateUrl) processedContent = processedContent.replace(/{certificate_url}/g, data.certificateUrl)
-  if (data.nextLesson) processedContent = processedContent.replace(/{next_lesson}/g, data.nextLesson)
-  if (data.mentorName) processedContent = processedContent.replace(/{mentor_name}/g, data.mentorName)
+  if (data.courseName) {
+    processedContent = processedContent.replace(/{course_name}/g, data.courseName)
+    processedContent = processedContent.replace(/\{\{courseName\}\}/g, data.courseName)
+  }
+  if (data.courseProgress !== undefined) {
+    const progressStr = data.courseProgress.toString() + '%'
+    processedContent = processedContent.replace(/{course_progress}/g, progressStr)
+    processedContent = processedContent.replace(/\{\{courseProgress\}\}/g, progressStr)
+  }
+  if (data.courseCompletionDate) {
+    processedContent = processedContent.replace(/{course_completion_date}/g, data.courseCompletionDate)
+    processedContent = processedContent.replace(/\{\{courseCompletionDate\}\}/g, data.courseCompletionDate)
+  }
+  if (data.certificateUrl) {
+    processedContent = processedContent.replace(/{certificate_url}/g, data.certificateUrl)
+    processedContent = processedContent.replace(/\{\{certificateUrl\}\}/g, data.certificateUrl)
+  }
+  if (data.nextLesson) {
+    processedContent = processedContent.replace(/{next_lesson}/g, data.nextLesson)
+    processedContent = processedContent.replace(/\{\{nextLesson\}\}/g, data.nextLesson)
+  }
+  if (data.mentorName) {
+    processedContent = processedContent.replace(/{mentor_name}/g, data.mentorName)
+    processedContent = processedContent.replace(/\{\{mentorName\}\}/g, data.mentorName)
+  }
   
   // Replace event data
   if (data.eventName) processedContent = processedContent.replace(/{event_name}/g, data.eventName)
@@ -455,6 +601,135 @@ export function processShortcodes(content: string, data: TemplateData): string {
 /**
  * Generate branded HTML email template
  */
+// Background design configurations
+const BACKGROUND_DESIGNS = {
+  simple: {
+    background: '#ffffff',
+    containerBg: '#ffffff',
+    textColor: '#1f2937'
+  },
+  blue: {
+    background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+    containerBg: '#f8fafc',
+    textColor: '#1e3a8a'
+  },
+  green: {
+    background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
+    containerBg: '#f0fdf4',
+    textColor: '#14532d'
+  },
+  elegant: {
+    background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
+    containerBg: '#ffffff',
+    textColor: '#374151'
+  },
+  warm: {
+    background: 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)',
+    containerBg: '#fef3c7',
+    textColor: '#9a3412'
+  },
+  modern: {
+    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+    containerBg: '#334155',
+    textColor: '#f1f5f9'
+  }
+}
+
+/**
+ * Create simple branded email with background design and text content
+ */
+export function createSimpleBrandedEmail(
+  subject: string,
+  content: string,
+  ctaText?: string,
+  ctaLink?: string,
+  backgroundDesign: string = 'simple',
+  data: TemplateData = {},
+  brandConfig: any = null
+): string {
+  const config = brandConfig || BRAND_CONFIG
+  const design = BACKGROUND_DESIGNS[backgroundDesign as keyof typeof BACKGROUND_DESIGNS] || BACKGROUND_DESIGNS.simple
+  
+  // Process shortcodes in content
+  const processedSubject = processShortcodes(subject, data)
+  const processedContent = processShortcodes(content, data)
+  const processedCtaText = ctaText ? processShortcodes(ctaText, data) : undefined
+  const processedCtaLink = ctaLink ? processShortcodes(ctaLink, data) : undefined
+  
+  // Convert line breaks to paragraphs with proper text color
+  const contentParagraphs = processedContent
+    .split('\n')
+    .filter(line => line.trim())
+    .map(line => `<p style="margin: 0 0 16px 0; color: ${design.textColor}; font-size: 16px; line-height: 1.6;">${line}</p>`)
+    .join('')
+
+  return `
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${processedSubject}</title>
+</head>
+<body style="margin: 0; padding: 0; background: ${design.background}; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" style="max-width: 600px; width: 100%; background-color: ${design.containerBg}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header with Logo -->
+          <tr>
+            <td align="center" style="padding: 40px 30px 20px; background-color: ${design.containerBg};">
+              <img src="${config.logoUrl}" alt="${config.name}" style="max-height: 60px; width: auto;" />
+              <h1 style="margin: 16px 0 0; color: ${design.textColor}; font-size: 24px; font-weight: 600;">${config.name}</h1>
+              <p style="margin: 8px 0 0; color: ${design.textColor}; font-size: 14px; opacity: 0.7;">${config.tagline}</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 20px 30px;">
+              <div style="color: ${design.textColor};">
+                ${contentParagraphs}
+              </div>
+              
+              ${processedCtaText && processedCtaLink ? `
+              <!-- CTA Button -->
+              <div style="text-align: center; margin: 32px 0;">
+                <a href="${processedCtaLink}" style="display: inline-block; padding: 16px 32px; background-color: ${config.buttonBg}; color: ${config.buttonText}; text-decoration: none; font-weight: 600; border-radius: 8px; font-size: 16px;">
+                  ${processedCtaText}
+                </a>
+              </div>
+              ` : ''}
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px; background-color: ${backgroundDesign === 'modern' ? '#0f172a' : '#f8fafc'}; border-top: 1px solid ${backgroundDesign === 'modern' ? '#334155' : '#e5e7eb'};">
+              <div style="text-align: center;">
+                <p style="margin: 0 0 12px; color: ${backgroundDesign === 'modern' ? '#94a3b8' : '#6b7280'}; font-size: 14px; font-weight: 600;">
+                  ${config.name}
+                </p>
+                <p style="margin: 0 0 12px; color: ${backgroundDesign === 'modern' ? '#64748b' : '#9ca3af'}; font-size: 12px; line-height: 1.5;">
+                  ${config.address}<br/>
+                  Email: <a href="mailto:${config.supportEmail}" style="color: ${config.primaryColor}; text-decoration: none;">${config.supportEmail}</a><br/>
+                  Phone: ${config.supportPhone}
+                </p>
+                <p style="margin: 0; color: ${backgroundDesign === 'modern' ? '#64748b' : '#9ca3af'}; font-size: 11px;">
+                  © 2024 ${config.copyrightText}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
 export function createBrandedEmail(
   subject: string,
   content: string,

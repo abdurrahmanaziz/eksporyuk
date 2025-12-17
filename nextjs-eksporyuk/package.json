@@ -50,6 +50,7 @@
     "@types/dompurify": "^3.0.5",
     "@types/nodemailer": "^6.4.15",
     "@types/qrcode": "^1.5.5",
+    "@vercel/blob": "^2.0.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.7",
     "bcrypt": "^6.0.0",

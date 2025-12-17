@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
+import { put } from '@vercel/blob';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
@@ -11,6 +12,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/mov'];
 const ALLOWED_DOCUMENT_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
+// Check if Vercel Blob is configured
+const isVercelBlobConfigured = !!process.env.BLOB_READ_WRITE_TOKEN
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,34 +73,45 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ File validation passed, proceeding with upload...')
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create uploads directory structure
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
-    console.log('📁 Upload directory:', uploadDir)
-    
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-      console.log('📁 Created upload directory')
-    }
-
     // Generate unique filename
     const timestamp = Date.now();
     const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_'); // Sanitize filename
     const fileExtension = path.extname(originalName);
     const fileName = `${timestamp}-${path.basename(originalName, fileExtension)}${fileExtension}`;
-    const filePath = path.join(uploadDir, fileName);
 
-    console.log('💾 Saving file to:', filePath)
+    let publicUrl: string;
 
-    // Save file
-    await writeFile(filePath, buffer);
+    // Use Vercel Blob in production, local storage in development
+    if (isVercelBlobConfigured) {
+      // Upload to Vercel Blob (cloud storage - persists in production!)
+      const blob = await put(`uploads/${type}/${fileName}`, file, {
+        access: 'public',
+        addRandomSuffix: false,
+      });
+      publicUrl = blob.url;
+      console.log('🎉 Upload to Vercel Blob successful:', publicUrl);
+    } else {
+      // Fallback to local storage for development
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
 
-    // Return public URL
-    const publicUrl = `/uploads/${type}/${fileName}`;
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
+      console.log('📁 Upload directory:', uploadDir);
+      
+      if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true });
+        console.log('📁 Created upload directory');
+      }
 
-    console.log('🎉 Upload successful:', publicUrl)
+      const filePath = path.join(uploadDir, fileName);
+      console.log('💾 Saving file to:', filePath);
+      await writeFile(filePath, buffer);
+
+      // For local dev
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      publicUrl = `${appUrl}/uploads/${type}/${fileName}`;
+      console.log('🎉 Local upload successful:', publicUrl);
+    }
 
     return NextResponse.json({ 
       success: true,

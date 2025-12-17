@@ -1,66 +1,39 @@
-/**
- * CHECK INTEGRATION STATUS
- * Verify all external services are configured
- */
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
 
-require('dotenv').config({ path: '.env.local' })
-
-console.log('🔍 CHECKING INTEGRATION CONFIGURATION\n')
-console.log('='.repeat(60))
-
-// Check Mailketing
-const mailketingConfigured = !!(
-  process.env.MAILKETING_API_KEY &&
-  process.env.MAILKETING_SENDER_EMAIL
-)
-console.log(`\n📧 Mailketing: ${mailketingConfigured ? '✅ CONFIGURED' : '❌ NOT CONFIGURED'}`)
-if (mailketingConfigured) {
-  console.log(`   API Key: ${process.env.MAILKETING_API_KEY?.substring(0, 10)}...`)
-  console.log(`   From: ${process.env.MAILKETING_SENDER_EMAIL}`)
+async function checkIntegrations() {
+  console.log('🔍 Checking Integration Configurations\n')
+  console.log('='.repeat(80))
+  
+  const services = ['xendit', 'mailketing', 'starsender', 'onesignal', 'pusher', 'resend']
+  
+  for (const service of services) {
+    const config = await prisma.integrationConfig.findUnique({
+      where: { service }
+    })
+    
+    if (config) {
+      console.log(`\n✅ ${service.toUpperCase()}:`)
+      console.log(`   Active: ${config.isActive ? '✅' : '❌'}`)
+      console.log(`   Config keys: ${Object.keys(config.config || {}).join(', ')}`)
+      
+      if (service === 'xendit' && config.config) {
+        const xen = config.config
+        console.log(`   Environment: ${xen.XENDIT_ENVIRONMENT || 'not set'}`)
+        console.log(`   Secret Key: ${xen.XENDIT_SECRET_KEY ? '***configured***' : '❌ missing'}`)
+        console.log(`   Webhook Token: ${xen.XENDIT_WEBHOOK_TOKEN ? '***configured***' : '❌ missing'}`)
+      }
+      
+      if (service === 'resend' && config.config) {
+        console.log(`   API Key: ${config.config.RESEND_API_KEY ? '***configured***' : '❌ missing'}`)
+      }
+    } else {
+      console.log(`\n❌ ${service.toUpperCase()}: Not configured in database`)
+    }
+  }
+  
+  console.log('\n' + '='.repeat(80))
+  await prisma.$disconnect()
 }
 
-// Check Starsender
-const starsenderConfigured = !!(
-  process.env.STARSENDER_API_KEY &&
-  process.env.STARSENDER_DEVICE_ID
-)
-console.log(`\n📱 Starsender: ${starsenderConfigured ? '✅ CONFIGURED' : '❌ NOT CONFIGURED'}`)
-if (starsenderConfigured) {
-  console.log(`   API Key: ${process.env.STARSENDER_API_KEY?.substring(0, 10)}...`)
-  console.log(`   Device ID: ${process.env.STARSENDER_DEVICE_ID}`)
-}
-
-// Check OneSignal
-const onesignalConfigured = !!(
-  process.env.ONESIGNAL_APP_ID &&
-  process.env.ONESIGNAL_API_KEY
-)
-console.log(`\n🔔 OneSignal: ${onesignalConfigured ? '✅ CONFIGURED' : '❌ NOT CONFIGURED'}`)
-if (onesignalConfigured) {
-  console.log(`   App ID: ${process.env.ONESIGNAL_APP_ID?.substring(0, 15)}...`)
-  console.log(`   API Key: ${process.env.ONESIGNAL_API_KEY?.substring(0, 15)}...`)
-}
-
-// Check Pusher
-const pusherConfigured = !!(
-  process.env.PUSHER_APP_ID &&
-  process.env.PUSHER_KEY &&
-  process.env.PUSHER_SECRET
-)
-console.log(`\n⚡ Pusher: ${pusherConfigured ? '✅ CONFIGURED' : '❌ NOT CONFIGURED'}`)
-if (pusherConfigured) {
-  console.log(`   App ID: ${process.env.PUSHER_APP_ID}`)
-  console.log(`   Key: ${process.env.PUSHER_KEY}`)
-  console.log(`   Cluster: ${process.env.PUSHER_CLUSTER}`)
-}
-
-// Summary
-console.log('\n' + '='.repeat(60))
-const allConfigured = mailketingConfigured && starsenderConfigured && onesignalConfigured && pusherConfigured
-if (allConfigured) {
-  console.log('\n✅ ALL INTEGRATIONS CONFIGURED!')
-  console.log('\nNext: Start the dev server and run test-integrations.js')
-} else {
-  console.log('\n⚠️  SOME INTEGRATIONS NOT CONFIGURED')
-  console.log('\nCheck your .env.local file and add missing API keys')
-}
+checkIntegrations().catch(console.error)

@@ -169,6 +169,25 @@ export class OneSignalService {
   }
 
   /**
+   * Send to a single user (convenience method)
+   */
+  async sendToUser(
+    userId: string,
+    payload: Partial<OneSignalNotificationPayload>
+  ): Promise<OneSignalResponse> {
+    return this.sendNotification(
+      {
+        headings: payload.headings || { en: '', id: '' },
+        contents: payload.contents || { en: '', id: '' },
+        ...payload,
+      },
+      {
+        include_external_user_ids: [userId],
+      }
+    )
+  }
+
+  /**
    * Send to specific segments
    */
   async sendToSegment(

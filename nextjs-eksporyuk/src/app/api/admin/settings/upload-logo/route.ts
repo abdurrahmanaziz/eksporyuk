@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
+import { put } from '@vercel/blob'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { existsSync } from 'fs'
 
 export const dynamic = 'force-dynamic'
+
+// Check if Vercel Blob is configured
+const isVercelBlobConfigured = !!process.env.BLOB_READ_WRITE_TOKEN
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,25 +39,45 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type. Only JPG, PNG, SVG, WebP, and ICO are allowed.' }, { status: 400 })
     }
 
-    // Create upload directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'branding')
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
-
     // Generate unique filename
     const timestamp = Date.now()
     const fileExt = file.name.split('.').pop()
     const fileName = `${type}-${timestamp}.${fileExt}`
-    const filePath = path.join(uploadDir, fileName)
 
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
+    let publicUrl: string
 
-    // Return public URL
-    const publicUrl = `/uploads/branding/${fileName}`
+    // Use Vercel Blob in production, local storage in development
+    if (isVercelBlobConfigured) {
+      // Upload to Vercel Blob (cloud storage - persists in production!)
+      const blob = await put(`branding/${fileName}`, file, {
+        access: 'public',
+        addRandomSuffix: false,
+      })
+      publicUrl = blob.url
+      console.log('[Upload Logo] File uploaded to Vercel Blob:', {
+        fileName,
+        publicUrl
+      })
+    } else {
+      // Fallback to local storage for development
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'branding')
+      if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true })
+      }
+
+      const filePath = path.join(uploadDir, fileName)
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      await writeFile(filePath, buffer)
+
+      // For local dev
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      publicUrl = `${appUrl}/uploads/branding/${fileName}`
+      console.log('[Upload Logo] File uploaded locally:', {
+        fileName,
+        publicUrl
+      })
+    }
 
     return NextResponse.json({ 
       success: true, 

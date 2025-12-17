@@ -56,6 +56,7 @@ interface BrandedTemplate {
   isDefault: boolean
   usageCount: number
   tags?: string[] | string
+  customBranding?: any  // Add this
   lastUsedAt?: string
   createdAt: string
   updatedAt: string
@@ -93,6 +94,18 @@ export default function AdminBrandedTemplatesPage() {
     'PAYMENT': '💳',
     'MARKETING': '📢',
     'NOTIFICATION': '🔔',
+    'TRANSACTION': '💸',
+  }
+
+  const categoryDescriptions: Record<string, string> = {
+    'SYSTEM': 'Template untuk sistem internal, aktivasi akun, reset password',
+    'MEMBERSHIP': 'Template untuk membership plan, upgrade, renewal, expires',
+    'AFFILIATE': 'Template untuk affiliate approval, komisi, payout, leaderboard',
+    'COURSE': 'Template untuk course enrollment, progress, certificate',
+    'PAYMENT': 'Template untuk payment reminder, invoice, receipt',
+    'MARKETING': 'Template untuk promosi, newsletter, campaign',
+    'NOTIFICATION': 'Template untuk notifikasi umum, update, announcement',
+    'TRANSACTION': 'Template untuk transaksi: sukses, pending, gagal, refund',
   }
 
   const typeIcons: Record<string, string> = {
@@ -100,6 +113,7 @@ export default function AdminBrandedTemplatesPage() {
     'WHATSAPP': '💬',
     'SMS': '📱',
     'PUSH': '🔔',
+    'NOTIFICATION': '🔔',
   }
 
   // Fetch templates from API
@@ -258,30 +272,41 @@ export default function AdminBrandedTemplatesPage() {
     if (template.type !== 'EMAIL') return
     
     setLoadingPreview(true)
+    setPreviewHtml('')
+    
     try {
       const res = await fetch(`/api/admin/branded-templates/${template.id}/preview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          data: {
-            userName: 'John Doe',
-            userEmail: 'john@example.com',
-            courseName: 'Sample Course',
-            amount: 'Rp 500.000',
-            date: new Date().toLocaleDateString('id-ID'),
-            link: 'https://eksporyuk.com'
+          customData: {
+            name: 'John Doe',
+            email: 'john@example.com',
+            phone: '+62812345678',
+            membershipPlan: 'Premium Plan',
+            expiryDate: '31 Desember 2025',
+            amountFormatted: 'Rp 500.000',
+            invoiceNumber: 'INV-2025-001',
+            affiliateCode: 'JOHNDOE123',
+            commissionFormatted: 'Rp 150.000',
+            siteName: 'EksporYuk',
+            siteUrl: 'https://eksporyuk.com',
+            supportEmail: 'support@eksporyuk.com'
           }
         })
       })
 
-      if (res.ok) {
-        const data = await res.json()
-        setPreviewHtml(data.htmlPreview || '')
+      const data = await res.json()
+      
+      if (res.ok && data.success) {
+        setPreviewHtml(data.data?.htmlPreview || '')
       } else {
-        toast.error('Gagal memuat preview')
+        console.error('Preview error:', data)
+        toast.error(data.error || 'Gagal memuat preview')
         setPreviewHtml('')
       }
     } catch (error) {
+      console.error('Preview fetch error:', error)
       toast.error('Gagal memuat preview')
       setPreviewHtml('')
     } finally {
@@ -376,6 +401,12 @@ export default function AdminBrandedTemplatesPage() {
   const handleView = (template: BrandedTemplate) => {
     setSelectedTemplate(template)
     setActiveTab('preview')
+    // Auto-load preview untuk EMAIL templates
+    if (template.type === 'EMAIL') {
+      setTimeout(() => {
+        fetchPreviewHtml(template)
+      }, 300)
+    }
   }
 
   // Save template changes
@@ -581,7 +612,13 @@ export default function AdminBrandedTemplatesPage() {
               <option value="PAYMENT">💳 Payment</option>
               <option value="MARKETING">📢 Marketing</option>
               <option value="NOTIFICATION">🔔 Notification</option>
+              <option value="TRANSACTION">💸 Transaction</option>
             </select>
+            {editForm.category && (
+              <p className="text-xs text-gray-500 mt-1">
+                ℹ️ {categoryDescriptions[editForm.category] || 'Template untuk kategori ini'}
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="type">Tipe *</Label>
@@ -611,17 +648,68 @@ export default function AdminBrandedTemplatesPage() {
         </div>
 
         <div>
-          <Label htmlFor="content">Konten Template *</Label>
+          <Label htmlFor="content">Konten Template (Text Editor) *</Label>
           <Textarea
             id="content"
             value={editForm.content || ''}
             onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
-            placeholder="Tulis konten template di sini. Gunakan shortcode seperti {name}, {email}, dll."
-            rows={8}
-            className="font-mono text-sm"
+            placeholder="Tulis konten template dalam format teks biasa...
+
+Contoh:
+Halo {{userName}},
+
+Terima kasih atas pembayaran Anda sebesar {{amount}} untuk paket {{membershipPlan}}.
+
+Nomor Invoice: {{invoiceNumber}}
+
+Salam,
+Tim Eksporyuk"
+            rows={12}
+            className="text-sm leading-relaxed"
           />
           <p className="text-xs text-gray-500 mt-2">
-            Shortcode tersedia: {'{name}'}, {'{email}'}, {'{membership_plan}'}, {'{amount}'}, {'{affiliate_code}'}, dll.
+            💡 Gunakan placeholder: {'{'}userName{'}'}, {'{'}userEmail{'}'}, {'{'}membershipPlan{'}'}, {'{'}amount{'}'}, {'{'}invoiceNumber{'}'}, {'{'}affiliateCode{'}'}
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            📝 Format teks biasa - Logo header & footer akan diambil dari Settings secara otomatis
+          </p>
+        </div>
+
+        {/* Background Design Selector */}
+        <div>
+          <Label className="text-sm font-medium mb-3 block">Background Design</Label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {[
+              { id: 'simple', name: 'Simple White', preview: 'bg-white border-2 border-gray-200' },
+              { id: 'blue', name: 'Professional Blue', preview: 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200' },
+              { id: 'green', name: 'Fresh Green', preview: 'bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200' },
+              { id: 'elegant', name: 'Elegant Gray', preview: 'bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-300' },
+              { id: 'warm', name: 'Warm Orange', preview: 'bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200' },
+              { id: 'modern', name: 'Modern Dark', preview: 'bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-slate-600' }
+            ].map(design => (
+              <div
+                key={design.id}
+                className={`p-3 rounded-lg cursor-pointer transition-all border ${
+                  ((editForm.customBranding as any)?.backgroundDesign || 'simple') === design.id 
+                    ? 'ring-2 ring-blue-500 ring-offset-1 border-blue-300' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => setEditForm(prev => ({
+                  ...prev, 
+                  customBranding: { ...prev.customBranding as any, backgroundDesign: design.id }
+                }))}
+              >
+                <div className={`h-14 rounded mb-2 flex items-center justify-center text-xs ${design.preview}`}>
+                  <span className={design.id === 'modern' ? 'text-white' : 'text-gray-600'}>
+                    Sample
+                  </span>
+                </div>
+                <p className="text-xs text-center font-medium">{design.name}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            🎨 Background design akan diterapkan pada email dengan logo & footer dari Settings
           </p>
         </div>
 
@@ -893,6 +981,7 @@ export default function AdminBrandedTemplatesPage() {
                     <option value="PAYMENT">💳 Payment</option>
                     <option value="MARKETING">📢 Marketing</option>
                     <option value="NOTIFICATION">🔔 Notification</option>
+                    <option value="TRANSACTION">💸 Transaction</option>
                   </select>
                   <select 
                     value={selectedType}
@@ -973,6 +1062,12 @@ export default function AdminBrandedTemplatesPage() {
                               {typeIcons[template.type]} {template.type}
                             </Badge>
                           </div>
+                          
+                          {template.category && categoryDescriptions[template.category] && (
+                            <p className="text-xs text-gray-500 mt-2">
+                              ℹ️ {categoryDescriptions[template.category]}
+                            </p>
+                          )}
                         </CardHeader>
 
                         <CardContent>
@@ -1298,35 +1393,93 @@ export default function AdminBrandedTemplatesPage() {
                 </Card>
 
                 {/* Test Email Section */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                <Card className="border-2 border-green-200">
+                  <CardHeader className="bg-green-50">
+                    <CardTitle className="flex items-center gap-2 text-green-900">
                       <Send className="w-5 h-5" />
-                      Test Email
+                      📨 Test Email dengan Mailketing API
                     </CardTitle>
+                    <p className="text-sm text-green-700 mt-1">
+                      Kirim test email untuk melihat hasil akhir template dengan logo & footer dari Settings
+                    </p>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-2">
-                      <Input
-                        id="testEmail"
-                        type="email"
-                        value={testEmail}
-                        onChange={(e) => setTestEmail(e.target.value)}
-                        placeholder="test@example.com"
-                      />
-                      <Button
-                        onClick={() => handleSendTestEmail()}
-                        disabled={!testEmail || !selectedTemplate || sendingTest}
-                      >
-                        {sendingTest ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <Send className="w-4 h-4 mr-2" />
-                        )}
-                        Kirim Test
-                      </Button>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      {/* Template Selection */}
+                      <div>
+                        <Label htmlFor="testTemplate" className="text-sm font-medium mb-2 block">Pilih Template</Label>
+                        <select
+                          id="testTemplate"
+                          value={selectedTemplate?.id || ''}
+                          onChange={(e) => {
+                            const template = templates.find(t => t.id === e.target.value)
+                            if (template) setSelectedTemplate(template)
+                          }}
+                          className="w-full px-3 py-2 border border-green-300 rounded-lg bg-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                        >
+                          <option value="">-- Pilih Template --</option>
+                          {templates.filter(t => t.isActive).map(t => (
+                            <option key={t.id} value={t.id}>{t.name} ({t.category})</option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {templates.filter(t => t.isActive).length} template tersedia
+                        </p>
+                      </div>
+                      
+                      {/* Email Input */}
+                      <div>
+                        <Label htmlFor="testEmail" className="text-sm font-medium mb-2 block">Email Tujuan</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="testEmail"
+                            type="email"
+                            value={testEmail}
+                            onChange={(e) => setTestEmail(e.target.value)}
+                            placeholder="masukkan-email@anda.com"
+                            className="border-green-300 focus:border-green-500"
+                          />
+                          <Button
+                            onClick={() => handleSendTestEmail()}
+                            disabled={!testEmail || !selectedTemplate || sendingTest}
+                            className="bg-green-600 hover:bg-green-700 min-w-[120px]"
+                          >
+                            {sendingTest ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="w-4 h-4 mr-2" />
+                                Kirim Test
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Sample Data Info */}
+                      <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                        <p className="text-xs text-blue-800 font-medium mb-1">📋 Sample Data yang Digunakan:</p>
+                        <ul className="text-xs text-blue-700 space-y-0.5 ml-4">
+                          <li>• Nama: John Doe</li>
+                          <li>• Email: {testEmail || 'email-anda@example.com'}</li>
+                          <li>• Membership Plan: Premium Plan</li>
+                          <li>• Amount: Rp 500.000</li>
+                          <li>• Invoice: INV-2025-001</li>
+                          <li>• Affiliate Code: JOHNDOE123</li>
+                        </ul>
+                      </div>
+                      
+                      {/* Status Message */}
+                      {selectedTemplate && (
+                        <p className="text-xs text-green-700 flex items-center gap-1 bg-green-100 p-2 rounded">
+                          <CheckCircle className="w-3 h-3" />
+                          Template "{selectedTemplate.name}" siap dikirim ke {testEmail || 'email Anda'}
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Pilih template di tab Preview terlebih dahulu, lalu masukkan email untuk test</p>
                   </CardContent>
                 </Card>
 
@@ -1420,39 +1573,65 @@ export default function AdminBrandedTemplatesPage() {
                     {selectedTemplate.type === 'EMAIL' ? (
                       <div>
                         <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                          Preview HTML (dengan Logo & Footer)
+                          📧 Preview Email (Text + Background Design)
                         </Label>
-                        {loadingPreview ? (
-                          <div className="flex items-center justify-center h-96 bg-gray-50 rounded border">
-                            <div className="text-center">
-                              <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-blue-500" />
-                              <p className="text-sm text-gray-600">Memuat preview...</p>
+                        <div className="border rounded-lg overflow-hidden bg-white">
+                          <div className={`p-6 min-h-[400px] ${
+                            ((selectedTemplate.customBranding as any)?.backgroundDesign || 'simple') === 'blue' ? 'bg-gradient-to-br from-blue-50 to-blue-100' :
+                            ((selectedTemplate.customBranding as any)?.backgroundDesign || 'simple') === 'green' ? 'bg-gradient-to-br from-green-50 to-green-100' :
+                            ((selectedTemplate.customBranding as any)?.backgroundDesign || 'simple') === 'elegant' ? 'bg-gradient-to-br from-gray-50 to-gray-100' :
+                            ((selectedTemplate.customBranding as any)?.backgroundDesign || 'simple') === 'warm' ? 'bg-gradient-to-br from-orange-50 to-orange-100' :
+                            ((selectedTemplate.customBranding as any)?.backgroundDesign || 'simple') === 'modern' ? 'bg-gradient-to-br from-slate-800 to-slate-900 text-white' :
+                            'bg-white'
+                          }`}>
+                            {/* Header Logo Placeholder */}
+                            <div className="text-center mb-6">
+                              <div className={`w-48 h-12 mx-auto rounded flex items-center justify-center text-xs ${ 
+                                ((selectedTemplate.customBranding as any)?.backgroundDesign || 'simple') === 'modern' ? 'bg-slate-700 text-slate-300' : 'bg-blue-600 text-white'
+                              }`}>
+                                [LOGO DARI SETTINGS]
+                              </div>
+                            </div>
+                            
+                            {/* Content Preview */}
+                            <div className="max-w-2xl mx-auto">
+                              <div className={`text-sm leading-relaxed whitespace-pre-line ${
+                                ((selectedTemplate.customBranding as any)?.backgroundDesign || 'simple') === 'modern' ? 'text-white' : 'text-gray-800'
+                              }`}>
+                                {selectedTemplate.content
+                                  .replace(/\{\{userName\}\}/g, 'John Doe')
+                                  .replace(/\{\{userEmail\}\}/g, 'john@example.com')
+                                  .replace(/\{\{membershipPlan\}\}/g, 'Premium Plan')
+                                  .replace(/\{\{amount\}\}/g, 'Rp 500.000')
+                                  .replace(/\{\{invoiceNumber\}\}/g, 'INV-2025-001')
+                                  .replace(/\{\{affiliateCode\}\}/g, 'JOHNDOE123')
+                                }
+                              </div>
+                              
+                              {/* CTA Button if exists */}
+                              {selectedTemplate.ctaText && (
+                                <div className="text-center mt-6">
+                                  <div className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium">
+                                    {selectedTemplate.ctaText}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Footer Placeholder */}
+                            <div className="text-center mt-8 pt-6 border-t border-gray-200">
+                              <div className={`text-xs ${
+                                ((selectedTemplate.customBranding as any)?.backgroundDesign || 'simple') === 'modern' ? 'text-slate-400' : 'text-gray-600'
+                              }`}>
+                                [FOOTER DARI SETTINGS]<br/>
+                                PT Ekspor Yuk Indonesia | support@eksporyuk.com
+                              </div>
                             </div>
                           </div>
-                        ) : previewHtml ? (
-                          <div className="border rounded overflow-hidden bg-white">
-                            <iframe
-                              srcDoc={previewHtml}
-                              className="w-full h-[600px] border-0"
-                              title="Email Preview"
-                              sandbox="allow-same-origin"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center h-96 bg-gray-50 rounded border">
-                            <div className="text-center">
-                              <Eye className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                              <p className="text-sm text-gray-600 mb-3">Klik "Refresh Preview" untuk melihat HTML</p>
-                              <Button
-                                size="sm"
-                                onClick={() => fetchPreviewHtml(selectedTemplate)}
-                              >
-                                <RefreshCw className="w-4 h-4 mr-1" />
-                                Load Preview
-                              </Button>
-                            </div>
-                          </div>
-                        )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          💡 Preview menggunakan sample data. Logo & footer akan diambil dari Settings saat email dikirim.
+                        </p>
                       </div>
                     ) : (
                       <div>
@@ -1496,34 +1675,21 @@ export default function AdminBrandedTemplatesPage() {
                       </div>
                     </div>
 
-                    {/* Test Email Section for Preview */}
-                    {selectedTemplate.type === 'EMAIL' && (
-                      <div className="border-t pt-4">
-                        <Label className="text-sm font-medium text-gray-700">Test Email Template</Label>
-                        <div className="flex gap-2 mt-2">
-                          <Input
-                            type="email"
-                            value={testEmail}
-                            onChange={(e) => setTestEmail(e.target.value)}
-                            placeholder="test@example.com"
-                            className="text-sm"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSendTestEmail(selectedTemplate)}
-                            disabled={!testEmail || sendingTest}
-                          >
-                            {sendingTest ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Send className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Test template dengan data contoh ke email Anda</p>
+                    {/* Usage Stats */}
+                    <div className="grid grid-cols-2 gap-4 text-sm border-t pt-4">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Penggunaan</Label>
+                        <p className="text-gray-600">{selectedTemplate.usageCount || 0}x digunakan</p>
                       </div>
-                    )}
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Terakhir Digunakan</Label>
+                        <p className="text-gray-600">
+                          {selectedTemplate.lastUsedAt 
+                            ? new Date(selectedTemplate.lastUsedAt).toLocaleDateString('id-ID')
+                            : 'Belum pernah'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1594,42 +1760,6 @@ export default function AdminBrandedTemplatesPage() {
                       <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded">
                         💡 Preview menggunakan data contoh. Data sebenarnya akan disesuaikan saat template digunakan.
                       </div>
-
-                      {/* Test Email Section */}
-                      {editForm.type === 'EMAIL' && (
-                        <div className="border-t pt-4">
-                          <Label className="text-sm font-medium text-gray-700">Test Email</Label>
-                          <div className="flex gap-2 mt-2">
-                            <Input
-                              type="email"
-                              value={testEmail}
-                              onChange={(e) => setTestEmail(e.target.value)}
-                              placeholder="test@example.com"
-                              className="text-sm"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                if (activeTab === 'edit' && selectedTemplate) {
-                                  handleSendTestEmail(selectedTemplate)
-                                } else if (activeTab === 'create' && editForm.name && editForm.content) {
-                                  // For create mode, we need to save first
-                                  toast.info('Simpan template terlebih dahulu untuk test email')
-                                }
-                              }}
-                              disabled={!testEmail || sendingTest || (activeTab === 'create')}
-                            >
-                              {sendingTest ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Send className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">Kirim email test dengan data contoh</p>
-                        </div>
-                      )}
                     </div>
                   ) : (
                     <div className="text-center py-8 text-gray-500">

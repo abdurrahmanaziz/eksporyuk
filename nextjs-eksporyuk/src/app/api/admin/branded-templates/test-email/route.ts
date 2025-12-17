@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { createBrandedEmailAsync, processShortcodes, type TemplateData } from '@/lib/branded-template-engine'
+import { createSimpleBrandedEmail, getBrandConfig, type TemplateData } from '@/lib/branded-template-engine'
 import { MailketingService } from '@/lib/integrations/mailketing'
 
 // Force this route to be dynamic
@@ -76,13 +76,21 @@ export async function POST(request: NextRequest) {
       ...testData
     }
 
-    const renderedContent = await createBrandedEmailAsync(
-      template.subject,
-      template.content,
-      template.ctaText || undefined,
-      template.ctaLink || undefined,
-      templateData
-    )
+    const renderedContent = await (async () => {
+      const brandConfig = await getBrandConfig()
+      const customBranding: any = template.customBranding || {}
+      const backgroundDesign = customBranding.backgroundDesign || 'simple'
+      
+      return createSimpleBrandedEmail(
+        template.subject,
+        template.content,
+        template.ctaText || undefined,
+        template.ctaLink || undefined,
+        backgroundDesign,
+        templateData,
+        brandConfig
+      )
+    })()
 
     console.log('[Test Email API] Template rendered, length:', renderedContent.length)
 

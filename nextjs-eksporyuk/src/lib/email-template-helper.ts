@@ -80,7 +80,41 @@ export async function sendBrandedEmail(
       reply_to: options?.replyTo
     })
     
-    console.log(`✅ Email sent using template '${templateSlug}' to ${to}`)
+    // Track usage: increment usageCount and log usage record
+    if (result.success) {
+      try {
+        // Increment usage count
+        await prisma.brandedTemplate.update({
+          where: { id: template.id },
+          data: {
+            usageCount: { increment: 1 },
+            lastUsedAt: new Date()
+          }
+        })
+        
+        // Create usage record (optional: get userId from variables if available)
+        await prisma.brandedTemplateUsage.create({
+          data: {
+            templateId: template.id,
+            userId: null, // TODO: Extract from context if needed
+            userRole: null,
+            context: `Email sent to ${to}`,
+            success: true,
+            metadata: {
+              to,
+              subject,
+              timestamp: new Date().toISOString()
+            }
+          }
+        })
+        
+        console.log(`✅ Email sent using template '${templateSlug}' to ${to} (usage tracked)`)
+      } catch (trackError) {
+        // Don't fail email send if tracking fails
+        console.warn(`⚠️ Failed to track template usage:`, trackError)
+      }
+    }
+    
     return result
     
   } catch (error) {

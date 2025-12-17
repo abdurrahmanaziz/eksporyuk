@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { createBrandedEmailAsync, createSampleData, SHORTCODE_DEFINITIONS } from '@/lib/branded-template-engine'
+import { createSimpleBrandedEmail, createSampleData, getBrandConfig } from '@/lib/branded-template-engine'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -40,14 +40,20 @@ export async function POST(request: NextRequest, { params }: Props) {
     // Use custom data if provided, otherwise use sample data
     const previewData = customData || template.previewData || createSampleData()
 
-    // Generate email preview
+    // Generate email preview with simple design
     if (template.type === 'EMAIL') {
-      const htmlContent = await createBrandedEmailAsync(
+      const brandConfig = await getBrandConfig()
+      const customBranding: any = template.customBranding || {}
+      const backgroundDesign = customBranding.backgroundDesign || 'simple'
+      
+      const htmlContent = createSimpleBrandedEmail(
         template.subject,
         template.content,
         template.ctaText || undefined,
         template.ctaLink || undefined,
-        previewData
+        backgroundDesign,
+        previewData,
+        brandConfig
       )
 
       return NextResponse.json({
@@ -58,9 +64,9 @@ export async function POST(request: NextRequest, { params }: Props) {
           content: template.content,
           ctaText: template.ctaText,
           ctaLink: template.ctaLink,
+          backgroundDesign: backgroundDesign,
           htmlPreview: htmlContent,
-          previewData,
-          availableShortcodes: SHORTCODE_DEFINITIONS
+          previewData
         }
       })
     }
@@ -84,7 +90,6 @@ export async function POST(request: NextRequest, { params }: Props) {
           processedCtaText,
           processedCtaLink,
           previewData,
-          availableShortcodes: SHORTCODE_DEFINITIONS,
           characterCount: processedContent.length,
           maxLength: 4096
         }
@@ -131,8 +136,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       success: true,
       data: {
         template,
-        sampleData,
-        availableShortcodes: SHORTCODE_DEFINITIONS
+        sampleData
       }
     })
 
