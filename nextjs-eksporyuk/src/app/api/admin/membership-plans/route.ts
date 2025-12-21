@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
 
     const plans = await prisma.membership.findMany({
       include: {
-        membershipFeatures: true,
         userMemberships: {
           take: 1,
           orderBy: {
@@ -41,10 +40,7 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: {
-            userMemberships: true,
-            membershipGroups: true,
-            membershipCourses: true,
-            membershipProducts: true
+            userMemberships: true
           }
         }
       },
@@ -175,10 +171,12 @@ export async function POST(request: NextRequest) {
       price,
       originalPrice,
       discount = 0,
+      commissionType = 'PERCENTAGE',
       affiliateCommissionRate = 30,
       isBestSeller = false,
       isPopular = false,
       isActive = true,
+      showInGeneralCheckout = true,
       salesPageUrl,
       features = [],
       membershipFeatures = [] // New: Feature access configurations
@@ -229,10 +227,12 @@ export async function POST(request: NextRequest) {
         price,
         originalPrice: originalPrice || price,
         discount,
+        commissionType,
         affiliateCommissionRate,
         isBestSeller,
         isPopular,
         isActive,
+        showInGeneralCheckout,
         salesPageUrl: salesPageUrl?.trim() || null,
         features: features || []
       },

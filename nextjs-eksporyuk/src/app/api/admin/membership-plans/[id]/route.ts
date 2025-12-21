@@ -27,40 +27,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Fetch membership plan
     const plan = await prisma.membership.findUnique({
       where: { id: id },
       include: {
-        membershipFeatures: true,
-        membershipGroups: {
-          include: {
-            group: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
-          }
-        },
-        membershipCourses: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                title: true
-              }
-            }
-          }
-        },
-        membershipProducts: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
-          }
-        },
         _count: {
           select: {
             userMemberships: true
@@ -73,11 +43,39 @@ export async function GET(
       return NextResponse.json({ error: 'Membership plan not found' }, { status: 404 })
     }
 
+    // Fetch related data separately (no direct relation in schema)
+    const [membershipGroups, membershipCourses, membershipProducts, membershipFeatures] = await Promise.all([
+      prisma.membershipGroup.findMany({
+        where: { membershipId: id },
+        select: { groupId: true }
+      }),
+      prisma.membershipCourse.findMany({
+        where: { membershipId: id },
+        select: { courseId: true }
+      }),
+      prisma.membershipProduct.findMany({
+        where: { membershipId: id },
+        select: { productId: true }
+      }),
+      prisma.membershipFeatureAccess.findMany({
+        where: { membershipId: id }
+      })
+    ])
+
+    // Combine data
+    const enrichedPlan = {
+      ...plan,
+      membershipGroups,
+      membershipCourses,
+      membershipProducts,
+      membershipFeatures
+    }
+
     // Parse features - handle flat array format
     let prices: any[] = []
     let benefits: string[] = []
     
-    if (plan.features) {
+    if (enrichedPlan.features) {
       try {
         let featuresData = plan.features
         
@@ -155,8 +153,10 @@ export async function PATCH(
       description,
       duration,
       price,
+      marketingPrice,
       originalPrice,
       discount,
+      commissionType,
       affiliateCommissionRate,
       isBestSeller,
       isPopular,
@@ -174,6 +174,25 @@ export async function PATCH(
       products // Array of product IDs
     } = body
 
+    // Validation
+    if (name !== undefined && !name.trim()) {
+      return NextResponse.json({ error: 'Nama membership tidak boleh kosong' }, { status: 400 })
+    }
+
+    if (price !== undefined && (isNaN(price) || price < 0)) {
+      return NextResponse.json({ error: 'Harga tidak valid (harus >= 0)' }, { status: 400 })
+    }
+
+    if (duration !== undefined) {
+      const validDurations = ['SIX_MONTHS', 'TWELVE_MONTHS', 'LIFETIME']
+      if (!validDurations.includes(duration)) {
+        return NextResponse.json({ 
+          error: 'Durasi tidak valid', 
+          validValues: validDurations 
+        }, { status: 400 })
+      }
+    }
+
     // Check if plan exists
     const existingPlan = await prisma.membership.findUnique({
       where: { id: id }
@@ -185,9 +204,11 @@ export async function PATCH(
 
     // Build update data - only include fields that exist in schema
     const updateData: any = {}
+    const changedFields: string[] = []
 
     if (name !== undefined && name.trim()) {
       updateData.name = name.trim()
+      changedFields.push('name')
       
       // Regenerate slug if name changed
       if (name.trim() !== existingPlan.name) {
@@ -206,33 +227,94 @@ export async function PATCH(
         }
 
         updateData.slug = newSlug
+        changedFields.push('slug')
       }
     }
 
-    if (description !== undefined) updateData.description = description?.trim() || ''
+    if (description !== undefined) {
+      updateData.description = description?.trim() || ''
+      if (description !== existingPlan.description) changedFields.push('description')
+    }
     
     // Handle duration - only update if it's a valid enum value
     if (duration !== undefined) {
       const validDurations = ['SIX_MONTHS', 'TWELVE_MONTHS', 'LIFETIME']
       if (validDurations.includes(duration)) {
         updateData.duration = duration
+        if (duration !== existingPlan.duration) changedFields.push('duration')
       }
-      // Ignore numeric duration values (from legacy UI) - they're not compatible with enum
     }
     
-    if (price !== undefined) updateData.price = price
-    if (originalPrice !== undefined) updateData.originalPrice = originalPrice
-    if (discount !== undefined) updateData.discount = discount
-    if (affiliateCommissionRate !== undefined) updateData.affiliateCommissionRate = affiliateCommissionRate
-    if (isBestSeller !== undefined) updateData.isBestSeller = isBestSeller
-    if (isPopular !== undefined) updateData.isPopular = isPopular
-    if (isActive !== undefined) updateData.isActive = isActive
-    if (status !== undefined) updateData.status = status
-    if (salesPageUrl !== undefined) updateData.salesPageUrl = salesPageUrl?.trim() || null
-    if (features !== undefined) updateData.features = features
-    if (formLogo !== undefined) updateData.formLogo = formLogo || null
-    if (formBanner !== undefined) updateData.formBanner = formBanner || null
-    if (showInGeneralCheckout !== undefined) updateData.showInGeneralCheckout = showInGeneralCheckout
+    if (price !== undefined) {
+      updateData.price = Math.max(0, price)
+      if (price !== existingPlan.price) changedFields.push('price')
+    }
+
+    if (marketingPrice !== undefined) {
+      // Allow null/undefined for optional marketing price
+      updateData.marketingPrice = marketingPrice !== null && marketingPrice !== undefined 
+        ? Math.max(0, marketingPrice) 
+        : null
+      if (marketingPrice !== existingPlan.marketingPrice) changedFields.push('marketingPrice')
+    }
+    if (originalPrice !== undefined) {
+      updateData.originalPrice = originalPrice
+      if (originalPrice !== existingPlan.originalPrice) changedFields.push('originalPrice')
+    }
+    if (discount !== undefined) {
+      updateData.discount = discount
+      if (discount !== existingPlan.discount) changedFields.push('discount')
+    }
+    if (commissionType !== undefined) {
+      // Validate commission type
+      const validCommissionTypes = ['PERCENTAGE', 'FLAT']
+      if (validCommissionTypes.includes(commissionType)) {
+        updateData.commissionType = commissionType
+        if (commissionType !== existingPlan.commissionType) changedFields.push('commissionType')
+      }
+    }
+    if (affiliateCommissionRate !== undefined) {
+      updateData.affiliateCommissionRate = affiliateCommissionRate
+      if (affiliateCommissionRate !== existingPlan.affiliateCommissionRate) changedFields.push('affiliateCommissionRate')
+    }
+    if (isBestSeller !== undefined) {
+      updateData.isBestSeller = isBestSeller
+      if (isBestSeller !== existingPlan.isBestSeller) changedFields.push('isBestSeller')
+    }
+    if (isPopular !== undefined) {
+      updateData.isPopular = isPopular
+      if (isPopular !== existingPlan.isPopular) changedFields.push('isPopular')
+    }
+    if (isActive !== undefined) {
+      updateData.isActive = isActive
+      if (isActive !== existingPlan.isActive) changedFields.push('isActive')
+    }
+    if (status !== undefined) {
+      updateData.status = status
+      // Auto-set isActive based on status
+      updateData.isActive = status === 'PUBLISHED'
+      if (status !== existingPlan.status) changedFields.push('status')
+    }
+    if (salesPageUrl !== undefined) {
+      updateData.salesPageUrl = salesPageUrl?.trim() || null
+      if (salesPageUrl !== existingPlan.salesPageUrl) changedFields.push('salesPageUrl')
+    }
+    if (features !== undefined) {
+      updateData.features = features
+      changedFields.push('features')
+    }
+    if (formLogo !== undefined) {
+      updateData.formLogo = formLogo || null
+      if (formLogo !== existingPlan.formLogo) changedFields.push('formLogo')
+    }
+    if (formBanner !== undefined) {
+      updateData.formBanner = formBanner || null
+      if (formBanner !== existingPlan.formBanner) changedFields.push('formBanner')
+    }
+    if (showInGeneralCheckout !== undefined) {
+      updateData.showInGeneralCheckout = showInGeneralCheckout
+      if (showInGeneralCheckout !== existingPlan.showInGeneralCheckout) changedFields.push('showInGeneralCheckout')
+    }
 
     // Update membership plan
     const updatedPlan = await prisma.membership.update({
@@ -241,14 +323,17 @@ export async function PATCH(
       include: {
         _count: {
           select: {
-            userMemberships: true,
-            membershipGroups: true,
-            membershipCourses: true,
-            membershipProducts: true
+            userMemberships: true
           }
         }
       }
     })
+
+    // Track relationship updates
+    let groupsUpdated = false
+    let coursesUpdated = false
+    let productsUpdated = false
+    let featuresUpdated = false
 
     // Update membership feature access if provided (supports both formats)
     const featuresToUpdate = featureAccess || membershipFeatures
@@ -284,6 +369,8 @@ export async function PATCH(
           data: featureData
         })
       }
+      featuresUpdated = true
+      changedFields.push('featureAccess')
     }
 
     // Update groups if provided
@@ -299,9 +386,12 @@ export async function PATCH(
           data: groups.map((groupId: string) => ({
             membershipId: id,
             groupId: groupId
-          }))
+          })),
+          skipDuplicates: true
         })
       }
+      groupsUpdated = true
+      changedFields.push('groups')
     }
 
     // Update courses if provided
@@ -317,9 +407,12 @@ export async function PATCH(
           data: courses.map((courseId: string) => ({
             membershipId: id,
             courseId: courseId
-          }))
+          })),
+          skipDuplicates: true
         })
       }
+      coursesUpdated = true
+      changedFields.push('courses')
     }
 
     // Update products if provided
@@ -335,9 +428,39 @@ export async function PATCH(
           data: products.map((productId: string) => ({
             membershipId: id,
             productId: productId
-          }))
+          })),
+          skipDuplicates: true
         })
       }
+      productsUpdated = true
+      changedFields.push('products')
+    }
+
+    // Fetch junction table data to enrich response
+    const [fetchedGroups, fetchedCourses, fetchedProducts, fetchedFeatures] = await Promise.all([
+      prisma.membershipGroup.findMany({
+        where: { membershipId: id },
+        select: { groupId: true }
+      }),
+      prisma.membershipCourse.findMany({
+        where: { membershipId: id },
+        select: { courseId: true }
+      }),
+      prisma.membershipProduct.findMany({
+        where: { membershipId: id },
+        select: { productId: true }
+      }),
+      prisma.membershipFeatureAccess.findMany({
+        where: { membershipId: id }
+      })
+    ])
+
+    const enrichedPlan = {
+      ...updatedPlan,
+      membershipGroups: fetchedGroups,
+      membershipCourses: fetchedCourses,
+      membershipProducts: fetchedProducts,
+      membershipFeatures: fetchedFeatures
     }
 
     // Log activity (optional, don't fail if error)
@@ -350,7 +473,13 @@ export async function PATCH(
           entityId: updatedPlan.id,
           metadata: {
             planName: updatedPlan.name,
-            updatedFields: Object.keys(updateData)
+            updatedFields: changedFields,
+            relationshipsUpdated: {
+              groups: groupsUpdated,
+              courses: coursesUpdated,
+              products: productsUpdated,
+              features: featuresUpdated
+            }
           }
         }
       })
@@ -359,14 +488,28 @@ export async function PATCH(
     }
 
     return NextResponse.json({
+      success: true,
       message: 'Membership berhasil diperbarui',
-      plan: updatedPlan
+      plan: enrichedPlan,
+      summary: {
+        changedFields: changedFields.length,
+        fieldNames: changedFields,
+        relationshipsUpdated: {
+          groups: groupsUpdated ? (groups?.length || 0) : undefined,
+          courses: coursesUpdated ? (courses?.length || 0) : undefined,
+          products: productsUpdated ? (products?.length || 0) : undefined,
+          features: featuresUpdated ? (featuresToUpdate?.length || 0) : undefined
+        }
+      }
     })
 
   } catch (error) {
     console.error('Error updating membership plan:', error)
     return NextResponse.json(
-      { error: 'Terjadi kesalahan saat memperbarui membership' },
+      { 
+        error: 'Terjadi kesalahan saat memperbarui membership',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

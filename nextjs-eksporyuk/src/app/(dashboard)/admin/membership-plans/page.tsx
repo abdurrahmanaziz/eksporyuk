@@ -160,7 +160,11 @@ export default function MembershipPlansPage() {
         data.plans?.forEach((p: any) => {
           console.log(`${p.name}: status=${p.status}`)
         })
-        setPlans(data.plans || [])
+        // Filter out Member Free - this is a default role, not a sellable membership
+        const filteredPlans = (data.plans || []).filter((p: any) => 
+          p.slug !== 'member-free'
+        )
+        setPlans(filteredPlans)
       } else {
         toast.error('Gagal memuat paket membership')
       }
@@ -561,6 +565,7 @@ export default function MembershipPlansPage() {
                 <TableHead>Transaksi</TableHead>
                 <TableHead>Fitur</TableHead>
                 <TableHead>Marketing</TableHead>
+                <TableHead>Link Checkout</TableHead>
                 <TableHead>Pengguna</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Aksi</TableHead>
@@ -701,6 +706,57 @@ export default function MembershipPlansPage() {
                         >
                           <Link className="h-3 w-3" />
                           Salespage
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {plan.slug === 'pro' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs gap-2 w-full"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const checkoutUrl = `${window.location.origin}/checkout/pro`
+                            navigator.clipboard.writeText(checkoutUrl)
+                            toast.success('Link checkout umum berhasil disalin!')
+                          }}
+                        >
+                          <Link className="h-3 w-3" />
+                          /checkout/pro
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs gap-2 w-full"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const checkoutUrl = `${window.location.origin}/checkout/${plan.slug || plan.id}`
+                            navigator.clipboard.writeText(checkoutUrl)
+                            toast.success('Link checkout berhasil disalin!')
+                          }}
+                        >
+                          <Link className="h-3 w-3" />
+                          /checkout/{plan.slug || plan.id}
+                        </Button>
+                      )}
+                      {plan.slug !== 'pro' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs gap-2 w-full text-muted-foreground hover:text-primary"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const checkoutProUrl = `${window.location.origin}/checkout/pro?plan=${plan.id}`
+                            navigator.clipboard.writeText(checkoutProUrl)
+                            toast.success('Link checkout/pro berhasil disalin!')
+                          }}
+                        >
+                          <Link className="h-3 w-3" />
+                          Di /checkout/pro
                         </Button>
                       )}
                     </div>

@@ -18,12 +18,13 @@ export interface CommissionCalculation {
   totalAmount: number
   affiliateCommission: number
   affiliatePercentage: number
+  commissionType: 'PERCENTAGE' | 'FLAT'
   remainingAfterAffiliate: number
   adminFee: number
   founderShare: number
   cofounderShare: number
   breakdown: {
-    affiliate: { amount: number; percentage: number }
+    affiliate: { amount: number; percentage: number; type: 'PERCENTAGE' | 'FLAT' }
     admin: { amount: number; percentage: number }
     founder: { amount: number; percentage: number }
     cofounder: { amount: number; percentage: number }
@@ -32,12 +33,27 @@ export interface CommissionCalculation {
 
 /**
  * Calculate commission berdasarkan affiliateCommissionRate
+ * Supports both PERCENTAGE and FLAT commission types
  */
 export function calculateCommission(
   totalAmount: number,
-  affiliateCommissionRate: number
+  affiliateCommissionRate: number,
+  commissionType: 'PERCENTAGE' | 'FLAT' = 'PERCENTAGE'
 ): CommissionCalculation {
-  const affiliateCommission = (totalAmount * affiliateCommissionRate) / 100
+  // Calculate affiliate commission based on type
+  let affiliateCommission: number
+  let affiliatePercentage: number
+  
+  if (commissionType === 'FLAT') {
+    // FLAT: Fixed amount
+    affiliateCommission = Math.min(affiliateCommissionRate, totalAmount) // Cap at total amount
+    affiliatePercentage = (affiliateCommission / totalAmount) * 100 // Calculate equivalent percentage for display
+  } else {
+    // PERCENTAGE: Percentage of total
+    affiliateCommission = (totalAmount * affiliateCommissionRate) / 100
+    affiliatePercentage = affiliateCommissionRate
+  }
+  
   const remainingAfterAffiliate = totalAmount - affiliateCommission
   const adminFee = (remainingAfterAffiliate * REVENUE_CONFIG.ADMIN_PERCENTAGE) / 100
   const remainingForFounders = remainingAfterAffiliate - adminFee
@@ -47,17 +63,18 @@ export function calculateCommission(
   return {
     totalAmount,
     affiliateCommission,
-    affiliatePercentage: affiliateCommissionRate,
+    affiliatePercentage,
+    commissionType,
     remainingAfterAffiliate,
     adminFee,
     founderShare,
     cofounderShare,
     breakdown: {
-      affiliate: { amount: affiliateCommission, percentage: affiliateCommissionRate },
+      affiliate: { amount: affiliateCommission, percentage: affiliatePercentage, type: commissionType },
       admin: { amount: adminFee, percentage: REVENUE_CONFIG.ADMIN_PERCENTAGE },
       founder: { amount: founderShare, percentage: REVENUE_CONFIG.FOUNDER_PERCENTAGE },
       cofounder: { amount: cofounderShare, percentage: REVENUE_CONFIG.COFOUNDER_PERCENTAGE },
-    },
+    }
   }
 }
 
@@ -73,9 +90,10 @@ export async function processTransactionCommission(
   founderUserId: string,
   cofounderUserId: string,
   totalAmount: number,
-  affiliateCommissionRate: number
+  affiliateCommissionRate: number,
+  commissionType: 'PERCENTAGE' | 'FLAT' = 'PERCENTAGE'
 ) {
-  const commission = calculateCommission(totalAmount, affiliateCommissionRate)
+  const commission = calculateCommission(totalAmount, affiliateCommissionRate, commissionType)
   
   try {
     // 1. Affiliate Commission (langsung ke balance)
@@ -94,12 +112,16 @@ export async function processTransactionCommission(
         },
       })
       
+      const commissionDesc = commissionType === 'FLAT' 
+        ? `Affiliate commission (Rp ${affiliateCommissionRate.toLocaleString('id-ID')} flat)`
+        : `Affiliate commission (${affiliateCommissionRate}%)`
+      
       await prisma.walletTransaction.create({
         data: {
           walletId: affiliateWallet.id,
           amount: commission.affiliateCommission,
           type: 'COMMISSION',
-          description: `Affiliate commission (${affiliateCommissionRate}%)`,
+          description: commissionDesc,
           reference: transactionId,
         },
       })

@@ -1,0 +1,372 @@
+{
+  "53": {
+    "name": "Abdurrahman Aziz",
+    "totalKomisi": 23835000,
+    "totalSales": 1964,
+    "sampleOrders": [
+      {
+        "orderId": 18437,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 18145,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 18147,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 17822,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 17700,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      }
+    ]
+  },
+  "141": {
+    "name": "Asep Abdurrahman Wahid",
+    "totalKomisi": 103285000,
+    "totalSales": 1516,
+    "sampleOrders": [
+      {
+        "orderId": 19014,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19005,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19001,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19000,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19019,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      }
+    ]
+  },
+  "170": {
+    "name": "Hamid Baidowi",
+    "totalKomisi": 87450000,
+    "totalSales": 794,
+    "sampleOrders": [
+      {
+        "orderId": 18938,
+        "productId": 21476,
+        "grandTotal": 50000,
+        "commission": 50000
+      },
+      {
+        "orderId": 18931,
+        "productId": 21476,
+        "grandTotal": 50000,
+        "commission": 50000
+      },
+      {
+        "orderId": 18887,
+        "productId": 21476,
+        "grandTotal": 35000,
+        "commission": 50000
+      },
+      {
+        "orderId": 18886,
+        "productId": 21476,
+        "grandTotal": 35000,
+        "commission": 50000
+      },
+      {
+        "orderId": 18858,
+        "productId": 21476,
+        "grandTotal": 35000,
+        "commission": 50000
+      }
+    ]
+  },
+  "198": {
+    "name": "NgobrolinEkspor",
+    "totalKomisi": 76000000,
+    "totalSales": 483,
+    "sampleOrders": [
+      {
+        "orderId": 19151,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19208,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19142,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19171,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19158,
+        "productId": 13399,
+        "grandTotal": 899000,
+        "commission": 250000
+      }
+    ]
+  },
+  "325": {
+    "name": "Muhamad safrizal",
+    "totalKomisi": 36320000,
+    "totalSales": 365,
+    "sampleOrders": [
+      {
+        "orderId": 19118,
+        "productId": 8910,
+        "grandTotal": 0,
+        "commission": 0
+      },
+      {
+        "orderId": 19115,
+        "productId": 8910,
+        "grandTotal": 0,
+        "commission": 0
+      },
+      {
+        "orderId": 18358,
+        "productId": 8910,
+        "grandTotal": 0,
+        "commission": 0
+      },
+      {
+        "orderId": 16284,
+        "productId": 18528,
+        "grandTotal": 35000,
+        "commission": 20000
+      },
+      {
+        "orderId": 13607,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      }
+    ]
+  },
+  "332": {
+    "name": "eko wibowo",
+    "totalKomisi": 39990000,
+    "totalSales": 504,
+    "sampleOrders": [
+      {
+        "orderId": 18975,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 18947,
+        "productId": 21476,
+        "grandTotal": 100000,
+        "commission": 50000
+      },
+      {
+        "orderId": 18946,
+        "productId": 21476,
+        "grandTotal": 100000,
+        "commission": 50000
+      },
+      {
+        "orderId": 18935,
+        "productId": 21476,
+        "grandTotal": 50000,
+        "commission": 50000
+      },
+      {
+        "orderId": 18916,
+        "productId": 21476,
+        "grandTotal": 50000,
+        "commission": 50000
+      }
+    ]
+  },
+  "1011": {
+    "name": "Yoga Andrian",
+    "totalKomisi": 86505000,
+    "totalSales": 375,
+    "sampleOrders": [
+      {
+        "orderId": 19285,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19274,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19271,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19048,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 18983,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      }
+    ]
+  },
+  "1637": {
+    "name": "Rahmat Al Fianto",
+    "totalKomisi": 109435000,
+    "totalSales": 1768,
+    "sampleOrders": [
+      {
+        "orderId": 19133,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19057,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19055,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19054,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19051,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      }
+    ]
+  },
+  "3615": {
+    "name": "PintarEkspor",
+    "totalKomisi": 35295000,
+    "totalSales": 474,
+    "sampleOrders": [
+      {
+        "orderId": 19257,
+        "productId": 13400,
+        "grandTotal": 699000,
+        "commission": 200000
+      },
+      {
+        "orderId": 19252,
+        "productId": 13399,
+        "grandTotal": 899000,
+        "commission": 250000
+      },
+      {
+        "orderId": 19250,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 18897,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 18895,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      }
+    ]
+  },
+  "5961": {
+    "name": "Fadlul Rahmat",
+    "totalKomisi": 24915000,
+    "totalSales": 197,
+    "sampleOrders": [
+      {
+        "orderId": 19264,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19247,
+        "productId": 13400,
+        "grandTotal": 699000,
+        "commission": 200000
+      },
+      {
+        "orderId": 19200,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19240,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      },
+      {
+        "orderId": 19196,
+        "productId": 13401,
+        "grandTotal": 999000,
+        "commission": 325000
+      }
+    ]
+  }
+}

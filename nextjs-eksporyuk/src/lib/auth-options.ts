@@ -40,6 +40,13 @@ const providers: any[] = [
             isSuspended: true,
             suspendReason: true,
             isActive: true,
+            affiliateMenuEnabled: true,
+            affiliateProfile: {
+              select: {
+                id: true,
+                isActive: true,
+              }
+            }
           }
         })
 
@@ -95,6 +102,8 @@ const providers: any[] = [
           username: user.username,
           whatsapp: user.whatsapp,
           emailVerified: user.emailVerified,
+          affiliateMenuEnabled: user.affiliateMenuEnabled,
+          hasAffiliateProfile: !!user.affiliateProfile && user.affiliateProfile.isActive,
         }
       } catch (error: any) {
         console.error('[AUTH] Authorization error:', error.message)
@@ -366,6 +375,8 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username || user.email?.split('@')[0]
         token.whatsapp = user.whatsapp
         token.emailVerified = user.emailVerified ? true : false
+        token.affiliateMenuEnabled = (user as any).affiliateMenuEnabled || false
+        token.hasAffiliateProfile = (user as any).hasAffiliateProfile || false
       }
       
       // For Google OAuth, always fetch fresh user data from database
@@ -384,6 +395,14 @@ export const authOptions: NextAuthOptions = {
               whatsapp: true,
               emailVerified: true,
               memberCode: true,
+              isAuthorizedSupplierReviewer: true,
+              affiliateMenuEnabled: true,
+              affiliateProfile: {
+                select: {
+                  id: true,
+                  isActive: true,
+                }
+              }
             }
           })
           
@@ -392,7 +411,9 @@ export const authOptions: NextAuthOptions = {
               id: dbUser.id,
               email: dbUser.email,
               role: dbUser.role,
-              memberCode: dbUser.memberCode
+              memberCode: dbUser.memberCode,
+              affiliateMenuEnabled: dbUser.affiliateMenuEnabled,
+              hasAffiliateProfile: !!dbUser.affiliateProfile
             })
             
             token.id = dbUser.id
@@ -402,6 +423,9 @@ export const authOptions: NextAuthOptions = {
             token.emailVerified = dbUser.emailVerified
             token.memberCode = dbUser.memberCode
             token.isGoogleAuth = true
+            token.isAuthorizedSupplierReviewer = dbUser.isAuthorizedSupplierReviewer
+            token.affiliateMenuEnabled = dbUser.affiliateMenuEnabled
+            token.hasAffiliateProfile = !!dbUser.affiliateProfile && dbUser.affiliateProfile.isActive
           } else {
             console.error(`[AUTH ${timestamp}] JWT - User not found in database for email:`, token.email)
           }
@@ -442,12 +466,17 @@ export const authOptions: NextAuthOptions = {
         session.user.whatsapp = token.whatsapp as string
         session.user.isGoogleAuth = token.isGoogleAuth as boolean
         session.user.emailVerified = token.emailVerified as boolean || false
+        session.user.isAuthorizedSupplierReviewer = token.isAuthorizedSupplierReviewer as boolean || false
+        session.user.affiliateMenuEnabled = token.affiliateMenuEnabled as boolean || false
+        session.user.hasAffiliateProfile = token.hasAffiliateProfile as boolean || false
         
         console.log(`[AUTH ${timestamp}] SESSION - Set session user:`, {
           id: session.user.id,
           email: session.user.email,
           role: session.user.role,
-          username: session.user.username
+          username: session.user.username,
+          affiliateMenuEnabled: session.user.affiliateMenuEnabled,
+          hasAffiliateProfile: session.user.hasAffiliateProfile
         })
       }
       

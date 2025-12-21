@@ -83,6 +83,10 @@ export default function CreateMembershipPlanPage() {
     metaDescription: "",
     metaKeywords: "",
     
+    // Commission Settings
+    commissionType: "PERCENTAGE" as "PERCENTAGE" | "FLAT",
+    affiliateCommissionRate: 30,
+    
     // Settings
     maxMembers: 0,
     autoRenewal: true,
@@ -458,6 +462,96 @@ export default function CreateMembershipPlanPage() {
                       setFormData({ ...formData, autoRenewal: checked })
                     }
                   />
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label>Tampil di Checkout Umum</Label>
+                    <p className="text-sm text-gray-600">
+                      Tampilkan membership ini di halaman /checkout/pro
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.showInGeneralCheckout}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, showInGeneralCheckout: checked })
+                    }
+                  />
+                </div>
+
+                {/* Commission Settings Section */}
+                <div className="pt-4 mt-4 border-t">
+                  <h3 className="text-md font-semibold mb-4">Pengaturan Komisi Affiliate</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="commissionType">Tipe Komisi</Label>
+                      <Select
+                        value={formData.commissionType}
+                        onValueChange={(value: "PERCENTAGE" | "FLAT") =>
+                          setFormData({ ...formData, commissionType: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
+                          <SelectItem value="FLAT">Nominal Tetap (Rp)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-gray-600">
+                        {formData.commissionType === 'PERCENTAGE' 
+                          ? 'Komisi dihitung berdasarkan persentase dari harga' 
+                          : 'Komisi dengan nominal tetap per transaksi'}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="affiliateCommissionRate">
+                        {formData.commissionType === "PERCENTAGE"
+                          ? "Persentase Komisi (%)"
+                          : "Nominal Komisi (Rp)"}
+                      </Label>
+                      <Input
+                        id="affiliateCommissionRate"
+                        type="number"
+                        min="0"
+                        step={formData.commissionType === "PERCENTAGE" ? "1" : "1000"}
+                        value={formData.affiliateCommissionRate}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            affiliateCommissionRate: Number(e.target.value) || 0,
+                          })
+                        }
+                        placeholder={formData.commissionType === "PERCENTAGE" ? "30" : "100000"}
+                      />
+                      {formData.commissionType === "PERCENTAGE" && formData.price > 0 && (
+                        <p className="text-sm text-gray-600">
+                          Affiliate mendapat {formData.affiliateCommissionRate}% = Rp {((formData.price * formData.affiliateCommissionRate) / 100).toLocaleString('id-ID')}
+                        </p>
+                      )}
+                      {formData.commissionType === "FLAT" && (
+                        <p className="text-sm text-gray-600">
+                          Affiliate mendapat Rp {formData.affiliateCommissionRate.toLocaleString('id-ID')} per transaksi
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-start gap-2">
+                        <Info className="h-4 w-4 mt-0.5 text-blue-600" />
+                        <div className="text-sm text-blue-900">
+                          <p className="font-medium mb-1">Informasi Komisi:</p>
+                          <ul className="list-disc list-inside space-y-0.5 text-xs">
+                            <li>Komisi affiliate langsung masuk ke balance</li>
+                            <li>Sisanya dibagi: Admin (15%), Founder (60%), Co-Founder (40%)</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -39,27 +39,9 @@ export async function GET(request: NextRequest) {
         affiliateOnly: true,
         isAffiliateTraining: true,
         isAffiliateMaterial: true,
-        mentor: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-                avatar: true
-              }
-            }
-          }
-        },
-        modules: {
-          select: {
-            id: true,
-            title: true
-          }
-        },
         _count: {
           select: {
-            enrollments: true,
-            modules: true
+            transactions: true
           }
         }
       },

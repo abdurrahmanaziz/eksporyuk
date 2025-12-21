@@ -61,34 +61,14 @@ export async function activateMembership(
       }
     })
 
-    // 3. Get membership details with groups, courses, and features
+    // 3. Get membership details (membership data only, relationships fetched separately)
     const membership = await prisma.membership.findUnique({
       where: { id: membershipId },
-      include: {
-        membershipFeatures: true,
-        membershipGroups: {
-          include: {
-            group: true
-          }
-        },
-        membershipCourses: {
-          include: {
-            course: true
-          }
-        },
-        membershipProducts: {
-          include: {
-            product: {
-              include: {
-                courses: {
-                  include: {
-                    course: true
-                  }
-                }
-              }
-            }
-          }
-        }
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        features: true
       }
     })
 
@@ -96,8 +76,12 @@ export async function activateMembership(
       throw new Error('Membership not found')
     }
 
-    // 4. Auto-join groups
-    const groupIds = membership.membershipGroups.map(mg => mg.groupId)
+    // 4. Get membership groups from junction table
+    const membershipGroups = await prisma.membershipGroup.findMany({
+      where: { membershipId },
+      select: { groupId: true }
+    })
+    const groupIds = membershipGroups.map(mg => mg.groupId)
     
     for (const groupId of groupIds) {
       // Check if already member
@@ -122,18 +106,30 @@ export async function activateMembership(
     }
 
     // 5. Auto-activate courses (from membership directly)
-    const courseIds = membership.membershipCourses.map(mc => mc.courseId)
+    const membershipCourses = await prisma.membershipCourse.findMany({
+      where: { membershipId },
+      select: { courseId: true }
+    })
+    const courseIds = membershipCourses.map(mc => mc.courseId)
     
     for (const courseId of courseIds) {
       await activateCourseAccess(userId, courseId, endDate)
     }
 
     // 6. Auto-activate courses from products
-    for (const mp of membership.membershipProducts) {
-      const productCourseIds = mp.product.courses.map(pc => pc.courseId)
+    const membershipProducts = await prisma.membershipProduct.findMany({
+      where: { membershipId },
+      select: { productId: true }
+    })
+
+    for (const mp of membershipProducts) {
+      const productCourses = await prisma.productCourse.findMany({
+        where: { productId: mp.productId },
+        select: { courseId: true }
+      })
       
-      for (const courseId of productCourseIds) {
-        await activateCourseAccess(userId, courseId, endDate)
+      for (const pc of productCourses) {
+        await activateCourseAccess(userId, pc.courseId, endDate)
       }
     }
 

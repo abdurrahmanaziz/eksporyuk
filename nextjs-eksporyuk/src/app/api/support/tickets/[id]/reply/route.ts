@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { ticketNotificationService } from '@/lib/services/ticket-notification-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -101,8 +102,66 @@ export async function POST(request: NextRequest, { params }: Props) {
       })
     }
 
-    // TODO: Send notification to ticket owner if admin replied
-    // TODO: Send notification to admin if user replied
+    // Get full ticket info for notification
+    const fullTicket = await prisma.supportTicket.findUnique({
+      where: { id: params.id },
+      select: {
+        id: true,
+        ticketNumber: true,
+        title: true,
+        category: true
+      }
+    })
+
+    // Send notification based on who replied
+    const isAdminReply = session.user.role === 'ADMIN'
+    
+    if (isAdminReply) {
+      // Admin replied - notify the ticket owner
+      ticketNotificationService.notifyTicketReply(
+        {
+          ticketId: params.id,
+          ticketNumber: fullTicket?.ticketNumber || '',
+          title: fullTicket?.title || '',
+          category: fullTicket?.category || '',
+          message: validated.message,
+          senderName: session.user.name || 'Tim Support',
+          senderRole: 'ADMIN'
+        },
+        {
+          id: ticket.user.id,
+          email: ticket.user.email,
+          name: ticket.user.name || 'User'
+        },
+        true
+      ).catch(err => console.error('[TICKET_REPLY] Notification error:', err))
+    } else {
+      // User replied - notify admins
+      const admins = await prisma.user.findMany({
+        where: { role: 'ADMIN' },
+        select: { id: true, email: true, name: true }
+      })
+      
+      for (const admin of admins) {
+        ticketNotificationService.notifyTicketReply(
+          {
+            ticketId: params.id,
+            ticketNumber: fullTicket?.ticketNumber || '',
+            title: fullTicket?.title || '',
+            category: fullTicket?.category || '',
+            message: validated.message,
+            senderName: session.user.name || 'User',
+            senderRole: session.user.role
+          },
+          {
+            id: admin.id,
+            email: admin.email!,
+            name: admin.name || 'Admin'
+          },
+          false
+        ).catch(err => console.error('[TICKET_REPLY] Notification error:', err))
+      }
+    }
 
     return NextResponse.json({
       success: true,

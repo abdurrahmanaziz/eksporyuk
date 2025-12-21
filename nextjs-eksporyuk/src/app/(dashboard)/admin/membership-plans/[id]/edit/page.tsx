@@ -103,6 +103,19 @@ export default function EditMembershipPlanPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedFeatureAccess, setSelectedFeatureAccess] = useState<string[]>([]);
+  
+  // Statistics state
+  const [statistics, setStatistics] = useState({
+    totalMembers: 0,
+    activeMembers: 0,
+    totalRevenue: 0,
+    thisMonthRevenue: 0,
+    averageOrderValue: 0,
+    conversionRate: 0,
+    churnRate: 0,
+    growthRate: 0
+  });
+  const [loadingStats, setLoadingStats] = useState(false);
 
     // Form state
   const [formData, setFormData] = useState({
@@ -110,6 +123,7 @@ export default function EditMembershipPlanPage() {
     slug: "",
     description: "",
     price: 0,
+    marketingPrice: undefined as number | undefined, // Optional marketing price
     duration: "SIX_MONTHS" as "SIX_MONTHS" | "TWELVE_MONTHS" | "LIFETIME",
     status: "DRAFT",
     features: [] as string[],
@@ -130,6 +144,10 @@ export default function EditMembershipPlanPage() {
     metaDescription: "",
     metaKeywords: "",
     
+    // Commission Settings
+    commissionType: "PERCENTAGE" as "PERCENTAGE" | "FLAT",
+    affiliateCommissionRate: 30,
+    
     // Settings
     maxMembers: 0,
     autoRenewal: true,
@@ -146,7 +164,23 @@ export default function EditMembershipPlanPage() {
 
   useEffect(() => {
     fetchData();
+    fetchStatistics();
   }, [membershipId]);
+
+  const fetchStatistics = async () => {
+    try {
+      setLoadingStats(true);
+      const statsRes = await fetch(`/api/admin/membership-plans/${membershipId}/statistics`);
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStatistics(statsData.statistics || statistics);
+      }
+    } catch (error) {
+      console.error('Error fetching statistics:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -198,6 +232,7 @@ export default function EditMembershipPlanPage() {
         slug: membership.slug || "",
         description: membership.description || "",
         price: membership.price || 0,
+        marketingPrice: membership.marketingPrice ? Number(membership.marketingPrice) : undefined,
         duration: membership.duration || "SIX_MONTHS",
         status: membership.status || "DRAFT",
         features: [], // Empty - features are display only (badges)
@@ -213,6 +248,8 @@ export default function EditMembershipPlanPage() {
         metaTitle: membership.metaTitle || "",
         metaDescription: membership.metaDescription || "",
         metaKeywords: membership.metaKeywords || "",
+        commissionType: membership.commissionType || "PERCENTAGE",
+        affiliateCommissionRate: Number(membership.affiliateCommissionRate) || 30,
         maxMembers: membership.maxMembers || 0,
         autoRenewal: membership.autoRenewal ?? true,
         trialDays: membership.trialDays || 0,
@@ -245,8 +282,26 @@ export default function EditMembershipPlanPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.slug) {
-      toast.error("Nama dan slug wajib diisi!");
+    // Enhanced validation
+    if (!formData.name?.trim()) {
+      toast.error('Nama paket wajib diisi!');
+      return;
+    }
+
+    if (!formData.slug?.trim()) {
+      toast.error('Slug wajib diisi!');
+      return;
+    }
+
+    if (formData.price < 0) {
+      toast.error('Harga tidak boleh negatif!');
+      return;
+    }
+
+    // Validate duration is a valid enum
+    const validDurations = ['SIX_MONTHS', 'TWELVE_MONTHS', 'LIFETIME'];
+    if (!validDurations.includes(formData.duration)) {
+      toast.error('Durasi membership tidak valid!');
       return;
     }
 
@@ -255,29 +310,43 @@ export default function EditMembershipPlanPage() {
 
       // Upload logo jika ada
       if (logoFile) {
-        const logoFormData = new FormData();
-        logoFormData.append('file', logoFile);
-        const logoRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: logoFormData,
-        });
-        if (logoRes.ok) {
-          const logoData = await logoRes.json();
-          formData.formLogo = logoData.url;
+        try {
+          const logoFormData = new FormData();
+          logoFormData.append('file', logoFile);
+          const logoRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: logoFormData,
+          });
+          if (logoRes.ok) {
+            const logoData = await logoRes.json();
+            formData.formLogo = logoData.url;
+          } else {
+            throw new Error('Gagal upload logo');
+          }
+        } catch (uploadError) {
+          console.error('Logo upload error:', uploadError);
+          toast.error('Gagal upload logo, melanjutkan tanpa logo baru');
         }
       }
 
       // Upload banner jika ada
       if (bannerFile) {
-        const bannerFormData = new FormData();
-        bannerFormData.append('file', bannerFile);
-        const bannerRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: bannerFormData,
-        });
-        if (bannerRes.ok) {
-          const bannerData = await bannerRes.json();
-          formData.formBanner = bannerData.url;
+        try {
+          const bannerFormData = new FormData();
+          bannerFormData.append('file', bannerFile);
+          const bannerRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: bannerFormData,
+          });
+          if (bannerRes.ok) {
+            const bannerData = await bannerRes.json();
+            formData.formBanner = bannerData.url;
+          } else {
+            throw new Error('Gagal upload banner');
+          }
+        } catch (uploadError) {
+          console.error('Banner upload error:', uploadError);
+          toast.error('Gagal upload banner, melanjutkan tanpa banner baru');
         }
       }
 
@@ -287,27 +356,32 @@ export default function EditMembershipPlanPage() {
         ...(Array.isArray(formData.features) ? formData.features : []),
         ...(Array.isArray(formData.benefits) ? formData.benefits : [])
       ];
-      const uniqueBenefits = [...new Set(allBenefits)];
+      const uniqueBenefits = [...new Set(allBenefits)].filter(b => b && b.trim());
 
       // Only send fields that exist in the Membership schema
       const updatePayload = {
-        name: formData.name,
-        slug: formData.slug,
-        description: formData.description,
-        price: formData.price,
+        name: formData.name.trim(),
+        slug: formData.slug.trim(),
+        description: formData.description?.trim() || '',
+        price: Math.max(0, formData.price), // Ensure non-negative
+        marketingPrice: formData.marketingPrice ? Number(formData.marketingPrice) : null, // Optional marketing price
         duration: formData.duration,
         status: formData.status,
-        isActive: formData.isActive,
-        salesPageUrl: formData.salesPageUrl || '',
+        isActive: formData.status === 'PUBLISHED', // Auto-set isActive based on status
+        salesPageUrl: formData.salesPageUrl?.trim() || '',
         formLogo: formData.formLogo || '',
         formBanner: formData.formBanner || '',
         showInGeneralCheckout: formData.showInGeneralCheckout,
+        commissionType: formData.commissionType,
+        affiliateCommissionRate: Number(formData.affiliateCommissionRate) || 30,
         features: uniqueBenefits,
         featureAccess: selectedFeatureAccess,
-        groups: formData.groups,
-        courses: formData.courses,
-        products: formData.products,
+        groups: formData.groups.filter(g => g), // Remove empty values
+        courses: formData.courses.filter(c => c), // Remove empty values
+        products: formData.products.filter(p => p), // Remove empty values
       };
+
+      console.log('Update payload:', updatePayload); // Debug log
 
       const response = await fetch(`/api/admin/membership-plans/${membershipId}`, {
         method: "PATCH",
@@ -318,15 +392,49 @@ export default function EditMembershipPlanPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Gagal update membership plan");
+        throw new Error(data.error || `Server error: ${response.status}`);
       }
 
-      toast.success("Membership plan berhasil diupdate!");
-      router.push("/admin/membership-plans");
+      // Show success with summary
+      const summary = data.summary;
+      let successMessage = 'Membership plan berhasil diupdate!';
+      
+      if (summary && summary.changedFields > 0) {
+        successMessage += `\n\n✅ ${summary.changedFields} field diupdate`;
+        
+        // Add relationship summary
+        const relationships = [];
+        if (summary.relationshipsUpdated?.groups !== undefined) {
+          relationships.push(`${summary.relationshipsUpdated.groups} grup`);
+        }
+        if (summary.relationshipsUpdated?.courses !== undefined) {
+          relationships.push(`${summary.relationshipsUpdated.courses} kursus`);
+        }
+        if (summary.relationshipsUpdated?.products !== undefined) {
+          relationships.push(`${summary.relationshipsUpdated.products} produk`);
+        }
+        if (summary.relationshipsUpdated?.features !== undefined) {
+          relationships.push(`${summary.relationshipsUpdated.features} fitur akses`);
+        }
+        
+        if (relationships.length > 0) {
+          successMessage += `\n📊 Relasi: ${relationships.join(', ')}`;
+        }
+      }
+
+      toast.success(successMessage, { duration: 5000 });
+      
+      // Refresh statistics after update
+      await fetchStatistics();
+      
+      // Optional: redirect after 1.5 seconds
+      setTimeout(() => {
+        router.push('/admin/membership-plans');
+      }, 1500);
       
     } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan");
-      console.error("Update error:", error);
+      console.error('Update error:', error);
+      toast.error(error.message || 'Terjadi kesalahan saat update membership');
     } finally {
       setLoading(false);
     }
@@ -439,6 +547,102 @@ export default function EditMembershipPlanPage() {
         </p>
       </div>
 
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Total Members</CardDescription>
+            <CardTitle className="text-2xl">
+              {loadingStats ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                statistics.totalMembers.toLocaleString('id-ID')
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span>{statistics.activeMembers} aktif</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Total Revenue</CardDescription>
+            <CardTitle className="text-2xl">
+              {loadingStats ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                new Intl.NumberFormat('id-ID', { 
+                  style: 'currency', 
+                  currency: 'IDR',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(statistics.totalRevenue)
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <Wallet className="h-4 w-4" />
+              <span>
+                {new Intl.NumberFormat('id-ID', { 
+                  style: 'currency', 
+                  currency: 'IDR',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(statistics.thisMonthRevenue)} bulan ini
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Avg Order Value</CardDescription>
+            <CardTitle className="text-2xl">
+              {loadingStats ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                new Intl.NumberFormat('id-ID', { 
+                  style: 'currency', 
+                  currency: 'IDR',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(statistics.averageOrderValue)
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <BarChart3 className="h-4 w-4" />
+              <span>Per transaksi</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Growth Rate</CardDescription>
+            <CardTitle className="text-2xl">
+              {loadingStats ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                `${statistics.growthRate > 0 ? '+' : ''}${statistics.growthRate.toFixed(1)}%`
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Zap className="h-4 w-4" />
+              <span>30 hari terakhir</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <Tabs defaultValue="basic" className="space-y-6">
           <TabsList className="grid grid-cols-7 w-full">
@@ -545,6 +749,8 @@ export default function EditMembershipPlanPage() {
                   <Input
                     id="price"
                     type="number"
+                    min="0"
+                    step="1000"
                     value={formData.price}
                     onChange={(e) =>
                       setFormData({
@@ -554,6 +760,30 @@ export default function EditMembershipPlanPage() {
                     }
                     placeholder="299000"
                   />
+                  <p className="text-sm text-muted-foreground">
+                    Harga membership dalam Rupiah
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="marketingPrice">Harga Coret / Marketing Price (Rp) - Optional</Label>
+                  <Input
+                    id="marketingPrice"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={formData.marketingPrice || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        marketingPrice: e.target.value ? parseInt(e.target.value) : undefined,
+                      })
+                    }
+                    placeholder="Contoh: 10000000"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    💡 Harga coret untuk efek marketing (misal: <span className="line-through">Rp 10.000.000</span> → Rp 1.998.000). Kosongkan jika tidak perlu.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -612,6 +842,105 @@ export default function EditMembershipPlanPage() {
                       setFormData({ ...formData, autoRenewal: checked })
                     }
                   />
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label>Tampil di Checkout Umum</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Tampilkan membership ini di halaman /checkout/pro
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.showInGeneralCheckout}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, showInGeneralCheckout: checked })
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Commission Settings Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5" />
+                  Pengaturan Komisi Affiliate
+                </CardTitle>
+                <CardDescription>
+                  Atur tipe komisi dan nilai komisi untuk affiliate yang menjual membership ini
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="commissionType">Tipe Komisi Affiliate</Label>
+                  <Select
+                    value={formData.commissionType}
+                    onValueChange={(value: "PERCENTAGE" | "FLAT") =>
+                      setFormData({ ...formData, commissionType: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
+                      <SelectItem value="FLAT">Nominal Tetap (Rp)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    {formData.commissionType === 'PERCENTAGE' 
+                      ? 'Komisi dihitung berdasarkan persentase dari harga' 
+                      : 'Komisi dengan nominal tetap per transaksi'}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="affiliateCommissionRate">
+                    {formData.commissionType === "PERCENTAGE"
+                      ? "Persentase Komisi (%)"
+                      : "Nominal Komisi (Rp)"}
+                  </Label>
+                  <Input
+                    id="affiliateCommissionRate"
+                    type="number"
+                    min="0"
+                    step={formData.commissionType === "PERCENTAGE" ? "1" : "1000"}
+                    value={formData.affiliateCommissionRate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        affiliateCommissionRate: Number(e.target.value) || 0,
+                      })
+                    }
+                    placeholder={formData.commissionType === "PERCENTAGE" ? "30" : "100000"}
+                  />
+                  {formData.commissionType === "PERCENTAGE" && (
+                    <p className="text-sm text-muted-foreground">
+                      Affiliate mendapat {formData.affiliateCommissionRate}% dari harga (Rp {((formData.price * formData.affiliateCommissionRate) / 100).toLocaleString('id-ID')})
+                    </p>
+                  )}
+                  {formData.commissionType === "FLAT" && (
+                    <p className="text-sm text-muted-foreground">
+                      Affiliate mendapat Rp {formData.affiliateCommissionRate.toLocaleString('id-ID')} per transaksi
+                    </p>
+                  )}
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p className="font-medium">Cara Kerja Komisi:</p>
+                      <ul className="list-disc list-inside space-y-1 ml-2">
+                        <li>Affiliate mendapat komisi sesuai setting ini</li>
+                        <li>Sisanya dibagi: Admin (15%), Founder (60%), Co-Founder (40%)</li>
+                        <li>Komisi affiliate langsung masuk ke balance (bisa ditarik)</li>
+                        <li>Komisi admin/founder masuk ke pending revenue (perlu approval)</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

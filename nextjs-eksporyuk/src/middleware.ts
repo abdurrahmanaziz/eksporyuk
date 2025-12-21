@@ -53,6 +53,8 @@ const authMiddleware = withAuth(
           return NextResponse.redirect(new URL('/mentor/dashboard', request.url))
         case 'AFFILIATE':
           return NextResponse.redirect(new URL('/affiliate/dashboard', request.url))
+        case 'SUPPLIER':
+          return NextResponse.redirect(new URL('/supplier/dashboard', request.url))
         default:
           // MEMBER_PREMIUM & MEMBER_FREE stay on /dashboard
           return NextResponse.next()
@@ -71,7 +73,25 @@ const authMiddleware = withAuth(
     }
 
     if (pathname.startsWith('/affiliate') && role !== 'AFFILIATE') {
-      console.log('[MIDDLEWARE] Access denied: affiliate route for non-affiliate')
+      // Allow ADMIN full access
+      if (role === 'ADMIN') {
+        console.log('[MIDDLEWARE] Access granted: ADMIN has full access')
+        return NextResponse.next()
+      }
+      
+      // Allow access if user has affiliate menu enabled (multi-role support)
+      const hasAffiliateAccess = token.affiliateMenuEnabled && token.hasAffiliateProfile
+      
+      if (!hasAffiliateAccess) {
+        console.log('[MIDDLEWARE] Access denied: affiliate route for non-affiliate without menu enabled')
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      
+      console.log('[MIDDLEWARE] Access granted: user has affiliate menu enabled')
+    }
+
+    if (pathname.startsWith('/supplier') && !['SUPPLIER', 'ADMIN'].includes(role)) {
+      console.log('[MIDDLEWARE] Access denied: supplier route for non-supplier/admin')
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 

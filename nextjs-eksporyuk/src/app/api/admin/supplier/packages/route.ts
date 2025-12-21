@@ -27,7 +27,7 @@ export async function GET() {
       include: {
         _count: {
           select: {
-            subscriptions: true,
+            memberships: true,
           },
         },
       },
@@ -46,7 +46,7 @@ export async function GET() {
         return {
           ...pkg,
           activeSubscriptions,
-          totalSubscriptions: pkg._count.subscriptions,
+          totalSubscriptions: pkg._count.memberships,
         }
       })
     )

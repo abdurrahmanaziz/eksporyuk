@@ -850,7 +850,9 @@ export default function AffiliatesManagementPage() {
             </div>
           )}
         </DialogContent>
-      </Dialog>      {/* Approve Modal */}
+      </Dialog>
+
+      {/* Approve Modal */}
       <Dialog open={showApproveModal} onOpenChange={setShowApproveModal}>
         <DialogContent>
           <DialogHeader>

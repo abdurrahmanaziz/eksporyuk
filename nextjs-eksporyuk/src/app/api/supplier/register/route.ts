@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData()
     
-    // Extract form fields
+    // ===== BASIC INFO (Existing) =====
     const companyName = formData.get('companyName') as string
     const slug = formData.get('slug') as string
     const bio = formData.get('bio') as string
@@ -49,16 +49,52 @@ export async function POST(request: Request) {
     const website = formData.get('website') as string
     const packageId = formData.get('packageId') as string
 
+    // ===== NEW FIELDS FROM PRD =====
+    // Supplier Type (REQUIRED for new flow)
+    const supplierType = formData.get('supplierType') as string | null
+    
+    // Tab 1: Identitas Usaha
+    const legalEntityType = formData.get('legalEntityType') as string | null
+    const businessField = formData.get('businessField') as string | null
+    const mainProducts = formData.get('mainProducts') as string | null
+    const establishedYear = formData.get('establishedYear') as string | null
+    
+    // Tab 2: Alamat & Lokasi
+    const district = formData.get('district') as string | null
+    const postalCode = formData.get('postalCode') as string | null
+    const productionLocation = formData.get('productionLocation') as string | null
+    
+    // Tab 3: Kontak Perusahaan
+    const picPosition = formData.get('picPosition') as string | null
+    const businessEmail = formData.get('businessEmail') as string | null
+    
+    // Tab 4: Legalitas
+    const nibNumber = formData.get('nibNumber') as string | null
+    const npwpNumber = formData.get('npwpNumber') as string | null
+    const siupNumber = formData.get('siupNumber') as string | null
+    
+    // Tab 5: Bio Supplier
+    const companyAdvantages = formData.get('companyAdvantages') as string | null
+    const uniqueValue = formData.get('uniqueValue') as string | null
+
     // Files
     const logoFile = formData.get('logo') as File | null
     const bannerFile = formData.get('banner') as File | null
     const legalityFile = formData.get('legalityDoc') as File | null
     const nibFile = formData.get('nibDoc') as File | null
 
-    // Validation
+    // Validation (keep backward compatibility)
     if (!companyName || !slug || !province || !city) {
       return NextResponse.json(
         { error: 'Missing required fields: companyName, slug, province, city' },
+        { status: 400 }
+      )
+    }
+    
+    // New validation: supplierType recommended but not required for backward compatibility
+    if (supplierType && !['PRODUSEN', 'PABRIK', 'TRADER', 'AGGREGATOR'].includes(supplierType)) {
+      return NextResponse.json(
+        { error: 'Invalid supplier type. Must be: PRODUSEN, PABRIK, TRADER, or AGGREGATOR' },
         { status: 400 }
       )
     }
@@ -140,7 +176,13 @@ export async function POST(request: Request) {
 
     // Create supplier profile and membership in transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create supplier profile
+      // Update user role to SUPPLIER
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: { role: 'SUPPLIER' },
+      })
+
+      // Create supplier profile with new fields
       const profile = await tx.supplierProfile.create({
         data: {
           userId: session.user.id,
@@ -160,6 +202,47 @@ export async function POST(request: Request) {
           website,
           legalityDoc: legalityPath,
           nibDoc: nibPath,
+          
+          // ===== NEW FIELDS =====
+          // Supplier Type & Status
+          supplierType: supplierType as any,
+          status: supplierType ? 'ONBOARDING' : 'DRAFT', // If supplierType provided, mark as ONBOARDING
+          
+          // Tab 1: Identitas Usaha
+          legalEntityType,
+          businessField,
+          mainProducts,
+          establishedYear: establishedYear ? parseInt(establishedYear) : null,
+          
+          // Tab 2: Alamat & Lokasi
+          district,
+          postalCode,
+          productionLocation,
+          
+          // Tab 3: Kontak Perusahaan
+          picPosition,
+          businessEmail,
+          
+          // Tab 4: Legalitas
+          nibNumber,
+          npwpNumber,
+          siupNumber,
+          
+          // Tab 5: Bio Supplier
+          companyAdvantages,
+          uniqueValue,
+        },
+      })
+      
+      // Create audit log for registration
+      await tx.supplierAuditLog.create({
+        data: {
+          supplierId: profile.id,
+          userId: session.user.id,
+          action: 'SUPPLIER_REGISTRATION',
+          notes: `Supplier registered with type: ${supplierType || 'Not specified'}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+          userAgent: request.headers.get('user-agent') || 'unknown',
         },
       })
 

@@ -289,19 +289,13 @@ async function activatePurchase(transaction: any) {
         return
       }
 
-      // Get membership details
+      // Get membership details (only basic info and duration)
       const membership = await prisma.membership.findUnique({
         where: { id: membershipId },
-        include: {
-          membershipGroups: {
-            include: { group: { select: { id: true, name: true } } }
-          },
-          membershipCourses: {
-            include: { course: { select: { id: true, title: true } } }
-          },
-          membershipProducts: {
-            include: { product: { select: { id: true, name: true } } }
-          }
+        select: {
+          id: true,
+          duration: true,
+          name: true
         }
       })
 
@@ -380,54 +374,69 @@ async function activatePurchase(transaction: any) {
         }
       }
 
-      // Auto-join groups
-      for (const mg of membership.membershipGroups) {
+      // Auto-join groups (fetch from junction table)
+      const membershipGroups = await prisma.membershipGroup.findMany({
+        where: { membershipId },
+        select: { groupId: true }
+      })
+      
+      for (const mg of membershipGroups) {
         await prisma.groupMember.upsert({
           where: {
             groupId_userId: {
-              groupId: mg.group.id,
+              groupId: mg.groupId,
               userId: transaction.userId
             }
           },
           update: {},
           create: {
-            groupId: mg.group.id,
+            groupId: mg.groupId,
             userId: transaction.userId,
             role: 'MEMBER'
           }
         }).catch((err) => console.log('[CRON] Group member already exists or error:', err.message))
       }
 
-      // Auto-enroll courses
-      for (const mc of membership.membershipCourses) {
+      // Auto-enroll courses (fetch from junction table)
+      const membershipCourses = await prisma.membershipCourse.findMany({
+        where: { membershipId },
+        select: { courseId: true }
+      })
+      
+      for (const mc of membershipCourses) {
         await prisma.courseEnrollment.upsert({
           where: {
             courseId_userId: {
-              courseId: mc.course.id,
+              courseId: mc.courseId,
               userId: transaction.userId
             }
           },
           update: {},
           create: {
             userId: transaction.userId,
-            courseId: mc.course.id
+            courseId: mc.courseId
           }
         }).catch((err) => console.log('[CRON] Course enrollment already exists or error:', err.message))
       }
 
-      // Auto-grant products
-      for (const mp of membership.membershipProducts) {
+      // Auto-grant products (fetch from junction table)
+      const membershipProducts = await prisma.membershipProduct.findMany({
+        where: { membershipId },
+        select: { productId: true }
+      })
+      
+      for (const mp of membershipProducts) {
         await prisma.userProduct.upsert({
           where: {
             userId_productId: {
               userId: transaction.userId,
-              productId: mp.product.id
+              productId: mp.productId
             }
           },
           update: {},
           create: {
             userId: transaction.userId,
-            productId: mp.product.id,
+            productId: mp.productId,
             transactionId: transaction.id,
             purchaseDate: now,
             price: 0 // Free as part of membership
@@ -435,7 +444,7 @@ async function activatePurchase(transaction: any) {
         }).catch((err) => console.log('[CRON] User product already exists or error:', err.message))
       }
 
-      console.log(`[CRON] ✅ Auto-joined ${membership.membershipGroups.length} groups, ${membership.membershipCourses.length} courses, ${membership.membershipProducts.length} products`)
+      console.log(`[CRON] ✅ Auto-joined ${membershipGroups.length} groups, ${membershipCourses.length} courses, ${membershipProducts.length} products`)
 
       // Process revenue distribution
       try {

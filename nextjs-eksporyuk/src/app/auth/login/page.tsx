@@ -19,6 +19,9 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
+  // Check if this is supplier registration flow
+  const isSupplierFlow = searchParams.get('supplier') === 'true'
+  
   // Get safe callback URL (avoid auth pages loop)
   const rawCallbackUrl = searchParams.get('callbackUrl') || searchParams.get('redirect') || '/dashboard'
   const callbackUrl = (rawCallbackUrl.includes('/login') || 
@@ -150,6 +153,16 @@ function LoginForm() {
             <CardDescription className="text-center">
               Pilih metode login yang Anda inginkan
             </CardDescription>
+            {isSupplierFlow && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-900 text-sm font-medium mb-1">
+                  📧 Untuk Pendaftaran Supplier:
+                </p>
+                <p className="text-blue-700 text-xs">
+                  Gunakan email <span className="font-semibold">@gmail.com</span> atau login dengan Google untuk pengalaman terbaik.
+                </p>
+              </div>
+            )}
           </CardHeader>
 
           <CardContent className="space-y-4">

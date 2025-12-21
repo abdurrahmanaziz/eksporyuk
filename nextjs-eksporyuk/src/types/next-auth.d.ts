@@ -12,6 +12,9 @@ declare module 'next-auth' {
       whatsapp?: string | null
       isGoogleAuth?: boolean
       emailVerified?: boolean
+      isAuthorizedSupplierReviewer?: boolean
+      affiliateMenuEnabled?: boolean
+      hasAffiliateProfile?: boolean
     }
     createdAt?: string
     trialEndsAt?: string
@@ -27,6 +30,9 @@ declare module 'next-auth' {
     username?: string | null
     whatsapp?: string | null
     emailVerified?: boolean
+    isAuthorizedSupplierReviewer?: boolean
+    affiliateMenuEnabled?: boolean
+    hasAffiliateProfile?: boolean
   }
 }
 
@@ -38,6 +44,9 @@ declare module 'next-auth/jwt' {
     whatsapp?: string | null
     isGoogleAuth?: boolean
     emailVerified?: boolean
+    isAuthorizedSupplierReviewer?: boolean
+    affiliateMenuEnabled?: boolean
+    hasAffiliateProfile?: boolean
     createdAt?: string
     trialEndsAt?: string
     hasMembership?: boolean

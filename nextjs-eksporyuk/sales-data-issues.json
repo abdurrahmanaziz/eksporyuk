@@ -1,0 +1,182 @@
+{
+  "timestamp": "2025-12-19T12:59:52.363Z",
+  "summary": {
+    "wrongInvoiceFormat": 0,
+    "missingAffiliate": 42,
+    "missingCommission": 0
+  },
+  "issues": {
+    "wrongInvoiceFormat": [],
+    "missingAffiliate": [
+      {
+        "id": "cmjc8fpjssy6rktyux",
+        "affiliateId": 5961
+      },
+      {
+        "id": "cmjc8fpjznrtr4blv59f",
+        "affiliateId": 1740
+      },
+      {
+        "id": "cmjc8fpjzpjnxnynzvuh",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzzluloxyklgb",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzzfrw86rknn",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzrm8fy4gp3n",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzve1dsfskvg",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjztkobmgcq8lk",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjza16rd27iz58",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzwthu9vx2lb",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzq0a0023cadc",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzkllj61v167",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzibcwqgiuu5",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzsha31vdz13f",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjz0d0dh4dzilvj",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjz82dctyd10er",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzlx7i4t1lac",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpjzfgs40vk9wbo",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpk0iqhgn6tw7ng",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpk0tfp5t8tg83",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpk0mxtg726z6tn",
+        "affiliateId": 1011
+      },
+      {
+        "id": "cmjc8fpk0wbfc1iy2ur",
+        "affiliateId": 1740
+      },
+      {
+        "id": "cmjc8fpk0zbf9810969",
+        "affiliateId": 3615
+      },
+      {
+        "id": "cmjc8fpk0cl92yi6rbxf",
+        "affiliateId": 3615
+      },
+      {
+        "id": "cmjc8fpk007leq6fs5t9x",
+        "affiliateId": 3615
+      },
+      {
+        "id": "cmjc8fpk0yf3b5fill7b",
+        "affiliateId": 3615
+      },
+      {
+        "id": "cmjc8fpk0gew09o1bo1d",
+        "affiliateId": 3615
+      },
+      {
+        "id": "cmjc8fpk0c6z3qmzc43",
+        "affiliateId": 3615
+      },
+      {
+        "id": "cmjc8fpk0leed85pp0qp",
+        "affiliateId": 3615
+      },
+      {
+        "id": "cmjc8fpk0o4zjglaeih",
+        "affiliateId": 3615
+      },
+      {
+        "id": "cmjc8fpk0j4u647qgioj",
+        "affiliateId": 198
+      },
+      {
+        "id": "cmjc8fpk095hcvhuxzjh",
+        "affiliateId": 10142
+      },
+      {
+        "id": "cmjc8fpk0vjn8g5jzoy",
+        "affiliateId": 10142
+      },
+      {
+        "id": "cmjc8fpk0jsg7t8ikma",
+        "affiliateId": 10142
+      },
+      {
+        "id": "cmjc8fpk0xzmtsrd0uim",
+        "affiliateId": 10142
+      },
+      {
+        "id": "cmjc8fpk0ymnic7rsq7",
+        "affiliateId": 10142
+      },
+      {
+        "id": "cmjc8fpjzlwi7oq1o0pl",
+        "affiliateId": 10142
+      },
+      {
+        "id": "cmjc8fpk02e2o4h4cql2",
+        "affiliateId": 10142
+      },
+      {
+        "id": "cmjc8fpk0ba1irdge8pf",
+        "affiliateId": 10142
+      },
+      {
+        "id": "cmjc8fpk0j9zx71hhq6f",
+        "affiliateId": 1740
+      },
+      {
+        "id": "cmjc8fpk0054h7m2c6tky",
+        "affiliateId": 5961
+      },
+      {
+        "id": "cmjc8fpk05ot3y0k7m7f",
+        "affiliateId": 5961
+      }
+    ],
+    "missingCommission": []
+  }
+}

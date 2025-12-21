@@ -1,0 +1,7614 @@
+{
+  "timestamp": "2025-12-19T13:22:24.268Z",
+  "matchableAffiliates": [
+    {
+      "txId": "cmjc8fpk172ztsjh0al2",
+      "sejoliOrderId": 19118,
+      "affiliateSejoliId": 325,
+      "affiliateName": "Muhamad safrizal",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpk30m2ta8di9ner",
+      "sejoliOrderId": 18761,
+      "affiliateSejoliId": 198,
+      "affiliateName": "NgobrolinEkspor",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpk3vz85u6ws",
+      "sejoliOrderId": 18761,
+      "affiliateSejoliId": 198,
+      "affiliateName": "NgobrolinEkspor",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpk5m3x50ui9wi",
+      "sejoliOrderId": 18358,
+      "affiliateSejoliId": 325,
+      "affiliateName": "Muhamad safrizal",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpk5olkkp6w14dk",
+      "sejoliOrderId": 18443,
+      "affiliateSejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "productId": 21476,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpk5vwhe39fbys",
+      "sejoliOrderId": 18435,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpk642bd4a9hh29",
+      "sejoliOrderId": 18026,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 20852,
+      "amount": "898739"
+    },
+    {
+      "txId": "cmjc8fpk64hyavah7omk",
+      "sejoliOrderId": 18007,
+      "affiliateSejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "productId": 20852,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk662ch9ha61aj",
+      "sejoliOrderId": 18010,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 20852,
+      "amount": "749000"
+    },
+    {
+      "txId": "cmjc8fpk6b2kqlzs4d3w",
+      "sejoliOrderId": 18030,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 20852,
+      "amount": "899000"
+    },
+    {
+      "txId": "cmjc8fpk6iwzb4nxsom",
+      "sejoliOrderId": 18020,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpk6jsbocw6pj9g",
+      "sejoliOrderId": 18020,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpk6kk9nrlhzxk",
+      "sejoliOrderId": 18019,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 20852,
+      "amount": "799000"
+    },
+    {
+      "txId": "cmjc8fpk72lgdlro9gep",
+      "sejoliOrderId": 18007,
+      "affiliateSejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "productId": 20852,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk7dkcb9d6w2nh",
+      "sejoliOrderId": 17954,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 13400,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk7j8c2tor7znn",
+      "sejoliOrderId": 18007,
+      "affiliateSejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "productId": 20852,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk7r7xxxo2l4mg",
+      "sejoliOrderId": 18007,
+      "affiliateSejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "productId": 20852,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk7rym7lsn8lj",
+      "sejoliOrderId": 17960,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpk7tpl6y9i1n6",
+      "sejoliOrderId": 18007,
+      "affiliateSejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "productId": 20852,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk7yvpmkz19k88",
+      "sejoliOrderId": 18007,
+      "affiliateSejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "productId": 20852,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk7zu61ufnoii7",
+      "sejoliOrderId": 18007,
+      "affiliateSejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "productId": 20852,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk8gwz8ka4zh",
+      "sejoliOrderId": 17693,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpk8xaxxxbtzhy",
+      "sejoliOrderId": 17591,
+      "affiliateSejoliId": 1343,
+      "affiliateName": "Ikhsan Yuniarka",
+      "productId": 20130,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpk90aeko5u8ik5f",
+      "sejoliOrderId": 17409,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpk9k642uurvdi",
+      "sejoliOrderId": 17358,
+      "affiliateSejoliId": 198,
+      "affiliateName": "NgobrolinEkspor",
+      "productId": 13400,
+      "amount": "699000"
+    },
+    {
+      "txId": "cmjc8fpk9kgrk1hwfxlf",
+      "sejoliOrderId": 17373,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpk9n5m7dyppke",
+      "sejoliOrderId": 17591,
+      "affiliateSejoliId": 1343,
+      "affiliateName": "Ikhsan Yuniarka",
+      "productId": 20130,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpk9xjftmc1srra",
+      "sejoliOrderId": 17333,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpka63iepyl05i8",
+      "sejoliOrderId": 17237,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpka70iokfj3j35",
+      "sejoliOrderId": 17133,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpka8vj6d7jh0w2",
+      "sejoliOrderId": 17237,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkaffufc3xyjof",
+      "sejoliOrderId": 17166,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkafi1yjz08om",
+      "sejoliOrderId": 17071,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8914,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkasfh6oxpxhkg",
+      "sejoliOrderId": 17071,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8914,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkawtk2wjz09e",
+      "sejoliOrderId": 17034,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpkaxg6erv10yud",
+      "sejoliOrderId": 17171,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkb11ay8adwnhvc",
+      "sejoliOrderId": 16739,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 19042,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkbl9hsr825dci",
+      "sejoliOrderId": 16739,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 19042,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkbov2zdsjc0v",
+      "sejoliOrderId": 16727,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 19042,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkbp95b4oudd2",
+      "sejoliOrderId": 16931,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkbsz9f1fpbn6k",
+      "sejoliOrderId": 16772,
+      "affiliateSejoliId": 1011,
+      "affiliateName": "Yoga Andrian",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpkbx383tzat41e",
+      "sejoliOrderId": 16936,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 19042,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkcicwketjc8il",
+      "sejoliOrderId": 16524,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 19042,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkcnbrzxm42o7",
+      "sejoliOrderId": 16588,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8914,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkcp5rqgsxyyfd",
+      "sejoliOrderId": 16599,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 19042,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkcpkipi4uus8",
+      "sejoliOrderId": 16610,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8914,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkd11fip1fht1q",
+      "sejoliOrderId": 16295,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18528,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkd3xu5y34kdpl",
+      "sejoliOrderId": 16190,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 18528,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkd6uu5ribcyqy",
+      "sejoliOrderId": 16293,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 18528,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkdg4qw6ywpxm",
+      "sejoliOrderId": 16211,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 18528,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkdii906f8448o",
+      "sejoliOrderId": 16293,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 18528,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkdm78d5vv5zii",
+      "sejoliOrderId": 16342,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkdxke9kqray0e",
+      "sejoliOrderId": 16258,
+      "affiliateSejoliId": 198,
+      "affiliateName": "NgobrolinEkspor",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpke0ql4sekgsdf",
+      "sejoliOrderId": 15828,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 16826,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpke3w2vzzxrp34",
+      "sejoliOrderId": 15913,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 18528,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkenev3q1gfbgl",
+      "sejoliOrderId": 15913,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 18528,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkes6te007r3bn",
+      "sejoliOrderId": 15914,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpkes86yvf8wmhc",
+      "sejoliOrderId": 15828,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 16826,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkesyg73ncq7w",
+      "sejoliOrderId": 15830,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkexl273ca2vvm",
+      "sejoliOrderId": 15913,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 18528,
+      "amount": "35000"
+    },
+    {
+      "txId": "cmjc8fpkf03ecp0sbd9te",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf087a0tzjsom",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf0t3d9dhtbeq",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf0w2e2zez4gzg",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf169tiyga4gui",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf18hh22e6tff",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf1hqqriv4qv1",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf1i39bm6wol6",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf1sm99ug4z69i",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf1u9z6mfmqx",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf1uaxt1ycmrq",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf1y67fafii2z",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf21sb3khfggj",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf21t5jjkflpl",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf235a1r7opxc",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf23kqofpgdnc",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2bx1dgayrg6",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2f9xbfaycq8",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2j1v4xvzvg9",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2rvrbnh0nlc",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2tr35hpdp5s",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2wf43x87atc",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2wtfnl5hrzc",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2xrckew2lqj",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf2xydsoxg28t",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf336mi1qzcif",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf36ivxzb21sn",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf3csfyy2e677",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf3lxcp2eydhk",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf3oc8rc0172",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf3zy24j44oh6",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf40as27yw5bp",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf44z7y8cprvo",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf45dp0bse7lk",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf4f3hx35ih69",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf4h5tron8jnk",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf4ppczlet6hc",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf4v9shfu49g",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf4wa7wmojqpk",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf558pzdc7amy",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf57jnwsk4vko",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf5x9e5gt1mql",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf61c69isb00s",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf6780qy7twiw",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf6kzxfp4xsb5",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf6qgf17hn6t7",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf6s5g1g991hk",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf6y9pb0rw3v2",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf6zn3bygqtzo",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf796gszpli8r",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf7c85iznsvo",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf7fldtkoqkrm",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf7mr02stcpxu",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf7s0fveh95cb",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf7sjtei32a5d",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf851gyi6zfdb",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf87ruf8szlir",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf889i1pd3knp",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf891u974kso5",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf8as0zgkbx88",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf8bpel5sl0m9",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf8dtl04fqcms",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf8ledpne4jak",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf8nt1uwd6bsw",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf8nyasiv0fkg",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf8rg8rcvvzcn",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf8upyyihy26w",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf9dmwrtxcry",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf9dq9jvqo33",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf9ivexuvkhiv",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf9j6fopyrrlr",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf9nh2frd5lvm",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf9nu16skii7",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkf9qra67m5zuj",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfa2z6pr0iyog",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfa3wn9j60qg",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfa7x5y440u2",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfa9z4j029hb5",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfaaybu9q93l8",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfab811agg6e8",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfabkxhl72pzv",
+      "sejoliOrderId": 15761,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfact2nq15dop",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfakkih9zak0g",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfardrqc29z1t",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfayk4csi6cof",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfb2g3snunq3",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfb2my1owwu5",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfb5n5qd4trm",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfbb2r42ls9tj",
+      "sejoliOrderId": 15671,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfbk4cmff1wcs",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfbrdm4o70dqn",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfbvin7lols7f",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfc1a5ngubmb",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfc1woq6wsdoi",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfcxmaesw7jen",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfcyn8ubgn56m",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfd8o1jveye7i",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfdyy9vr1lz5a",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfe2pnoa1m8dn",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfe68lq9dn3bw",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfee2mpq267d7",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfekipxiyj3y8",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfeypp4o82x66",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkff4p77sjcrci",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkff4vp2i2x0mb",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkff9c59uvrc9f",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffa909bpbqfj",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffecqxfezg1o",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffi5pwi9s1y8",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffikusqz3sg7",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffk90qdzvqy",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffli7k98su77",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffm1yrlt8xe9",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfftdi99ot5v4",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffut496vub2q",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffv9990wv34j",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffwu8zxhwi1v",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkffx6oo2ezh9i",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfg5j5xlfvylg",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfgaylx8612",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfge1yv8c267f",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfgejpqm29apf",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfgnheeagq16s",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfgpai9nsxbfp",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfgr6oyileqg",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfgtlw1hu5j4g",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfgusrd23txi",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfgwk1npcadij",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfh1qtqrsxaxl",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfh50xrsp6dhj",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfhe6xe2xjav5",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfhpst3z5kiiv",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfhx9exufr6o",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfhynh0xozgj9",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfi1fx5k6r8q8",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfi82jayrx9se",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfi928trv8tcr",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfidqhjooq92b",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfif4wp41b72o",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfio6wr1mro3",
+      "sejoliOrderId": 15775,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfipec5qmv3re",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfis8ex5uncer",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfivb3r8b5gj8",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfj7qn5k2xdxd",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfj8494g82vqr",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfja57ml5af4p",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfjcnowlx3l6p",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfjctawbrbzt",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfjhqhuwsbg5",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfjvzyd5f1er",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfkc1gphtx8h8",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfkmchynhx0ho",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfkmi4wv60rmp",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfkoddfft1zus",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfkq71olr7a5b",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfktgu6n4t7g",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfl44g618yxi",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfl5chuz0hph",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfl5ozb8w81mr",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfl75lcsuw1a",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfld8r4e48u3",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfllef5qk4pbs",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkflqftnzctbm9",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkflqn9ausbqni",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfm65alvxtfsa",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfmcncuy72pzb",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfmx02s01508i",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfn351xfpn6dn",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfn3bjpxs6kj",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfn569fp40if",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfn7z91sanc2",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfn9gp340qp0d",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfnf39k68trm",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfnjdqwghr1e",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfnmyyit8ohc",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfo3cnhf9cx8a",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfojuqz9bg48b",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfok7x3mb49nl",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfolsf40gx5k",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfos5t775mxd",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfovld6jqipja",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfovmle0fjxu",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfoyqum0zpe7",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfp4sasgst0yr",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfpgx8qzd5ub",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfpjs8xrfn79i",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfpnvajbfje7m",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfpoutajb0gjg",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfprpi74uf6v",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfq6xlkczwddr",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfq8f3l5ocw1",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfq9j8fkyx4qa",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfqfq7d4odhmi",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfqk0e08qtql",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfqshka08wolr",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfr6y94zkbzd9",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfrt4tu0inef",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfrwtb4frlwm",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfs2ppltoh7ag",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfsel9ltn0j2d",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfsjj5i9sfg4n",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkft4ryje4o5kh",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkft8hffjyvx7",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkftdyj50349n",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkftg3w041112",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkftix2q6lxo8j",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkftkmwac7ig4k",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkftnbvabfjjcn",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkftx98fsv2tji",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkftyq35hwij9",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfu33gknv21uj",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfu40r465p2yc",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfu5cxmu4cxw",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfu8g87k68xyn",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfud0wgftoc4",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfugfkqoa5nx",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfugyjqnmeypq",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfuhs19qsxgpf",
+      "sejoliOrderId": 15735,
+      "affiliateSejoliId": 5392,
+      "affiliateName": "Naniwati",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfujjn1wyfycb",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfum62boo87ip",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfuwp4m0w0e78",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfuyt1iah8qe",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfuzkfg1j9o4",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfv6am0i44f",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfve6t2t3cnhh",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfvsoel7xj5gn",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfvuztc7xcuhr",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfvva1chr5w78",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfvyb7w9ks5qf",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfvzr898ijq5",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfw11jyjoq11i",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfw4otaucz9th",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfw4vyk502z8",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfw5s9mo6f61",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfwebeidhulwe",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfwfsbujyobf",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfwgcd84ioh8b",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfwlotnzqmzgc",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfwmd0x5wnfkf",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfwnkt3g54fri",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfx0xk8abln3q",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfx71vef0j9mf",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxde3xfasmd",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxgeym0iaby",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxj7nk31vzep",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxlgferaf4p",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxm20c25tvd",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxrqzkz3j9re",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxskkli8l2nm",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxvo1x2al41",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxyon31nwgo",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfxzc7n1evwvp",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfy157dgqh4ao",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfy3nl4s7wp5",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfyakkvjexcrf",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfyjgm4i2ccnk",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfymtibyak79a",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfyywsyd505fg",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfyyx3psy834a",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfz08bo838ly",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfz52mb76lp4",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfz8a8ba20h1s",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfzavqyyccxaf",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfzej7emas6vg",
+      "sejoliOrderId": 15805,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfzfvshkgt3ih",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkfzxushchnm8",
+      "sejoliOrderId": 15658,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg0fmxymchxlku",
+      "sejoliOrderId": 15407,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 16826,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg0my53phyeukn",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg0pv9g666mwp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg0xwqz9jzuem",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg14mn26m5t9j",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg1bsjy4ych0w",
+      "sejoliOrderId": 15734,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg1qtl96dcy2t",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg1tcg3smjoxv",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg2i9olzzdq4j",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg2tc05pzqp1s",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg3jr16nv78kg",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg3lfuqrz7tz6",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg3mklms5vdua",
+      "sejoliOrderId": 15407,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 16826,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg3nt1thyaa4u",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg3s0x8nbk27t",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg44zhcwcokui",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg47h4lh9t8xk",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg47u4pri5est",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg4bc22uwogyk",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg4hvezfsar8n",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg4weutnek6",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg539x8j1fitp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg57m6n9pp4yb",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg5aefs3pn5dq",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg5fg52qhaj5t",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg66i6f49a2lf",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg6d2ycu2ssgc",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg6ptv3wxapcj",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg6v0petcm4rv",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg6w806j6pec4",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg70wh09l9osk",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg78n9m2ry75n",
+      "sejoliOrderId": 15683,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg78nhkg7atzh",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg7qry7szotc",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg7zzeh033r3d",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg81bae12yrj2",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg85zoqs8wow6",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg8shys0xuhrx",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg8z3kxqrq1xd",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg8z70ilmpohc",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg9477edm3hu",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg9psswop4p6d",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkg9w7pz1g1nae",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkga0ga4atr5kv",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkga11in2h6jhl",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkga6p2tagtqmg",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgadrk4nf4vf5",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgai0t626ukq",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgamvcr3o40bo",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgawukl6lvlu8",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgb3q92zs6oij",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgb3wwo6im9f",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgboqn8rdly8c",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgc9k88jxyr9i",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgcdgi5y9f1nl",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgcjc5e7erkoq",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgcl7kf3qq4r6",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgcnywgcafgbe",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgcu0y8urmmp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgdgz2714h18h",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgex0cje54c6q",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgf02gjr8xu9d",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgf15385uyhiu",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgf4bi8mzf8mm",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgf88vkv3vr2g",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgg1a4pc82fgi",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkggf39ja465gr",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgguiao7jmmbw",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkggukr5mt7juo",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkghesnuacy6ln",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgihy08kyro6l",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgikbjacst3hc",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgiq16rn13iz",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgitzz2dvczss",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgivpnd1ng1kh",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgj4aya2auhl",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgjn0e7ye3akh",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgjtmgqthudei",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgk12x6rvr6bp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgkbytytyfbtg",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgkplx866j4xl",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgl5j99u8xya",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkglhl3oxoe2js",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkglkmxz6lpje",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgln1foi5zihh",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkglnbouvedp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgly0hhslbvgg",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgm1dpclgnudd",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgmej87rx8l3h",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgmslmcb6rx0j",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgmyncc81v36s",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgn59mrguekp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgn5yc799qldq",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgn64odjn4dc",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgn9b3ng8laa",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgnbumexunsid",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgnd9u1v3ug8b",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgnm1xq8jvpsc",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgnphfbobusk9",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgnr4f3tyrlxp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgnr81pfm65ko",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgnu6efbsdbc",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgot4svcswbli",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgot6j4ggja8",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgovy98e528hc",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgoyi401wocz",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgozwior3rufe",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgp5h6yvrv4u",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgp72bjs8fhl",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgp8r5d9r7bj",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgplkns76kbce",
+      "sejoliOrderId": 15382,
+      "affiliateSejoliId": 198,
+      "affiliateName": "NgobrolinEkspor",
+      "productId": 17920,
+      "amount": "899000"
+    },
+    {
+      "txId": "cmjc8fpkgq8h890w0l1",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgqb5y1mpcom",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgqvhrt7i3xzn",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgr47w2ig3u3",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgrjh8hdmcr9",
+      "sejoliOrderId": 15718,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgrmmdrlo0uxb",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgrsp8jjmcjx",
+      "sejoliOrderId": 15402,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpkgrz34h9t71r",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgsalhnvtfde",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgsgzb15udob",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgsqy9wytbwr",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgsu40anya9ti",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgt8h8rhtyydm",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgtialnsnkkln",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgtsnelu6qai",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgtuzzs9z5sq",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgubu1l5k1wto",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgufwh0wift6r",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgutzrgw0wxrr",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgv4m5a4zle1",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgv7qtwnieoi",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgvc1jemppu4d",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgvmhvxha079o",
+      "sejoliOrderId": 15388,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgvoqhazkena",
+      "sejoliOrderId": 15701,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgvs6gghmgfw",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgvxy60ozu14",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgvynqstofpmq",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgw1s0eks3qcp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgw22vox9kghp",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgw3dsteviste",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgw64yxz4s3",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgwkb3hj3lg1",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgwyxke05dtud",
+      "sejoliOrderId": 15784,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgwzu0k83hpas",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgx3xcu94g1xe",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgxdfjxuydlbb",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgxjfc8l9wi",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgxnuh9xw0z1",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgy0e6e6x3jx",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgy97en2a7gla",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgybwopqxw16",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgz8k0ca9maul",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgziryd3n54",
+      "sejoliOrderId": 15690,
+      "affiliateSejoliId": 5392,
+      "affiliateName": "Naniwati",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgzjes6u17zhi",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkgzu6hkexa13l",
+      "sejoliOrderId": 15382,
+      "affiliateSejoliId": 198,
+      "affiliateName": "NgobrolinEkspor",
+      "productId": 17920,
+      "amount": "899000"
+    },
+    {
+      "txId": "cmjc8fpkh011gnoig6qca",
+      "sejoliOrderId": 15218,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh022bluxjxk5v",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh088ulfwyb17n",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh08tkfl9ep6g",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh0a15qv6n21y6",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh0aaqtne8vdl",
+      "sejoliOrderId": 15707,
+      "affiliateSejoliId": 5392,
+      "affiliateName": "Naniwati",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh0cqrpcb42vd6",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh0dzod5atxo1s",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh0fqeq7bubo1r",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh0hbq4nfxqqv6",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh142i3kgzapvn",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh150h1w8m145",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh1cwy23cswh6",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh1ffrxuvusfj",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh1ofic990jtyh",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh1qgqp4o9sdsh",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh1yxuswew4bf",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh22np6amci68",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh22yoxozs2b8",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh232rf0z3uaf",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh27k2ic10xr4",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh2gpucceym36",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh2kbacjzkkj8",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh2llq2ebhk21",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh2m01cv0i1qa",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh2ntezmd42xp",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh2p13s1qqdh1",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh2u2eypzgx2b",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh2wwqfa4qkvz",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh34ucim6fqec",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh35lhr0jrexy",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh36kelh8g533",
+      "sejoliOrderId": 15178,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh38izobcdibi",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh39k63xz5lp",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh3dkhdj1bza4",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh3fxx9tirwjg",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh3vfpspksjjh",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh3vxgwb387o2",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh3yvb0adfyl6",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh408qgrj1t5h",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh40wtcf1lv3t",
+      "sejoliOrderId": 15695,
+      "affiliateSejoliId": 5392,
+      "affiliateName": "Naniwati",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh46134bqy44r",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh49y51j7a5bk",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh4bup7cut9vd",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh4ejafpg3nd2",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh4gvo46fe7el",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh4h0njntwmcp",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh4ltsdvo19mu",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh4wlnaw0k5dm",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh58hhp7psalg",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh5d2ns1868wa",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh5dtq8t9kc4t",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh5lx7sru6x7r",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh5nokfypk8u7",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh5ptigkol5iw",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh5r7gl5y7z4u",
+      "sejoliOrderId": 15738,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh5so425ekf0h",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh5t6if4y79hd",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh60lo2jk3sje",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh624mcc9dozc",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh64emml27y1q",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh64i1y5gccqf",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh64kzaqkqdfu",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh67epcasx65n",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6b871bromdx",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6c1jr4l7umm",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6eijiavf6to",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6ikctrsbc9j",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6kr2x10az95",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6kys5775z3p",
+      "sejoliOrderId": 15761,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6lkcos3mb5i",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6loed1nhbig",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6nk4jyhqsid",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6nkukl67305",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6obsy1ol9vd",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6uay2jgfjnd",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh6vd3h36ud3w",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh70hei8w08ri",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh73eeob28qc",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh76fyh2rpfcr",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh78fdzl2gttp",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh7gxcjybozck",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh7hk1pwfn5wh",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh7l9j4t32ayd",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh7q1wrq44um",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh7vbgodh70ly",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh7y1iwgcipoe",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh85znod0m9tv",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh8838kux572h",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh8868gf7ih3f",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh893ybbsr02q",
+      "sejoliOrderId": 15236,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh8l9v2hofyrh",
+      "sejoliOrderId": 15178,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh8pa6c48olnj",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh8u1wi0hul3a",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh8vq0qhs9fo3",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh8xr76x23j68",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh8y52thbtqig",
+      "sejoliOrderId": 15341,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh920yk13h7h9",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh96u7mugetkm",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh9g7ayzwy0ek",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh9j971re0myk",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkh9npk9p4vmpi",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkha0fxxyw0ohd",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkha6aytdyrzm8",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkha9389ysc40m",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhab6yqf25ers",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhaknnenpztx",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhalj8mf5eoiq",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkham635l5r9a",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhan2fec41j8",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhat2qjlij6gp",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhaumhkbisils",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhaxngwhxleio",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhazgtbv1vn0a",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhb1f1semdgr8",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhb1h7l0l2w6n",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhb40lto6varm",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhb7t056rleku",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbcf5z1u4k5o",
+      "sejoliOrderId": 15515,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbcrww6re2g9",
+      "sejoliOrderId": 15333,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbeeodmecwad",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbejy3vosq9",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbfdmx08ur26",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbtloteqtaa6",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbtmim4s9v5d",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbvv6ymw1n5j",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhbzsfiibo8bo",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhc05rnq6w27u",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhc1fpdpkav28",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhca4tmhh16h8",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhcaouqwm9u0q",
+      "sejoliOrderId": 15760,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhcbqwo6vdtxf",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhceahvt8owy",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhcg06qefy0ys",
+      "sejoliOrderId": 15601,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhchptkwfpn0s",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhcxt5t8h5q38",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhd8ib8iee5g4",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhdj7z9lfvtc5",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhdjzw7fu0wda",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhdkjnmlsbvq6",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhdo05sumnzu9",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhdrjb06oygy9",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhdrtj68k9vee",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhds5vx8t8u6i",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhdvc3tafx1ma",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhe1ydmnav5lh",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhe860nuyovzm",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhephwohry695",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhf4hdo0gbwlh",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhffmuxne65wo",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhfi4lw1d3o0u",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhfjcinxbs3js",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhfjpgqgusj5",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhfpl0ks28r8v",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhfqu4e955out",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhfvj7xj7w9oh",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhg5in93ec85",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhga03i5m4wg4",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhgaygux4myzo",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhgkk39jxoh9v",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhgkm1suryseh",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhgkqfyswc4l5",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhglfn9u61m4",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhgpai4e130u",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhgtjrfezscvo",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhgy59sibsg95",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhd53c6rzrj5",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhdwrvkw26zq",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhfcewps4zq",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhgo72xtyoue",
+      "sejoliOrderId": 15765,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhkrfwhxihtp",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhmx0m3a59kw",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhnuxjctrcfu",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhri10hqujjl",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhhrm6yyqv49f",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhi2sy4hg5mg",
+      "sejoliOrderId": 15530,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhi70w31wv16",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhi7mqlv8ztd",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhia3847tvf5j",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhicx2ueztt4b",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhidrsaa2x2t",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhig2h9rtsoq",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhinfcpk3xf2",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhipgxbh7h67o",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhisoyx18lig8",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhitjwmtk4f68",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhivzdyqubjo",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhix3ocr5pm7",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhj02t4y21es",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhj61p9gf5phq",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhj7il6anv8xs",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhj89f4lip7i",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhja9n927s8gs",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhjg2ar7ecax",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhjo53de3q79",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhk3zo930toi",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhk6xzwaa2wlq",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhk815s6d2s7f",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhke597iezxlo",
+      "sejoliOrderId": 15468,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhkko3tybzhth",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhklod6m9iqe",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhkne14285b6",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhkso01735yd",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhkv71nid6ka",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhkvmx2lrd3ta",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhl336le3ohsh",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhlgnsiocom18",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhlo4piek2mz",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhlq805eygln",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhlv56ayguq5",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhm2pekdvrxu",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhm7a206a4e8m",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmfr9uk9nxg",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmgn9fs5gdt",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmj4pieuwlja",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmldfvdxey7",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmot2zf4npnf",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmrnmkntcts",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmrt8ys8fgrr",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmvrb971dxd",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhmwpyntvzk7n",
+      "sejoliOrderId": 15536,
+      "affiliateSejoliId": 5392,
+      "affiliateName": "Naniwati",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhn28nwzilqmh",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhncjb71q1jo",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhnjuvdax3am",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhnt12k0qifo",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhnwho3w2dpj",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhnwnbiff1ruf",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkho1w94g2phy8",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkho9kddlfd74d",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhoc8inx8rga",
+      "sejoliOrderId": 15691,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhoe9wqvp68s",
+      "sejoliOrderId": 15760,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhol8dfeoip9e",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhorjv7ri8rna",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhouy9s2tsk1",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhov7or8d04i",
+      "sejoliOrderId": 15761,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhp355umej5x",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhp50bkjew7ef",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhp5ba5eksca",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpb3r4pnphbe",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpgnyifzps1",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpjlyz4szjhc",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpng143y6x79",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpo4xqhn553c",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhppxrsk2gtur",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhppzm521fx4p",
+      "sejoliOrderId": 15095,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhptjp2l1bi1i",
+      "sejoliOrderId": 15670,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpvtsiuta5w",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpwpdrwhzp4",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpwrgpjebthq",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhpzf22wqverr",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhq0msj7z0h4",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhq0psxmmd9dn",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhq3t14kuojq9",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhq74wuwtkhk",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhq7jl2wt1fi",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhqb9qjpycp9",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhqhxk2j8rbgn",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhql4sf9uje5",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhqoxfzploex",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhqq6qcqjkh4s",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhqz5shd0yqh",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhrdec5vz6pi",
+      "sejoliOrderId": 15547,
+      "affiliateSejoliId": 5392,
+      "affiliateName": "Naniwati",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhrfjtkel65wf",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhrh48b17hbo",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhrjc2xhhpixm",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhrjvhvpo7zss",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhrouvg25o9gs",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhrut9n2am59j",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhrxmcrgtcwi",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhs23qkjlcf7",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhs90rbpb884",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhsfgfincsmdr",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhskaxspzcvdc",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhslzf1gdzthp",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhsst7x5fjm3",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhsu962nyxtx",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhsy3yj0jy4r",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkht82m5en2al",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkht89kr8i78ao",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhtardy7ddylc",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhtdntcj5k1x",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhthsq8a97gk7",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhtnlxt5r8ho",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhtos9adr3xtq",
+      "sejoliOrderId": 15533,
+      "affiliateSejoliId": 5392,
+      "affiliateName": "Naniwati",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhtspfbw0bifg",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhtu1lawr03rj",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhtuvde32kuem",
+      "sejoliOrderId": 15510,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhu0w8i3mul2",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhu813ney94s",
+      "sejoliOrderId": 15559,
+      "affiliateSejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhuf15y1yqh6e",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhuiujin0wqin",
+      "sejoliOrderId": 15123,
+      "affiliateSejoliId": 1011,
+      "affiliateName": "Yoga Andrian",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpkhuktpuyv2x99",
+      "sejoliOrderId": 15236,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhullcqqd3di",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhup923vi5pa",
+      "sejoliOrderId": 15734,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhutu0r2o9h1f",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhuzdw9ujgkme",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhv1kebu0hw1p",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhvhg75vtwft",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhvhrlrnuse8f",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhvr60cs4gyno",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhvurczra2y4",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhw2dz8gip7n",
+      "sejoliOrderId": 15668,
+      "affiliateSejoliId": 3300,
+      "affiliateName": "Agung Haryanto",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhw5ujgso25z",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwa6bynbrtw",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwdl4x145lbo",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwgtuatdwku",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwk61xs6nuv",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwmum3ug6jim",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwowe8i4jgvs",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwtgbkpcj29f",
+      "sejoliOrderId": 15570,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwu0tpqm2hme",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwxeoz053s3s",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhwysdx84sz8q",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhx1542v8sm2p",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhx62zgg2dv",
+      "sejoliOrderId": 15226,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhx6ykiq77ndc",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhxk2twz3fuj",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhxm7c16zwgzb",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhxryhlburb1n",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhxwgtpgnrrd",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhxyvso219it7",
+      "sejoliOrderId": 15084,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhy1zkeydaank",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhy45lekfb3g",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhy810yb7n43j",
+      "sejoliOrderId": 15163,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhybk9dh50kj",
+      "sejoliOrderId": 15451,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhydkwictyzn",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhym6r2hrmee9",
+      "sejoliOrderId": 15676,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhymx0cjvag6",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhyoumdchmo2",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhyu6w22scmo",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhyuxga6tiwlr",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhyzv3t7rt9um",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhz0mirqexh8g",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhz12f7dufoxk",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhz2f3vaaxao",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhz6tgck45egl",
+      "sejoliOrderId": 14987,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhz8gxudnplrs",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhzchzgmtpd8f",
+      "sejoliOrderId": 15719,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhzns8fttg83b",
+      "sejoliOrderId": 15348,
+      "affiliateSejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkhzzsruuaeavi",
+      "sejoliOrderId": 15133,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki0wm190wzafzn",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki1c4wdvk5jfr",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki1gr9r5xx1j6",
+      "sejoliOrderId": 15084,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki1noaslllz2x",
+      "sejoliOrderId": 15730,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki1redd7or3zd",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki1t6ly1urhnu",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki1z768ua8jdx",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki379y5ukmwqs",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki3fx8rdlu07x",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki3gwlems3wc5",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki3htudcez6a",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki3ocs1j17aor",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki3qp1oq9q54l",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki45o8u4xoowa",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki4ynw5maf13u",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki61a7kve4x",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki62yyr16syix",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki6rti2tcdstf",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki6vuqsz7cijf",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki700wfh7tirt",
+      "sejoliOrderId": 14611,
+      "affiliateSejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpki71gc496u4q",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki72x7brnn89c",
+      "sejoliOrderId": 15456,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki74hr7bw9trj",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki7fqicahuvrg",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki7nktiqi50kt",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki7tsbt88x4kd",
+      "sejoliOrderId": 15682,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki7vzk7rlg1z",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki81w44rrjn4u",
+      "sejoliOrderId": 15609,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki8a8jys9os2r",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki8p1cwutmnfb",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki8r4cktjn3sr",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki8wx4imw3n1o",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki90ma55h19sg",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki93bzy57hhuk",
+      "sejoliOrderId": 14667,
+      "affiliateSejoliId": 198,
+      "affiliateName": "NgobrolinEkspor",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpki95e41ldxwh",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki9agcch1lhr",
+      "sejoliOrderId": 14946,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki9apvbsakzns",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki9e0pwprtu2k",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki9eyfvx4dafd",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki9grgve5a8qk",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki9ip9bhwj1zi",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki9kitzij9rqm",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpki9vxetr5t2j",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkia4ohe4cq4kj",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkia6tmkf2rvpt",
+      "sejoliOrderId": 15185,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkia6w3jagtfpb",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiaa2ft4opxwg",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiac66f5blx5",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiacllzdt99pp",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiayrkm7jufpv",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkibn53d4s959o",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkibo0smi97eds",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkibw0e83dusle",
+      "sejoliOrderId": 15742,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkibz9mafhz9v",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkicjnzdy6je8a",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkicuzj961cx25",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkidg55ox7u1be",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkidgcl2dlqzy9",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkidoiyda6tc9f",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkie5hv0yu4vm",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkie80jbqstttj",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiebhrl7q7wz4",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiejdecrfhm6r",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkieqref9c6ng8",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkif1yrquwuj2t",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkifljiznqn80f",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkifxmwjg2n39u",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkig7hjdftcxfs",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkigb18i3xu99t",
+      "sejoliOrderId": 15540,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkigb51m3prahr",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkigcinzsrzx2d",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkignqsf3p1w5b",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkigzka7794jtn",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkih2qewtxp7xt",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkih32ogyvszj",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkii1pu96b2vyi",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiil0ja5g5wqh",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiiokjgwuobs9",
+      "sejoliOrderId": 15179,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkij8ctjtxv85g",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkijb9tniaompc",
+      "sejoliOrderId": 15455,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkijhsm2w6cmtd",
+      "sejoliOrderId": 15717,
+      "affiliateSejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkijmgy8gm5c2",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkik6ffgiv3v8",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkikh66gas2x",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkikmr1tu9aoae",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkil9vaidhnia9",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkilf6ueps341f",
+      "sejoliOrderId": 15691,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkily6kemufmae",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkim67duv8ros",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkim6b4je6f0ll",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkimffriw4gtla",
+      "sejoliOrderId": 14643,
+      "affiliateSejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "productId": 13401,
+      "amount": "999000"
+    },
+    {
+      "txId": "cmjc8fpkimk4nsdqcyz",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkimn4hvh43vsh",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkimpjsxg04s9",
+      "sejoliOrderId": 14616,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkin2jc4fcxa9n",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkinbnqypnmgik",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkinbqe7y0ur7",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkinimjb3ciah",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkioxqn593bz9",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkip1zeodd4cn",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkipcrlqzaonmp",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkipmz1fkrus4n",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiqr7k9wcg51r",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiqyll2cr79y",
+      "sejoliOrderId": 14628,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkir61k40srkio",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiracg4eg03lr",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkirb4o9gguf4",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkirn18u5f8ued",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkirtgb9coghg9",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkirwtpjex277",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkisx2ir4j3hfp",
+      "sejoliOrderId": 15797,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkitnbvqa72cc",
+      "sejoliOrderId": 15794,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkitz90kiddrxm",
+      "sejoliOrderId": 15250,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiua2comur4l",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiuuwwvw9brnr",
+      "sejoliOrderId": 15592,
+      "affiliateSejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "productId": 18358,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiuv7qtr0z13",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiv522rwp2erq",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkivme4gnmw0f",
+      "sejoliOrderId": 14665,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkivuc63t3fw8",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkixg77b15tly",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiy7f2c6u3ksq",
+      "sejoliOrderId": 15388,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiyav1eav3nfd",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiycztyvki1c",
+      "sejoliOrderId": 14670,
+      "affiliateSejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "productId": 8910,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiypqshfgfw4",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiyty58j1zkog",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiyu2djjs0rzq",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiz4a1kxru37",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkiz5tbkvpeoo",
+      "sejoliOrderId": 14750,
+      "affiliateSejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "productId": 17767,
+      "amount": "0"
+    },
+    {
+      "txId": "cmjc8fpkizavvcc5wwte",
+      "sejoliOrderId": 14871,
+      "affiliateSejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "productId": 17767,
+      "amount": "0"
+    }
+  ],
+  "conversionsWithoutCommission": []
+}

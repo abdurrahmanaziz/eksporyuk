@@ -63,12 +63,13 @@ export async function POST(request: NextRequest) {
       throw new Error('System users not found')
     }
 
-    // 3. Get affiliate commission rate from new membership
+    // 3. Get affiliate commission rate and type from new membership
     const newMembership = await prisma.membership.findUnique({
       where: { id: newMembershipId },
-      select: { affiliateCommissionRate: true }
+      select: { affiliateCommissionRate: true, commissionType: true }
     })
     const affiliateCommissionRate = Number(newMembership?.affiliateCommissionRate || 30)
+    const commissionType = (newMembership?.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
 
     // 4. Calculate and distribute commission
     await processTransactionCommission(
@@ -78,7 +79,8 @@ export async function POST(request: NextRequest) {
       founder.id,
       coFounder.id,
       Number(amount),
-      affiliateCommissionRate
+      affiliateCommissionRate,
+      commissionType
     )
 
     // 5. Perform upgrade
@@ -209,7 +211,7 @@ export async function GET(request: NextRequest) {
       newMembership: {
         name: newMembership.name,
         price: Number(newMembership.price),
-        originalPrice: Number(newMembership.originalPrice)
+        marketingPrice: newMembership.marketingPrice ? Number(newMembership.marketingPrice) : null
       },
       calculation: {
         originalPrice: Number(newMembership.price),

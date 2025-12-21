@@ -59,6 +59,7 @@ export async function GET() {
       isAffiliate,
       applicationStatus,
       affiliateMenuEnabled,
+      hasAffiliateProfile: !!affiliateProfile,
       affiliateProfile: affiliateProfile ? {
         id: affiliateProfile.id,
         affiliateCode: affiliateProfile.affiliateCode,

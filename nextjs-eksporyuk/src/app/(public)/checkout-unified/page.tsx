@@ -18,7 +18,7 @@ interface MembershipPackage {
   name: string
   duration: string
   price: number
-  discount: number
+  marketingPrice?: number | null
   features: string[]
   isPopular?: boolean
   isMostPopular?: boolean
@@ -1026,11 +1026,6 @@ function UnifiedCheckoutContent() {
               <h3 className="font-bold text-lg mb-4">Pilih Durasi</h3>
               <div className="space-y-3">
                 {packages.map((pkg) => {
-                  const discountPercent = pkg.discount || 0
-                  const originalPrice = discountPercent > 0 
-                    ? Math.round(pkg.price / (1 - discountPercent / 100))
-                    : pkg.price
-                  
                   return (
                     <div
                       key={pkg.id}
@@ -1052,32 +1047,29 @@ function UnifiedCheckoutContent() {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-bold">{pkg.name}</span>
-                              {pkg.discount > 0 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  Diskon {pkg.discount}%
-                                </Badge>
-                              )}
                               {(pkg.isPopular || pkg.isMostPopular) && (
                                 <Badge className="bg-orange-500 text-xs">Paling Laris</Badge>
                               )}
                             </div>
                             <div className="text-sm text-gray-600 mt-1">
-                              {discountPercent > 0 && (
-                                <span className="line-through">Rp {originalPrice.toLocaleString('id-ID')}</span>
-                              )}
-                              <span className="ml-2 text-gray-500">{getDurationLabel(pkg.duration)}</span>
+                              <span className="text-gray-500">{getDurationLabel(pkg.duration)}</span>
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
+                          {pkg.marketingPrice && Number(pkg.marketingPrice) > 0 && (
+                            <div className="text-sm text-gray-400 line-through mb-1">
+                              Rp {Number(pkg.marketingPrice).toLocaleString('id-ID')}
+                            </div>
+                          )}
                           <div className="text-2xl font-bold text-orange-600">
-                            Rp {pkg.price.toLocaleString('id-ID')}
+                            Rp {Number(pkg.price).toLocaleString('id-ID')}
                           </div>
                         </div>
                       </div>
                     </div>
                   )
-                })}
+                })}  
               </div>
             </div>
 
@@ -1474,10 +1466,6 @@ function UnifiedCheckoutContent() {
                     <span className="font-semibold">-Rp {couponDiscount.toLocaleString('id-ID')}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-red-600">
-                  <span>Potongan Harga</span>
-                  <span className="font-semibold">Rp0</span>
-                </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>

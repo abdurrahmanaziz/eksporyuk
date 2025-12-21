@@ -49,6 +49,12 @@ interface BankAccount {
 
 export default function CheckoutProPage() {
   const { data: session } = useSession()
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null)
+  
+  // Get URL parameters on client side
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search))
+  }, [])
   
   // Helper function to get logo URL
   const getLogoUrl = (code: string, customLogoUrl?: string) => {
@@ -121,7 +127,7 @@ export default function CheckoutProPage() {
   useEffect(() => {
     fetchPackages()
     fetchPaymentMethods()
-  }, [])
+  }, [searchParams]) // Add searchParams dependency
 
   // Load user data from session and fetch latest from API
   useEffect(() => {
@@ -164,9 +170,25 @@ export default function CheckoutProPage() {
       const data = await res.json()
       if (data.success) {
         setPackages(data.packages)
-        // Auto-select first package
+        
+        // Auto-select package from URL parameter or first package
         if (data.packages.length > 0) {
-          setSelectedPackage(data.packages[0])
+          const planId = searchParams?.get('plan')
+          
+          if (planId) {
+            // Find and select the package matching the plan ID
+            const targetPackage = data.packages.find((pkg: MembershipPackage) => pkg.id === planId)
+            if (targetPackage) {
+              console.log('[Checkout Pro] Auto-selecting package from URL:', targetPackage.name)
+              setSelectedPackage(targetPackage)
+            } else {
+              // Fallback to first package if plan ID not found
+              setSelectedPackage(data.packages[0])
+            }
+          } else {
+            // No plan parameter, select first package
+            setSelectedPackage(data.packages[0])
+          }
         }
       }
     } catch (err) {

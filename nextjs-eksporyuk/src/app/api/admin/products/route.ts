@@ -38,7 +38,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
-          select: { userProducts: true },
+          select: { transactions: true },
         },
       },
     })

@@ -248,10 +248,10 @@ export async function checkMembershipCourseAccess(
       userId,
       status: 'ACTIVE'
     },
-    include: {
+    select: {
       membership: {
-        include: {
-          membershipCourses: true
+        select: {
+          id: true
         }
       }
     }
@@ -259,12 +259,15 @@ export async function checkMembershipCourseAccess(
 
   if (!userMembership) return false
 
-  // Check if course is included in membership
-  const courseInMembership = userMembership.membership.membershipCourses.some(
-    mc => mc.courseId === courseId
-  )
+  // Check if course is included in membership (fetch from junction table separately)
+  const membershipCourses = await prisma.membershipCourse.findMany({
+    where: {
+      membershipId: userMembership.membership.id,
+      courseId: courseId
+    }
+  })
 
-  if (courseInMembership) return true
+  if (membershipCourses.length > 0) return true
 
   // Check if course has membershipIncluded flag
   const course = await prisma.course.findUnique({
@@ -315,37 +318,47 @@ export async function getAffiliateTrainingCourses(userId: string) {
  * Get member courses (from membership + purchased)
  */
 export async function getMemberCourses(userId: string) {
-  // Get user's membership courses
+  // Get user's membership
   const userMembership = await prisma.userMembership.findFirst({
     where: {
       userId,
       status: 'ACTIVE'
     },
-    include: {
+    select: {
       membership: {
-        include: {
-          membershipCourses: {
-            include: {
-              course: {
-                include: {
-                  modules: {
-                    include: { lessons: true }
-                  },
-                  mentor: {
-                    include: {
-                      user: {
-                        select: { id: true, name: true, avatar: true }
-                      }
-                    }
-                  }
+        select: {
+          id: true
+        }
+      }
+    }
+  })
+
+  // Get user's membership courses (from junction table)
+  let membershipCourses: any[] = []
+  if (userMembership) {
+    const membershipCoursesData = await prisma.membershipCourse.findMany({
+      where: {
+        membershipId: userMembership.membership.id
+      },
+      include: {
+        course: {
+          include: {
+            modules: {
+              include: { lessons: true }
+            },
+            mentor: {
+              include: {
+                user: {
+                  select: { id: true, name: true, avatar: true }
                 }
               }
             }
           }
         }
       }
-    }
-  })
+    })
+    membershipCourses = membershipCoursesData.map(mc => mc.course)
+  }
 
   // Get purchased courses
   const purchasedCourses = await prisma.courseEnrollment.findMany({
@@ -389,7 +402,7 @@ export async function getMemberCourses(userId: string) {
   }) : []
 
   return {
-    membershipCourses: userMembership?.membership?.membershipCourses?.map(mc => mc.course) || [],
+    membershipCourses,
     purchasedCourses: purchasedCourses.map(e => e.course),
     membershipIncludedCourses,
     hasMembership: !!userMembership

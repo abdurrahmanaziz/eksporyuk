@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       data: {
         content: content.trim(),
         images: images.length > 0 ? images : null,
-        type,
+        type: type as any,
         authorId: session.user.id,
         groupId: null, // Public timeline post (not in group)
         approvalStatus: 'APPROVED', // Personal posts don't need approval

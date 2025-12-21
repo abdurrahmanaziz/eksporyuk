@@ -80,11 +80,72 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Map memberships to suppliers
-    const suppliersWithMembership = suppliers.map(s => ({
-      ...s,
-      supplierMembership: memberships.find(m => m.userId === s.userId) || null
-    }))
+    // Get transactions with affiliate data for each supplier
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        userId: {
+          in: supplierIds
+        },
+        type: 'SUPPLIER_MEMBERSHIP',
+        status: 'PAID'
+      },
+      include: {
+        affiliateConversion: {
+          include: {
+            affiliate: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    whatsapp: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    // Map memberships and affiliate data to suppliers
+    const suppliersWithMembership = suppliers.map(s => {
+      const membership = memberships.find(m => m.userId === s.userId) || null
+      const transaction = transactions.find(t => t.userId === s.userId)
+      
+      // Get affiliate info from conversion or metadata
+      let affiliateSource = null
+      if (transaction?.affiliateConversion) {
+        affiliateSource = {
+          affiliateName: transaction.affiliateConversion.affiliate.user.name,
+          affiliateEmail: transaction.affiliateConversion.affiliate.user.email,
+          affiliateWhatsapp: transaction.affiliateConversion.affiliate.user.whatsapp,
+          commissionAmount: transaction.affiliateConversion.commissionAmount,
+          paidOut: transaction.affiliateConversion.paidOut
+        }
+      } else if (transaction?.metadata && typeof transaction.metadata === 'object') {
+        const metadata = transaction.metadata as any
+        if (metadata.affiliateId) {
+          affiliateSource = {
+            affiliateName: metadata.affiliateName || 'Unknown',
+            affiliateEmail: null,
+            affiliateWhatsapp: null,
+            commissionAmount: null,
+            paidOut: false
+          }
+        }
+      }
+
+      return {
+        ...s,
+        supplierMembership: membership,
+        affiliateSource
+      }
+    })
 
     // Calculate stats
     const stats = {

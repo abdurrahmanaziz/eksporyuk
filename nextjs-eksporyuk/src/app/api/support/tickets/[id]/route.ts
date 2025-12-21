@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { ticketNotificationService } from '@/lib/services/ticket-notification-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,8 +86,36 @@ export async function GET(request: NextRequest, { params }: Props) {
 export async function PATCH(request: NextRequest, { params }: Props) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user || session.user.role !== 'ADMIN') {
+
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Fetch ticket and validate access
+    const existingTicket = await prisma.supportTicket.findUnique({
+      where: { id: params.id },
+      select: {
+        id: true,
+        ticketNumber: true,
+        title: true,
+        category: true,
+        status: true,
+        priority: true,
+        userId: true,
+        user: { select: { id: true, name: true, email: true } },
+        assignedTo: { select: { id: true, name: true, email: true } }
+      }
+    })
+
+    if (!existingTicket) {
+      return NextResponse.json({ error: 'Tiket tidak ditemukan' }, { status: 404 })
+    }
+
+    const isAdmin = session.user.role === 'ADMIN'
+    const isOwner = session.user.id === existingTicket.userId
+
+    if (!isAdmin && !isOwner) {
+      return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 })
     }
 
     const body = await request.json()
@@ -95,34 +124,45 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     const updateData: any = {}
     let systemMessage = ''
 
-    if (status) {
-      updateData.status = status
-      systemMessage += `Status diubah menjadi ${status}. `
-      
-      if (status === 'RESOLVED') {
-        updateData.resolvedAt = new Date()
-      } else if (status === 'CLOSED') {
-        updateData.closedAt = new Date()
+    // Owner can only close their own ticket
+    if (!isAdmin) {
+      if (status !== 'CLOSED') {
+        return NextResponse.json({ error: 'Hanya bisa menutup tiket' }, { status: 400 })
       }
-    }
 
-    if (priority) {
-      updateData.priority = priority
-      systemMessage += `Prioritas diubah menjadi ${priority}. `
-    }
+      updateData.status = 'CLOSED'
+      updateData.closedAt = new Date()
+      systemMessage = 'Tiket ditutup oleh pengguna.'
+    } else {
+      if (status) {
+        updateData.status = status
+        systemMessage += `Status diubah menjadi ${status}. `
+        
+        if (status === 'RESOLVED') {
+          updateData.resolvedAt = new Date()
+        } else if (status === 'CLOSED') {
+          updateData.closedAt = new Date()
+        }
+      }
 
-    if (assignedToId !== undefined) {
-      updateData.assignedToId = assignedToId
-      updateData.assignedAt = assignedToId ? new Date() : null
-      
-      if (assignedToId) {
-        const assignedUser = await prisma.user.findUnique({
-          where: { id: assignedToId },
-          select: { name: true }
-        })
-        systemMessage += `Tiket di-assign ke ${assignedUser?.name}. `
-      } else {
-        systemMessage += `Assignment dihapus. `
+      if (priority) {
+        updateData.priority = priority
+        systemMessage += `Prioritas diubah menjadi ${priority}. `
+      }
+
+      if (assignedToId !== undefined) {
+        updateData.assignedToId = assignedToId
+        updateData.assignedAt = assignedToId ? new Date() : null
+        
+        if (assignedToId) {
+          const assignedUser = await prisma.user.findUnique({
+            where: { id: assignedToId },
+            select: { name: true }
+          })
+          systemMessage += `Tiket di-assign ke ${assignedUser?.name}. `
+        } else {
+          systemMessage += `Assignment dihapus. `
+        }
       }
     }
 
@@ -161,7 +201,44 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       })
     }
 
-    // TODO: Send notification to user if status changed
+    // Send notification to user if status changed
+    const oldStatus = existingTicket.status
+    const newStatus = ticket.status
+
+    if (newStatus && newStatus !== oldStatus) {
+      if (newStatus === 'RESOLVED') {
+        ticketNotificationService.notifyTicketResolved(
+          {
+            ticketId: params.id,
+            ticketNumber: ticket.ticketNumber,
+            title: ticket.title,
+            category: ticket.category
+          },
+          {
+            id: ticket.user.id,
+            email: ticket.user.email,
+            name: ticket.user.name || 'User'
+          }
+        ).catch(err => console.error('[TICKET_UPDATE] Notification error:', err))
+      } else {
+        ticketNotificationService.notifyStatusChange(
+          {
+            ticketId: params.id,
+            ticketNumber: ticket.ticketNumber,
+            title: ticket.title,
+            category: ticket.category,
+            status: newStatus
+          },
+          {
+            id: ticket.user.id,
+            email: ticket.user.email,
+            name: ticket.user.name || 'User'
+          },
+          oldStatus,
+          newStatus
+        ).catch(err => console.error('[TICKET_UPDATE] Notification error:', err))
+      }
+    }
 
     return NextResponse.json({
       success: true,

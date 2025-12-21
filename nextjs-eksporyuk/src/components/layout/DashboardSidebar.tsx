@@ -63,6 +63,8 @@ import {
   GraduationCap,
   Sliders,
   Shield,
+  ShieldCheck,
+  Store,
 } from 'lucide-react'
 
 type NavItem = {
@@ -75,6 +77,7 @@ type NavItem = {
 type NavCategory = {
   title: string
   items: NavItem[]
+  condition?: (session: any) => boolean
 }
 
 const navigationByRole = {
@@ -146,9 +149,11 @@ const navigationByRole = {
     {
       title: 'Sistem Supplier',
       items: [
+        { name: 'Semua Supplier', href: '/admin/supplier', icon: Building2 },
         { name: 'Paket Supplier', href: '/admin/supplier/packages', icon: Package },
         { name: 'Pengguna Supplier', href: '/admin/supplier/users', icon: Users },
         { name: 'Produk Supplier', href: '/admin/supplier/products', icon: ShoppingBag },
+        { name: 'Authorized Mentors', href: '/admin/supplier/authorized-mentors', icon: ShieldCheck },
         { name: 'Verifikasi Supplier', href: '/admin/supplier/verifications', icon: FileCheck },
       ]
     },
@@ -175,7 +180,6 @@ const navigationByRole = {
       items: [
         { name: 'Penjualan', href: '/admin/sales', icon: ShoppingBag },
         { name: 'Follow Up Leads', href: '/admin/sales/follow-ups', icon: Send },
-        { name: 'Transaksi', href: '/admin/transactions', icon: Wallet },
         { name: 'Konfirmasi Pembayaran', href: '/admin/payment-confirmation', icon: FileCheck },
         { name: 'Pending Revenue', href: '/admin/pending-revenue', icon: Clock },
         { name: 'Penarikan Dana', href: '/admin/payouts', icon: DollarSign },
@@ -227,6 +231,7 @@ const navigationByRole = {
         { name: 'Pengaturan Penarikan', href: '/admin/settings/withdrawal', icon: Wallet },
         { name: 'Pengaturan Follow-up', href: '/admin/settings/followup', icon: Bell },
         { name: 'Pengaturan Kelas', href: '/admin/settings/course', icon: GraduationCap },
+        { name: 'Backup Database', href: '/admin/backup', icon: Database },
       ]
     },
     {
@@ -272,6 +277,15 @@ const navigationByRole = {
         { name: 'Materi', href: '/mentor/materials', icon: FileText },
         { name: 'Tugas', href: '/mentor/assignments', icon: Target },
       ]
+    },
+    // CONDITIONAL: Only show for authorized supplier reviewers
+    {
+      title: 'Review Supplier',
+      items: [
+        { name: 'Supplier Reviews', href: '/mentor/supplier/reviews', icon: Building2 },
+        { name: 'Assessment Questions', href: '/mentor/supplier/questions', icon: ClipboardList },
+      ],
+      condition: (session: any) => session?.user?.role === 'MENTOR' && session?.user?.isAuthorizedSupplierReviewer === true
     },
     {
       title: 'Komunikasi',
@@ -353,6 +367,7 @@ const navigationByRole = {
         { name: 'Kupon', href: '/affiliate/coupons', icon: Ticket },
         { name: 'Statistik', href: '/affiliate/statistics', icon: BarChart3 },
         { name: 'Konversi', href: '/affiliate/conversions', icon: Target },
+        { name: 'Supplier Referral', href: '/affiliate/suppliers', icon: Store },
         { name: 'Materi', href: '/affiliate/materials', icon: FileText },
         { name: 'Panduan', href: '/affiliate/training', icon: BookOpen },
         { name: 'Dokumentasi', href: '/documentation', icon: Book },
@@ -440,15 +455,6 @@ const navigationByRole = {
       ]
     },
     {
-      title: 'Supplier',
-      items: [
-        { name: 'Supplier Dashboard', href: '/supplier/dashboard', icon: Home },
-        { name: 'My Products', href: '/supplier/products', icon: Package },
-        { name: 'Profile Settings', href: '/supplier/profile', icon: Settings },
-        { name: 'Upgrade Paket', href: '/pricing/supplier', icon: TrendingUp },
-      ]
-    },
-    {
       title: 'Akun',
       items: [
         { name: 'Saldo Saya', href: '/dashboard/wallet', icon: Wallet },
@@ -475,6 +481,12 @@ const navigationByRole = {
       ]
     },
     {
+      title: 'Program Affiliate',
+      items: [
+        { name: '💰 Jadi Affiliate', href: '/dashboard/apply-affiliate', icon: Share2, badge: 'NEW' },
+      ]
+    },
+    {
       title: 'Komunitas',
       items: [
         { name: 'Feed Komunitas', href: '/community/feed', icon: MessageSquare },
@@ -488,6 +500,50 @@ const navigationByRole = {
       items: [
         { name: 'My Membership', href: '/dashboard/my-membership', icon: Crown },
         { name: '🚀 Upgrade Premium', href: '/dashboard/upgrade', icon: Zap, badge: '🔥' },
+      ]
+    },
+    {
+      title: 'Bantuan',
+      items: [
+        { name: 'Tiket Support', href: '/dashboard/bantuan', icon: Ticket },
+      ]
+    }
+  ],
+  SUPPLIER: [
+    {
+      title: 'Dashboard',
+      items: [
+        { name: 'Dashboard Supplier', href: '/supplier/dashboard', icon: Home },
+        { name: 'Analitik', href: '/supplier/analytics', icon: BarChart3 },
+      ]
+    },
+    {
+      title: 'Produk',
+      items: [
+        { name: 'Produk Saya', href: '/supplier/products', icon: Package },
+        { name: 'Tambah Produk', href: '/supplier/products/create', icon: UserPlus },
+      ]
+    },
+    {
+      title: 'Profil Supplier',
+      items: [
+        { name: 'Profil Perusahaan', href: '/supplier/profile', icon: Building2 },
+        { name: 'Upgrade Paket', href: '/pricing/supplier', icon: TrendingUp },
+      ]
+    },
+    {
+      title: 'Komunitas',
+      items: [
+        { name: 'Feed Komunitas', href: '/community/feed', icon: MessageSquare },
+        { name: 'Grup', href: '/community/groups', icon: UsersRound },
+        { name: 'Acara', href: '/community/events', icon: Calendar },
+      ]
+    },
+    {
+      title: 'Akun',
+      items: [
+        { name: 'Profil Saya', href: '/profile', icon: User },
+        { name: 'Pengaturan Notifikasi', href: '/profile/notifications', icon: Bell },
       ]
     },
     {
@@ -628,18 +684,26 @@ export default function DashboardSidebar() {
 
   // Update navigation items with badges
   const updateCategoriesWithBadges = (categories: NavCategory[]): NavCategory[] => {
-    return categories.map(category => ({
-      ...category,
-      items: category.items.map(item => {
-        if (item.href === '/chat' && chatUnread > 0) {
-          return { ...item, badge: chatUnread.toString() }
+    return categories
+      .filter(category => {
+        // Filter out sections with false condition
+        if (category.condition) {
+          return category.condition(session)
         }
-        if ((item.href === '/notifications' || item.href === '/admin/notifications') && notifUnread > 0) {
-          return { ...item, badge: notifUnread.toString() }
-        }
-        return item
+        return true
       })
-    }))
+      .map(category => ({
+        ...category,
+        items: category.items.map(item => {
+          if (item.href === '/chat' && chatUnread > 0) {
+            return { ...item, badge: chatUnread.toString() }
+          }
+          if ((item.href === '/notifications' || item.href === '/admin/notifications') && notifUnread > 0) {
+            return { ...item, badge: notifUnread.toString() }
+          }
+          return item
+        })
+      }))
   }
 
   // Get base navigation by role

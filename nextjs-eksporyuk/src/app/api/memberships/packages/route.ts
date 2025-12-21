@@ -17,21 +17,36 @@ export async function GET(request: NextRequest) {
       where: includeInactive ? {} : { 
         isActive: true,
         status: 'PUBLISHED', // Only show PUBLISHED memberships in public checkout
+        showInGeneralCheckout: true, // Only show memberships enabled for general checkout
         NOT: {
-          slug: 'pro' // Exclude "Paket Pro" - ini hanya untuk admin/redirect
+          OR: [
+            { slug: 'pro' }, // Exclude "Paket Pro" - ini hanya untuk admin/redirect
+            { slug: 'member-free' } // Exclude "Member Free" - ini role default, bukan membership
+          ]
         }
       },
-      include: {
-        membershipProducts: {
-          include: {
-            product: true, // Include full product details
-          },
-        },
+      select: {
+        id: true,
+        slug: true,
+        checkoutSlug: true,
+        checkoutTemplate: true,
+        name: true,
+        duration: true,
+        price: true,
+        marketingPrice: true,
+        features: true,
+        isBestSeller: true,
+        isMostPopular: true,
+        salesPageUrl: true,
+        isActive: true,
+        commissionType: true,
+        affiliateCommissionRate: true,
+        formLogo: true,
+        formBanner: true,
+        formDescription: true,
         _count: {
           select: {
-            membershipGroups: true,
-            membershipCourses: true,
-            membershipProducts: true,
+            userMemberships: true
           }
         }
       },
@@ -62,8 +77,7 @@ export async function GET(request: NextRequest) {
       name: membership.name,
       duration: membership.duration,
       price: Number(membership.price),
-      originalPrice: membership.originalPrice ? Number(membership.originalPrice) : null,
-      discount: membership.discount || 0,
+      marketingPrice: membership.marketingPrice ? Number(membership.marketingPrice) : null,
       features: typeof membership.features === 'string' 
         ? JSON.parse(membership.features) 
         : Array.isArray(membership.features) ? membership.features : [],
@@ -71,10 +85,7 @@ export async function GET(request: NextRequest) {
       isBestSeller: membership.isBestSeller || false,
       isMostPopular: membership.isMostPopular || false,
       salesPageUrl: membership.salesPageUrl,
-      externalSalesUrl: membership.externalSalesUrl,
-      alternativeUrl: membership.alternativeUrl,
       isActive: membership.isActive,
-      products: membership.membershipProducts.map(mp => mp.product), // Add products array
       commissionType: membership.commissionType || 'PERCENTAGE',
       affiliateCommissionRate: Number(membership.affiliateCommissionRate) || 30,
       formLogo: membership.formLogo,
@@ -114,7 +125,7 @@ export async function POST(request: NextRequest) {
       description,
       duration,
       price,
-      originalPrice,
+      marketingPrice,
       features,
       isBestSeller,
       salesPageUrl,
@@ -135,7 +146,7 @@ export async function POST(request: NextRequest) {
         description,
         duration,
         price,
-        originalPrice: originalPrice || null,
+        marketingPrice: marketingPrice || null,
         features: features || [],
         isBestSeller: isBestSeller || false,
         salesPageUrl: salesPageUrl || null,

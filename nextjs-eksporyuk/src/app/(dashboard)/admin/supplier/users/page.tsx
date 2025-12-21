@@ -61,6 +61,13 @@ interface Supplier {
       type: string
     }
   } | null
+  affiliateSource?: {
+    affiliateName: string
+    affiliateEmail: string | null
+    affiliateWhatsapp: string | null
+    commissionAmount: number | null
+    paidOut: boolean
+  } | null
   _count: {
     products: number
   }
@@ -284,6 +291,7 @@ export default function AdminSupplierUsersPage() {
                       <TableHead>Owner</TableHead>
                       <TableHead>Lokasi</TableHead>
                       <TableHead>Membership</TableHead>
+                      <TableHead>Sumber Affiliate</TableHead>
                       <TableHead>Produk</TableHead>
                       <TableHead>Rating</TableHead>
                       <TableHead>Status</TableHead>
@@ -343,6 +351,32 @@ export default function AdminSupplierUsersPage() {
                             </div>
                           ) : (
                             <Badge variant="outline">No Membership</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {supplier.affiliateSource ? (
+                            <div className="min-w-[150px]">
+                              <div className="flex items-center gap-1">
+                                <Badge variant="secondary" className="text-xs">
+                                  Via Affiliate
+                                </Badge>
+                              </div>
+                              <p className="text-sm font-medium mt-1">
+                                {supplier.affiliateSource.affiliateName}
+                              </p>
+                              {supplier.affiliateSource.commissionAmount && (
+                                <p className="text-xs text-gray-500">
+                                  Komisi: Rp {supplier.affiliateSource.commissionAmount.toLocaleString('id-ID')}
+                                  {supplier.affiliateSource.paidOut ? (
+                                    <Badge variant="default" className="ml-1 text-xs">Paid</Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="ml-1 text-xs">Pending</Badge>
+                                  )}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">Daftar Langsung</span>
                           )}
                         </TableCell>
                         <TableCell>

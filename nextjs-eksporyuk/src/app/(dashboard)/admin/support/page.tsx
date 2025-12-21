@@ -208,9 +208,9 @@ export default function AdminSupportPage() {
         ) : (
           <div className="space-y-3">
             {filteredTickets.map(ticket => {
-              const statusInfo = STATUS_LABELS[ticket.status]
-              const priorityInfo = PRIORITY_LABELS[ticket.priority]
-              const StatusIcon = statusInfo.icon
+              const statusInfo = STATUS_LABELS[ticket.status] || { label: ticket.status, color: 'bg-gray-100 text-gray-800', icon: Clock }
+              const priorityInfo = PRIORITY_LABELS[ticket.priority] || { label: ticket.priority, color: 'bg-gray-100 text-gray-600' }
+              const StatusIcon = statusInfo.icon || Clock
 
               return (
                 <Card

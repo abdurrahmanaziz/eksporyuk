@@ -1,4 +1,44 @@
 Buatkan Web Apps dengan Next.js yang nantinya akan bisa dibuat mobiles apps android dan ios dengan flutter. dengan fitur dibawah ini. pastikan semua role memiliki tampilan masing-masing. pastikan terintegrasi penuh dengan sistem dan database! Jika fitur ini berhubungan dengan role lainnya.
+
+---
+
+# 🚀 PR Checklist - Migrasi Data Sejoli ke Platform Baru
+
+## Status: In Progress (20 Desember 2025)
+
+### PR #1: Sinkronisasi Membership dari Transaksi Sejoli
+**Status: ⏳ TODO**
+- [ ] User yang sudah SUCCESS pembayaran di admin/sales WAJIB memiliki membership aktif
+- [ ] Mapping durasi dari Sejoli ke membership baru:
+  - Sejoli 6 Bulan → Membership 6 Bulan
+  - Sejoli 12 Bulan → Membership 12 Bulan  
+  - Sejoli Lifetime → Membership Lifetime
+- [ ] Buat script untuk sync UserMembership dari Transaction yang SUCCESS
+- [ ] Validasi semua member premium punya membership record aktif
+
+### PR #2: Import Kelas dari Tutor LMS (Web Sejoli)
+**Status: ⏳ TODO**
+- [ ] Gunakan API Tutor LMS untuk ambil data kelas dari web Sejoli
+- [ ] Import video, judul, deskripsi secara lengkap
+- [ ] **Kelas "Ekspor Yuk"** → Akses untuk SEMUA membership (6 bulan, 12 bulan, lifetime)
+- [ ] **Kelas "Website Ekspor"** → Akses HANYA untuk membership LIFETIME
+- [ ] Setup Course-Membership relation dengan benar
+
+### PR #3: Setup Grup Wajib untuk Member
+**Status: ⏳ TODO**
+- [ ] **Grup "Support Ekspor Yuk"** → Semua membership masuk (6 bulan, 12 bulan, lifetime)
+- [ ] **Grup "Website Ekspor"** → Hanya membership LIFETIME
+- [ ] Auto-join member ke grup sesuai paket membership
+- [ ] Validasi semua member aktif sudah masuk grup yang sesuai
+
+---
+
+### Progress Log:
+| Tanggal | PR | Status | Notes |
+|---------|-----|--------|-------|
+| 20 Des 2025 | - | ✅ | Affiliate data 88.1% coverage, admin/sales menampilkan affiliate & komisi |
+| 20 Des 2025 | - | ✅ | PENDING transactions menampilkan affiliate (komisi setelah bayar) |
+
 ---
 
 # 💡 Eksporyuk Web Apps – PRD Ringkas (v1.0 → v5.2)
@@ -3813,7 +3853,19 @@ Halaman **/admin/settings/branding**:
 
 ---
 
-## 📊 DATA MIGRASI SEJOLI → NEXT.JS
+## 📊 DATA MIGRASI SEJOLI → NEXT.JS ✅ COMPLETE
+
+**Status**: ✅ **100% COMPLETE** (19 Desember 2025)  
+**Documentation**: `/nextjs-eksporyuk/SEJOLI_IMPORT_COMPLETE.md`
+
+### IMPORT SUMMARY
+✅ **Users**: 19,016 imported  
+✅ **Transactions**: 19,252 imported (SUCCESS: 12,827 | PENDING: 42 | FAILED: 6,383)  
+✅ **Memberships**: 10,124 created  
+✅ **Affiliate Profiles**: 124 created  
+✅ **Affiliate Conversions**: 3,742 with commission tracking  
+✅ **Total Revenue**: Rp 4.130.776.001  
+✅ **Total Commission**: Rp 971.545.000
 
 ### STRUKTUR DATA SEJOLI
 Data yang tersedia dari export Sejoli (`sejolisa-full-18000users-1765279985617.json`):
@@ -3824,19 +3876,32 @@ Data yang tersedia dari export Sejoli (`sejolisa-full-18000users-1765279985617.j
 ✅ **Affiliate** - Ada di `order.affiliate_id` dan bisa di-lookup ke tabel `affiliates` untuk dapat nama & email
 ✅ **Status transaksi** - Ada di `order.status` (completed, cancelled, refunded, payment-confirm, on-hold)
 
-### KOMISI SISTEM
+### KOMISI SISTEM ✅ VERIFIED
 ✅ **Komisi sudah tersimpan di**:
-- **Database**: `AffiliateConversion.commissionAmount` (sudah benar)
-- **File**: `flat-commission-final.json` (total per affiliate - 97 affiliates, Rp 1.232.435.000 total)
+- **Database**: `AffiliateConversion.commissionAmount` (✅ verified accurate)
+- **File**: `flat-commission-final.json` (total per affiliate - 124 affiliates, Rp 971.545.000 total)
 - **Mapping**: `product-membership-mapping.js` (komisi per product_id)
+- **Verification**: All commission calculations verified against product mapping
 
 ✅ **Setiap produk beda-beda komisi**:
 - Product 179 → Rp 250.000
-- Product 13401 → Rp 325.000
+- Product 13401 → Rp 325.000 (highest)
 - Product 3840 → Rp 300.000
 - Product 8683 → Rp 300.000
 - Product 8684 → Rp 250.000
 - dll (total 54 produk dengan komisi Rp 0 - Rp 325.000)
+
+### TOP 10 AFFILIATES (Verified)
+1. **Sutisna**: Rp 209.395.000 (539 conversions)
+2. **Rahmat Al Fianto**: Rp 109.435.000 (415 conversions)
+3. **Asep Abdurrahman Wahid**: Rp 103.285.000 (443 conversions)
+4. **Hamid Baidowi**: Rp 93.510.000 (374 conversions)
+5. **Yoga Andrian**: Rp 90.385.000 (342 conversions)
+6. **NgobrolinEkspor**: Rp 82.055.000 (329 conversions)
+7. **eko wibowo**: Rp 49.260.000 (197 conversions)
+8. **Muhamad safrizal**: Rp 36.995.000 (148 conversions)
+9. **PintarEkspor**: Rp 31.225.000 (125 conversions)
+10. **Fadlul Rahmat**: Rp 23.720.000 (95 conversions)
 
 ### KATEGORI PRODUK & MEMBERSHIP MAPPING
 
@@ -3875,21 +3940,32 @@ Data yang tersedia dari export Sejoli (`sejolisa-full-18000users-1765279985617.j
 #### 🎯 LAINNYA (1 produk)
 **Product ID**: 16826 (Paket Umroh 1 Bulan + Cari Buyer Ekspor)
 
-### STATISTIK DATA
-- **Total Users**: 18,000
-- **Total Orders**: 18,584
-- **Completed Orders**: 12,539
-- **Total Affiliates**: 12,585
-- **Orders dengan Affiliate**: 11,291
-- **Affiliates dengan Komisi**: 97 affiliates
-- **Total Commission Paid**: Rp 1.232.435.000
-- **Total Revenue**: Rp 3.950.660.373
+### STATISTIK DATA ✅ FINAL
+- **Total Users**: 19,016 (imported)
+- **Total Orders**: 19,252 (imported)
+- **Completed Orders**: 12,827 (SUCCESS status)
+- **Total Affiliates**: 124 (active affiliates with profiles)
+- **Orders dengan Affiliate**: 3,742 (SUCCESS with commission)
+- **Affiliates dengan Komisi**: 124 affiliates
+- **Total Commission Paid**: Rp 971.545.000 (verified)
+- **Total Revenue**: Rp 4.130.776.001
+
+### COMMISSION DISTRIBUTION
+- **0 (Free Events)**: 0 conversions
+- **1-100k**: 643 conversions
+- **100-200k**: 205 conversions  
+- **200-300k**: 1,850 conversions
+- **300k+**: 1,044 conversions
 
 ### FILE MAPPING & HELPER
 - **Product Mapping**: `/scripts/migration/product-membership-mapping.js`
 - **Commission Data**: `/scripts/migration/flat-commission-final.json`
 - **Sejoli Export**: `/scripts/migration/wp-data/sejolisa-full-18000users-1765279985617.json`
 - **Commission Helper**: `/src/lib/sejoli-commission.ts` - `getCommissionBySejolProductId(productId)`
+- **Import Scripts**: 
+  - `sejoli-api-import.js` (main import - 481 lines)
+  - `import-affiliates-and-conversions.js` (affiliate import - 450+ lines)
+  - `verify-sejoli-commissions.js` (verification - 250+ lines)
 
 📊 DATA YANG SAYA KETAHUI LENGKAP:
 1. PRODUK & KATEGORI (54 produk total)
@@ -3940,3 +4016,688 @@ Product 8683: Komisi 300k
 Product 17920: Komisi 250k ← Ini lifetime promo, bukan 12 bulan
 Product 13399: Komisi 250k ← 
 Product 20852: Komisi 280k
+
+
+---
+
+# 🟦 **PRD – Support Ticket System**
+
+**Nama Modul:** Support Ticket
+**Versi:** 1.0
+**Status:** New Feature (terintegrasi penuh dengan sistem existing)
+**Scope:** Admin, Support, Affiliate, Member, User Free, Supplier
+
+---
+
+## 1. TUJUAN BISNIS
+
+Support Ticket System dibuat untuk:
+
+1. Menjadi **satu-satunya jalur resmi bantuan** pengguna
+2. Mengurangi support via chat pribadi (WA, DM)
+3. Memberikan **tracking & histori masalah user**
+4. Memastikan SLA support terkontrol
+5. Memudahkan admin & tim support mengelola permintaan
+6. Meningkatkan kepercayaan & profesionalisme platform
+
+---
+
+## 2. PRINSIP UTAMA (WAJIB)
+
+1. Semua support **melalui tiket**, bukan chat bebas
+2. Setiap tiket **punya status & histori jelas**
+3. Akses tiket **berdasarkan role**
+4. Support tidak boleh bocor antar user
+5. Terintegrasi dengan **notifikasi realtime**
+6. Tidak menggunakan popup (kecuali notif)
+7. Ringan, aman, dan scalable
+
+---
+
+## 3. ROLE & AKSES
+
+### 🟦 User (Free / Member / Affiliate / Supplier)
+
+* Buat tiket
+* Melihat tiket milik sendiri
+* Membalas tiket
+* Upload lampiran
+* Menutup tiket (close)
+
+### 🟦 Admin
+
+* Melihat semua tiket
+* Assign tiket ke staff support
+* Mengubah status & prioritas
+* Memberi balasan
+* Menutup / reopen tiket
+* Melihat statistik support
+
+### 🟦 Support Staff (opsional role)
+
+* Melihat tiket yang di-assign
+* Membalas tiket
+* Update status
+
+---
+
+## 4. STRUKTUR MENU (TANPA DUPLIKAT)
+
+### Sidebar User
+
+**Bantuan → Tiket Support**
+
+### Sidebar Admin
+
+**Support → Tiket**
+
+(Jika menu sudah ada → perbaiki routing & logic, jangan duplikat)
+
+---
+
+## 5. FITUR UTAMA SUPPORT TICKET
+
+---
+
+### ⭐ 5.1 Pembuatan Tiket
+
+User dapat membuat tiket dengan form TAB (bukan popup):
+
+#### Field wajib:
+
+* Judul tiket
+* Kategori masalah
+* Deskripsi masalah
+* Lampiran (opsional)
+
+#### Kategori contoh:
+
+* Akun & Login
+* Membership & Pembayaran
+* Kelas
+* Affiliate 
+* Iklan & Tracking
+* Bug Sistem
+* Lainnya
+
+Setelah submit:
+
+* Tiket dibuat
+* Status = **Open**
+* Notifikasi realtime ke admin/support
+
+---
+
+### ⭐ 5.2 Status Tiket (WAJIB AKTIF)
+
+| Status       | Deskripsi             |
+| ------------ | --------------------- |
+| Open         | Tiket baru            |
+| In Progress  | Sedang ditangani      |
+| Waiting User | Menunggu balasan user |
+| Resolved     | Masalah selesai       |
+| Closed       | Tiket ditutup         |
+
+* Status harus sinkron FE + BE + DB
+* Tidak boleh status menggantung
+
+---
+
+### ⭐ 5.3 Prioritas Tiket
+
+Admin/support dapat set prioritas:
+
+* Low
+* Medium
+* High
+* Urgent
+
+Prioritas mempengaruhi:
+
+* Urutan tampilan
+* SLA
+* Notifikasi
+
+---
+
+### ⭐ 5.4 Thread Percakapan Tiket
+
+Setiap tiket memiliki **timeline chat**:
+
+* Pesan user
+* Balasan admin/support
+* Timestamp
+* Lampiran file
+* Sistem message (status berubah)
+
+Semua percakapan **tersimpan permanen**.
+
+---
+
+### ⭐ 5.5 Lampiran File
+
+* User & admin bisa upload:
+
+  * Gambar
+  * PDF
+  * Dokumen
+* Validasi:
+
+  * Max size
+  * Type file
+* File disimpan aman (tidak expose path)
+
+---
+
+### ⭐ 5.6 Assign & Eskalasi (Admin)
+
+Admin dapat:
+
+* Assign tiket ke staff support
+* Reassign tiket
+* Eskalasi prioritas
+
+---
+
+### ⭐ 5.7 Notifikasi Realtime (WAJIB)
+
+Integrasi dengan sistem notifikasi existing:
+
+* 🔔 Badge di kanan atas
+* Popup saat:
+
+  * Tiket baru dibuat
+  * Ada balasan baru
+  * Status berubah
+
+Channel:
+
+* In-app (Pusher)
+* Email (Mailketing)
+* Push (OneSignal)
+
+---
+
+### ⭐ 5.8 Hak Akses & Keamanan
+
+* User hanya bisa melihat tiket miliknya
+* Affiliate tidak bisa lihat tiket affiliate lain
+* Admin bisa lihat semua
+* URL tiket tidak bisa diakses tanpa hak
+
+---
+
+### ⭐ 5.9 Penutupan Tiket
+
+* User bisa klik **Tutup Tiket**
+* Admin bisa force close
+* Tiket closed:
+
+  * Tidak bisa dibalas
+  * Tetap bisa dibaca (read-only)
+
+---
+
+## 6. INTEGRASI DENGAN SISTEM EXISTING
+
+Tiket bisa dikaitkan dengan:
+
+* User ID
+* Role
+* Membership ID
+* Affiliate ID
+* Order / Invoice ID (jika relevan)
+* Kelas (jika terkait kelas)
+
+Tujuan: support lebih cepat & tepat.
+
+---
+
+## 7. UI / UX REQUIREMENT
+
+* Menggunakan **ResponsivePageWrapper**
+* Tidak ada popup untuk form (pakai tab/page)
+* Tampilan clean & ringan
+* Bahasa Indonesia
+* Indikator status jelas (warna & label)
+* Search & filter tiket
+
+---
+
+## 8. FILTER & SEARCH (ADMIN)
+
+Admin dapat filter:
+
+* Status
+* Prioritas
+* Role user
+* Kategori
+* Tanggal
+* Assigned staff
+
+---
+
+## 9. DATABASE (HIGH LEVEL)
+
+### Table: `support_tickets`
+
+* id
+* user_id
+* role
+* title
+* category
+* priority
+* status
+* assigned_to
+* created_at
+* updated_at
+
+### Table: `support_ticket_messages`
+
+* id
+* ticket_id
+* sender_id
+* sender_role
+* message
+* attachment
+* created_at
+
+---
+
+## 10. FLOW UTAMA
+
+### User
+
+```
+Dashboard → Tiket Support → Buat Tiket
+→ Admin menerima notif
+→ Support membalas
+→ User balas
+→ Status resolved
+→ Close
+```
+
+### Admin
+
+```
+Dashboard → Support → Tiket
+→ Assign
+→ Update status
+→ Reply
+→ Close
+```
+
+---
+
+## 11. METRIC & REPORT (ADMIN)
+
+* Total tiket
+* Open vs Closed
+* Rata-rata response time
+* Tiket per kategori
+* Tiket per role
+* SLA compliance
+
+---
+
+## 12. CHECKLIST DEVELOPER (WAJIB)
+
+✔ Tidak duplikasi menu
+✔ Semua role diuji
+✔ Status & priority aktif
+✔ Notifikasi realtime jalan
+✔ Tidak ada tiket bocor
+✔ Upload file aman
+✔ Tidak popup
+✔ Responsive
+✔ Error handling lengkap
+
+---
+
+## 13. IDE PENGEMBANGAN LANJUTAN (OPSIONAL)
+
+* Auto-reply template
+* SLA timer
+* Rating kepuasan
+* Internal note (admin only)
+* Knowledge base terhubung tiket
+* AI suggestion (future)
+
+---
+
+## 14. KESIMPULAN
+
+Support Ticket System ini:
+
+* Wajib jadi pusat bantuan resmi
+* Terintegrasi penuh dengan sistem kamu
+* Aman & profesional
+* Mudah dipakai user
+* Mudah dikelola admin
+* Siap di-scale
+
+
+
+# 📘 **PRD – Supplier Registration, Onboarding & Profile System**
+
+**Nama Modul:** Supplier Ecosystem
+**Versi:** 1.2 (Final – Approved)
+**Status:** Aktif (Buyer & E-commerce = Core Only)
+**Layout:** ResponsivePageWrapper
+**UI:** Bahasa Indonesia
+**Form:** Tab / Page (❌ No popup)
+
+---
+
+## 1. TUJUAN SISTEM
+
+Membangun sistem supplier yang:
+
+* Tidak langsung aktif tanpa seleksi
+* Mudah diakses (login cepat)
+* Data rapi & terstruktur
+* Bisa dinilai mentor
+* Disetujui admin
+* Siap dikembangkan ke komunitas, buyer, dan e-commerce
+
+---
+
+## 2. PRINSIP UTAMA (WAJIB)
+
+1. **Daftar ≠ Onboarding**
+2. Login awal **hanya autentikasi (Google)**
+3. Profil & assessment **setelah login**
+4. Supplier = **1 role sistem**
+5. Produsen / Pabrik / Trader = **tipe supplier**
+6. Mentor review → Admin approval
+7. Supplier tidak bisa kontak siapa pun
+8. Interaksi terbuka hanya lewat **Membership Komunitas**
+9. Semua data supplier **terkunci bertahap**
+
+---
+
+## 3. ROLE & AKSES
+
+### Role Sistem:
+
+* `ROLE_SUPPLIER`
+* `ROLE_MENTOR`
+* `ROLE_ADMIN`
+* `ROLE_AFFILIATE`
+* `ROLE_MEMBER` FREE & PREMIUM
+
+Supplier **bukan otomatis member komunitas**.
+
+---
+
+## 4. FLOW BESAR SISTEM (END-TO-END)
+
+```
+Landing / Affiliate Link
+↓
+Login / Register (Google)
+↓
+User dibuat + ROLE_SUPPLIER
+↓
+Status: Draft
+↓
+Redirect Wajib ke Onboarding
+↓
+Isi Profil Supplier
+↓
+Isi Assessment
+↓
+Submit
+↓
+Mentor Review
+↓
+Mentor Rekomendasikan
+↓
+Admin Setujui
+↓
+Supplier Aktif (Terbatas)
+```
+
+---
+
+## 5. TAHAP 1 – REGISTRASI (LOGIN SAJA)
+
+### Tujuan
+
+Mempermudah entry, meningkatkan conversion.
+
+### Yang terjadi:
+
+* Login Google
+* Sistem membuat:
+
+  * User
+  * Role = Supplier
+  * Status = Draft
+
+### Yang BELUM terjadi:
+
+* Isi data usaha
+* Isi assessment
+* Tampil sebagai supplier
+
+📌 **Supplier tidak boleh akses fitur lain sebelum onboarding selesai.**
+
+---
+
+## 6. TAHAP 2 – ONBOARDING SUPPLIER (WAJIB)
+
+Setelah login pertama:
+
+* Sistem **paksa redirect** ke halaman onboarding
+* Tidak bisa lompat ke dashboard lain
+
+---
+
+## 7. STEP ONBOARDING 1 – PILIH TIPE SUPPLIER
+
+### Field:
+
+**Jenis Usaha Anda** *(radio / card)*
+
+Pilihan:
+
+* Produsen
+* Pabrik / Manufaktur
+* Trader / Exporter
+* Supplier / Aggregator
+
+📌 Disimpan sebagai:
+
+```text
+supplier_type
+```
+
+📌 Tidak bisa diubah tanpa admin.
+
+---
+
+## 8. STEP ONBOARDING 2 – ISI PROFIL SUPPLIER (DETAIL)
+
+### Prinsip Profil:
+
+* Identitas & data usaha
+* Bukan penilaian
+* Bisa diedit sampai mentor rekomendasi
+
+---
+
+### 🔹 TAB 1 — IDENTITAS USAHA (WAJIB)
+
+Gunakan struktur **PT / CV / UD** yang sudah ada.
+
+| Field                          | Wajib        |
+| ------------------------------ | ------------ |
+| Nama Usaha / Perusahaan        | ✅            |
+| Bentuk Usaha (PT, CV, UD, dll) | ✅            |
+| Tipe Supplier                  | 🔒 Read-only |
+| Bidang Usaha                   | ✅            |
+| Produk Utama                   | ✅            |
+| Tahun Berdiri                  | ⬜            |
+
+---
+
+### 🔹 TAB 2 — ALAMAT & LOKASI
+
+| Field                       | Wajib |
+| --------------------------- | ----- |
+| Alamat Lengkap              | ✅     |
+| Provinsi                    | ✅     |
+| Kota / Kabupaten            | ✅     |
+| Kecamatan                   | ⬜     |
+| Kode Pos                    | ⬜     |
+| Lokasi Produksi (jika beda) | ⬜     |
+
+📌 Dipakai untuk:
+
+* Filter komunitas
+* Future buyer matching
+
+---
+
+### 🔹 TAB 3 — KONTAK PERUSAHAAN
+
+| Field          | Wajib |
+| -------------- | ----- |
+| Nama PIC       | ✅     |
+| Jabatan PIC    | ⬜     |
+| Nomor WhatsApp | ✅     |
+| Email Bisnis   | ✅     |
+| Website        | ⬜     |
+| Sosial Media   | ⬜     |
+
+📌 Kontak **tidak tampil publik langsung**.
+
+---
+
+### 🔹 TAB 4 — LEGALITAS USAHA (OPSIONAL)
+
+| Field                | Wajib |
+| -------------------- | ----- |
+| NIB                  | ⬜     |
+| NPWP                 | ⬜     |
+| SIUP / IUI           | ⬜     |
+| Sertifikasi (upload) | ⬜     |
+
+📌 Bisa dilengkapi bertahap.
+
+---
+
+### 🔹 TAB 5 — PROFIL SINGKAT (BIO SUPPLIER)
+
+| Field                   | Wajib |
+| ----------------------- | ----- |
+| Deskripsi Singkat Usaha | ✅     |
+| Keunggulan Produk       | ⬜     |
+| Unique Value            | ⬜     |
+
+📌 Digunakan untuk **Bio Supplier Page**.
+
+---
+
+## 9. ATURAN EDIT PROFIL
+
+| Status Supplier       | Edit Profil     |
+| --------------------- | --------------- |
+| Draft                 | ✅ Bebas         |
+| Onboarding            | ✅ Bebas         |
+| Waiting Review        | ⚠️ Terbatas     |
+| Recommended by Mentor | ❌ Dikunci       |
+| Verified              | ⚠️ Dengan audit |
+| Verified + Membership | ✅ (audit log)   |
+
+---
+
+## 10. STEP ONBOARDING 3 – ASSESSMENT (RINGKAS)
+
+Assessment **dipisah dari profil**
+(Detail assessment ada di PRD terpisah, tapi flow-nya di sini)
+
+* Format ABC / range
+* Dinamis sesuai tipe supplier
+* Pertanyaan bisa ditambah mentor
+* Supplier **tidak lihat skor**
+
+---
+
+## 11. SUBMIT ONBOARDING
+
+Saat klik **Submit**:
+
+* Status → `Waiting Review`
+* Profil & assessment dikunci
+* Masuk antrian mentor
+
+---
+
+## 12. REVIEW MENTOR (RINGKAS)
+
+Mentor:
+
+* Melihat profil + assessment
+* Memberi catatan
+* Klik **Verifikasi & Rekomendasikan**
+
+Status → `Recommended by Mentor`
+
+---
+
+## 13. APPROVAL ADMIN
+
+Admin:
+
+* Review data + catatan mentor
+* Menentukan status final:
+
+  * Verified
+  * Limited
+  * Suspended
+
+---
+
+## 14. OUTPUT AKHIR
+
+Supplier yang lolos:
+
+* Masuk Dashboard Supplier
+* Bisa tambah produk
+* Bisa punya Bio Supplier
+* Bisa join Membership Komunitas
+
+---
+
+## 15. DATABASE (RINGKAS)
+
+### `suppliers`
+
+* user_id
+* supplier_type
+* status
+* profile_json
+
+### `supplier_profiles`
+
+* supplier_id
+* identitas
+* alamat
+* kontak
+* legalitas
+* bio
+
+---
+
+## 16. KESIMPULAN FINAL
+
+✔ Daftar = login saja
+✔ Onboarding = isi profil + assessment
+✔ Profil = data usaha (pakai PT/CV/UD)
+✔ Mentor review
+✔ Admin approval
+✔ Sistem rapi & scalable
+
+

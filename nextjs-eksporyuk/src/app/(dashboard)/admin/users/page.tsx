@@ -58,6 +58,7 @@ type Stats = {
     affiliate: number
     memberPremium: number
     memberFree: number
+    supplier: number
   }
   activeMemberships: number
 }
@@ -276,6 +277,7 @@ export default function AdminUsersPage() {
       AFFILIATE: { icon: Share2, color: 'bg-green-100 text-green-700', label: 'Affiliate' },
       MEMBER_PREMIUM: { icon: Crown, color: 'bg-yellow-100 text-yellow-700', label: 'Premium' },
       MEMBER_FREE: { icon: User, color: 'bg-gray-100 text-gray-700', label: 'Free' },
+      SUPPLIER: { icon: ShoppingCart, color: 'bg-orange-100 text-orange-700', label: 'Supplier' },
     }
 
     const badge = badges[role] || badges.MEMBER_FREE
@@ -400,6 +402,19 @@ export default function AdminUsersPage() {
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.activeMemberships}</p>
             </div>
           </div>
+
+          <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 rounded-xl">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-400/20 to-orange-600/20 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
+            <div className="p-5 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-md">
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Suppliers</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.byRole.supplier || 0}</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -445,6 +460,7 @@ export default function AdminUsersPage() {
             <option value="AFFILIATE">Affiliate</option>
             <option value="MEMBER_PREMIUM">Premium</option>
             <option value="MEMBER_FREE">Free</option>
+            <option value="SUPPLIER">Supplier</option>
           </select>
 
           {/* Membership Filter */}
@@ -722,6 +738,7 @@ export default function AdminUsersPage() {
                   <option value="MEMBER_PREMIUM">Member Premium</option>
                   <option value="AFFILIATE">Affiliate</option>
                   <option value="MENTOR">Mentor</option>
+                  <option value="SUPPLIER">Supplier</option>
                   <option value="ADMIN">Admin</option>
                 </select>
               </div>

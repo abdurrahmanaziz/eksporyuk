@@ -5,13 +5,13 @@ import { useRouter, useParams } from 'next/navigation'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Send, Settings, User, Bot } from 'lucide-react'
+import { ArrowLeft, Send, Settings, User, Bot, UserCog, FileText, ExternalLink } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
+import SimpleTextEditor from '@/components/ui/SimpleTextEditor'
 
 const STATUS_LABELS: Record<string, any> = {
   OPEN: { label: 'Terbuka', color: 'bg-blue-100 text-blue-800' },
@@ -38,8 +38,12 @@ export default function AdminTicketDetailPage() {
   const [sending, setSending] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [replyMessage, setReplyMessage] = useState('')
+  const [replyFiles, setReplyFiles] = useState<File[]>([])
+  const [uploading, setUploading] = useState(false)
   const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
+  const [assignedToId, setAssignedToId] = useState<string>('none')
+  const [agents, setAgents] = useState<any[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -50,12 +54,17 @@ export default function AdminTicketDetailPage() {
     if (ticket) {
       setStatus(ticket.status)
       setPriority(ticket.priority)
+      setAssignedToId(ticket.assignedTo?.id || 'none')
     }
   }, [ticket])
 
   useEffect(() => {
     scrollToBottom()
   }, [ticket?.messages])
+
+  useEffect(() => {
+    fetchAgents()
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -82,13 +91,29 @@ export default function AdminTicketDetailPage() {
     }
   }
 
+  const fetchAgents = async () => {
+    try {
+      const res = await fetch('/api/support/agents')
+      const data = await res.json()
+      if (data.success) {
+        setAgents(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching agents:', error)
+    }
+  }
+
   const handleUpdateTicket = async () => {
     setUpdating(true)
     try {
       const res = await fetch(`/api/support/tickets/${ticketId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, priority })
+        body: JSON.stringify({
+          status,
+          priority,
+          assignedToId: assignedToId === 'none' ? null : assignedToId
+        })
       })
 
       const data = await res.json()
@@ -110,17 +135,41 @@ export default function AdminTicketDetailPage() {
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!replyMessage.trim()) {
+    const plainText = replyMessage.replace(/<[^>]*>/g, '').trim()
+    if (!plainText) {
       toast.error('Pesan tidak boleh kosong')
       return
     }
 
     setSending(true)
     try {
+      // Upload attachments first if any
+      let attachments: string[] = []
+      if (replyFiles.length > 0) {
+        setUploading(true)
+        const uploadPromises = replyFiles.map(async (file) => {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('folder', 'support-tickets')
+
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          })
+
+          if (!uploadRes.ok) throw new Error('Upload failed')
+          const uploadData = await uploadRes.json()
+          return uploadData.url
+        })
+
+        attachments = await Promise.all(uploadPromises)
+        setUploading(false)
+      }
+
       const res = await fetch(`/api/support/tickets/${ticketId}/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: replyMessage })
+        body: JSON.stringify({ message: replyMessage, attachments })
       })
 
       const data = await res.json()
@@ -128,6 +177,7 @@ export default function AdminTicketDetailPage() {
       if (data.success) {
         toast.success('Balasan terkirim')
         setReplyMessage('')
+        setReplyFiles([])
         fetchTicket()
       } else {
         toast.error(data.error || 'Gagal mengirim balasan')
@@ -137,6 +187,7 @@ export default function AdminTicketDetailPage() {
       toast.error('Gagal mengirim balasan')
     } finally {
       setSending(false)
+      setUploading(false)
     }
   }
 
@@ -152,8 +203,8 @@ export default function AdminTicketDetailPage() {
     )
   }
 
-  const statusInfo = STATUS_LABELS[ticket.status]
-  const priorityInfo = PRIORITY_LABELS[ticket.priority]
+  const statusInfo = STATUS_LABELS[ticket.status] || { label: ticket.status, color: 'bg-gray-100 text-gray-800' }
+  const priorityInfo = PRIORITY_LABELS[ticket.priority] || { label: ticket.priority, color: 'bg-gray-100 text-gray-600' }
 
   return (
     <ResponsivePageWrapper>
@@ -184,7 +235,7 @@ export default function AdminTicketDetailPage() {
               <CardContent className="p-0">
                 <div className="max-h-[500px] overflow-y-auto p-6 space-y-4">
                   {ticket.messages.map((message: any) => {
-                    const isAdmin = message.sender.role === 'ADMIN'
+                    const isAdmin = message.sender?.role === 'ADMIN'
 
                     if (message.isSystemMessage) {
                       return (
@@ -225,7 +276,49 @@ export default function AdminTicketDetailPage() {
                           <div className={`rounded-lg p-4 ${
                             isAdmin ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'
                           }`}>
-                            <p className="whitespace-pre-wrap break-words">{message.message}</p>
+                            <div
+                              className="prose prose-sm max-w-none break-words"
+                              dangerouslySetInnerHTML={{ __html: message.message }}
+                            />
+
+                            {message.attachments && message.attachments.length > 0 && (
+                              <div className="mt-3 pt-3 border-t border-white/20 space-y-2">
+                                {message.attachments.map((url: string, idx: number) => {
+                                  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url)
+                                  return isImage ? (
+                                    <a
+                                      key={idx}
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <img
+                                        src={url}
+                                        alt="Attachment"
+                                        className="max-w-[200px] rounded-lg border border-white/20"
+                                      />
+                                    </a>
+                                  ) : (
+                                    <a
+                                      key={idx}
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={`flex items-center gap-2 text-sm ${
+                                        isAdmin ? 'text-white/90 hover:text-white' : 'text-blue-600 hover:text-blue-800'
+                                      }`}
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <FileText className="w-4 h-4" />
+                                      <span className="underline">Lampiran {idx + 1}</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -240,17 +333,19 @@ export default function AdminTicketDetailPage() {
             <Card>
               <CardContent className="p-4">
                 <form onSubmit={handleSendReply} className="space-y-3">
-                  <Textarea
+                  <SimpleTextEditor
                     value={replyMessage}
-                    onChange={(e) => setReplyMessage(e.target.value)}
+                    onChange={setReplyMessage}
+                    onFilesChange={setReplyFiles}
+                    maxFiles={5}
+                    minHeight="120px"
                     placeholder="Tulis balasan..."
-                    rows={4}
-                    disabled={sending}
+                    disabled={sending || uploading}
                   />
                   <div className="flex justify-end">
-                    <Button type="submit" disabled={sending || !replyMessage.trim()}>
+                    <Button type="submit" disabled={sending || uploading || !replyMessage.replace(/<[^>]*>/g, '').trim()}>
                       <Send className="w-4 h-4 mr-2" />
-                      {sending ? 'Mengirim...' : 'Kirim Balasan'}
+                      {sending || uploading ? 'Memproses...' : 'Kirim Balasan'}
                     </Button>
                   </div>
                 </form>
@@ -298,9 +393,29 @@ export default function AdminTicketDetailPage() {
                   </Select>
                 </div>
 
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Assign ke</label>
+                  <Select value={assignedToId} onValueChange={setAssignedToId}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">- Tidak ada -</SelectItem>
+                      {agents.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id}>
+                          {agent.name || agent.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <Button
                   onClick={handleUpdateTicket}
-                  disabled={updating || (status === ticket.status && priority === ticket.priority)}
+                  disabled={
+                    updating ||
+                    (status === ticket.status && priority === ticket.priority && assignedToId === (ticket.assignedTo?.id || 'none'))
+                  }
                   className="w-full"
                 >
                   {updating ? 'Menyimpan...' : 'Simpan Perubahan'}

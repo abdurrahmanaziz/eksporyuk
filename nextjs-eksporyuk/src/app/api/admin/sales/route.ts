@@ -224,10 +224,10 @@ export async function GET(request: NextRequest) {
                 reminders: true,
               }
             })
-            // Safely fetch duration via raw SQL
+            // Safely fetch duration via raw SQL (use quoted table name for PostgreSQL)
             let derivedDuration: string | null = null
             try {
-              const dRows: any[] = await prisma.$queryRaw`SELECT duration FROM Membership WHERE id = ${membershipId} LIMIT 1`
+              const dRows: any[] = await prisma.$queryRaw`SELECT duration FROM "Membership" WHERE id = ${membershipId} LIMIT 1`
               derivedDuration = (dRows?.[0]?.duration as string) || null
             } catch (_) {
               derivedDuration = null
@@ -254,7 +254,7 @@ export async function GET(request: NextRequest) {
           const mId = tx.membership.membership.id
           let derivedDuration: string | null = null
           try {
-            const dRows: any[] = await prisma.$queryRaw`SELECT duration FROM Membership WHERE id = ${mId} LIMIT 1`
+            const dRows: any[] = await prisma.$queryRaw`SELECT duration FROM "Membership" WHERE id = ${mId} LIMIT 1`
             derivedDuration = (dRows?.[0]?.duration as string) || null
           } catch (_) {
             derivedDuration = null
@@ -271,10 +271,76 @@ export async function GET(request: NextRequest) {
       })
     )
     
+    // Enrich transactions with affiliate data from metadata for PENDING transactions
+    // This shows affiliate info even before payment is completed
+    const fullyEnrichedTransactions = await Promise.all(
+      enrichedTransactions.map(async (tx) => {
+        // If transaction doesn't have affiliateConversion but has affiliate data in metadata
+        if (!tx.affiliateConversion) {
+          const metadata = tx.metadata as any
+          const affiliateId = metadata?.affiliate_id || metadata?.affiliateId
+          const affiliateName = metadata?.affiliate_name || metadata?.affiliateName
+          
+          if (affiliateId || affiliateName) {
+            // Try to find the affiliate profile
+            let affiliateProfile = null
+            
+            // First try to find by existing mapping from conversions
+            if (affiliateId) {
+              const existingConversion = await prisma.affiliateConversion.findFirst({
+                where: {
+                  transaction: {
+                    metadata: {
+                      path: ['affiliate_id'],
+                      equals: affiliateId
+                    }
+                  }
+                },
+                include: {
+                  affiliate: {
+                    include: {
+                      user: {
+                        select: {
+                          id: true,
+                          name: true,
+                          email: true,
+                          phone: true,
+                          whatsapp: true,
+                        }
+                      }
+                    }
+                  }
+                }
+              })
+              affiliateProfile = existingConversion?.affiliate
+            }
+            
+            // Create a virtual affiliateConversion object for display
+            // Note: commissionAmount is null for PENDING - only shown after SUCCESS
+            return {
+              ...tx,
+              // Virtual affiliate data from metadata (for display only)
+              affiliateFromMetadata: {
+                name: affiliateName || affiliateProfile?.user?.name || null,
+                affiliateId: affiliateId,
+                affiliate: affiliateProfile ? {
+                  id: affiliateProfile.id,
+                  user: affiliateProfile.user
+                } : null,
+                // Commission only shown if transaction is SUCCESS
+                commissionAmount: tx.status === 'SUCCESS' ? (metadata?.commissionAmount || null) : null,
+              }
+            }
+          }
+        }
+        return tx
+      })
+    )
+    
     // Filter by membership duration if specified
-    let filteredTransactions = enrichedTransactions
+    let filteredTransactions = fullyEnrichedTransactions
     if (filterDuration) {
-      filteredTransactions = enrichedTransactions.filter(tx => {
+      filteredTransactions = fullyEnrichedTransactions.filter(tx => {
         if (tx.type !== 'MEMBERSHIP') return false
         // Prefer metadata-derived duration to avoid enum decoding on relation
         const duration = (tx.metadata as any)?.membershipDuration 

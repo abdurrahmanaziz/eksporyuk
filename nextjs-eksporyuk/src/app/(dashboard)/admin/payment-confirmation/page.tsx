@@ -168,7 +168,7 @@ export default function PaymentConfirmationPage() {
     
     setProcessing(true);
     try {
-      const response = await fetch(`/api/admin/transactions/${selectedTransaction.id}/confirm`, {
+      const response = await fetch(`/api/admin/sales/${selectedTransaction.id}/confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -199,7 +199,7 @@ export default function PaymentConfirmationPage() {
     
     setProcessing(true);
     try {
-      const response = await fetch(`/api/admin/transactions/${selectedTransaction.id}/reject`, {
+      const response = await fetch(`/api/admin/sales/${selectedTransaction.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: rejectReason }),

@@ -6,9 +6,9 @@ import { useRouter, useParams } from 'next/navigation'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Send, Clock, User, Bot } from 'lucide-react'
+import SimpleTextEditor from '@/components/ui/SimpleTextEditor'
+import { ArrowLeft, Send, Clock, User, Bot, Loader2, FileText, Image as ImageIcon, ExternalLink } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
@@ -16,6 +16,7 @@ import { id } from 'date-fns/locale'
 interface Message {
   id: string
   message: string
+  attachments?: string[]
   createdAt: string
   isSystemMessage: boolean
   sender: {
@@ -81,7 +82,9 @@ export default function TicketDetailPage() {
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [replyMessage, setReplyMessage] = useState('')
+  const [replyFiles, setReplyFiles] = useState<File[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -122,7 +125,9 @@ export default function TicketDetailPage() {
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!replyMessage.trim()) {
+    // Strip HTML tags for validation
+    const plainText = replyMessage.replace(/<[^>]*>/g, '').trim()
+    if (!plainText) {
       toast.error('Pesan tidak boleh kosong')
       return
     }
@@ -134,10 +139,36 @@ export default function TicketDetailPage() {
 
     setSending(true)
     try {
+      // Upload files first if any
+      let attachments: string[] = []
+      if (replyFiles.length > 0) {
+        setUploading(true)
+        const uploadPromises = replyFiles.map(async (file) => {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('folder', 'support-tickets')
+          
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          })
+          
+          if (!uploadRes.ok) throw new Error('Upload failed')
+          const uploadData = await uploadRes.json()
+          return uploadData.url
+        })
+        
+        attachments = await Promise.all(uploadPromises)
+        setUploading(false)
+      }
+
       const res = await fetch(`/api/support/tickets/${ticketId}/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: replyMessage })
+        body: JSON.stringify({ 
+          message: replyMessage,
+          attachments 
+        })
       })
 
       const data = await res.json()
@@ -145,6 +176,7 @@ export default function TicketDetailPage() {
       if (data.success) {
         toast.success('Balasan terkirim')
         setReplyMessage('')
+        setReplyFiles([])
         fetchTicket() // Refresh to show new message
       } else {
         toast.error(data.error || 'Gagal mengirim balasan')
@@ -154,6 +186,7 @@ export default function TicketDetailPage() {
       toast.error('Gagal mengirim balasan')
     } finally {
       setSending(false)
+      setUploading(false)
     }
   }
 
@@ -273,9 +306,50 @@ export default function TicketDetailPage() {
                             : 'bg-gray-50 text-gray-900'
                         }`}
                       >
-                        <p className="whitespace-pre-wrap break-words">
-                          {message.message}
-                        </p>
+                        <div 
+                          className="prose prose-sm max-w-none break-words"
+                          dangerouslySetInnerHTML={{ __html: message.message }}
+                        />
+                        
+                        {/* Attachments */}
+                        {message.attachments && message.attachments.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-white/20 space-y-2">
+                            {message.attachments.map((url, idx) => {
+                              const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url)
+                              return isImage ? (
+                                <a 
+                                  key={idx} 
+                                  href={url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="block"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <img 
+                                    src={url} 
+                                    alt="Attachment" 
+                                    className="max-w-[200px] rounded-lg border border-white/20"
+                                  />
+                                </a>
+                              ) : (
+                                <a
+                                  key={idx}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`flex items-center gap-2 text-sm ${
+                                    isCurrentUser ? 'text-white/90 hover:text-white' : 'text-blue-600 hover:text-blue-800'
+                                  }`}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <FileText className="w-4 h-4" />
+                                  <span className="underline">Lampiran {idx + 1}</span>
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -291,17 +365,36 @@ export default function TicketDetailPage() {
           <Card>
             <CardContent className="p-4">
               <form onSubmit={handleSendReply} className="space-y-3">
-                <Textarea
+                <SimpleTextEditor
                   value={replyMessage}
-                  onChange={(e) => setReplyMessage(e.target.value)}
+                  onChange={setReplyMessage}
                   placeholder="Tulis balasan Anda..."
-                  rows={4}
+                  onFilesChange={setReplyFiles}
+                  maxFiles={5}
+                  minHeight="100px"
                   disabled={sending}
                 />
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={sending || !replyMessage.trim()}>
-                    <Send className="w-4 h-4 mr-2" />
-                    {sending ? 'Mengirim...' : 'Kirim Balasan'}
+                  <Button 
+                    type="submit" 
+                    disabled={sending || uploading || !replyMessage.replace(/<[^>]*>/g, '').trim()}
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Mengupload...
+                      </>
+                    ) : sending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Mengirim...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4 mr-2" />
+                        Kirim Balasan
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>

@@ -69,14 +69,31 @@ export async function GET(request: NextRequest) {
       _sum: { discountAmount: true },
     })
 
-    // Total affiliate commissions
+    // Total affiliate commissions (filtered by transaction date)
+    const commissionWhere: any = {}
+    if (startDate || endDate) {
+      commissionWhere.transaction = {}
+      if (startDate) {
+        commissionWhere.transaction.createdAt = { gte: new Date(startDate) }
+      }
+      if (endDate) {
+        const end = new Date(endDate)
+        end.setHours(23, 59, 59, 999)
+        commissionWhere.transaction.createdAt = { ...commissionWhere.transaction.createdAt, lte: end }
+      }
+    }
+    
     const commissionData = await prisma.affiliateConversion.aggregate({
+      where: commissionWhere,
       _sum: { commissionAmount: true },
     })
     
-    // Pending affiliate commissions (not paid out)
+    // Pending affiliate commissions (not paid out, filtered by date)
     const pendingCommissionData = await prisma.affiliateConversion.aggregate({
-      where: { paidOut: false },
+      where: { 
+        ...commissionWhere,
+        paidOut: false 
+      },
       _sum: { commissionAmount: true },
     })
 

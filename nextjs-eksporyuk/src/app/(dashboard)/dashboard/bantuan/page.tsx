@@ -8,11 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Ticket, Plus, Search, Filter, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react'
+import SimpleTextEditor from '@/components/ui/SimpleTextEditor'
+import { Ticket, Plus, Search, Filter, Clock, CheckCircle, AlertCircle, XCircle, Loader2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
@@ -72,6 +72,8 @@ export default function BantuanPage() {
     category: '',
     message: ''
   })
+  const [files, setFiles] = useState<File[]>([])
+  const [uploadingFiles, setUploadingFiles] = useState(false)
 
   useEffect(() => {
     fetchTickets()
@@ -109,12 +111,45 @@ export default function BantuanPage() {
       return
     }
 
+    // Strip HTML tags for validation
+    const plainText = newTicket.message.replace(/<[^>]*>/g, '').trim()
+    if (plainText.length < 10) {
+      toast.error('Deskripsi minimal 10 karakter')
+      return
+    }
+
     setSubmitting(true)
     try {
+      // Upload files first if any
+      let attachments: string[] = []
+      if (files.length > 0) {
+        setUploadingFiles(true)
+        const uploadPromises = files.map(async (file) => {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('folder', 'support-tickets')
+          
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          })
+          
+          if (!uploadRes.ok) throw new Error('Upload failed')
+          const uploadData = await uploadRes.json()
+          return uploadData.url
+        })
+        
+        attachments = await Promise.all(uploadPromises)
+        setUploadingFiles(false)
+      }
+
       const res = await fetch('/api/support/tickets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTicket)
+        body: JSON.stringify({
+          ...newTicket,
+          attachments
+        })
       })
 
       const data = await res.json()
@@ -122,6 +157,7 @@ export default function BantuanPage() {
       if (data.success) {
         toast.success('Tiket berhasil dibuat!')
         setNewTicket({ title: '', category: '', message: '' })
+        setFiles([])
         setActiveTab('my-tickets')
         fetchTickets()
       } else {
@@ -132,6 +168,7 @@ export default function BantuanPage() {
       toast.error('Gagal membuat tiket')
     } finally {
       setSubmitting(false)
+      setUploadingFiles(false)
     }
   }
 
@@ -322,26 +359,38 @@ export default function BantuanPage() {
 
                   <div>
                     <Label htmlFor="message">Deskripsi Masalah *</Label>
-                    <Textarea
-                      id="message"
+                    <SimpleTextEditor
                       value={newTicket.message}
-                      onChange={(e) => setNewTicket({ ...newTicket, message: e.target.value })}
-                      placeholder="Jelaskan masalah Anda secara detail..."
-                      rows={8}
-                      required
+                      onChange={(value) => setNewTicket({ ...newTicket, message: value })}
+                      placeholder="Jelaskan masalah Anda secara detail. Anda bisa format teks dan melampirkan file..."
+                      onFilesChange={setFiles}
+                      maxFiles={5}
+                      minHeight="150px"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Minimal 10 karakter. Semakin detail, semakin cepat kami dapat membantu.
+                      Minimal 10 karakter. Anda dapat melampirkan gambar, PDF, atau dokumen lainnya (max 5 file).
                     </p>
                   </div>
 
                   <div className="flex gap-3">
                     <Button
                       type="submit"
-                      disabled={submitting}
+                      disabled={submitting || uploadingFiles}
                       className="flex-1"
                     >
-                      {submitting ? 'Mengirim...' : 'Kirim Tiket'}
+                      {uploadingFiles ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Mengupload file...
+                        </>
+                      ) : submitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Mengirim...
+                        </>
+                      ) : (
+                        'Kirim Tiket'
+                      )}
                     </Button>
                     <Button
                       type="button"

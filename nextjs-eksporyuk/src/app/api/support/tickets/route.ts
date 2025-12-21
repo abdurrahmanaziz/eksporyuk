@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { ticketNotificationService } from '@/lib/services/ticket-notification-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -191,8 +192,22 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // TODO: Send notification to admin
-    // TODO: Send email confirmation to user using branded template
+    // Send notifications (async, don't wait)
+    ticketNotificationService.notifyTicketCreated(
+      {
+        ticketId: ticket.id,
+        ticketNumber: ticket.ticketNumber,
+        title: ticket.title,
+        category: validated.category,
+        priority: 'MEDIUM',
+        message: validated.message
+      },
+      {
+        id: session.user.id,
+        email: session.user.email!,
+        name: session.user.name || 'User'
+      }
+    ).catch(err => console.error('[TICKET_CREATE] Notification error:', err))
 
     return NextResponse.json({
       success: true,

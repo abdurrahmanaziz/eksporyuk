@@ -22,6 +22,25 @@ export async function GET() {
       )
     }
 
+    // For admin users, return empty access (they don't need membership)
+    if (session.user.role === 'ADMIN') {
+      return NextResponse.json({
+        success: true,
+        hasMembership: false,
+        isAdmin: true,
+        membership: null,
+        access: {
+          courses: [],
+          groups: [],
+          products: [],
+          features: [],
+        },
+        locked: {},
+        membershipComparison: [],
+        upgradeUrl: null,
+      })
+    }
+
     // Get user's active membership with all relations
     const userMembership = await prisma.userMembership.findFirst({
       where: {
@@ -38,50 +57,72 @@ export async function GET() {
             slug: true,
             price: true,
             features: true,
-            membershipCourses: {
-              include: {
-                course: {
-                  select: {
-                    id: true,
-                    title: true,
-                    slug: true,
-                    thumbnail: true,
-                    level: true,
-                  }
-                }
-              }
-            },
-            membershipGroups: {
-              include: {
-                group: {
-                  select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    avatar: true,
-                    type: true,
-                    description: true,
-                  }
-                }
-              }
-            },
-            membershipProducts: {
-              include: {
-                product: {
-                  select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    thumbnail: true,
-                    price: true,
-                  }
-                }
-              }
-            }
           }
         }
       }
     })
+
+    // If user has membership, fetch junction table data separately
+    let membershipWithRelations = null
+    if (userMembership) {
+      const membershipId = userMembership.membership.id
+      
+      // Fetch courses
+      const membershipCourses = await prisma.membershipCourse.findMany({
+        where: { membershipId },
+        include: {
+          course: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              thumbnail: true,
+              level: true,
+            }
+          }
+        }
+      })
+
+      // Fetch groups
+      const membershipGroups = await prisma.membershipGroup.findMany({
+        where: { membershipId },
+        include: {
+          group: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              avatar: true,
+              type: true,
+              description: true,
+            }
+          }
+        }
+      })
+
+      // Fetch products
+      const membershipProducts = await prisma.membershipProduct.findMany({
+        where: { membershipId },
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              thumbnail: true,
+              price: true,
+            }
+          }
+        }
+      })
+
+      membershipWithRelations = {
+        ...userMembership.membership,
+        membershipCourses,
+        membershipGroups,
+        membershipProducts
+      }
+    }
 
     // Get all available memberships for comparison (raw to avoid enum decode issues)
     const allMembershipsRaw: any[] = await prisma.$queryRaw`SELECT id, name, slug, duration, price, features, isActive FROM Membership ORDER BY price ASC`
@@ -141,7 +182,7 @@ export async function GET() {
     // Parse features from membership (flat array format)
     let membershipFeatures: string[] = []
     try {
-      let featuresData = userMembership.membership.features
+      let featuresData = membershipWithRelations?.features
       
       if (typeof featuresData === 'string') {
         featuresData = JSON.parse(featuresData)
@@ -155,15 +196,15 @@ export async function GET() {
     }
 
     // Extract accessible content
-    const accessibleCourses = userMembership.membership.membershipCourses.map(mc => mc.course)
-    const accessibleGroups = userMembership.membership.membershipGroups.map(mg => mg.group)
-    const accessibleProducts = userMembership.membership.membershipProducts.map(mp => mp.product)
+    const accessibleCourses = membershipWithRelations?.membershipCourses?.map((mc: any) => mc.course) || []
+    const accessibleGroups = membershipWithRelations?.membershipGroups?.map((mg: any) => mg.group) || []
+    const accessibleProducts = membershipWithRelations?.membershipProducts?.map((mp: any) => mp.product) || []
 
     // Determine locked features based on membership tier
     // Safely fetch membership duration via raw SQL to avoid enum decode issues
     let duration: string | null = null
     try {
-      const durationRow: any[] = await prisma.$queryRaw`SELECT duration FROM Membership WHERE id = ${userMembership?.membership?.id} LIMIT 1`
+      const durationRow: any[] = await prisma.$queryRaw`SELECT duration FROM Membership WHERE id = ${membershipWithRelations?.id} LIMIT 1`
       duration = (durationRow?.[0]?.duration as string) || null
     } catch (_) {
       duration = null
@@ -185,7 +226,7 @@ export async function GET() {
     }
 
     // Find next upgrade option
-    const currentPrice = Number(userMembership.membership.price)
+    const currentPrice = membershipWithRelations ? Number(membershipWithRelations.price) : 0
     const upgradeOptions = membershipComparison.filter(m => 
       Number(m.price) > currentPrice
     )
@@ -194,15 +235,15 @@ export async function GET() {
       success: true,
       hasMembership: true,
       membership: {
-        id: userMembership.id,
-        name: userMembership.membership.name,
-        slug: userMembership.membership.slug,
+        id: userMembership!.id,
+        name: membershipWithRelations?.name,
+        slug: membershipWithRelations?.slug,
         duration: duration,
-        startDate: userMembership.startDate,
-        endDate: userMembership.endDate,
+        startDate: userMembership!.startDate,
+        endDate: userMembership!.endDate,
         isLifetime,
         daysRemaining: isLifetime ? null : Math.ceil(
-          (new Date(userMembership.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+          (new Date(userMembership!.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
         ),
       },
       access: {

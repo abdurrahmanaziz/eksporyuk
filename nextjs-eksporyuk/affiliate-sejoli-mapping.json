@@ -1,0 +1,124 @@
+{
+  "timestamp": "2025-12-19T13:25:32.646Z",
+  "found": [
+    {
+      "sejoliId": 53,
+      "affiliateName": "Abdurrahman Aziz",
+      "userId": "cmj54y86m002uitezopa8ioy0",
+      "userName": "Abdurrahman Aziz",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 141,
+      "affiliateName": "Asep Abdurrahman Wahid",
+      "userId": "cmjar5sax07rfit9be0wbiqvt",
+      "userName": "Asep Abdurrahman Wahid",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 170,
+      "affiliateName": "Hamid Baidowi",
+      "userId": "cmjaqd1pp03xvit9byl6rtji7",
+      "userName": "Hamid Baidowi",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 198,
+      "affiliateName": "NgobrolinEkspor",
+      "userId": "cmjbhr31w005iitp51xxd6oul",
+      "userName": "NgobrolinEkspor",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 281,
+      "affiliateName": "Andi Nugroho",
+      "userId": "cmjapw7js0161it9b8eyshwt4",
+      "userName": "Andi Nugroho",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 325,
+      "affiliateName": "Muhamad safrizal",
+      "userId": "cmjar2g0g0796it9bg6hxvwra",
+      "userName": "Muhamad safrizal",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 332,
+      "affiliateName": "eko wibowo",
+      "userId": "cmjar169d071uit9bc0tpycas",
+      "userName": "eko wibowo",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 1011,
+      "affiliateName": "Yoga Andrian",
+      "userId": "cmjaqaw3l03k6it9b0oq5gusd",
+      "userName": "Yoga Andrian",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 1343,
+      "affiliateName": "Ikhsan Yuniarka",
+      "userId": "cmjar1g26073bit9btw126nr1",
+      "userName": "Ikhsan Yuniarka",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 1637,
+      "affiliateName": "Rahmat Al Fianto",
+      "userId": "cmjaq5u0e02oeit9b2yvqgnal",
+      "userName": "Rahmat Al Fianto",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 1740,
+      "affiliateName": "Sutisna",
+      "userId": "cmjaqga3x04init9bui68t9r3",
+      "userName": "Sutisna",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 2073,
+      "affiliateName": "Habi Akmal",
+      "userId": "cmjapx6zf01cait9bsz5k16r6",
+      "userName": "Habi Akmal",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 3300,
+      "affiliateName": "Agung Haryanto",
+      "userId": "cmjbhtzjg02jmitp5chw20k3m",
+      "userName": "Agung haryanto",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 5392,
+      "affiliateName": "Naniwati",
+      "userId": "cmjaqdg6x040git9bkf8mr3k0",
+      "userName": "Naniwati",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 8920,
+      "affiliateName": "Fzrachman •",
+      "userId": "cmjaqgjim04kdit9b2ik14h15",
+      "userName": "Fzrachman •",
+      "matchMethod": "name"
+    },
+    {
+      "sejoliId": 9914,
+      "affiliateName": "Enut anwar",
+      "userId": "cmjaqa22c03ezit9bj2azfzho",
+      "userName": "Enut anwar",
+      "matchMethod": "name"
+    }
+  ],
+  "notFound": [],
+  "summary": {
+    "totalSejoliAffiliates": 16,
+    "foundInDatabase": 16,
+    "notFoundInDatabase": 0,
+    "affectedTransactions": 951
+  }
+}

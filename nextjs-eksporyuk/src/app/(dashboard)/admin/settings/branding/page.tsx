@@ -144,7 +144,7 @@ export default function AdminBrandingSettings() {
   const fetchSettings = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/admin/settings')
+      const response = await fetch('/api/admin/settings/branding')
       const data = await response.json()
 
       if (data.success && data.settings) {
@@ -247,7 +247,7 @@ export default function AdminBrandingSettings() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const response = await fetch('/api/admin/settings', {
+      const response = await fetch('/api/admin/settings/branding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),

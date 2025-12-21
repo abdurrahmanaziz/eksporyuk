@@ -61,8 +61,8 @@ export default function ApplyAffiliatePage() {
         const data = await res.json()
         setAffiliateData(data)
         
-        // If already approved, redirect to affiliate dashboard
-        if (data.applicationStatus === 'APPROVED') {
+        // If already approved, redirect to affiliate dashboard (except ADMIN)
+        if (data.applicationStatus === 'APPROVED' && session?.user?.role !== 'ADMIN') {
           router.push('/affiliate/dashboard')
         }
       }
@@ -128,8 +128,8 @@ export default function ApplyAffiliatePage() {
     )
   }
 
-  // Check if user has permission to see this page
-  if (!affiliateData?.affiliateMenuEnabled && session?.user?.role !== 'AFFILIATE') {
+  // Check if user has permission to see this page (except ADMIN)
+  if (!affiliateData?.affiliateMenuEnabled && session?.user?.role !== 'AFFILIATE' && session?.user?.role !== 'ADMIN') {
     return (
       <ResponsivePageWrapper>
         <div className="p-6 max-w-2xl mx-auto">
@@ -149,6 +149,13 @@ export default function ApplyAffiliatePage() {
   return (
     <ResponsivePageWrapper>
       <div className="p-6 max-w-4xl mx-auto">
+        {/* Admin Badge */}
+        {session?.user?.role === 'ADMIN' && (
+          <div className="mb-4 bg-purple-100 border border-purple-300 rounded-lg p-3 text-center">
+            <span className="text-purple-800 font-semibold">👑 ADMIN MODE - Anda dapat melihat halaman ini untuk testing</span>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">

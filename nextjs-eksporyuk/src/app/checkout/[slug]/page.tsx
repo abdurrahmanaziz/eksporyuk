@@ -20,14 +20,13 @@ interface PriceOption {
   duration: string
   label: string
   price: number
-  discount?: number
   pricePerMonth?: number
   benefits: string[]
   badge?: string
   isPopular?: boolean
   membershipId?: string // For Pro checkout - specific membership ID
   membershipSlug?: string // For Pro checkout - specific membership slug
-  originalPrice?: number // Original price before discount
+  marketingPrice?: number // Marketing price for display only (crossed out)
 }
 
 interface MembershipPlan {
@@ -343,12 +342,7 @@ export default function CheckoutPage() {
     
     let price = selectedPrice.price
     
-    // Apply discount from price option
-    if (selectedPrice.discount) {
-      price = price - (price * selectedPrice.discount / 100)
-    }
-    
-    // Apply coupon discount
+    // Apply coupon discount only
     if (appliedCoupon) {
       if (appliedCoupon.discountType === 'PERCENTAGE') {
         price = price - (price * appliedCoupon.discountValue / 100)
@@ -878,15 +872,12 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          {(price.originalPrice && price.originalPrice > price.price) || (price.discount && price.discount > 0) ? (
+                          {price.marketingPrice && price.marketingPrice > price.price ? (
                             <>
                               <div className="flex items-center gap-2 justify-end mb-1">
                                 <span className="text-sm text-gray-400 line-through">
-                                  {formatCurrency(price.originalPrice || (price.price / (1 - (price.discount || 0) / 100)))}
+                                  {formatCurrency(price.marketingPrice)}
                                 </span>
-                                <Badge className="bg-red-500 text-white text-xs px-2 py-0.5">
-                                  -{price.discount || Math.round((1 - price.price / (price.originalPrice || price.price)) * 100)}%
-                                </Badge>
                               </div>
                               <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                                 {formatCurrency(price.price)}
@@ -1019,12 +1010,6 @@ export default function CheckoutPage() {
                   <span>Harga</span>
                   <span className="font-medium">{formatCurrency(selectedPrice?.price || 0)}</span>
                 </div>
-                {selectedPrice?.discount && (
-                  <div className="flex justify-between text-green-600 dark:text-green-400">
-                    <span>Diskon Paket</span>
-                    <span>-{selectedPrice.discount}%</span>
-                  </div>
-                )}
                 {appliedCoupon && (
                   <div className="flex justify-between text-green-600 dark:text-green-400">
                     <span>Potongan Kupon</span>

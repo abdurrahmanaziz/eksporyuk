@@ -124,6 +124,21 @@ interface Transaction {
       }
     }
   } | null;
+  // Virtual affiliate data from metadata (for PENDING transactions)
+  affiliateFromMetadata?: {
+    name: string | null;
+    affiliateId: string | null;
+    commissionAmount: number | null;
+    affiliate?: {
+      id: string;
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        whatsapp: string | null;
+      }
+    } | null;
+  } | null;
 }
 
 interface FollowUpTemplate {
@@ -244,8 +259,8 @@ export default function AdminSalesPage() {
       tx.status,
       tx.paymentMethod || '',
       tx.coupon?.code || '',
-      tx.affiliateConversion?.affiliate.user.name || '',
-      tx.affiliateConversion?.commissionAmount || 0,
+      tx.affiliateConversion?.affiliate.user.name || tx.affiliateFromMetadata?.name || tx.metadata?.affiliate_name || tx.metadata?.affiliateName || '',
+      tx.status === 'SUCCESS' ? (tx.affiliateConversion?.commissionAmount || 0) : (tx.affiliateFromMetadata?.name ? 'Pending' : 0),
     ]);
     return [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
   };
@@ -479,6 +494,26 @@ export default function AdminSalesPage() {
       'COURSE': 'Kursus Online',
     };
     return typeLabels[tx.type] || tx.type || '-';
+  };
+
+  // Get affiliate name from various sources
+  const getAffiliateName = (tx: Transaction): string | null => {
+    // 1. From affiliateConversion (for SUCCESS transactions with conversion)
+    if (tx.affiliateConversion?.affiliate?.user?.name) {
+      return tx.affiliateConversion.affiliate.user.name;
+    }
+    // 2. From affiliateFromMetadata (virtual data from API)
+    if (tx.affiliateFromMetadata?.name) {
+      return tx.affiliateFromMetadata.name;
+    }
+    // 3. From metadata directly (Sejoli import)
+    if (tx.metadata?.affiliate_name) {
+      return tx.metadata.affiliate_name;
+    }
+    if (tx.metadata?.affiliateName) {
+      return tx.metadata.affiliateName;
+    }
+    return null;
   };
 
   // Get transaction type label with membership duration or event category
@@ -938,9 +973,23 @@ export default function AdminSalesPage() {
                             <div className="font-medium text-gray-900">
                               {tx.affiliateConversion.affiliate.user.name}
                             </div>
+                          ) : tx.affiliateFromMetadata?.name ? (
+                            <div className="font-medium text-gray-700">
+                              {tx.affiliateFromMetadata.name}
+                              {tx.status === 'PENDING' && (
+                                <span className="block text-xs text-amber-500">(pending)</span>
+                              )}
+                            </div>
                           ) : tx.affiliateId ? (
                             <div className="text-xs text-gray-500">
                               ID: {tx.affiliateId}
+                            </div>
+                          ) : (tx.metadata?.affiliate_name || tx.metadata?.affiliateName) ? (
+                            <div className="font-medium text-gray-700">
+                              {tx.metadata?.affiliate_name || tx.metadata?.affiliateName}
+                              {tx.status === 'PENDING' && (
+                                <span className="block text-xs text-amber-500">(pending)</span>
+                              )}
                             </div>
                           ) : (
                             <span className="text-gray-400">-</span>
@@ -959,6 +1008,10 @@ export default function AdminSalesPage() {
                           {tx.affiliateConversion ? (
                             <div className="font-semibold text-sm text-orange-600">
                               Rp {Number(tx.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
+                            </div>
+                          ) : tx.status === 'PENDING' && (tx.affiliateFromMetadata?.name || tx.metadata?.affiliate_name || tx.metadata?.affiliateName) ? (
+                            <div className="text-xs text-gray-400 italic">
+                              Setelah bayar
                             </div>
                           ) : tx.affiliateShare ? (
                             <div className="font-semibold text-sm text-orange-600">
@@ -1380,36 +1433,48 @@ export default function AdminSalesPage() {
                   </CardContent>
                 </Card>
 
-                {/* Affiliate Info */}
-                {selectedTransaction.affiliateConversion && (
+                {/* Affiliate Info - show for both SUCCESS (with commission) and PENDING (name only) */}
+                {(selectedTransaction.affiliateConversion || getAffiliateName(selectedTransaction)) && (
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center gap-2">
                         <Share2 className="w-4 h-4" />
                         Informasi Affiliate
+                        {selectedTransaction.status === 'PENDING' && (
+                          <Badge variant="outline" className="text-amber-500 border-amber-300">Pending</Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Nama Affiliate:</span>
                         <span className="font-medium">
-                          {selectedTransaction.affiliateConversion.affiliate.user.name}
+                          {getAffiliateName(selectedTransaction) || '-'}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Komisi:</span>
-                        <span className="font-bold text-orange-600">
-                          Rp {Number(selectedTransaction.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Status Komisi:</span>
-                        <Badge 
-                          variant={selectedTransaction.affiliateConversion.commissionStatus === 'PAID' ? 'default' : 'secondary'}
-                        >
-                          {selectedTransaction.affiliateConversion.commissionStatus}
-                        </Badge>
-                      </div>
+                      {selectedTransaction.status === 'SUCCESS' && selectedTransaction.affiliateConversion ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Komisi:</span>
+                            <span className="font-bold text-orange-600">
+                              Rp {Number(selectedTransaction.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Status Komisi:</span>
+                            <Badge 
+                              variant={selectedTransaction.affiliateConversion.paidOut ? 'default' : 'secondary'}
+                            >
+                              {selectedTransaction.affiliateConversion.paidOut ? 'PAID' : 'PENDING'}
+                            </Badge>
+                          </div>
+                        </>
+                      ) : selectedTransaction.status === 'PENDING' ? (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Komisi:</span>
+                          <span className="text-gray-400 italic text-xs">Dihitung setelah pembayaran</span>
+                        </div>
+                      ) : null}
                     </CardContent>
                   </Card>
                 )}

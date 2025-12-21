@@ -328,56 +328,63 @@ class ChatService {
    */
   async getUserRooms(userId: string): Promise<any[]> {
     try {
+      // Fetch participants and chat rooms separately since ChatParticipant model lacks room relation
       const participants = await prisma.chatParticipant.findMany({
         where: { userId },
+        orderBy: { joinedAt: 'desc' }
+      })
+
+      if (!participants.length) return []
+
+      // Get all room IDs for this user
+      const roomIds = participants.map(p => p.roomId)
+      
+      // Fetch rooms with all details
+      const rooms = await prisma.chatRoom.findMany({
+        where: { id: { in: roomIds } },
         include: {
-          room: {
+          participants: {
+            where: {
+              userId: { not: userId }
+            },
             include: {
-              participants: {
-                where: {
-                  userId: { not: userId }
-                },
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      name: true,
-                      username: true,
-                      avatar: true,
-                      isOnline: true,
-                      lastSeenAt: true
-                    }
-                  }
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  username: true,
+                  avatar: true,
+                  isOnline: true,
+                  lastSeenAt: true
                 }
-              },
-              messages: {
-                orderBy: { createdAt: 'desc' },
-                take: 1,
-                include: {
-                  sender: {
-                    select: {
-                      name: true
-                    }
-                  }
+              }
+            }
+          },
+          messages: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            include: {
+              sender: {
+                select: {
+                  name: true
                 }
               }
             }
           }
         },
-        orderBy: {
-          room: {
-            lastMessageAt: 'desc'
-          }
-        }
+        orderBy: { lastMessageAt: 'desc' }
       })
-      
-      return participants.map(p => {
-        // For DIRECT chat, use other user's name as room name
-        let roomName = p.room.name
-        let roomAvatar = p.room.avatar
+
+      // Merge room data with participant data
+      return rooms.map(room => {
+        const participant = participants.find(p => p.roomId === room.id)
         
-        if (p.room.type === 'DIRECT' && p.room.participants.length > 0) {
-          const otherUser = p.room.participants[0]?.user
+        // For DIRECT chat, use other user's name as room name
+        let roomName = room.name
+        let roomAvatar = room.avatar
+        
+        if (room.type === 'DIRECT' && room.participants.length > 0) {
+          const otherUser = room.participants[0]?.user
           if (otherUser) {
             roomName = otherUser.name
             roomAvatar = otherUser.avatar
@@ -385,20 +392,20 @@ class ChatService {
         }
         
         // Format lastMessage from messages array
-        const lastMsg = p.room.messages[0]
+        const lastMsg = room.messages[0]
         const lastMessage = lastMsg ? {
           content: lastMsg.content,
           createdAt: lastMsg.createdAt.toISOString()
         } : null
         
         return {
-          ...p.room,
+          ...room,
           name: roomName,
           avatar: roomAvatar,
           lastMessage,
-          unreadCount: p.unreadCount,
-          isPinned: p.isPinned,
-          isMuted: p.isMuted
+          unreadCount: participant?.unreadCount || 0,
+          isPinned: participant?.isPinned || false,
+          isMuted: participant?.isMuted || false
         }
       })
     } catch (error: any) {

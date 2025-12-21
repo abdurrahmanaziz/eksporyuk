@@ -25,8 +25,7 @@ export async function GET(
         formBanner: true,
         features: true, // Can be prices array OR benefits array
         price: true, // Base price
-        originalPrice: true, // Original price
-        discount: true, // Discount percentage
+        marketingPrice: true, // Marketing price (crossed out display price)
         duration: true, // Duration enum
         salesPageUrl: true,
         affiliateCommissionRate: true,
@@ -35,10 +34,7 @@ export async function GET(
         reminders: true, // Contains followUpMessages
         _count: {
           select: {
-            userMemberships: true,
-            membershipGroups: true,
-            membershipCourses: true,
-            membershipProducts: true
+            userMemberships: true
           }
         }
       }
@@ -185,14 +181,13 @@ export async function GET(
             
             // Build price from database fields
             const basePrice = parseFloat(plan.price?.toString() || '0')
-            const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
+            const marketingPrice = plan.marketingPrice ? parseFloat(plan.marketingPrice.toString()) : null
             
             prices = [{
               duration: plan.duration || 'ONE_MONTH',
               label: plan.name,
               price: basePrice,
-              originalPrice: originalPrice,
-              discount: plan.discount || 0,
+              marketingPrice: marketingPrice,
               benefits: benefits,
               badge: '',
               isPopular: false

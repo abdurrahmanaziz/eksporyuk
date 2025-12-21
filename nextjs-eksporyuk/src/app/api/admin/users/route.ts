@@ -114,13 +114,14 @@ export async function GET(request: NextRequest) {
     const total = await prisma.user.count({ where });
 
     // Get stats
-    const [totalUsers, adminCount, mentorCount, affiliateCount, premiumCount, freeCount, activeMemberships] = await Promise.all([
+    const [totalUsers, adminCount, mentorCount, affiliateCount, premiumCount, freeCount, supplierCount, activeMemberships] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: 'ADMIN' } }),
       prisma.user.count({ where: { role: 'MENTOR' } }),
       prisma.user.count({ where: { role: 'AFFILIATE' } }),
       prisma.user.count({ where: { role: 'MEMBER_PREMIUM' } }),
       prisma.user.count({ where: { role: 'MEMBER_FREE' } }),
+      prisma.user.count({ where: { role: 'SUPPLIER' } }),
       prisma.userMembership.count({ where: { status: 'ACTIVE' } }),
     ]);
 
@@ -176,6 +177,7 @@ export async function GET(request: NextRequest) {
           affiliate: affiliateCount,
           memberPremium: premiumCount,
           memberFree: freeCount,
+          supplier: supplierCount,
         },
         activeMemberships,
       },

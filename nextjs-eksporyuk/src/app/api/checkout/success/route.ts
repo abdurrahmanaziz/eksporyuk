@@ -92,20 +92,23 @@ export async function POST(request: NextRequest) {
       throw new Error('System users not found')
     }
 
-    // 5. Get affiliate commission rate from membership or product
+    // 5. Get affiliate commission rate and type from membership or product
     let affiliateCommissionRate = 30 // Default
+    let commissionType: 'PERCENTAGE' | 'FLAT' = 'PERCENTAGE' // Default
     if (type === 'MEMBERSHIP' && membershipId) {
       const membership = await prisma.membership.findUnique({
         where: { id: membershipId },
-        select: { affiliateCommissionRate: true }
+        select: { affiliateCommissionRate: true, commissionType: true }
       })
       affiliateCommissionRate = Number(membership?.affiliateCommissionRate || 30)
+      commissionType = (membership?.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
     } else if (type === 'PRODUCT' && productId) {
       const product = await prisma.product.findUnique({
         where: { id: productId },
-        select: { affiliateCommissionRate: true }
+        select: { affiliateCommissionRate: true, commissionType: true }
       })
       affiliateCommissionRate = Number(product?.affiliateCommissionRate || 30)
+      commissionType = (product?.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
     }
 
     // 6. Calculate and distribute commission
@@ -116,7 +119,8 @@ export async function POST(request: NextRequest) {
       founder.id,
       coFounder.id,
       Number(amount),
-      affiliateCommissionRate
+      affiliateCommissionRate,
+      commissionType
     )
 
     // 7. Activate membership or product

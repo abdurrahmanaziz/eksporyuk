@@ -16,6 +16,10 @@ import {
   Shield,
   AlertCircle,
   ExternalLink,
+  UserCheck,
+  MessageSquare,
+  Ban,
+  RotateCcw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -34,6 +38,12 @@ interface Supplier {
   nibDoc?: string
   isVerified: boolean
   verifiedAt?: string
+  status: string
+  mentorReviewedBy?: string
+  mentorReviewedAt?: string
+  mentorNotes?: string
+  mentorRecommendation?: string
+  assignedMentorId?: string
   user: {
     id: string
     name: string
@@ -52,10 +62,11 @@ export default function AdminSupplierVerificationsPage() {
   const { data: session } = useSession()
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState('pending')
+  const [statusFilter, setStatusFilter] = useState('recommended')
   const [stats, setStats] = useState({
     total: 0,
-    pending: 0,
+    waitingReview: 0,
+    recommended: 0,
     verified: 0,
   })
 
@@ -71,7 +82,7 @@ export default function AdminSupplierVerificationsPage() {
       if (response.ok) {
         const data = await response.json()
         setSuppliers(data.data || [])
-        setStats(data.stats || { total: 0, pending: 0, verified: 0 })
+        setStats(data.stats || { total: 0, waitingReview: 0, recommended: 0, verified: 0 })
       } else {
         toast.error('Gagal memuat data verifikasi')
       }
@@ -83,17 +94,20 @@ export default function AdminSupplierVerificationsPage() {
     }
   }
 
-  const handleAction = async (supplierId: string, action: 'approve' | 'reject') => {
+  const handleAction = async (supplierId: string, action: 'approve' | 'reject' | 'limit' | 'suspend') => {
     const confirmMessages = {
       approve: 'Approve verifikasi supplier ini?',
-      reject: 'Reject verifikasi supplier ini?',
+      reject: 'Reject verifikasi dan kirim kembali untuk revisi?',
+      limit: 'Set status LIMITED untuk supplier ini?',
+      suspend: 'Suspend supplier ini?',
     }
 
     if (!confirm(confirmMessages[action])) return
 
     let reason
-    if (action === 'reject') {
-      reason = prompt('Alasan penolakan:')
+    if (action === 'reject' || action === 'limit' || action === 'suspend') {
+      const reasonPrompt = action === 'reject' ? 'Alasan penolakan:' : action === 'limit' ? 'Alasan LIMITED:' : 'Alasan suspend:'
+      reason = prompt(reasonPrompt)
       if (!reason) return
     }
 
@@ -105,7 +119,13 @@ export default function AdminSupplierVerificationsPage() {
       })
 
       if (response.ok) {
-        toast.success(`Berhasil ${action === 'approve' ? 'menyetujui' : 'menolak'} verifikasi`)
+        const successMessages = {
+          approve: 'Berhasil menyetujui verifikasi',
+          reject: 'Berhasil menolak dan mengirim kembali untuk revisi',
+          limit: 'Berhasil set status LIMITED',
+          suspend: 'Berhasil suspend supplier',
+        }
+        toast.success(successMessages[action] || 'Berhasil update status')
         fetchSuppliers()
       } else {
         const data = await response.json()
@@ -133,11 +153,11 @@ export default function AdminSupplierVerificationsPage() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold">Verifikasi Supplier</h1>
-          <p className="text-sm text-gray-500 mt-1">Tinjau dan verifikasi dokumen legalitas supplier</p>
+          <p className="text-sm text-gray-500 mt-1">Review mentor recommendations and approve supplier verifications</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -159,8 +179,22 @@ export default function AdminSupplierVerificationsPage() {
                   <AlertCircle className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Pending Review</p>
-                  <p className="text-2xl font-bold">{stats.pending}</p>
+                  <p className="text-sm text-gray-500">Waiting Mentor Review</p>
+                  <p className="text-2xl font-bold">{stats.waitingReview}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <UserCheck className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Recommended by Mentor</p>
+                  <p className="text-2xl font-bold">{stats.recommended}</p>
                 </div>
               </div>
             </CardContent>
@@ -187,16 +221,17 @@ export default function AdminSupplierVerificationsPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <CardTitle>Daftar Verifikasi</CardTitle>
-                <CardDescription>Tinjau dokumen legalitas supplier</CardDescription>
+                <CardDescription>Review and approve supplier verifications</CardDescription>
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-40">
+                <SelectTrigger className="w-full sm:w-64">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Semua</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="recommended">Recommended (Need Action)</SelectItem>
+                  <SelectItem value="pending">Waiting Mentor Review</SelectItem>
                   <SelectItem value="verified">Terverifikasi</SelectItem>
+                  <SelectItem value="all">Semua</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -219,7 +254,7 @@ export default function AdminSupplierVerificationsPage() {
                       <TableHead>Owner</TableHead>
                       <TableHead>Lokasi</TableHead>
                       <TableHead>Membership</TableHead>
-                      <TableHead>Dokumen</TableHead>
+                      <TableHead>Mentor Review</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Aksi</TableHead>
                     </TableRow>
@@ -275,46 +310,64 @@ export default function AdminSupplierVerificationsPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col gap-1">
-                            {supplier.legalityDoc && (
-                              <a
-                                href={supplier.legalityDoc}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                              >
-                                <FileCheck className="w-3 h-3" />
-                                Legalitas PT
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            )}
-                            {supplier.nibDoc && (
-                              <a
-                                href={supplier.nibDoc}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                              >
-                                <FileCheck className="w-3 h-3" />
-                                NIB OSS
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            )}
-                            {!supplier.legalityDoc && !supplier.nibDoc && (
-                              <span className="text-xs text-gray-400">Belum upload</span>
-                            )}
-                          </div>
+                          {supplier.mentorReviewedAt ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1">
+                                <UserCheck className="w-3 h-3 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(supplier.mentorReviewedAt).toLocaleDateString('id-ID')}
+                                </span>
+                              </div>
+                              {supplier.mentorRecommendation && (
+                                <Badge 
+                                  variant={supplier.mentorRecommendation === 'APPROVE' ? 'default' : supplier.mentorRecommendation === 'REJECT' ? 'destructive' : 'secondary'}
+                                  className="text-xs"
+                                >
+                                  {supplier.mentorRecommendation}
+                                </Badge>
+                              )}
+                              {supplier.mentorNotes && (
+                                <p className="text-xs text-muted-foreground line-clamp-2" title={supplier.mentorNotes}>
+                                  <MessageSquare className="w-3 h-3 inline mr-1" />
+                                  {supplier.mentorNotes}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              {supplier.status === 'WAITING_REVIEW' ? 'Waiting...' : '-'}
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell>
-                          {supplier.isVerified ? (
+                          {supplier.status === 'VERIFIED' ? (
                             <Badge variant="default" className="bg-green-500">
                               <Shield className="w-3 h-3 mr-1" />
                               Terverifikasi
                             </Badge>
-                          ) : (
+                          ) : supplier.status === 'RECOMMENDED_BY_MENTOR' ? (
+                            <Badge variant="default" className="bg-purple-500">
+                              <UserCheck className="w-3 h-3 mr-1" />
+                              Recommended
+                            </Badge>
+                          ) : supplier.status === 'WAITING_REVIEW' ? (
                             <Badge variant="outline" className="text-amber-600">
                               <AlertCircle className="w-3 h-3 mr-1" />
-                              Pending
+                              Waiting Review
+                            </Badge>
+                          ) : supplier.status === 'LIMITED' ? (
+                            <Badge variant="secondary" className="text-orange-600">
+                              <AlertCircle className="w-3 h-3 mr-1" />
+                              Limited
+                            </Badge>
+                          ) : supplier.status === 'SUSPENDED' ? (
+                            <Badge variant="destructive">
+                              <Ban className="w-3 h-3 mr-1" />
+                              Suspended
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">
+                              {supplier.status}
                             </Badge>
                           )}
                         </TableCell>
@@ -326,25 +379,56 @@ export default function AdminSupplierVerificationsPage() {
                               </Button>
                             </Link>
                             
-                            {!supplier.isVerified && (supplier.legalityDoc || supplier.nibDoc) && (
+                            {/* Show actions only for RECOMMENDED_BY_MENTOR status */}
+                            {supplier.status === 'RECOMMENDED_BY_MENTOR' && (
                               <>
+                                {/* Approve if mentor recommended APPROVE */}
+                                {supplier.mentorRecommendation === 'APPROVE' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleAction(supplier.id, 'approve')}
+                                    title="Final Approve → VERIFIED"
+                                  >
+                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                  </Button>
+                                )}
+                                
+                                {/* Limit if mentor recommended APPROVE but admin wants to limit */}
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleAction(supplier.id, 'approve')}
-                                  title="Approve"
+                                  onClick={() => handleAction(supplier.id, 'limit')}
+                                  title="Set LIMITED"
                                 >
-                                  <CheckCircle className="w-4 h-4 text-green-600" />
+                                  <AlertCircle className="w-4 h-4 text-orange-600" />
                                 </Button>
+
+                                {/* Send back for revision */}
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => handleAction(supplier.id, 'reject')}
-                                  title="Reject"
+                                  title="Send Back for Revision"
                                 >
-                                  <XCircle className="w-4 h-4 text-red-600" />
+                                  <RotateCcw className="w-4 h-4 text-amber-600" />
+                                </Button>
+                                
+                                {/* Suspend */}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleAction(supplier.id, 'suspend')}
+                                  title="Suspend"
+                                >
+                                  <Ban className="w-4 h-4 text-red-600" />
                                 </Button>
                               </>
+                            )}
+
+                            {/* For WAITING_REVIEW, show info only */}
+                            {supplier.status === 'WAITING_REVIEW' && (
+                              <span className="text-xs text-muted-foreground">Waiting mentor...</span>
                             )}
                           </div>
                         </TableCell>

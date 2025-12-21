@@ -1,22 +1,40 @@
 import { prisma } from './prisma'
 
 /**
- * Generate unique invoice number with format: INV001, INV002, etc.
- * Auto-increments based on count of transactions
+ * Generate unique invoice number continuing from Sejoli format
+ * Format: INV followed by incrementing number (no padding)
+ * Example: INV19300, INV19301, INV19302...
+ * 
+ * This continues from the highest Sejoli invoice number in the database.
  */
 export async function generateInvoiceNumber(): Promise<string> {
   try {
-    // Get total count of transactions
-    const transactionCount = await prisma.transaction.count()
-    const nextNumber = transactionCount + 1
-
-    // Format: INV01, INV02, ..., INV99, INV100, etc.
-    const paddedNumber = nextNumber.toString().padStart(2, '0')
-    return `INV${paddedNumber}`
+    // Get the highest invoice number from database
+    const allTransactions = await prisma.transaction.findMany({
+      where: { 
+        invoiceNumber: { startsWith: 'INV' }
+      },
+      select: { invoiceNumber: true }
+    })
+    
+    let maxNumber = 0
+    for (const tx of allTransactions) {
+      const match = tx.invoiceNumber?.match(/^INV(\d+)$/)
+      if (match) {
+        const num = parseInt(match[1])
+        if (num > maxNumber) maxNumber = num
+      }
+    }
+    
+    // Next invoice number = max + 1
+    const nextNumber = maxNumber + 1
+    
+    // Format: INV followed by number (no leading zeros to match Sejoli format)
+    return `INV${nextNumber}`
   } catch (error) {
     console.error('Error generating invoice number:', error)
     // Fallback: use timestamp-based ID
-    return `INV${Date.now().toString().slice(-6)}`
+    return `INV${Date.now().toString().slice(-8)}`
   }
 }
 
