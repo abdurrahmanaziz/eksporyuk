@@ -150,15 +150,25 @@ export default function AffiliatesManagementPage() {
       if (statusFilter !== 'ALL') params.set('status', statusFilter)
       if (searchQuery) params.set('search', searchQuery)
       
+      console.log('[ADMIN_AFFILIATES] Fetching with params:', params.toString())
+      
       const response = await fetch(`/api/admin/affiliates?${params.toString()}`)
       const data = await response.json()
+      
+      console.log('[ADMIN_AFFILIATES] Response:', {
+        success: data.success,
+        affiliatesCount: data.affiliates?.length || 0,
+        stats: data.stats,
+      })
       
       if (data.success) {
         setAffiliates(data.affiliates || [])
         setStats(data.stats || null)
+      } else {
+        console.error('[ADMIN_AFFILIATES] Error:', data.error)
       }
     } catch (error) {
-      console.error('Error fetching affiliates:', error)
+      console.error('[ADMIN_AFFILIATES] Fetch error:', error)
     } finally {
       setLoading(false)
     }

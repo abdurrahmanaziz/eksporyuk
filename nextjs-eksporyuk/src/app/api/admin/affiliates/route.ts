@@ -20,10 +20,18 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: NextRequest) {
   try {
+    console.log('[ADMIN_AFFILIATES_API] GET request received')
+    
     // 1. Check admin authentication
     const session = await getServerSession(authOptions)
     
+    console.log('[ADMIN_AFFILIATES_API] Session check:', {
+      hasSession: !!session,
+      role: session?.user?.role,
+    })
+    
     if (!session || session.user.role !== 'ADMIN') {
+      console.log('[ADMIN_AFFILIATES_API] Unauthorized access attempt')
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -91,6 +99,13 @@ export async function GET(request: NextRequest) {
       }),
       prisma.affiliateProfile.count({ where }),
     ])
+    
+    console.log('[ADMIN_AFFILIATES_API] Query result:', {
+      affiliatesFound: affiliates.length,
+      total,
+      page,
+      limit,
+    })
 
     // 5. Get wallet data for each affiliate (use data from AffiliateProfile)
     const affiliatesWithWallet = await Promise.all(
