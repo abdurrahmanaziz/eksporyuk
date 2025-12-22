@@ -208,45 +208,45 @@ export default function UpgradePage() {
 
   return (
     <ResponsivePageWrapper>
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-pink-50/30">
+    <div className="min-h-screen" style={{ background: `linear-gradient(to bottom right, ${themeColors.light}, #ffffff, ${themeColors.lighter})` }}>
       <div className="container max-w-7xl mx-auto p-6 space-y-10">
         {/* Modern Hero Header with Gradient */}
         <div className="text-center space-y-6 py-12 relative">
           {/* Background Decorations */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300/20 rounded-full blur-3xl"></div>
-            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-300/20 rounded-full blur-3xl"></div>
+            <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl" style={{ backgroundColor: `${themeColors.primary}20` }}></div>
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl" style={{ backgroundColor: `${themeColors.secondary}20` }}></div>
           </div>
           
           <div className="relative z-10">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="relative">
-                <Crown className="w-14 h-14 text-yellow-500 drop-shadow-lg animate-pulse" />
-                <Star className="w-5 h-5 text-yellow-400 absolute -top-1 -right-1" />
+                <Crown className="w-14 h-14 drop-shadow-lg animate-pulse" style={{ color: themeColors.primary }} />
+                <Star className="w-5 h-5 absolute -top-1 -right-1" style={{ color: themeColors.secondary }} />
               </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold mb-4">
-              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary}, ${themeColors.primary})` }}>
                 Upgrade Membership
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Tingkatkan pengalaman belajar Anda dengan <span className="font-semibold text-purple-600">fitur eksklusif</span> dan 
-              <span className="font-semibold text-pink-600"> akses unlimited</span>
+            <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              Tingkatkan pengalaman belajar Anda dengan <span className="font-semibold" style={{ color: themeColors.primary }}>fitur eksklusif</span> dan 
+              <span className="font-semibold" style={{ color: themeColors.secondary }}> akses unlimited</span>
             </p>
             
             {/* Trust Indicators */}
             <div className="flex items-center justify-center gap-8 mt-8 flex-wrap">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Shield className="w-5 h-5 text-green-600" />
+              <div className="flex items-center gap-2 text-gray-700">
+                <Shield className="w-5 h-5" style={{ color: themeColors.success }} />
                 <span className="text-sm font-medium">Pembayaran Aman</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Rocket className="w-5 h-5 text-blue-600" />
+              <div className="flex items-center gap-2 text-gray-700">
+                <Rocket className="w-5 h-5" style={{ color: themeColors.primary }} />
                 <span className="text-sm font-medium">Akses Instan</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Star className="w-5 h-5 text-yellow-600" />
+              <div className="flex items-center gap-2 text-gray-700">
+                <Star className="w-5 h-5" style={{ color: themeColors.warning }} />
                 <span className="text-sm font-medium">Premium Quality</span>
               </div>
             </div>
@@ -255,26 +255,26 @@ export default function UpgradePage() {
 
       {/* Current Membership Info - Enhanced */}
       {currentMembership && !currentMembership.isLifetime && (
-        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 via-blue-50 to-indigo-50 backdrop-blur-sm">
+        <Card className="border-0 shadow-lg backdrop-blur-sm" style={{ background: `linear-gradient(to right, ${themeColors.light}, ${themeColors.lighter})` }}>
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: themeColors.primary }}>
                 <Info className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-blue-900 mb-2 text-lg">Membership Aktif Anda</h3>
+                <h3 className="font-bold mb-2 text-lg" style={{ color: themeColors.dark }}>Membership Aktif Anda</h3>
                 <div className="space-y-1">
-                  <p className="text-blue-800">
+                  <p style={{ color: themeColors.text }}>
                     <strong className="text-xl">{currentMembership.plan.name}</strong>
                   </p>
-                  <p className="text-blue-700">
+                  <p style={{ color: themeColors.textLight }}>
                     <Clock className="w-4 h-4 inline mr-1" />
                     Sisa <strong>{currentMembership.daysRemaining} hari</strong> aktif
                   </p>
                 </div>
-                <div className="mt-3 p-3 bg-blue-100/70 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-800 flex items-start gap-2">
-                    <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <div className="mt-3 p-3 rounded-lg border" style={{ backgroundColor: `${themeColors.primary}10`, borderColor: `${themeColors.primary}30` }}>
+                  <p className="text-sm flex items-start gap-2" style={{ color: themeColors.text }}>
+                    <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: themeColors.secondary }} />
                     <span>
                       <strong>Mode Accumulate:</strong> Nilai sisa hari akan dikurangkan dari harga plan baru - hemat lebih banyak!
                     </span>
@@ -282,8 +282,8 @@ export default function UpgradePage() {
                 </div>
               </div>
               <div className="text-right bg-white/70 p-4 rounded-xl shadow-sm">
-                <p className="text-xs text-blue-700 mb-1">Berakhir pada:</p>
-                <p className="font-bold text-blue-900 text-lg">
+                <p className="text-xs mb-1" style={{ color: themeColors.textLight }}>Berakhir pada:</p>
+                <p className="font-bold text-lg" style={{ color: themeColors.dark }}>
                   {new Date(currentMembership.endDate).toLocaleDateString('id-ID', {
                     day: 'numeric',
                     month: 'short',
@@ -298,10 +298,10 @@ export default function UpgradePage() {
 
       {/* Lifetime Info Alert - Enhanced */}
       {currentMembership && !currentMembership.isLifetime && (
-        <Alert className="border-0 shadow-md bg-gradient-to-r from-amber-50 to-orange-50">
+        <Alert className="border-0 shadow-md" style={{ background: `linear-gradient(to right, ${themeColors.warning}15, ${themeColors.warning}10)` }}>
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0" />
-            <AlertDescription className="text-amber-900 leading-relaxed">
+            <AlertCircle className="h-6 w-6 flex-shrink-0" style={{ color: themeColors.warning }} />
+            <AlertDescription className="leading-relaxed" style={{ color: themeColors.dark }}>
               <strong className="text-base">⚡ Perhatian Upgrade Lifetime:</strong>
               <p className="mt-1">
                 Upgrade ke <strong>Lifetime Membership</strong> harus membayar harga penuh (tanpa potongan sisa hari) karena ini investasi jangka panjang. 
@@ -317,7 +317,7 @@ export default function UpgradePage() {
         <Card className="border-0 shadow-lg bg-white">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
-              <Settings className="w-5 h-5 text-purple-600" />
+              <Settings className="w-5 h-5" style={{ color: themeColors.primary }} />
               Pilih Mode Upgrade
             </CardTitle>
             <CardDescription className="text-base">
@@ -326,32 +326,40 @@ export default function UpgradePage() {
           </CardHeader>
           <CardContent>
             <RadioGroup value={upgradeMode} onValueChange={(value: any) => setUpgradeMode(value)}>
-              <div className={`relative flex items-start space-x-4 p-5 border-2 rounded-xl transition-all cursor-pointer ${
-                upgradeMode === 'accumulate' 
-                  ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-500 shadow-md' 
-                  : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-sm'
-              }`}>
+              <div className={`relative flex items-start space-x-4 p-5 border-2 rounded-xl transition-all cursor-pointer`}
+                style={{
+                  background: upgradeMode === 'accumulate' ? `linear-gradient(to right, ${themeColors.light}, ${themeColors.lighter})` : '#ffffff',
+                  borderColor: upgradeMode === 'accumulate' ? themeColors.primary : '#e5e7eb',
+                  boxShadow: upgradeMode === 'accumulate' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
+                }}
+                onMouseEnter={(e) => { if (upgradeMode !== 'accumulate') e.currentTarget.style.borderColor = `${themeColors.primary}50` }}
+                onMouseLeave={(e) => { if (upgradeMode !== 'accumulate') e.currentTarget.style.borderColor = '#e5e7eb' }}
+              >
                 <RadioGroupItem value="accumulate" id="accumulate" className="mt-1" />
                 <Label htmlFor="accumulate" className="flex-1 cursor-pointer">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="font-bold text-lg">Accumulate</div>
-                    <Badge className="bg-green-600">Rekomendasi</Badge>
+                    <Badge style={{ backgroundColor: themeColors.success }}>Rekomendasi</Badge>
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed">
-                    Nilai sisa hari membership lama dikurangkan dari harga baru. <strong className="text-green-600">Hemat lebih banyak!</strong> 
+                    Nilai sisa hari membership lama dikurangkan dari harga baru. <strong style={{ color: themeColors.success }}>Hemat lebih banyak!</strong> 
                     Mode ini ideal untuk upgrade ke plan yang lebih tinggi.
                   </p>
                 </Label>
                 {upgradeMode === 'accumulate' && (
-                  <Check className="w-6 h-6 text-purple-600 absolute top-5 right-5" />
+                  <Check className="w-6 h-6 absolute top-5 right-5" style={{ color: themeColors.primary }} />
                 )}
               </div>
               
-              <div className={`relative flex items-start space-x-4 p-5 border-2 rounded-xl transition-all cursor-pointer ${
-                upgradeMode === 'full' 
-                  ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-500 shadow-md' 
-                  : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-sm'
-              }`}>
+              <div className={`relative flex items-start space-x-4 p-5 border-2 rounded-xl transition-all cursor-pointer`}
+                style={{
+                  background: upgradeMode === 'full' ? `linear-gradient(to right, ${themeColors.light}, ${themeColors.lighter})` : '#ffffff',
+                  borderColor: upgradeMode === 'full' ? themeColors.secondary : '#e5e7eb',
+                  boxShadow: upgradeMode === 'full' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
+                }}
+                onMouseEnter={(e) => { if (upgradeMode !== 'full') e.currentTarget.style.borderColor = `${themeColors.secondary}50` }}
+                onMouseLeave={(e) => { if (upgradeMode !== 'full') e.currentTarget.style.borderColor = '#e5e7eb' }}
+              >
                 <RadioGroupItem value="full" id="full" className="mt-1" />
                 <Label htmlFor="full" className="flex-1 cursor-pointer">
                   <div className="font-bold text-lg mb-2">Full Price</div>
@@ -361,7 +369,7 @@ export default function UpgradePage() {
                   </p>
                 </Label>
                 {upgradeMode === 'full' && (
-                  <Check className="w-6 h-6 text-blue-600 absolute top-5 right-5" />
+                  <Check className="w-6 h-6 absolute top-5 right-5" style={{ color: themeColors.secondary }} />
                 )}
               </div>
             </RadioGroup>
@@ -372,7 +380,7 @@ export default function UpgradePage() {
       {/* Pricing Cards - Modern Design */}
       <div>
         <h2 className="text-3xl font-bold text-center mb-8">
-          <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
             Pilih Plan Yang Sesuai
           </span>
         </h2>
@@ -387,37 +395,41 @@ export default function UpgradePage() {
             return (
               <Card
                 key={plan.id}
-                className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
-                  plan.isMostPopular 
-                    ? 'border-2 border-purple-500 shadow-xl scale-105 bg-gradient-to-br from-purple-50 via-white to-pink-50' 
-                    : 'border border-gray-200 bg-white hover:border-purple-300'
-                } ${isCurrent ? 'ring-2 ring-green-500 bg-green-50' : ''}`}
+                className="relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
+                style={{
+                  border: plan.isMostPopular ? `2px solid ${themeColors.primary}` : isCurrent ? `2px solid ${themeColors.success}` : '1px solid #e5e7eb',
+                  background: plan.isMostPopular ? `linear-gradient(to bottom right, ${themeColors.light}, #ffffff, ${themeColors.lighter})` : isCurrent ? `${themeColors.success}10` : '#ffffff',
+                  transform: plan.isMostPopular ? 'scale(1.05)' : 'scale(1)',
+                  boxShadow: plan.isMostPopular ? '0 20px 25px -5px rgba(0, 0, 0, 0.1)' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseEnter={(e) => { if (!plan.isMostPopular) e.currentTarget.style.borderColor = `${themeColors.primary}50` }}
+                onMouseLeave={(e) => { if (!plan.isMostPopular && !isCurrent) e.currentTarget.style.borderColor = '#e5e7eb' }}
               >
                 {/* Top Gradient Bar for Popular Plans */}
                 {plan.isMostPopular && (
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600"></div>
+                  <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary}, ${themeColors.primary})` }}></div>
                 )}
 
                 {/* Badges */}
                 <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
                   {plan.isMostPopular && (
-                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg">
+                    <Badge className="shadow-lg text-white" style={{ background: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
                       <Sparkles className="w-3 h-3 mr-1" />
                       Terpopuler
                     </Badge>
                   )}
                   {plan.isPopular && !plan.isMostPopular && (
-                    <Badge variant="outline" className="border-orange-500 text-orange-600 bg-white shadow">
+                    <Badge variant="outline" className="bg-white shadow" style={{ borderColor: themeColors.warning, color: themeColors.warning }}>
                       🔥 Paling Laris
                     </Badge>
                   )}
                   {plan.isBestSeller && (
-                    <Badge variant="outline" className="border-blue-500 text-blue-600 bg-white shadow">
+                    <Badge variant="outline" className="bg-white shadow" style={{ borderColor: themeColors.info, color: themeColors.info }}>
                       ⭐ Best Seller
                     </Badge>
                   )}
                   {isCurrent && (
-                    <Badge className="bg-green-600 shadow-lg">
+                    <Badge className="shadow-lg" style={{ backgroundColor: themeColors.success }}>
                       <Check className="w-3 h-3 mr-1" />
                       Aktif
                     </Badge>
@@ -448,7 +460,7 @@ export default function UpgradePage() {
                       </div>
                     )}
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      <span className="text-4xl font-extrabold bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
                         Rp {Math.floor(upgradePrice / 1000)}K
                       </span>
                       {!isLifetime && (
@@ -460,13 +472,13 @@ export default function UpgradePage() {
                     
                     {/* Savings Badges */}
                     {isLifetime && currentMembership && !currentMembership.isLifetime && (
-                      <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                      <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded" style={{ color: themeColors.warning, backgroundColor: `${themeColors.warning}15` }}>
                         <Star className="w-3 h-3" />
                         Premium Lifetime Access
                       </div>
                     )}
                     {!isLifetime && currentMembership && !currentMembership.isLifetime && upgradeMode === 'accumulate' && savings > 0 && (
-                      <div className="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded">
+                      <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded" style={{ color: themeColors.success, backgroundColor: `${themeColors.success}15` }}>
                         <Zap className="w-3 h-3" />
                         Hemat Rp {Math.floor(savings / 1000)}K
                       </div>
@@ -496,18 +508,18 @@ export default function UpgradePage() {
                   {/* Stats Grid */}
                   {plan._count && (
                     <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
-                      <div className="text-center bg-gray-50 rounded-lg p-2">
-                        <Users className="w-4 h-4 mx-auto text-purple-600 mb-1" />
+                      <div className="text-center rounded-lg p-2" style={{ backgroundColor: `${themeColors.primary}08` }}>
+                        <Users className="w-4 h-4 mx-auto mb-1" style={{ color: themeColors.primary }} />
                         <p className="text-xs font-semibold text-gray-700">{plan._count.membershipGroups}</p>
                         <p className="text-xs text-gray-500">Grup</p>
                       </div>
-                      <div className="text-center bg-gray-50 rounded-lg p-2">
-                        <BookOpen className="w-4 h-4 mx-auto text-blue-600 mb-1" />
+                      <div className="text-center rounded-lg p-2" style={{ backgroundColor: `${themeColors.info}08` }}>
+                        <BookOpen className="w-4 h-4 mx-auto mb-1" style={{ color: themeColors.info }} />
                         <p className="text-xs font-semibold text-gray-700">{plan._count.membershipCourses}</p>
                         <p className="text-xs text-gray-500">Kursus</p>
                       </div>
-                      <div className="text-center bg-gray-50 rounded-lg p-2">
-                        <ShoppingBag className="w-4 h-4 mx-auto text-pink-600 mb-1" />
+                      <div className="text-center rounded-lg p-2" style={{ backgroundColor: `${themeColors.secondary}08` }}>
+                        <ShoppingBag className="w-4 h-4 mx-auto mb-1" style={{ color: themeColors.secondary }} />
                         <p className="text-xs font-semibold text-gray-700">{plan._count.membershipProducts}</p>
                         <p className="text-xs text-gray-500">Produk</p>
                       </div>
@@ -523,8 +535,11 @@ export default function UpgradePage() {
                     </Button>
                   ) : canUpgrade ? (
                     <Button
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                      className="w-full text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                      style={{ background: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}
                       onClick={() => handleUpgrade(plan)}
+                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
                     >
                       {currentMembership ? (
                         <>
@@ -552,17 +567,17 @@ export default function UpgradePage() {
       </div>
 
       {/* Benefits Section - Enhanced */}
-      <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-100 via-pink-50 to-purple-50 overflow-hidden relative">
+      <Card className="border-0 shadow-xl overflow-hidden relative" style={{ background: `linear-gradient(to bottom right, ${themeColors.light}, ${themeColors.lighter}, #ffffff)` }}>
         {/* Background Decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-300/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-300/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: `${themeColors.primary}20` }}></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: `${themeColors.secondary}20` }}></div>
         
         <CardHeader className="relative z-10">
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(to bottom right, ${themeColors.primary}, ${themeColors.secondary})` }}>
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
               Kenapa Harus Upgrade?
             </span>
           </CardTitle>
@@ -571,11 +586,11 @@ export default function UpgradePage() {
         <CardContent className="relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col items-center text-center gap-4 bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(to bottom right, ${themeColors.primary}, ${themeColors.primary})` }}>
                 <BookOpen className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-2 text-purple-900">Akses Unlimited</h3>
+                <h3 className="font-bold text-lg mb-2" style={{ color: themeColors.dark }}>Akses Unlimited</h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
                   Akses ke <strong>semua kursus</strong>, materi premium, dan resource eksklusif tanpa batas
                 </p>
@@ -583,11 +598,11 @@ export default function UpgradePage() {
             </div>
             
             <div className="flex flex-col items-center text-center gap-4 bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(to bottom right, ${themeColors.secondary}, ${themeColors.secondary})` }}>
                 <Users className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-2 text-pink-900">Komunitas Eksklusif</h3>
+                <h3 className="font-bold text-lg mb-2" style={{ color: themeColors.dark }}>Komunitas Eksklusif</h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
                   Bergabung dengan <strong>komunitas premium</strong> dan networking berkualitas tinggi
                 </p>
@@ -595,11 +610,11 @@ export default function UpgradePage() {
             </div>
             
             <div className="flex flex-col items-center text-center gap-4 bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(to bottom right, ${themeColors.info}, ${themeColors.info})` }}>
                 <Rocket className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-2 text-blue-900">Update Terbaru</h3>
+                <h3 className="font-bold text-lg mb-2" style={{ color: themeColors.dark }}>Update Terbaru</h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
                   Dapatkan <strong>akses pertama</strong> ke konten dan fitur terbaru sebelum yang lain
                 </p>
@@ -621,13 +636,27 @@ export default function UpgradePage() {
         </div>
         <div className="flex gap-4 justify-center flex-wrap">
           <Link href="/my-dashboard">
-            <Button variant="outline" size="lg" className="gap-2 hover:bg-purple-50 hover:border-purple-300 transition-all">
+            <Button variant="outline" size="lg" className="gap-2 transition-all" 
+              style={{ borderColor: `${themeColors.primary}50` }}
+              onMouseEnter={(e) => { 
+                e.currentTarget.style.backgroundColor = `${themeColors.primary}10`
+                e.currentTarget.style.borderColor = themeColors.primary
+              }}
+              onMouseLeave={(e) => { 
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.borderColor = `${themeColors.primary}50`
+              }}
+            >
               <ArrowRight className="w-5 h-5" />
               Lihat Dashboard
             </Button>
           </Link>
           <Link href="/messages">
-            <Button size="lg" className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all">
+            <Button size="lg" className="gap-2 shadow-lg hover:shadow-xl transition-all text-white"
+              style={{ background: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}
+              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+            >
               💬 Hubungi Support
             </Button>
           </Link>
