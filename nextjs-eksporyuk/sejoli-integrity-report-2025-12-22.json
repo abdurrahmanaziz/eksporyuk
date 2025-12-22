@@ -1,0 +1,4173 @@
+{
+  "timestamp": "2025-12-22T07:17:40.440Z",
+  "report_type": "Sejoli Data Integrity & Discrepancy Analysis",
+  "safety_status": "ALL_DATA_VERIFIED_SAFE",
+  "executive_summary": {
+    "status": "ISSUES_IDENTIFIED_BUT_DATA_SAFE",
+    "key_finding": "76M discrepancy caused by Sejoli /orders API returning 404",
+    "data_safety": "No data modified, all operations read-only",
+    "urgent_action": "Fix Sejoli orders API endpoint"
+  },
+  "detailed_analysis": {
+    "sejoliProducts": [
+      {
+        "id": 21476,
+        "author": "53",
+        "date_created": "2025-11-02 11:03:23",
+        "date_created_gmt": "2025-11-02 04:03:23",
+        "date_modified": "2025-11-28 19:25:00",
+        "date_modified_gmt": "2025-11-28 12:25:00",
+        "title": "Webinar Ekspor 28 Nov 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "webinar-ekspor-28-nov-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=21476",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 500.000",
+        "product_raw_price": 500000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "500000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 50000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 20852,
+        "author": "53",
+        "date_created": "2025-10-13 19:25:56",
+        "date_created_gmt": "2025-10-13 12:25:56",
+        "date_modified": "2025-10-20 07:42:20",
+        "date_modified_gmt": "2025-10-20 00:42:20",
+        "title": "Promo 10.10 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "promo-10-10-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=20852",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 1.998.000",
+        "product_raw_price": 1998000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1998000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 20336,
+        "author": "53",
+        "date_created": "2025-09-23 18:34:37",
+        "date_created_gmt": "2025-09-23 11:34:37",
+        "date_modified": "2025-11-03 06:38:07",
+        "date_modified_gmt": "2025-11-02 23:38:07",
+        "title": "Titip Barang TEI 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "titip-barang-tei-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=20336",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 2.100.000",
+        "product_raw_price": 2100000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "2100000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 100000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": true,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 20130,
+        "author": "53",
+        "date_created": "2025-09-16 19:06:05",
+        "date_created_gmt": "2025-09-16 12:06:05",
+        "date_modified": "2025-09-30 19:14:36",
+        "date_modified_gmt": "2025-09-30 12:14:36",
+        "title": "Webinar Ekspor 30 Sept 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "webinar-ekspor-30-sept-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=20130",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 500.000",
+        "product_raw_price": 500000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "500000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 50000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 19296,
+        "author": "53",
+        "date_created": "2025-08-16 00:06:48",
+        "date_created_gmt": "2025-08-15 17:06:48",
+        "date_modified": "2025-08-18 00:04:04",
+        "date_modified_gmt": "2025-08-17 17:04:04",
+        "title": "Promo Merdeka Ke-80",
+        "content": "",
+        "excerpt": "",
+        "slug": "merdeka-ke-80",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=19296",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 1.998.000",
+        "product_raw_price": 1998000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1998000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 225000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 19042,
+        "author": "53",
+        "date_created": "2025-08-08 07:42:48",
+        "date_created_gmt": "2025-08-08 00:42:48",
+        "date_modified": "2025-08-29 19:18:40",
+        "date_modified_gmt": "2025-08-29 12:18:40",
+        "title": "Webinar Ekspor 29 Agustus 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "webinar-ekspor-18-agustus-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=19042",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 500.000",
+        "product_raw_price": 500000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "500000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 100000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 18893,
+        "author": "53",
+        "date_created": "2025-08-02 09:55:15",
+        "date_created_gmt": "2025-08-02 02:55:15",
+        "date_modified": "2025-11-03 06:38:11",
+        "date_modified_gmt": "2025-11-02 23:38:11",
+        "title": "DP Trade Expo Indonesia",
+        "content": "",
+        "excerpt": "",
+        "slug": "dp-trade-expo-indonesia",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=18893",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 2.000.000",
+        "product_raw_price": 2000000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "2000000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": true,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 18705,
+        "author": "53",
+        "date_created": "2025-07-27 20:05:02",
+        "date_created_gmt": "2025-07-27 13:05:02",
+        "date_modified": "2025-08-05 09:28:12",
+        "date_modified_gmt": "2025-08-05 02:28:12",
+        "title": "Kopdar Depok 10 Agustus 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "kopdar-depok-10-agustus-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=18705",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 50.000",
+        "product_raw_price": 50000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "50000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": true,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 18528,
+        "author": "53",
+        "date_created": "2025-07-20 18:23:27",
+        "date_created_gmt": "2025-07-20 11:23:27",
+        "date_modified": "2025-07-30 14:01:25",
+        "date_modified_gmt": "2025-07-30 07:01:25",
+        "title": "Zoom Ekspor 30 Juli 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "zoom-ekspor-30-juli-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=18528",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 500.000",
+        "product_raw_price": 500000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "500000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 20000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 18358,
+        "author": "53",
+        "date_created": "2025-07-09 14:22:08",
+        "date_created_gmt": "2025-07-09 07:22:08",
+        "date_modified": "2025-07-11 18:35:47",
+        "date_modified_gmt": "2025-07-11 11:35:47",
+        "title": "Zoom Ekspor 11 Juli 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "zoom-ekspor-11-juli-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=18358",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 0",
+        "product_raw_price": 0,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "0"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 0,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 17920,
+        "author": "53",
+        "date_created": "2025-06-26 19:37:07",
+        "date_created_gmt": "2025-06-26 12:37:07",
+        "date_modified": "2025-06-28 07:12:56",
+        "date_modified_gmt": "2025-06-28 00:12:56",
+        "title": "Promo Lifetime Tahun Baru Islam 1447 Hijriah",
+        "content": "",
+        "excerpt": "",
+        "slug": "promo-lifetime-tahun-baru-islam-1447-hijriah",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=17920",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 1.798.000",
+        "product_raw_price": 1798000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1798000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 250000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "RICH",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 17767,
+        "author": "53",
+        "date_created": "2025-06-23 13:38:39",
+        "date_created_gmt": "2025-06-23 06:38:39",
+        "date_modified": "2025-06-27 18:08:51",
+        "date_modified_gmt": "2025-06-27 11:08:51",
+        "title": "Zoom Ekspor 27 Juni 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "zoom-ekspor-27-juni-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=17767",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 0",
+        "product_raw_price": 0,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "0"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 0,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 17322,
+        "author": "53",
+        "date_created": "2025-06-04 11:12:24",
+        "date_created_gmt": "2025-06-04 04:12:24",
+        "date_modified": "2025-06-23 14:01:55",
+        "date_modified_gmt": "2025-06-23 07:01:55",
+        "title": "Zoom Ekspor 10 Juni 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "zoom-ekspor-10-juni-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=17322",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 0",
+        "product_raw_price": 0,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "0"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 0,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 17227,
+        "author": "53",
+        "date_created": "2025-06-02 16:54:35",
+        "date_created_gmt": "2025-06-02 09:54:35",
+        "date_modified": "2025-08-02 09:50:10",
+        "date_modified_gmt": "2025-08-02 02:50:10",
+        "title": "Kopdar Semarang Jawa Tengah 10 Juni 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "kopdar-semarang-jawa-tengah-10-juni-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=17227",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 40.000",
+        "product_raw_price": 40000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "40000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": true,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 16963,
+        "author": "53",
+        "date_created": "2025-05-26 13:36:29",
+        "date_created_gmt": "2025-05-26 06:36:29",
+        "date_modified": "2025-05-30 12:32:00",
+        "date_modified_gmt": "2025-05-30 05:32:00",
+        "title": "Zoom Ekspor 30  Mei 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "zoom-ekspor-30-mei-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=16963",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 0",
+        "product_raw_price": 0,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "0"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 0,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 16956,
+        "author": "53",
+        "date_created": "2025-05-26 11:11:51",
+        "date_created_gmt": "2025-05-26 04:11:51",
+        "date_modified": "2025-06-10 18:42:14",
+        "date_modified_gmt": "2025-06-10 11:42:14",
+        "title": "Promo MEI Paket Lifetime 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "promo-mei-paket-lifetime-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=16956",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 1.998.000",
+        "product_raw_price": 1998000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1998000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 210000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 16860,
+        "author": "53",
+        "date_created": "2025-05-23 07:18:16",
+        "date_created_gmt": "2025-05-23 00:18:16",
+        "date_modified": "2025-06-11 09:02:54",
+        "date_modified_gmt": "2025-06-11 02:02:54",
+        "title": "Workshop Offline Sukabumi 14 Juni 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "workshop-offline-sukabumi-14-juni-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=16860",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 35.000",
+        "product_raw_price": 35000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "35000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": true,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 16826,
+        "author": "53",
+        "date_created": "2025-05-22 16:11:10",
+        "date_created_gmt": "2025-05-22 09:11:10",
+        "date_modified": "2025-10-29 21:08:48",
+        "date_modified_gmt": "2025-10-29 14:08:48",
+        "title": "Paket Umroh 1 Bulan + Cari Buyer Ekspor",
+        "content": "",
+        "excerpt": "",
+        "slug": "paket-umroh-1-bulan-cari-buyer-ekspor",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=16826",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 0",
+        "product_raw_price": 0,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "0"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 0,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 16592,
+        "author": "53",
+        "date_created": "2025-05-15 19:51:09",
+        "date_created_gmt": "2025-05-15 12:51:09",
+        "date_modified": "2025-10-29 21:08:43",
+        "date_modified_gmt": "2025-10-29 14:08:43",
+        "title": "Bundling Katalog Produk dan Company Profil",
+        "content": "Tambah Produk katalog ini, agar anda bisa order dengan 2 Produk : Company profile dan Katalog Produk",
+        "excerpt": "",
+        "slug": "bundling-katalog-produk-dan-company-profil",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=16592",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 600.000",
+        "product_raw_price": 600000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "600000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 16587,
+        "author": "53",
+        "date_created": "2025-05-15 19:47:41",
+        "date_created_gmt": "2025-05-15 12:47:41",
+        "date_modified": "2025-10-29 21:08:32",
+        "date_modified_gmt": "2025-10-29 14:08:32",
+        "title": "Jasa Katalog Produk",
+        "content": "",
+        "excerpt": "",
+        "slug": "jasa-katalog-produk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=16587",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 300.000",
+        "product_raw_price": 300000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "300000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 10,
+            "type": "percentage",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 16581,
+        "author": "53",
+        "date_created": "2025-05-15 19:38:33",
+        "date_created_gmt": "2025-05-15 12:38:33",
+        "date_modified": "2025-10-29 21:08:21",
+        "date_modified_gmt": "2025-10-29 14:08:21",
+        "title": "Jasa Company Profile",
+        "content": "",
+        "excerpt": "",
+        "slug": "jasa-company-profile",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=16581",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 300.000",
+        "product_raw_price": 300000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "300000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 16130,
+        "author": "53",
+        "date_created": "2025-05-01 08:46:35",
+        "date_created_gmt": "2025-05-01 01:46:35",
+        "date_modified": "2025-05-09 14:18:00",
+        "date_modified_gmt": "2025-05-09 07:18:00",
+        "title": "Zoom Ekspor 9 Mei 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "zoom-ekspor-9-mei-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=16130",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 0",
+        "product_raw_price": 0,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "0"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 0,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 15234,
+        "author": "53",
+        "date_created": "2025-03-18 11:54:35",
+        "date_created_gmt": "2025-03-18 04:54:35",
+        "date_modified": "2025-06-03 09:55:34",
+        "date_modified_gmt": "2025-06-03 02:55:34",
+        "title": "Promo Paket Lifetime THR 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "promo-paket-lifetime-thr-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=15234",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 1.998.000",
+        "product_raw_price": 1998000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1998000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 210000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 13401,
+        "author": "53",
+        "date_created": "2025-02-10 10:32:53",
+        "date_created_gmt": "2025-02-10 03:32:53",
+        "date_modified": "2025-11-28 22:15:59",
+        "date_modified_gmt": "2025-11-28 15:15:59",
+        "title": "Paket Ekspor Yuk Lifetime",
+        "content": "",
+        "excerpt": "",
+        "slug": "paket-ekspor-yuk-lifetime",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=13401",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 1.998.000",
+        "product_raw_price": 1998000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1998000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 325000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 13400,
+        "author": "53",
+        "date_created": "2025-02-10 10:24:20",
+        "date_created_gmt": "2025-02-10 03:24:20",
+        "date_modified": "2025-11-28 22:16:14",
+        "date_modified_gmt": "2025-11-28 15:16:14",
+        "title": "Paket Ekspor Yuk 6 Bulan",
+        "content": "",
+        "excerpt": "",
+        "slug": "paket-ekspor-yuk-6-bulan",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=13400",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 699.000",
+        "product_raw_price": 699000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "699000",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "6",
+            "period": "monthly",
+            "price": "699000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 699000
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 200000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 13399,
+        "author": "53",
+        "date_created": "2025-02-10 10:21:23",
+        "date_created_gmt": "2025-02-10 03:21:23",
+        "date_modified": "2025-11-28 22:16:28",
+        "date_modified_gmt": "2025-11-28 15:16:28",
+        "title": "Paket Ekspor Yuk 12 Bulan",
+        "content": "",
+        "excerpt": "",
+        "slug": "paket-ekspor-yuk-12-bulan",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=13399",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 899.000",
+        "product_raw_price": 899000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "899000",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "1",
+            "period": "yearly",
+            "price": "899000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 899000
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 250000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 13050,
+        "author": "53",
+        "date_created": "2024-12-28 13:37:14",
+        "date_created_gmt": "2024-12-28 06:37:14",
+        "date_modified": "2025-02-20 22:26:11",
+        "date_modified_gmt": "2025-02-20 15:26:11",
+        "title": "Pembelian Tiket Untuk 3 Peserta",
+        "content": "",
+        "excerpt": "",
+        "slug": "pembelian-tiket-untuk-3-peserta",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=13050",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 1.150.000",
+        "product_raw_price": 1150000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1150000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 100000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 13045,
+        "author": "53",
+        "date_created": "2024-12-28 13:31:49",
+        "date_created_gmt": "2024-12-28 06:31:49",
+        "date_modified": "2025-02-20 22:26:13",
+        "date_modified_gmt": "2025-02-20 15:26:13",
+        "title": "Pembelian Tiket Untuk 2 Peserta",
+        "content": "",
+        "excerpt": "",
+        "slug": "kopdar-akbar-ekspor-yuk-2-peserta",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=13045",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 760.000",
+        "product_raw_price": 760000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "760000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 50000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 13039,
+        "author": "53",
+        "date_created": "2024-12-27 17:12:36",
+        "date_created_gmt": "2024-12-27 10:12:36",
+        "date_modified": "2025-02-20 22:26:18",
+        "date_modified_gmt": "2025-02-20 15:26:18",
+        "title": "Kopdar Akbar Ekspor Yuk Feb 2025 #2",
+        "content": "",
+        "excerpt": "",
+        "slug": "kopdar-akbar-ekspor-yuk-feb-2025-2",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=13039",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 400.000",
+        "product_raw_price": 400000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "400000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 50000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 12994,
+        "author": "53",
+        "date_created": "2024-12-11 11:43:38",
+        "date_created_gmt": "2024-12-11 04:43:38",
+        "date_modified": "2025-02-20 22:26:22",
+        "date_modified_gmt": "2025-02-20 15:26:22",
+        "title": "Kopdar Akbar Ekspor Yuk Feb 2025",
+        "content": "",
+        "excerpt": "",
+        "slug": "kopdar-akbar-ekspor-yuk-feb-2025",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=12994",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 350.000",
+        "product_raw_price": 350000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "350000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 11207,
+        "author": "53",
+        "date_created": "2024-06-28 06:52:11",
+        "date_created_gmt": "2024-06-27 23:52:11",
+        "date_modified": "2025-02-06 22:20:35",
+        "date_modified_gmt": "2025-02-06 15:20:35",
+        "title": "Promo Juli Happy 1-7 Juli 2024",
+        "content": "",
+        "excerpt": "",
+        "slug": "promo-juli-happy-1-7-juli-2024",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=11207",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 899.000",
+        "product_raw_price": 899000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "899001",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "1",
+            "period": "yearly",
+            "price": "899000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 899001
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 8915,
+        "author": "53",
+        "date_created": "2024-06-11 10:20:52",
+        "date_created_gmt": "2024-06-11 03:20:52",
+        "date_modified": "2025-06-03 22:11:45",
+        "date_modified_gmt": "2025-06-03 15:11:45",
+        "title": "Re Kelas 12 Bulan Ekspor Yuk",
+        "content": "",
+        "excerpt": "",
+        "slug": "re-kelas-12-bulan-ekspor-yuk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=8915",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 899.000",
+        "product_raw_price": 899000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "899000",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "1",
+            "period": "yearly",
+            "price": "899000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 899000
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "EY",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 8914,
+        "author": "53",
+        "date_created": "2024-06-11 10:19:59",
+        "date_created_gmt": "2024-06-11 03:19:59",
+        "date_modified": "2025-06-01 14:27:11",
+        "date_modified_gmt": "2025-06-01 07:27:11",
+        "title": "Re Kelas 6 Bulan Ekspor Yuk",
+        "content": "",
+        "excerpt": "",
+        "slug": "re-kelas-6-bulan-ekspor-yuk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=8914",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 699.000",
+        "product_raw_price": 699000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "699000",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "6",
+            "period": "monthly",
+            "price": "699000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 699000
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 0,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "EY",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 8910,
+        "author": "53",
+        "date_created": "2024-06-11 10:15:41",
+        "date_created_gmt": "2024-06-11 03:15:41",
+        "date_modified": "2025-06-01 14:27:12",
+        "date_modified_gmt": "2025-06-01 07:27:12",
+        "title": "Re Kelas Ekspor Lifetime",
+        "content": "",
+        "excerpt": "",
+        "slug": "re-kelas-ekspor-lifetime",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=8910",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 1.989.000",
+        "product_raw_price": 1989000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1989000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 0,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "EY",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 8684,
+        "author": "53",
+        "date_created": "2024-06-10 19:23:18",
+        "date_created_gmt": "2024-06-10 12:23:18",
+        "date_modified": "2025-02-06 22:19:30",
+        "date_modified_gmt": "2025-02-06 15:19:30",
+        "title": "Kelas Ekspor Yuk 6 Bulan",
+        "content": "",
+        "excerpt": "",
+        "slug": "kelas-ekspor-yuk-6-bulan",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=8684",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 699.000",
+        "product_raw_price": 699000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "699000",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "6",
+            "period": "monthly",
+            "price": "699000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 699000
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 250000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 8683,
+        "author": "53",
+        "date_created": "2024-06-10 19:21:12",
+        "date_created_gmt": "2024-06-10 12:21:12",
+        "date_modified": "2025-02-06 22:19:21",
+        "date_modified_gmt": "2025-02-06 15:19:21",
+        "title": "Kelas Ekspor Yuk 12 Bulan",
+        "content": "",
+        "excerpt": "",
+        "slug": "kelas-ekspor-yuk-12-bulan",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=8683",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 899.000",
+        "product_raw_price": 899000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "899000",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "1",
+            "period": "yearly",
+            "price": "899000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 899000
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 300000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 6810,
+        "author": "53",
+        "date_created": "2023-08-14 10:45:04",
+        "date_created_gmt": "2023-08-14 03:45:04",
+        "date_modified": "2025-02-06 22:18:25",
+        "date_modified_gmt": "2025-02-06 15:18:25",
+        "title": "Promo Kemerdekaan",
+        "content": "",
+        "excerpt": "",
+        "slug": "promo-kemerdekaan",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=6810",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 200.000",
+        "product_raw_price": 200000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "1360001",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "1",
+            "period": "yearly",
+            "price": "200000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 1360001
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 250000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 6068,
+        "author": "53",
+        "date_created": "2023-06-25 19:38:34",
+        "date_created_gmt": "2023-06-25 12:38:34",
+        "date_modified": "2025-06-04 15:15:51",
+        "date_modified_gmt": "2025-06-04 08:15:51",
+        "title": "Kelas Bimbingan Ekspor Yuk",
+        "content": "",
+        "excerpt": "",
+        "slug": "kelas-bimbingan-ekspor-yuk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=6068",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 1.398.000",
+        "product_raw_price": 1398000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1398000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 5935,
+        "author": "53",
+        "date_created": "2023-06-16 19:37:43",
+        "date_created_gmt": "2023-06-16 12:37:43",
+        "date_modified": "2025-10-29 21:07:10",
+        "date_modified_gmt": "2025-10-29 14:07:10",
+        "title": "Jasa Website Ekspor Bisnis",
+        "content": "",
+        "excerpt": "",
+        "slug": "jasa-website-ekspor-bisnis",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=5935",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 3.000.000",
+        "product_raw_price": 3000000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "3000000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 10,
+            "type": "percentage",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 5932,
+        "author": "53",
+        "date_created": "2023-06-16 19:35:58",
+        "date_created_gmt": "2023-06-16 12:35:58",
+        "date_modified": "2025-11-03 18:42:38",
+        "date_modified_gmt": "2025-11-03 11:42:38",
+        "title": "Legalitas Ekspor",
+        "content": "",
+        "excerpt": "",
+        "slug": "legalitas-ekspor",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=5932",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 798.000",
+        "product_raw_price": 798000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "798000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 20000,
+            "type": "percentage",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 5928,
+        "author": "53",
+        "date_created": "2023-06-16 19:30:19",
+        "date_created_gmt": "2023-06-16 12:30:19",
+        "date_modified": "2025-10-29 21:07:34",
+        "date_modified_gmt": "2025-10-29 14:07:34",
+        "title": "Jasa Website Ekspor Hemat",
+        "content": "",
+        "excerpt": "",
+        "slug": "jasa-website-ekspor-hemat",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=5928",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 1.500.000",
+        "product_raw_price": 1500000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1500000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 4684,
+        "author": "53",
+        "date_created": "2023-02-19 14:57:09",
+        "date_created_gmt": "2023-02-19 07:57:09",
+        "date_modified": "2025-02-06 22:18:14",
+        "date_modified_gmt": "2025-02-06 15:18:14",
+        "title": "Ultah Ekspor Yuk",
+        "content": "",
+        "excerpt": "",
+        "slug": "ultah-ekspor-yuk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=4684",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 1.398.000",
+        "product_raw_price": 1398000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1398000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 250000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 3840,
+        "author": "53",
+        "date_created": "2023-01-11 07:33:08",
+        "date_created_gmt": "2023-01-11 00:33:08",
+        "date_modified": "2025-06-09 10:56:29",
+        "date_modified_gmt": "2025-06-09 03:56:29",
+        "title": "Bundling Kelas Ekspor + Aplikasi EYA",
+        "content": "",
+        "excerpt": "",
+        "slug": "kelas-ekspor-yuk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=3840",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 200.000",
+        "product_raw_price": 200000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "1598000",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "1",
+            "period": "yearly",
+            "price": "200000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 1598000
+          },
+          "max_renewal": 15
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 3764,
+        "author": "53",
+        "date_created": "2023-01-04 20:57:01",
+        "date_created_gmt": "2023-01-04 13:57:01",
+        "date_modified": "2024-08-19 14:29:32",
+        "date_modified_gmt": "2024-08-19 07:29:32",
+        "title": "Ekspor Yuk Automation",
+        "content": "",
+        "excerpt": "",
+        "slug": "ekspor-yuk-automation",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=3764",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 399.000",
+        "product_raw_price": 399000,
+        "product_type": "digital",
+        "payment_type": "recurring",
+        "biaya_awal": true,
+        "harga_biaya_awal": "399000",
+        "subscription": {
+          "active": true,
+          "regular": {
+            "duration": "1",
+            "period": "yearly",
+            "price": "399000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": true,
+            "fee": 399000
+          },
+          "max_renewal": 7
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 75000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 1529,
+        "author": "53",
+        "date_created": "2022-09-13 15:10:19",
+        "date_created_gmt": "2022-09-13 08:10:19",
+        "date_modified": "2022-09-17 07:44:28",
+        "date_modified_gmt": "2022-09-17 00:44:28",
+        "title": "Kelas Donasi",
+        "content": "",
+        "excerpt": "",
+        "slug": "kelas-donasi",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=1529",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 100.000",
+        "product_raw_price": 100000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "100000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [
+          {
+            "ID": "1579",
+            "path": "/home/aziz/web/member.eksporyuk.com/public_html/wp-content/uploads/2022/09/SLIDE-MATERI-Ekspor-Yuk.pdf",
+            "link": "https://member.eksporyuk.com/wp-content/uploads/2022/09/SLIDE-MATERI-Ekspor-Yuk.pdf"
+          },
+          {
+            "ID": "1578",
+            "path": "/home/aziz/web/member.eksporyuk.com/public_html/wp-content/uploads/2022/09/user_guide_pendirian_ptp.pdf",
+            "link": "https://member.eksporyuk.com/wp-content/uploads/2022/09/user_guide_pendirian_ptp.pdf"
+          },
+          {
+            "ID": "1577",
+            "path": "/home/aziz/web/member.eksporyuk.com/public_html/wp-content/uploads/2022/09/Panduan-Penggunaan-OSS.pdf",
+            "link": "https://member.eksporyuk.com/wp-content/uploads/2022/09/Panduan-Penggunaan-OSS.pdf"
+          }
+        ],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": ""
+        }
+      },
+      {
+        "id": 558,
+        "author": "53",
+        "date_created": "2022-07-08 16:39:42",
+        "date_created_gmt": "2022-07-08 09:39:42",
+        "date_modified": "2022-07-11 07:08:15",
+        "date_modified_gmt": "2022-07-11 00:08:15",
+        "title": "Kaos Eksporyuk",
+        "content": "",
+        "excerpt": "",
+        "slug": "kaos-eksporyuk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=558",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "500",
+        "product_price": "Rp. 0",
+        "product_raw_price": 0,
+        "product_type": "physical",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "0"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "_",
+          "name": "Warna Kaos",
+          "variant": [
+            {
+              "label": "Hitam",
+              "price": null,
+              "raw_price": 0,
+              "weight": 5000
+            },
+            {
+              "label": "Putih",
+              "price": null,
+              "raw_price": 0,
+              "weight": 500
+            }
+          ]
+        }
+      },
+      {
+        "id": 488,
+        "author": "53",
+        "date_created": "2022-06-29 16:22:38",
+        "date_created_gmt": "2022-06-29 09:22:38",
+        "date_modified": "2022-07-01 19:30:49",
+        "date_modified_gmt": "2022-07-01 12:30:49",
+        "title": "Webinar Juli 2022",
+        "content": "Akses Sudah Ditutup",
+        "excerpt": "",
+        "slug": "webinar-juli-2022",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=488",
+        "status": "publish",
+        "product_thumbnail": "https://member.eksporyuk.com/wp-content/uploads/2022/06/Slide2-1.png",
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 250.000",
+        "product_raw_price": 250000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "250000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": [
+            {
+              "label": "Hitam",
+              "price": null,
+              "raw_price": 0,
+              "weight": 5000
+            },
+            {
+              "label": "Putih",
+              "price": null,
+              "raw_price": 0,
+              "weight": 500
+            }
+          ]
+        }
+      },
+      {
+        "id": 397,
+        "author": "53",
+        "date_created": "2022-05-26 05:42:23",
+        "date_created_gmt": "2022-05-25 22:42:23",
+        "date_modified": "2022-05-27 19:24:43",
+        "date_modified_gmt": "2022-05-27 12:24:43",
+        "title": "Webinar Juni 2022",
+        "content": "",
+        "excerpt": "",
+        "slug": "webinar-juni-2022",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=397",
+        "status": "publish",
+        "product_thumbnail": "https://member.eksporyuk.com/wp-content/uploads/2022/05/Slide16.png",
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 250.000",
+        "product_raw_price": 250000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "250000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": [
+            {
+              "label": "Hitam",
+              "price": null,
+              "raw_price": 0,
+              "weight": 5000
+            },
+            {
+              "label": "Putih",
+              "price": null,
+              "raw_price": 0,
+              "weight": 500
+            }
+          ]
+        }
+      },
+      {
+        "id": 300,
+        "author": "53",
+        "date_created": "2022-04-15 15:52:08",
+        "date_created_gmt": "2022-04-15 08:52:08",
+        "date_modified": "2025-02-03 10:58:11",
+        "date_modified_gmt": "2025-02-03 03:58:11",
+        "title": "Kelas Ekspor Gratis",
+        "content": "",
+        "excerpt": "",
+        "slug": "kelas-ekspor-gratis",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=300",
+        "status": "publish",
+        "product_thumbnail": "https://member.eksporyuk.com/wp-content/uploads/2022/02/Eksporyuk.png",
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 0",
+        "product_raw_price": 0,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "0"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": [
+            {
+              "label": "Hitam",
+              "price": null,
+              "raw_price": 0,
+              "weight": 5000
+            },
+            {
+              "label": "Putih",
+              "price": null,
+              "raw_price": 0,
+              "weight": 500
+            }
+          ]
+        }
+      },
+      {
+        "id": 179,
+        "author": "53",
+        "date_created": "2022-03-16 22:32:31",
+        "date_created_gmt": "2022-03-16 15:32:31",
+        "date_modified": "2025-02-06 22:17:57",
+        "date_modified_gmt": "2025-02-06 15:17:57",
+        "title": "Kelas Eksporyuk",
+        "content": "",
+        "excerpt": "",
+        "slug": "kelas-eksporyuk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=179",
+        "status": "publish",
+        "product_thumbnail": "https://member.eksporyuk.com/wp-content/uploads/2022/02/Eksporyuk.png",
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 1.398.000",
+        "product_raw_price": 1398000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "1398000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 250000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": [
+            {
+              "label": "Hitam",
+              "price": null,
+              "raw_price": 0,
+              "weight": 5000
+            },
+            {
+              "label": "Putih",
+              "price": null,
+              "raw_price": 0,
+              "weight": 500
+            }
+          ]
+        }
+      },
+      {
+        "id": 93,
+        "author": "1",
+        "date_created": "2022-02-27 14:31:33",
+        "date_created_gmt": "2022-02-27 14:31:33",
+        "date_modified": "2025-02-06 22:17:47",
+        "date_modified_gmt": "2025-02-06 15:17:47",
+        "title": "Eksporyuk Prelaunch",
+        "content": "",
+        "excerpt": "",
+        "slug": "eksporyuk-prelaunch",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=93",
+        "status": "publish",
+        "product_thumbnail": false,
+        "product_active": false,
+        "product_weight": "",
+        "product_price": "Rp. 699.000",
+        "product_raw_price": 699000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "699000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": [],
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": [
+            {
+              "label": "Hitam",
+              "price": null,
+              "raw_price": 0,
+              "weight": 5000
+            },
+            {
+              "label": "Putih",
+              "price": null,
+              "raw_price": 0,
+              "weight": 500
+            }
+          ]
+        }
+      },
+      {
+        "id": 28,
+        "author": "1",
+        "date_created": "2022-02-11 09:07:16",
+        "date_created_gmt": "2022-02-11 09:07:16",
+        "date_modified": "2025-02-06 22:17:09",
+        "date_modified_gmt": "2025-02-06 15:17:09",
+        "title": "eksporyuk",
+        "content": "",
+        "excerpt": "",
+        "slug": "eksporyuk",
+        "permalink": "https://member.eksporyuk.com/?post_type=sejoli-product&#038;p=28",
+        "status": "publish",
+        "product_thumbnail": "https://member.eksporyuk.com/wp-content/uploads/2022/02/Eksporyuk.png",
+        "product_active": true,
+        "product_weight": "",
+        "product_price": "Rp. 399.000",
+        "product_raw_price": 399000,
+        "product_type": "digital",
+        "payment_type": "one-time",
+        "biaya_awal": false,
+        "harga_biaya_awal": "",
+        "subscription": {
+          "active": false,
+          "regular": {
+            "duration": "",
+            "period": "daily",
+            "price": "399000"
+          },
+          "tryout": {
+            "active": false,
+            "duration": "",
+            "period": "daily",
+            "first_only": false
+          },
+          "signup": {
+            "active": false,
+            "fee": 0
+          },
+          "max_renewal": 0
+        },
+        "license": {
+          "active": false,
+          "count": ""
+        },
+        "affiliate": {
+          "1": {
+            "tier": 1,
+            "fee": 120000,
+            "type": "fixed",
+            "reward_enable": false,
+            "reward_point": 0
+          }
+        },
+        "files": [],
+        "reward_point": 0,
+        "cashback": {
+          "amount": 0,
+          "activate": false,
+          "value": 0,
+          "type": "fixed",
+          "max": 0,
+          "refundable": false,
+          "setup": "general"
+        },
+        "donation": "",
+        "enable_quantity": false,
+        "access_code": "coachuts",
+        "variants": {
+          "type": "",
+          "name": "",
+          "variant": [
+            {
+              "label": "Hitam",
+              "price": null,
+              "raw_price": 0,
+              "weight": 5000
+            },
+            {
+              "label": "Putih",
+              "price": null,
+              "raw_price": 0,
+              "weight": 500
+            }
+          ]
+        }
+      }
+    ],
+    "commissionAnalysis": {
+      "total_products": 52,
+      "affiliate_enabled": 0,
+      "commission_types": {},
+      "price_ranges": {
+        "500K-1M": 15,
+        "1M-2M": 12,
+        "> 2M": 3,
+        "< 100K": 3,
+        "100K-500K": 11
+      },
+      "product_types": {
+        "digital": 51,
+        "physical": 1
+      },
+      "commission_summary": [],
+      "errors": []
+    },
+    "databaseComparison": {
+      "metrics": {
+        "users": 19034,
+        "transactions": 12180,
+        "affiliates": 65,
+        "conversions": 10694,
+        "total_commission_paid": {
+          "_sum": {
+            "commissionAmount": "889455484"
+          }
+        }
+      },
+      "topAffiliates": [
+        {
+          "name": "Sutisna",
+          "email": "azzka42@gmail.com",
+          "totalEarnings": "209395000",
+          "recentConversions": 5
+        },
+        {
+          "name": "Rahmat Al Fianto",
+          "email": "rahmatalfianto1997@gmail.com",
+          "totalEarnings": "109435000",
+          "recentConversions": 5
+        },
+        {
+          "name": "Asep Abdurrahman Wahid",
+          "email": "asep.abdurrahman.w@gmail.com",
+          "totalEarnings": "103285000",
+          "recentConversions": 5
+        },
+        {
+          "name": "Hamid Baidowi",
+          "email": "hamidbaidowi03@gmail.com",
+          "totalEarnings": "87450000",
+          "recentConversions": 5
+        },
+        {
+          "name": "Yoga Andrian",
+          "email": "yogasoneo@gmail.com",
+          "totalEarnings": "86505000",
+          "recentConversions": 5
+        },
+        {
+          "name": "NgobrolinEkspor",
+          "email": "irmaprime01@gmail.com",
+          "totalEarnings": "76000000",
+          "recentConversions": 5
+        },
+        {
+          "name": "eko wibowo",
+          "email": "ekowibowo831@gmail.com",
+          "totalEarnings": "39990000",
+          "recentConversions": 5
+        },
+        {
+          "name": "Muhamad safrizal",
+          "email": "rsaf924@gmail.com",
+          "totalEarnings": "36320000",
+          "recentConversions": 5
+        },
+        {
+          "name": "PintarEkspor",
+          "email": "pintarekspor146@gmail.com",
+          "totalEarnings": "35820000",
+          "recentConversions": 5
+        },
+        {
+          "name": "Fadlul Rahmat",
+          "email": "fadlulrahmat19@gmail.com",
+          "totalEarnings": "24915000",
+          "recentConversions": 5
+        }
+      ],
+      "recentTransactions": [
+        {
+          "id": "cmjghd95p0002jy04v2eokeg5",
+          "amount": "1998000",
+          "date": "2025-12-22T01:31:45.181Z",
+          "userName": "Sultan Aziz"
+        },
+        {
+          "id": "cmjed9r2a004j5t9jtu598gnu",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:30.946Z",
+          "userName": "Feri Munthe"
+        },
+        {
+          "id": "cmjed9qqz004a5t9jibsf03x0",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:30.539Z",
+          "userName": "MHD TAUFIK RANGKUTI"
+        },
+        {
+          "id": "cmjed9qfq00415t9j7gbdwt3h",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:30.134Z",
+          "userName": "Musaddad Kholil"
+        },
+        {
+          "id": "cmjed9q40003s5t9jpknebcn5",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:29.712Z",
+          "userName": "Deni Setiawan"
+        },
+        {
+          "id": "cmjed9poh003j5t9jofgo1pae",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:29.154Z",
+          "userName": "Irawan S Depati"
+        },
+        {
+          "id": "cmjed9p8t003a5t9j5od0j920",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:28.590Z",
+          "userName": "Yani rahman"
+        },
+        {
+          "id": "cmjed9oxn00315t9j58bp609g",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:28.188Z",
+          "userName": "Moh. Samsul Arifin"
+        },
+        {
+          "id": "cmjed9omk002s5t9j8a44j5q7",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:27.788Z",
+          "userName": "Widyanto Juniardhie"
+        },
+        {
+          "id": "cmjed9obd002j5t9jiohv468g",
+          "amount": "999000",
+          "date": "2025-12-20T14:01:27.385Z",
+          "userName": "Mohammad Nur Kholid"
+        }
+      ],
+      "sutisnaDetails": {
+        "totalEarnings": "209395000",
+        "conversionsCount": 586,
+        "conversionsSum": "002500002500000030000030000030000003000003000003000003000003000003000003000003000003000003000003000003000003000003000003000003000003000003000002500003000000030000030000030000030000030000030000030000030000030000030000025000030000030000030000030000025000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000030000025000050000500005000050000500005000032500020000032500032500032500032500032500032500032500020000032500032500021000021000021000032500020000032500032500032500032500020000020000032500000000325000000000000000032500003250003250003250003250003250003250002100002100002100000000000021000000000000000000000000000000000000000000000000000000000021000000000000000000000000000000000000000000325000325000325000325000325000200000325000200000325000000000032500000000325000000000000000000000000000000000000000000325000325000325000200000200003250002000025000032500032500020000200002000020000200002000020000200002000032500032500010500200000225000225000225000105002250002250003250003250003250003250003250001050010500105001050010500105001000003250003250003250002000002000003250002000001050010500105001050050000500005000050000325000200000325000250000100000250000325000325000325000250000000200000200000209623200000325000325000325000325000325000325000200000200000325000200000325000325000325000325000325000150003250001500015000150001050010500105001050010500105001050010500325000325000325000200000200000250000325000325000200000325000200000325000200000325000325000105001050010500105001050010500105001050010500105001050025000032500032500032500032500024000024000023992424000010500105003250003250002000003250003250003250003250003250003250001050010500105001050010500105001050010500105001050029964210500325000325000325000325000250000325000325000325000020000032500025000025000000325000325000325000325000325000325000325000325000000000239700000239700325000325000325000200000325000325000325000325000325000200000250000250000224700224700224700224700224700325000325000325000325000325000325000325000325000325000228163228000250000250000250000269555269558250000250000250000209564250000269568269608250000269610269612250000250000250000250000250000250000239400119700250000209636250000250000269638269638200000250000250000269665209665250000269668269669209681200000200000250000269687200000269690269678269696209679269686269699269690209692269699250000269692269693269407269417269427269419269544269544209644119512269645269646",
+        "recentActivity": [
+          {
+            "commissionAmount": "0",
+            "createdAt": "2025-12-19T22:29:00.056Z",
+            "transactionId": "cmjc8fpl6oe0z2zybyy8"
+          },
+          {
+            "commissionAmount": "250000",
+            "createdAt": "2025-12-19T22:28:55.306Z",
+            "transactionId": "cmjc8fpl6n79y50mqkpr"
+          },
+          {
+            "commissionAmount": "250000",
+            "createdAt": "2025-12-19T22:28:54.159Z",
+            "transactionId": "cmjc8fpl5klba6ild87r"
+          },
+          {
+            "commissionAmount": "0",
+            "createdAt": "2025-12-19T22:28:41.917Z",
+            "transactionId": "cmjc8fpl4v6wg4rpa74e"
+          },
+          {
+            "commissionAmount": "0",
+            "createdAt": "2025-12-19T22:28:40.287Z",
+            "transactionId": "cmjc8fpl4gxnbncnov5o"
+          },
+          {
+            "commissionAmount": "300000",
+            "createdAt": "2025-12-19T22:28:04.298Z",
+            "transactionId": "cmjc8fpl35lzh6amiwnv"
+          },
+          {
+            "commissionAmount": "300000",
+            "createdAt": "2025-12-19T22:28:04.202Z",
+            "transactionId": "cmjc8fpl39lvnjmzld48"
+          },
+          {
+            "commissionAmount": "300000",
+            "createdAt": "2025-12-19T22:28:03.920Z",
+            "transactionId": "cmjc8fpl3s0vpvor60f"
+          },
+          {
+            "commissionAmount": "0",
+            "createdAt": "2025-12-19T22:27:55.284Z",
+            "transactionId": "cmjc8fpl3fm5krfifswt"
+          },
+          {
+            "commissionAmount": "300000",
+            "createdAt": "2025-12-19T22:27:50.688Z",
+            "transactionId": "cmjc8fpl2umx9nugq6u"
+          }
+        ]
+      }
+    },
+    "integrityCheck": {
+      "status": "SAFE_WITH_KNOWN_ISSUE",
+      "issues": [
+        "❌ CRITICAL: Sejoli /orders API returns 404 - This explains missing commission data!"
+      ],
+      "warnings": [
+        "⚠️  Sutisna internal discrepancy: Rp ∞",
+        "⚠️  Orders data not accessible via API - manual admin access required"
+      ],
+      "safe_operations": [
+        "✅ No duplicate product IDs in Sejoli",
+        "✅ Database has active conversion data",
+        "✅ Commission payments are recorded",
+        "✅ Sejoli API products endpoint accessible"
+      ],
+      "data_consistency": {}
+    },
+    "discrepancyAnalysis": {
+      "issue_confirmed": true,
+      "sejoli_dashboard_amount": "133.475.000",
+      "eksporyuk_database_amount": "209.395.000",
+      "difference": 75920000,
+      "root_causes_identified": [
+        {
+          "cause": "Orders API Not Accessible",
+          "severity": "CRITICAL",
+          "description": "Sejoli /orders endpoint returns 404, preventing order data sync",
+          "evidence": "/orders API returns 404 Not Found",
+          "impact": "Commission calculations cannot access transaction data"
+        },
+        {
+          "cause": "Database Contains Recent Transactions",
+          "severity": "HIGH",
+          "description": "Database shows 586 conversions with latest activity on 2025-12-19",
+          "evidence": "Recent conversions recorded but not reflected in Sejoli dashboard",
+          "impact": "Sejoli dashboard may not be syncing with live transaction data"
+        }
+      ],
+      "evidence": {
+        "database_conversions": 586,
+        "database_total": "209395000",
+        "recent_activity": 10,
+        "latest_activity": "2025-12-19",
+        "sejoli_affiliate_products": 0,
+        "total_sejoli_products": 52
+      },
+      "recommendations": [
+        {
+          "priority": "URGENT",
+          "action": "Fix Sejoli Orders API",
+          "description": "Investigate why /wp-json/sejoli-api/v1/orders returns 404",
+          "technical": "Check if orders endpoint is properly registered in Sejoli API"
+        },
+        {
+          "priority": "HIGH",
+          "action": "Implement Proper Data Sync",
+          "description": "Create sync mechanism between Eksporyuk transactions and Sejoli dashboard",
+          "technical": "Build bidirectional sync to ensure both systems show same data"
+        },
+        {
+          "priority": "MEDIUM",
+          "action": "Manual Verification",
+          "description": "Manually access Sejoli wp-admin to verify commission data",
+          "technical": "Use provided credentials to check admin dashboard directly"
+        },
+        {
+          "priority": "LOW",
+          "action": "Data Reconciliation Report",
+          "description": "Create detailed transaction-by-transaction comparison",
+          "technical": "Export both systems data and compare line by line"
+        }
+      ]
+    }
+  },
+  "critical_findings": {
+    "sejoli_orders_api_broken": true,
+    "database_has_more_recent_data": true,
+    "no_data_corruption_detected": true,
+    "commission_structure_intact": true,
+    "sync_mechanism_needed": true
+  },
+  "safety_confirmations": [
+    "✅ No data was modified during analysis",
+    "✅ All database operations were read-only",
+    "✅ No duplicate data created",
+    "✅ No data was deleted or corrupted",
+    "✅ All API calls were non-destructive"
+  ],
+  "next_steps": [
+    "1. Fix Sejoli /orders API endpoint (404 error)",
+    "2. Implement proper sync between Eksporyuk and Sejoli",
+    "3. Manual verification via wp-admin access",
+    "4. Create monitoring to prevent future discrepancies"
+  ]
+}

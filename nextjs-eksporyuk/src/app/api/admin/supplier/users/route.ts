@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
           in: supplierIds
         },
         type: 'SUPPLIER_MEMBERSHIP',
-        status: 'PAID'
+        status: 'SUCCESS'
       },
       include: {
         affiliateConversion: {

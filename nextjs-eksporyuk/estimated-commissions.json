@@ -1,0 +1,320 @@
+{
+  "generated_at": "2025-12-22T08:27:40.955Z",
+  "source": "estimated_from_sejoli_analysis",
+  "total_commission_pool": 1256771000,
+  "average_rate": 30.2,
+  "products": {
+    "28": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 99750,
+      "estimated": true
+    },
+    "93": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 209700,
+      "estimated": true
+    },
+    "179": {
+      "type": "PERCENTAGE",
+      "rate": 40,
+      "amount": 559200,
+      "estimated": true
+    },
+    "300": {
+      "type": "PERCENTAGE",
+      "rate": 0,
+      "amount": 0,
+      "estimated": true
+    },
+    "397": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 62500,
+      "estimated": true
+    },
+    "488": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 62500,
+      "estimated": true
+    },
+    "558": {
+      "type": "PERCENTAGE",
+      "rate": 0,
+      "amount": 0,
+      "estimated": true
+    },
+    "1529": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 25000,
+      "estimated": true
+    },
+    "3764": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 99750,
+      "estimated": true
+    },
+    "3840": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 50000,
+      "estimated": true
+    },
+    "4684": {
+      "type": "PERCENTAGE",
+      "rate": 40,
+      "amount": 559200,
+      "estimated": true
+    },
+    "5928": {
+      "type": "PERCENTAGE",
+      "rate": 40,
+      "amount": 600000,
+      "estimated": true
+    },
+    "5932": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 239400,
+      "estimated": true
+    },
+    "5935": {
+      "type": "PERCENTAGE",
+      "rate": 40,
+      "amount": 1200000,
+      "estimated": true
+    },
+    "6068": {
+      "type": "PERCENTAGE",
+      "rate": 40,
+      "amount": 559200,
+      "estimated": true
+    },
+    "6810": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 60000,
+      "estimated": true
+    },
+    "8683": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 269700,
+      "estimated": true
+    },
+    "8684": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 209700,
+      "estimated": true
+    },
+    "8910": {
+      "type": "PERCENTAGE",
+      "rate": 35,
+      "amount": 696150,
+      "estimated": true
+    },
+    "8914": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 209700,
+      "estimated": true
+    },
+    "8915": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 269700,
+      "estimated": true
+    },
+    "11207": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 269700,
+      "estimated": true
+    },
+    "12994": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 87500,
+      "estimated": true
+    },
+    "13039": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 100000,
+      "estimated": true
+    },
+    "13045": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 228000,
+      "estimated": true
+    },
+    "13050": {
+      "type": "PERCENTAGE",
+      "rate": 40,
+      "amount": 460000,
+      "estimated": true
+    },
+    "13399": {
+      "type": "PERCENTAGE",
+      "rate": 35,
+      "amount": 314650,
+      "estimated": true
+    },
+    "13400": {
+      "type": "PERCENTAGE",
+      "rate": 35,
+      "amount": 244650,
+      "estimated": true
+    },
+    "13401": {
+      "type": "PERCENTAGE",
+      "rate": 35,
+      "amount": 699300,
+      "estimated": true
+    },
+    "15234": {
+      "type": "PERCENTAGE",
+      "rate": 35,
+      "amount": 699300,
+      "estimated": true
+    },
+    "16130": {
+      "type": "PERCENTAGE",
+      "rate": 0,
+      "amount": 0,
+      "estimated": true
+    },
+    "16581": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 75000,
+      "estimated": true
+    },
+    "16587": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 75000,
+      "estimated": true
+    },
+    "16592": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 180000,
+      "estimated": true
+    },
+    "16826": {
+      "type": "PERCENTAGE",
+      "rate": 35,
+      "amount": 0,
+      "estimated": true
+    },
+    "16860": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 8750,
+      "estimated": true
+    },
+    "16956": {
+      "type": "PERCENTAGE",
+      "rate": 35,
+      "amount": 699300,
+      "estimated": true
+    },
+    "16963": {
+      "type": "PERCENTAGE",
+      "rate": 0,
+      "amount": 0,
+      "estimated": true
+    },
+    "17227": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 10000,
+      "estimated": true
+    },
+    "17322": {
+      "type": "PERCENTAGE",
+      "rate": 0,
+      "amount": 0,
+      "estimated": true
+    },
+    "17767": {
+      "type": "PERCENTAGE",
+      "rate": 0,
+      "amount": 0,
+      "estimated": true
+    },
+    "17920": {
+      "type": "PERCENTAGE",
+      "rate": 35,
+      "amount": 629300,
+      "estimated": true
+    },
+    "18358": {
+      "type": "PERCENTAGE",
+      "rate": 0,
+      "amount": 0,
+      "estimated": true
+    },
+    "18528": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 150000,
+      "estimated": true
+    },
+    "18705": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 12500,
+      "estimated": true
+    },
+    "18893": {
+      "type": "PERCENTAGE",
+      "rate": 40,
+      "amount": 800000,
+      "estimated": true
+    },
+    "19042": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 125000,
+      "estimated": true
+    },
+    "19296": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 599400,
+      "estimated": true
+    },
+    "20130": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 125000,
+      "estimated": true
+    },
+    "20336": {
+      "type": "PERCENTAGE",
+      "rate": 40,
+      "amount": 840000,
+      "estimated": true
+    },
+    "20852": {
+      "type": "PERCENTAGE",
+      "rate": 30,
+      "amount": 599400,
+      "estimated": true
+    },
+    "21476": {
+      "type": "PERCENTAGE",
+      "rate": 25,
+      "amount": 125000,
+      "estimated": true
+    }
+  }
+}

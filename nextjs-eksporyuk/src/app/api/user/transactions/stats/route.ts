@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
     const [total, pending, paid, failed, paidTransactions] = await Promise.all([
       prisma.transaction.count({ where: { userId } }),
       prisma.transaction.count({ where: { userId, status: 'PENDING' } }),
-      prisma.transaction.count({ where: { userId, status: 'PAID' } }),
+      prisma.transaction.count({ where: { userId, status: 'SUCCESS' } }),
       prisma.transaction.count({ where: { userId, status: 'FAILED' } }),
       prisma.transaction.findMany({
-        where: { userId, status: 'PAID' },
+        where: { userId, status: 'SUCCESS' },
         select: { amount: true }
       }),
     ])

@@ -36,7 +36,7 @@ interface Transaction {
   id: string
   invoiceNumber: string | null
   type: 'MEMBERSHIP' | 'PRODUCT' | 'COURSE' | 'SUPPLIER' | 'OTHER'
-  status: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'REFUNDED'
+  status: 'PENDING' | 'SUCCESS' | 'PAID' | 'FAILED' | 'EXPIRED' | 'REFUNDED'
   amount: number
   description: string | null
   paymentMethod: string | null
@@ -74,6 +74,7 @@ interface TransactionStats {
 
 const statusConfig = {
   PENDING: { label: 'Menunggu', color: 'bg-yellow-100 text-yellow-800 border-yellow-300', icon: Clock },
+  SUCCESS: { label: 'Berhasil', color: 'bg-green-100 text-green-800 border-green-300', icon: CheckCircle },
   PAID: { label: 'Berhasil', color: 'bg-green-100 text-green-800 border-green-300', icon: CheckCircle },
   FAILED: { label: 'Gagal', color: 'bg-red-100 text-red-800 border-red-300', icon: XCircle },
   EXPIRED: { label: 'Kadaluarsa', color: 'bg-gray-100 text-gray-800 border-gray-300', icon: AlertCircle },
@@ -265,7 +266,7 @@ export default function TransactionsPage() {
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
                   <SelectItem value="PENDING">Menunggu</SelectItem>
-                  <SelectItem value="PAID">Berhasil</SelectItem>
+                  <SelectItem value="SUCCESS">Berhasil</SelectItem>
                   <SelectItem value="FAILED">Gagal</SelectItem>
                   <SelectItem value="EXPIRED">Kadaluarsa</SelectItem>
                 </SelectContent>

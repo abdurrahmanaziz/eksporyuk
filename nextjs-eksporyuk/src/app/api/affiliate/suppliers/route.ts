@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 
     const stats = {
       totalSuppliers: allConversions.length,
-      activeSuppliers: allConversions.filter(c => c.transaction?.status === 'PAID').length,
+      activeSuppliers: allConversions.filter(c => c.transaction?.status === 'SUCCESS').length,
       totalCommission: allConversions.reduce((sum, c) => sum + Number(c.commissionAmount), 0),
       paidCommission: allConversions
         .filter(c => c.paidOut)
