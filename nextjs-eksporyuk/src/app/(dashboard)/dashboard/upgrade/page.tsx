@@ -208,47 +208,34 @@ export default function UpgradePage() {
 
   return (
     <ResponsivePageWrapper>
-    <div className="min-h-screen" style={{ background: `linear-gradient(to bottom right, ${themeColors.light}, #ffffff, ${themeColors.lighter})` }}>
-      <div className="container max-w-7xl mx-auto p-6 space-y-10">
-        {/* Modern Hero Header with Gradient */}
-        <div className="text-center space-y-6 py-12 relative">
-          {/* Background Decorations */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl" style={{ backgroundColor: `${themeColors.primary}20` }}></div>
-            <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl" style={{ backgroundColor: `${themeColors.secondary}20` }}></div>
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden pb-10">
+      {/* Background decoration blur */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] blur-3xl pointer-events-none -z-10" style={{ backgroundColor: `${themeColors.primary}05` }}></div>
+      
+      <div className="container max-w-lg mx-auto px-4 pt-8 md:max-w-2xl lg:max-w-4xl space-y-10">
+        {/* Hero Header */}
+        <div className="text-center mb-10 relative">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-sm transform hover:scale-110 transition-transform duration-300" style={{ backgroundColor: `${themeColors.primary}15` }}>
+            <Crown className="w-7 h-7" style={{ color: themeColors.primary }} />
           </div>
-          
-          <div className="relative z-10">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="relative">
-                <Crown className="w-14 h-14 drop-shadow-lg animate-pulse" style={{ color: themeColors.primary }} />
-                <Star className="w-5 h-5 absolute -top-1 -right-1" style={{ color: themeColors.secondary }} />
-              </div>
+          <h1 className="text-3xl font-extrabold mb-3 tracking-tight bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
+            Upgrade Membership
+          </h1>
+          <p className="text-sm text-gray-600 leading-relaxed max-w-xs mx-auto">
+            Tingkatkan pengalaman belajar Anda dengan <span className="font-semibold" style={{ color: themeColors.primary }}>fitur eksklusif</span> dan <span className="font-semibold" style={{ color: themeColors.primary }}>akses unlimited</span>.
+          </p>
+          <div className="flex justify-center items-center gap-4 mt-6 text-[10px] text-gray-600 font-medium">
+            <div className="flex items-center gap-1">
+              <Shield className="w-4 h-4" style={{ color: themeColors.success }} />
+              <span>Aman</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold mb-4">
-              <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary}, ${themeColors.primary})` }}>
-                Upgrade Membership
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-              Tingkatkan pengalaman belajar Anda dengan <span className="font-semibold" style={{ color: themeColors.primary }}>fitur eksklusif</span> dan 
-              <span className="font-semibold" style={{ color: themeColors.secondary }}> akses unlimited</span>
-            </p>
-            
-            {/* Trust Indicators */}
-            <div className="flex items-center justify-center gap-8 mt-8 flex-wrap">
-              <div className="flex items-center gap-2 text-gray-700">
-                <Shield className="w-5 h-5" style={{ color: themeColors.success }} />
-                <span className="text-sm font-medium">Pembayaran Aman</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <Rocket className="w-5 h-5" style={{ color: themeColors.primary }} />
-                <span className="text-sm font-medium">Akses Instan</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <Star className="w-5 h-5" style={{ color: themeColors.warning }} />
-                <span className="text-sm font-medium">Premium Quality</span>
-              </div>
+            <div className="flex items-center gap-1">
+              <Zap className="w-4 h-4" style={{ color: themeColors.primary }} />
+              <span>Instan</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Star className="w-4 h-4" style={{ color: themeColors.warning }} />
+              <span>Premium</span>
             </div>
           </div>
         </div>
@@ -377,14 +364,10 @@ export default function UpgradePage() {
         </Card>
       )}
 
-      {/* Pricing Cards - Modern Design */}
-      <div>
-        <h2 className="text-3xl font-bold text-center mb-8">
-          <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
-            Pilih Plan Yang Sesuai
-          </span>
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Pricing Cards */}
+      <div className="mb-12">
+        <h2 className="text-center font-bold text-lg mb-6">Pilih Plan Yang Sesuai</h2>
+        <div className="flex overflow-x-auto gap-4 pb-8 -mx-4 px-4 snap-x snap-mandatory no-scrollbar lg:grid lg:grid-cols-3 lg:gap-6 lg:overflow-visible lg:px-0 lg:pb-0">
           {plans.map((plan) => {
             const isLifetime = plan.duration === 'LIFETIME'
             const isCurrent = isCurrentPlan(plan.id)
@@ -395,170 +378,148 @@ export default function UpgradePage() {
             return (
               <Card
                 key={plan.id}
-                className="relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
+                className="snap-center shrink-0 w-[85vw] max-w-[320px] bg-white rounded-3xl p-6 shadow-sm border border-gray-200 flex flex-col relative group hover:border-blue-200 transition-colors"
                 style={{
-                  border: plan.isMostPopular ? `2px solid ${themeColors.primary}` : isCurrent ? `2px solid ${themeColors.success}` : '1px solid #e5e7eb',
-                  background: plan.isMostPopular ? `linear-gradient(to bottom right, ${themeColors.light}, #ffffff, ${themeColors.lighter})` : isCurrent ? `${themeColors.success}10` : '#ffffff',
-                  transform: plan.isMostPopular ? 'scale(1.05)' : 'scale(1)',
-                  boxShadow: plan.isMostPopular ? '0 20px 25px -5px rgba(0, 0, 0, 0.1)' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                  border: plan.isMostPopular ? `2px solid ${themeColors.primary}` : isCurrent ? '1px solid #e5e7eb' : '1px solid #e5e7eb',
+                  transform: plan.isMostPopular ? 'scale(1.02)' : 'scale(1)',
+                  zIndex: plan.isMostPopular ? 10 : 1,
+                  boxShadow: plan.isMostPopular ? `0 0 20px ${themeColors.primary}15` : '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                  opacity: isCurrent ? 0.9 : 1,
+                  filter: isCurrent ? 'grayscale(30%)' : 'none'
                 }}
-                onMouseEnter={(e) => { if (!plan.isMostPopular) e.currentTarget.style.borderColor = `${themeColors.primary}50` }}
-                onMouseLeave={(e) => { if (!plan.isMostPopular && !isCurrent) e.currentTarget.style.borderColor = '#e5e7eb' }}
               >
-                {/* Top Gradient Bar for Popular Plans */}
+                {/* Top Badge for Popular */}
                 {plan.isMostPopular && (
-                  <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary}, ${themeColors.primary})` }}></div>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1" style={{ backgroundColor: themeColors.primary }}>
+                    <Sparkles className="w-3 h-3" />
+                    TERPOPULER
+                  </div>
                 )}
 
-                {/* Badges */}
-                <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
-                  {plan.isMostPopular && (
-                    <Badge className="shadow-lg text-white" style={{ background: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      Terpopuler
-                    </Badge>
-                  )}
+                {/* Top Right Badges */}
+                <div className="absolute top-4 right-4 flex flex-col items-end gap-1 z-10">
                   {plan.isPopular && !plan.isMostPopular && (
-                    <Badge variant="outline" className="bg-white shadow" style={{ borderColor: themeColors.warning, color: themeColors.warning }}>
-                      🔥 Paling Laris
-                    </Badge>
-                  )}
-                  {plan.isBestSeller && (
-                    <Badge variant="outline" className="bg-white shadow" style={{ borderColor: themeColors.info, color: themeColors.info }}>
-                      ⭐ Best Seller
+                    <Badge className="bg-amber-100 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded border border-amber-200">
+                      🔥 BEST SELLER
                     </Badge>
                   )}
                   {isCurrent && (
-                    <Badge className="shadow-lg" style={{ backgroundColor: themeColors.success }}>
-                      <Check className="w-3 h-3 mr-1" />
-                      Aktif
+                    <Badge className="bg-blue-100 text-blue-700 text-[9px] font-bold px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1">
+                      <Check className="w-2.5 h-2.5" /> AKTIF
                     </Badge>
                   )}
                 </div>
 
-                <CardHeader className="pb-4">
-                  <div className="space-y-3">
-                    <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-500" />
-                      <CardDescription className="text-base font-medium">
-                        {formatDuration(plan.duration)}
-                      </CardDescription>
-                    </div>
+                {/* Card Header */}
+                <div className="mb-4" style={{ marginTop: plan.isMostPopular ? '1rem' : '0' }}>
+                  <h3 className="font-bold text-xl mb-1" style={{ color: plan.isMostPopular ? themeColors.primary : '#000' }}>{plan.name}</h3>
+                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{formatDuration(plan.duration)}</span>
                   </div>
+                </div>
 
-                  {/* Price Section */}
-                  <div className="pt-6 space-y-2">
-                    {plan.discount > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-400 line-through">
-                          Rp {plan.originalPrice?.toLocaleString('id-ID')}
-                        </span>
-                        <Badge variant="destructive" className="text-xs shadow">
-                          Diskon {plan.discount}%
-                        </Badge>
-                      </div>
+                {/* Price Section */}
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-extrabold" style={{ color: plan.isMostPopular ? themeColors.primary : '#000' }}>
+                      Rp {Math.floor(upgradePrice / 1000)}K
+                    </span>
+                    {!isLifetime && (
+                      <span className="text-xs text-gray-500">/{formatDuration(plan.duration).split(' ')[0].toLowerCase()}bln</span>
                     )}
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-extrabold bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
-                        Rp {Math.floor(upgradePrice / 1000)}K
+                  </div>
+                  {!isLifetime && currentMembership && !currentMembership.isLifetime && upgradeMode === 'accumulate' && savings > 0 && (
+                    <p className="text-[10px] font-medium mt-1 inline-block px-2 py-0.5 rounded" style={{ color: themeColors.success, backgroundColor: `${themeColors.success}15` }}>
+                      Hemat {Math.floor((savings / plan.price) * 100)}%
+                    </p>
+                  )}
+                </div>
+
+                {/* Features List */}
+                <div className="flex-1 space-y-3 mb-8">
+                  {plan.features && Array.isArray(plan.features) && plan.features.slice(0, 4).map((feature: any, idx: number) => (
+                    <div key={idx} className="flex items-start gap-3 text-xs">
+                      <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: plan.isMostPopular ? themeColors.primary : themeColors.success }} />
+                      <span className="text-gray-700" style={{ fontWeight: idx === 0 && plan.isMostPopular ? '600' : '400' }}>
+                        {typeof feature === 'string' ? feature : (feature.name || feature.label || 'Fitur tersedia')}
                       </span>
-                      {!isLifetime && (
-                        <span className="text-gray-500 text-sm">
-                          /{formatDuration(plan.duration).split(' ')[0]}bln
-                        </span>
-                      )}
                     </div>
-                    
-                    {/* Savings Badges */}
-                    {isLifetime && currentMembership && !currentMembership.isLifetime && (
-                      <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded" style={{ color: themeColors.warning, backgroundColor: `${themeColors.warning}15` }}>
-                        <Star className="w-3 h-3" />
-                        Premium Lifetime Access
+                  ))}
+                  
+                  {(!plan.features || plan.features.length === 0) && (
+                    <>
+                      <div className="flex items-start gap-3 text-xs">
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-500" />
+                        <span className="text-gray-700">Akses semua materi ekspor</span>
                       </div>
-                    )}
-                    {!isLifetime && currentMembership && !currentMembership.isLifetime && upgradeMode === 'accumulate' && savings > 0 && (
-                      <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded" style={{ color: themeColors.success, backgroundColor: `${themeColors.success}15` }}>
-                        <Zap className="w-3 h-3" />
-                        Hemat Rp {Math.floor(savings / 1000)}K
+                      <div className="flex items-start gap-3 text-xs">
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-500" />
+                        <span className="text-gray-700">Webinar eksklusif bulanan</span>
                       </div>
-                    )}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  {/* Features List */}
-                  <div className="space-y-2.5">
-                    {plan.features && Array.isArray(plan.features) && plan.features.slice(0, 5).map((feature: any, idx: number) => (
-                      <div key={idx} className="flex items-start gap-2.5 text-sm">
-                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check className="w-3 h-3 text-green-600" />
-                        </div>
-                        <span className="text-gray-700 leading-relaxed">
-                          {typeof feature === 'string' ? feature : (feature.name || feature.label || 'Fitur tersedia')}
-                        </span>
+                      <div className="flex items-start gap-3 text-xs">
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-500" />
+                        <span className="text-gray-700">Konsultasi bisnis 1-on-1</span>
                       </div>
+                      <div className="flex items-start gap-3 text-xs">
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-500" />
+                        <span className="text-gray-700">Grup WhatsApp eksklusif</span>
+                      </div>
+                    </>
+                  )}
+                </div>
                     ))}
                     
                     {(!plan.features || plan.features.length === 0) && (
-                      <p className="text-sm text-gray-400 italic">Tidak ada detail fitur tersedia</p>
+                      <>
+                        <div className="flex items-start gap-3 text-xs">
+                          <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-500" />
+                          <span className="text-gray-700">Akses semua materi ekspor</span>
+                        </div>
+                        <div className="flex items-start gap-3 text-xs">
+                          <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-500" />
+                          <span className="text-gray-700">Webinar eksklusif bulanan</span>
+                        </div>
+                        <div className="flex items-start gap-3 text-xs">
+                          <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-500" />
+                          <span className="text-gray-700">Konsultasi bisnis 1-on-1</span>
+                        </div>
+                        <div className="flex items-start gap-3 text-xs">
+                          <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-500" />
+                          <span className="text-gray-700">Grup WhatsApp eksklusif</span>
+                        </div>
+                      </>
                     )}
                   </div>
-
-                  {/* Stats Grid */}
-                  {plan._count && (
-                    <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
-                      <div className="text-center rounded-lg p-2" style={{ backgroundColor: `${themeColors.primary}08` }}>
-                        <Users className="w-4 h-4 mx-auto mb-1" style={{ color: themeColors.primary }} />
-                        <p className="text-xs font-semibold text-gray-700">{plan._count.membershipGroups}</p>
-                        <p className="text-xs text-gray-500">Grup</p>
-                      </div>
-                      <div className="text-center rounded-lg p-2" style={{ backgroundColor: `${themeColors.info}08` }}>
-                        <BookOpen className="w-4 h-4 mx-auto mb-1" style={{ color: themeColors.info }} />
-                        <p className="text-xs font-semibold text-gray-700">{plan._count.membershipCourses}</p>
-                        <p className="text-xs text-gray-500">Kursus</p>
-                      </div>
-                      <div className="text-center rounded-lg p-2" style={{ backgroundColor: `${themeColors.secondary}08` }}>
-                        <ShoppingBag className="w-4 h-4 mx-auto mb-1" style={{ color: themeColors.secondary }} />
-                        <p className="text-xs font-semibold text-gray-700">{plan._count.membershipProducts}</p>
-                        <p className="text-xs text-gray-500">Produk</p>
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
 
-                <CardFooter className="pt-2">
-                  {isCurrent ? (
-                    <Button className="w-full" disabled variant="outline">
-                      <Check className="w-4 h-4 mr-2" />
-                      Plan Aktif
-                    </Button>
-                  ) : canUpgrade ? (
-                    <Button
-                      className="w-full text-white font-semibold shadow-lg hover:shadow-xl transition-all"
-                      style={{ background: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}
-                      onClick={() => handleUpgrade(plan)}
-                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
-                    >
-                      {currentMembership ? (
-                        <>
-                          <TrendingUp className="w-4 h-4 mr-2" />
-                          Upgrade Sekarang
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4 mr-2" />
-                          Pilih Plan Ini
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button className="w-full" variant="outline" disabled>
-                      <X className="w-4 h-4 mr-2" />
-                      Bukan Upgrade
-                    </Button>
-                  )}
+                {/* Action Button */}
+                {isCurrent ? (
+                  <button className="w-full py-3 rounded-xl bg-gray-100 text-gray-400 font-semibold text-sm cursor-default flex items-center justify-center gap-2">
+                    <Check className="w-4 h-4" /> Plan Aktif
+                  </button>
+                ) : canUpgrade && plan.isMostPopular ? (
+                  <button
+                    className="w-full py-3 rounded-xl text-white font-bold text-sm shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ backgroundColor: themeColors.primary, boxShadow: `0 4px 14px ${themeColors.primary}20` }}
+                    onClick={() => handleUpgrade(plan)}
+                  >
+                    Pilih Paket Ini
+                  </button>
+                ) : canUpgrade ? (
+                  <button
+                    className="w-full py-3 rounded-xl text-white font-bold text-sm shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ backgroundColor: themeColors.primary, boxShadow: `0 4px 14px ${themeColors.primary}20` }}
+                    onClick={() => handleUpgrade(plan)}
+                  >
+                    Pilih Paket Ini
+                  </button>
+                ) : (
+                  <button className="w-full py-3 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors">
+                    Bukan Upgrade
+                  </button>
+                )}
+              </Card>
                 </CardFooter>
               </Card>
             )
@@ -566,99 +527,68 @@ export default function UpgradePage() {
         </div>
       </div>
 
-      {/* Benefits Section - Enhanced */}
-      <Card className="border-0 shadow-xl overflow-hidden relative" style={{ background: `linear-gradient(to bottom right, ${themeColors.light}, ${themeColors.lighter}, #ffffff)` }}>
-        {/* Background Decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: `${themeColors.primary}20` }}></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: `${themeColors.secondary}20` }}></div>
-        
-        <CardHeader className="relative z-10">
-          <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(to bottom right, ${themeColors.primary}, ${themeColors.secondary})` }}>
-              <Sparkles className="w-6 h-6 text-white" />
+      {/* Benefits Section */}
+      <div className="mb-8">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full mb-2\" style={{ backgroundColor: `${themeColors.primary}15` }}>
+            <Sparkles className="w-5 h-5" style={{ color: themeColors.primary }} />
+          </div>
+          <h2 className="text-lg font-bold">Kenapa Harus Upgrade?</h2>
+          <p className="text-xs text-gray-600 mt-1">Nikmati berbagai keuntungan eksklusif</p>
+        </div>
+        <div className="grid gap-4">
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 group hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: `${themeColors.primary}15` }}>
+              <BookOpen className="w-6 h-6" style={{ color: themeColors.primary }} />
             </div>
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}>
-              Kenapa Harus Upgrade?
-            </span>
-          </CardTitle>
-          <p className="text-center text-gray-600 mt-2">Nikmati berbagai keuntungan eksklusif</p>
-        </CardHeader>
-        <CardContent className="relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center text-center gap-4 bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(to bottom right, ${themeColors.primary}, ${themeColors.primary})` }}>
-                <BookOpen className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg mb-2" style={{ color: themeColors.dark }}>Akses Unlimited</h3>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Akses ke <strong>semua kursus</strong>, materi premium, dan resource eksklusif tanpa batas
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center text-center gap-4 bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(to bottom right, ${themeColors.secondary}, ${themeColors.secondary})` }}>
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg mb-2" style={{ color: themeColors.dark }}>Komunitas Eksklusif</h3>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Bergabung dengan <strong>komunitas premium</strong> dan networking berkualitas tinggi
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center text-center gap-4 bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(to bottom right, ${themeColors.info}, ${themeColors.info})` }}>
-                <Rocket className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg mb-2" style={{ color: themeColors.dark }}>Update Terbaru</h3>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Dapatkan <strong>akses pertama</strong> ke konten dan fitur terbaru sebelum yang lain
-                </p>
-              </div>
+            <div>
+              <h3 className="font-bold text-sm text-gray-900 mb-1">Akses Unlimited</h3>
+              <p className="text-[11px] text-gray-600 leading-snug">
+                Akses ke <span className="font-semibold text-gray-900">semua kursus</span>, materi premium, dan resource eksklusif tanpa batas.
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* FAQ or Support - Enhanced */}
-      <div className="text-center bg-white rounded-2xl shadow-lg p-10 space-y-6">
-        <div className="space-y-3">
-          <h3 className="text-2xl font-bold text-gray-900">
-            Punya Pertanyaan?
-          </h3>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Tim support kami siap membantu Anda memilih plan yang tepat dan menjawab semua pertanyaan tentang membership
-          </p>
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 group hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: `${themeColors.secondary}15` }}>
+              <Users className="w-6 h-6" style={{ color: themeColors.secondary }} />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-gray-900 mb-1">Komunitas Eksklusif</h3>
+              <p className="text-[11px] text-gray-600 leading-snug">
+                Bergabung dengan <span className="font-semibold text-gray-900">komunitas premium</span> dan networking berkualitas tinggi.
+              </p>
+            </div>
+          </div>
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 group hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: `${themeColors.warning}15` }}>
+              <Rocket className="w-6 h-6" style={{ color: themeColors.warning }} />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-gray-900 mb-1">Update Terbaru</h3>
+              <p className="text-[11px] text-gray-600 leading-snug">
+                Dapatkan <span className="font-semibold text-gray-900">akses pertama</span> ke konten dan fitur terbaru sebelum yang lain.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-4 justify-center flex-wrap">
-          <Link href="/my-dashboard">
-            <Button variant="outline" size="lg" className="gap-2 transition-all" 
-              style={{ borderColor: `${themeColors.primary}50` }}
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.backgroundColor = `${themeColors.primary}10`
-                e.currentTarget.style.borderColor = themeColors.primary
-              }}
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.borderColor = `${themeColors.primary}50`
-              }}
-            >
-              <ArrowRight className="w-5 h-5" />
-              Lihat Dashboard
-            </Button>
+      </div>
+
+      {/* FAQ/Support Section */}
+      <div className="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100">
+        <h3 className="font-bold text-base mb-2">Punya Pertanyaan?</h3>
+        <p className="text-xs text-gray-600 mb-4 leading-relaxed max-w-xs mx-auto">
+          Tim support kami siap membantu Anda memilih plan yang tepat dan menjawab semua pertanyaan.
+        </p>
+        <div className="flex gap-3 justify-center">
+          <Link href="/dashboard">
+            <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2">
+              <ArrowRight className="w-4 h-4" /> Dashboard
+            </button>
           </Link>
           <Link href="/messages">
-            <Button size="lg" className="gap-2 shadow-lg hover:shadow-xl transition-all text-white"
-              style={{ background: `linear-gradient(to right, ${themeColors.primary}, ${themeColors.secondary})` }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
-            >
+            <button className="px-4 py-2 rounded-lg text-xs font-medium text-white shadow-md transition-colors flex items-center gap-2" style={{ backgroundColor: themeColors.primary, boxShadow: `0 4px 14px ${themeColors.primary}20` }}>
               💬 Hubungi Support
-            </Button>
+            </button>
           </Link>
         </div>
       </div>
