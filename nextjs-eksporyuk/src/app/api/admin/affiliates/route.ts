@@ -43,13 +43,13 @@ export async function GET(request: NextRequest) {
 
     // Status filter
     if (status === 'PENDING') {
-      where.approvedAt = null
+      where.isActive = false
     } else if (status === 'ACTIVE') {
-      where.approvedAt = { not: null }
       where.isActive = true
     } else if (status === 'INACTIVE') {
       where.isActive = false
     }
+    // If status is 'ALL', don't add any filter
 
     // Search filter
     if (search) {
