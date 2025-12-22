@@ -183,45 +183,51 @@ export default function MembershipCoursesPage() {
   return (
     <ResponsivePageWrapper>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Link href="/dashboard/my-membership" className="text-gray-500 hover:text-gray-700 text-sm">
-                My Membership
-              </Link>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-900 text-sm font-medium">Kursus</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <GraduationCap className="w-7 h-7" style={{ color: theme.primary }} />
-              Kursus Membership
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Akses kursus eksklusif dari paket membership Anda
-            </p>
-          </div>
+        {/* Breadcrumb */}
+        <nav className="flex text-xs text-gray-500">
+          <Link href="/dashboard/my-membership" className="hover:text-gray-700">
+            My Membership
+          </Link>
+          <span className="mx-2">/</span>
+          <span className="font-medium text-gray-900">Kursus</span>
+        </nav>
 
-          {membership && (
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-gray-200">
-              <Crown className="w-5 h-5" style={{ color: theme.primary }} />
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
+            <GraduationCap className="w-6 h-6" style={{ color: theme.primary }} />
+            Kursus Membership
+          </h1>
+          <p className="text-sm text-gray-600">
+            Akses kursus eksklusif dari paket membership Anda
+          </p>
+        </div>
+
+        {/* Membership Card */}
+        {membership && (
+          <Card className="border border-gray-200 shadow-sm">
+            <CardContent className="p-4 flex items-start gap-4">
+              <div className="p-2 rounded-lg text-white" style={{ backgroundColor: theme.primary + '15' }}>
+                <Crown className="w-6 h-6" style={{ color: theme.primary }} />
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{membership.name}</p>
-                <p className="text-xs text-gray-500">
+                <h3 className="font-semibold text-sm mb-1">{membership.name}</h3>
+                <p className="text-xs text-gray-600 flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
                   {membership.isActive ? (
                     membership.endDate ? (
                       `Aktif hingga ${new Date(membership.endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`
                     ) : (
-                      'Lifetime Access'
+                      'Aktif hingga 31 Desember 2099'
                     )
                   ) : (
                     <span className="text-red-500">Tidak Aktif</span>
                   )}
                 </p>
               </div>
-            </div>
-          )}
-        </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Error State */}
         {error && (
@@ -280,62 +286,54 @@ export default function MembershipCoursesPage() {
 
         {/* Courses Stats */}
         {membership && courses.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme.primary + '20' }}>
-                    <BookOpen className="w-5 h-5" style={{ color: theme.primary }} />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{courses.length}</p>
-                    <p className="text-xs text-gray-500">Total Kursus</p>
-                  </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="border border-gray-200 shadow-sm">
+              <CardContent className="p-4 flex flex-col justify-between h-28">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme.primary + '15' }}>
+                  <BookOpen className="w-5 h-5" style={{ color: theme.primary }} />
+                </div>
+                <div>
+                  <span className="block text-2xl font-bold">{courses.length}</span>
+                  <span className="text-xs text-gray-600">Total Kursus</span>
                 </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {courses.filter(c => c.userProgress && c.userProgress.progress === 100).length}
-                    </p>
-                    <p className="text-xs text-gray-500">Selesai</p>
-                  </div>
+            <Card className="border border-gray-200 shadow-sm">
+              <CardContent className="p-4 flex flex-col justify-between h-28">
+                <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    {courses.filter(c => c.userProgress && c.userProgress.progress === 100).length}
+                  </p>
+                  <p className="text-xs text-gray-600">Selesai</p>
                 </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <PlayCircle className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {courses.filter(c => c.isEnrolled && c.userProgress && c.userProgress.progress > 0 && c.userProgress.progress < 100).length}
-                    </p>
-                    <p className="text-xs text-gray-500">Sedang Dipelajari</p>
-                  </div>
+            <Card className="border border-gray-200 shadow-sm">
+              <CardContent className="p-4 flex flex-col justify-between h-28">
+                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                  <PlayCircle className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    {courses.filter(c => c.isEnrolled && c.userProgress && c.userProgress.progress > 0 && c.userProgress.progress < 100).length}
+                  </p>
+                  <p className="text-xs text-gray-600">Sedang Dipelajari</p>
                 </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <BarChart3 className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {courses.filter(c => !c.isEnrolled || !c.userProgress || c.userProgress.progress === 0).length}
-                    </p>
-                    <p className="text-xs text-gray-500">Belum Mulai</p>
-                  </div>
+            <Card className="border border-gray-200 shadow-sm">
+              <CardContent className="p-4 flex flex-col justify-between h-28">
+                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    {courses.filter(c => !c.isEnrolled || !c.userProgress || c.userProgress.progress === 0).length}
+                  </p>
+                  <p className="text-xs text-gray-600">Belum Mulai</p>
                 </div>
               </CardContent>
             </Card>
@@ -365,28 +363,30 @@ export default function MembershipCoursesPage() {
 
         {/* Courses Grid */}
         {courses.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 gap-4">
             {courses.map((course) => {
               const level = getLevelBadge(course.level)
               const progress = course.userProgress?.progress || 0
               const isLocked = !membership?.isActive
 
               return (
-                <Card key={course.id} className={`overflow-hidden hover:shadow-lg transition-shadow ${isLocked ? 'opacity-75' : ''}`}>
+                <Card key={course.id} className={`overflow-hidden shadow-sm border border-gray-200 flex flex-col h-full group ${isLocked ? 'opacity-75' : ''}`}>
                   {/* Thumbnail */}
-                  <div className="relative aspect-video bg-gray-100">
+                  <div className="relative h-32 overflow-hidden" style={{ backgroundColor: theme.primary }}>
                     {course.thumbnail ? (
                       <Image
                         src={course.thumbnail}
                         alt={course.title}
                         fill
-                        className="object-cover"
+                        className="object-cover opacity-80 mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: theme.primary + '20' }}>
-                        <BookOpen className="w-12 h-12" style={{ color: theme.primary }} />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <BookOpen className="w-12 h-12 text-white opacity-50" />
                       </div>
                     )}
+                    
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     
                     {/* Lock Overlay */}
                     {isLocked && (
@@ -398,42 +398,25 @@ export default function MembershipCoursesPage() {
                       </div>
                     )}
 
-                    {/* Progress Badge */}
-                    {!isLocked && progress > 0 && (
-                      <div className="absolute top-3 right-3">
-                        <Badge className={progress === 100 ? 'bg-green-500' : 'bg-blue-500'}>
-                          {progress === 100 ? (
-                            <>
-                              <CheckCircle2 className="w-3 h-3 mr-1" />
-                              Selesai
-                            </>
-                          ) : (
-                            `${progress}%`
-                          )}
-                        </Badge>
-                      </div>
-                    )}
-
                     {/* Level Badge */}
-                    <div className="absolute top-3 left-3">
-                      <Badge className={level.color}>{level.label}</Badge>
+                    <div className="absolute top-2 left-2">
+                      <Badge className={`${level.color} text-[10px] font-semibold px-2 py-0.5 rounded-full border shadow-sm`}>
+                        {level.label}
+                      </Badge>
+                    </div>
+
+                    {/* Title */}
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <h2 className="text-white font-bold text-xs uppercase leading-tight drop-shadow-md line-clamp-2">
+                        {course.title}
+                      </h2>
                     </div>
                   </div>
 
-                  <CardContent className="p-4">
-                    {/* Title & Description */}
-                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">
-                      {course.title}
-                    </h3>
-                    {course.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                        {course.description}
-                      </p>
-                    )}
-
+                  <CardContent className="p-3 flex flex-col gap-3 flex-1">
                     {/* Instructor */}
                     {course.instructor && (
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2">
                         {course.instructor.avatar ? (
                           <Image
                             src={course.instructor.avatar}
@@ -443,63 +426,61 @@ export default function MembershipCoursesPage() {
                             className="rounded-full"
                           />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">
+                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-600">
                             {course.instructor.name.charAt(0)}
                           </div>
                         )}
-                        <span className="text-sm text-gray-600">{course.instructor.name}</span>
+                        <span className="text-[11px] font-medium text-gray-600 truncate">{course.instructor.name}</span>
                       </div>
                     )}
 
                     {/* Stats */}
-                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
-                      <div className="flex items-center gap-1">
+                    <div className="flex flex-col gap-1 text-[10px] text-gray-600">
+                      <div className="flex items-center gap-1.5">
                         <BookOpen className="w-3.5 h-3.5" />
                         <span>{course.totalModules} Modul</span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <PlayCircle className="w-3.5 h-3.5" />
                         <span>{course.totalLessons} Pelajaran</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{formatDuration(course.totalDuration)}</span>
                       </div>
                     </div>
 
                     {/* Progress Bar */}
-                    {!isLocked && course.isEnrolled && (
-                      <div className="mb-4">
-                        <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span>Progress</span>
-                          <span>{progress}%</span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
+                    <div className="mt-auto pt-2">
+                      <div className="flex justify-between text-[10px] mb-1.5 font-medium">
+                        <span>Progress</span>
+                        <span>{progress}%</span>
                       </div>
-                    )}
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor: theme.primary }}></div>
+                      </div>
 
-                    {/* Action Button */}
-                    {isLocked ? (
-                      <Link href="/dashboard/upgrade">
-                        <Button variant="outline" className="w-full" size="sm">
-                          Perpanjang Membership
-                        </Button>
-                      </Link>
-                    ) : course.isEnrolled ? (
-                      <Link href={`/learn/${course.slug}`}>
-                        <Button className="w-full" size="sm" style={{ backgroundColor: theme.primary }}>
-                          {progress === 0 ? 'Mulai Belajar' : progress === 100 ? 'Review Kursus' : 'Lanjutkan'}
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Link href={`/courses/${course.slug}`}>
-                        <Button variant="outline" className="w-full" size="sm">
-                          Lihat Detail
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      </Link>
-                    )}
+                      {/* Action Button */}
+                      {isLocked ? (
+                        <Link href="/dashboard/upgrade">
+                          <Button variant="outline" className="w-full text-xs py-2" size="sm">
+                            Perpanjang Membership
+                          </Button>
+                        </Link>
+                      ) : course.isEnrolled ? (
+                        <Link href={`/learn/${course.slug}`}>
+                          <Button 
+                            className="w-full text-xs font-medium py-2 transition-colors flex items-center justify-center gap-1.5" 
+                            size="sm" 
+                            style={{ backgroundColor: theme.primary }}
+                          >
+                            {progress === 0 ? 'Mulai Belajar' : progress === 100 ? 'Review Kursus' : 'Lanjutkan'}
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link href={`/courses/${course.slug}`}>
+                          <Button variant="outline" className="w-full text-xs py-2" size="sm">
+                            Lihat Detail
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               )
@@ -509,25 +490,26 @@ export default function MembershipCoursesPage() {
 
         {/* Bottom CTA */}
         {membership && membership.isActive && courses.length > 0 && (
-          <Card className="border-0 shadow-lg" style={{ backgroundColor: theme.primary + '10' }}>
-            <CardContent className="py-6">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.primary }}>
-                    <GraduationCap className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Ingin lebih banyak kursus?</h3>
-                    <p className="text-sm text-gray-600">Jelajahi katalog kursus lengkap kami</p>
-                  </div>
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: theme.primary + '08' }}>
+            <CardContent className="p-5 flex flex-col items-start gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full shadow-lg text-white" style={{ backgroundColor: theme.primary, boxShadow: `0 4px 14px ${theme.primary}30` }}>
+                  <GraduationCap className="w-5 h-5" />
                 </div>
-                <Link href="/courses">
-                  <Button variant="outline">
-                    Jelajahi Katalog
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-900">Ingin lebih banyak kursus?</h3>
+                  <p className="text-xs text-gray-600 mt-1">Jelajahi katalog kursus lengkap kami</p>
+                </div>
               </div>
+              <Link href="/courses" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full text-sm font-medium py-2.5 px-4 shadow-sm border border-gray-200 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+                >
+                  Jelajahi Katalog
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         )}
