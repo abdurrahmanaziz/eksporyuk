@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
     } else {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
                      process.env.NEXTAUTH_URL ||
-                     'https://app.eksporyuk.com'
+                     'https://eksporyuk.com'
       
       // Get target details for slug and external URL
       let targetSlug = null

@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Plus, Edit, Trash2, CreditCard, Building2, Wallet, DollarSign, Settings2, Image } from 'lucide-react'
+import { Plus, Edit, Trash2, CreditCard, Building2, Wallet, DollarSign, Settings2, Image, Check, User } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 
@@ -25,6 +25,7 @@ interface BankAccount {
   branch?: string
   isActive: boolean
   logo?: string
+  customLogoUrl?: string
   order: number
 }
 
@@ -60,6 +61,7 @@ export default function PaymentSettingsPage() {
       'BSI': `${baseUrl}/bsi.svg`,
       'CIMB': `${baseUrl}/cimb.svg`,
       'PERMATA': `${baseUrl}/permata.svg`,
+      'JAGO': `${baseUrl}/jago.svg`,
       'SAHABAT_SAMPOERNA': `${baseUrl}/sahabat-sampoerna.svg`,
       
       // E-Wallets
@@ -277,6 +279,51 @@ export default function PaymentSettingsPage() {
     toast.success(`Logo ${channelCode} direset ke default. Jangan lupa klik "Simpan Pengaturan"`)
   }
 
+  const handleBankLogoUpload = async (bankId: string, file: File) => {
+    setUploadingLogo(bankId)
+    try {
+      const formData = new FormData()
+      formData.append('logo', file)
+      formData.append('bankId', bankId)
+
+      const response = await fetch('/api/admin/upload-bank-logo', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.ok) {
+        const { logoUrl } = await response.json()
+        
+        // Update bankAccounts with new logo URL
+        setBankAccounts(banks =>
+          banks.map(bank =>
+            bank.id === bankId ? { ...bank, customLogoUrl: logoUrl } : bank
+          )
+        )
+        
+        toast.success('Logo bank berhasil diupload! Jangan lupa klik "Simpan Pengaturan"')
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('Upload failed:', response.status, errorData)
+        throw new Error(errorData.error || `Upload failed with status ${response.status}`)
+      }
+    } catch (error) {
+      console.error('Bank logo upload error:', error)
+      toast.error('Gagal upload logo bank')
+    } finally {
+      setUploadingLogo(null)
+    }
+  }
+
+  const resetBankLogo = (bankId: string) => {
+    setBankAccounts(banks =>
+      banks.map(bank =>
+        bank.id === bankId ? { ...bank, customLogoUrl: undefined } : bank
+      )
+    )
+    toast.success('Logo bank direset ke default. Jangan lupa klik "Simpan Pengaturan"')
+  }
+
   if (loading) {
     return (
       <ResponsivePageWrapper>
@@ -469,52 +516,116 @@ export default function PaymentSettingsPage() {
               <p className="text-sm">Klik "Tambah Rekening" untuk menambah</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Bank</TableHead>
-                  <TableHead>Nomor Rekening</TableHead>
-                  <TableHead>Atas Nama</TableHead>
-                  <TableHead>Cabang</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bankAccounts.map((bank) => (
-                  <TableRow key={bank.id}>
-                    <TableCell className="font-medium">{bank.bankName}</TableCell>
-                    <TableCell className="font-mono">{bank.accountNumber}</TableCell>
-                    <TableCell>{bank.accountName}</TableCell>
-                    <TableCell>{bank.branch || '-'}</TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={bank.isActive}
-                        onCheckedChange={() => toggleBankAccount(bank.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {bankAccounts.map((bank) => {
+                const logoUrl = bank.customLogoUrl || getLogoUrl(bank.bankCode)
+                return (
+                  <div
+                    key={bank.id}
+                    className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    {/* Card Header with Logo */}
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 border-b">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">{bank.bankName}</h3>
+                          <p className="text-xs text-muted-foreground">{bank.bankCode}</p>
+                        </div>
+                        <Switch
+                          checked={bank.isActive}
+                          onCheckedChange={() => toggleBankAccount(bank.id)}
+                        />
+                      </div>
+                      
+                      {/* Logo Display */}
+                      <div className="relative w-full h-24 bg-white rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={logoUrl} 
+                          alt={bank.bankName}
+                          className="max-w-full max-h-full object-contain p-2"
+                          onError={(e) => {
+                            e.currentTarget.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='60'%3E%3Crect width='100' height='60' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='14' fill='%2364748b' font-family='Arial'%3E${bank.bankCode}%3C/text%3E%3C/svg%3E`
+                          }}
+                        />
+                      </div>
+
+                      {/* Logo Upload Controls */}
+                      <div className="mt-3 space-y-2">
+                        <label className="cursor-pointer">
+                          <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-white border rounded-md hover:bg-gray-50 transition-colors text-sm">
+                            <Image className="h-3.5 w-3.5" />
+                            <span>{uploadingLogo === bank.id ? 'Uploading...' : 'Upload Logo'}</span>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/svg+xml,image/png,image/jpeg,image/webp"
+                            className="hidden"
+                            disabled={uploadingLogo === bank.id}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) handleBankLogoUpload(bank.id, file)
+                            }}
+                          />
+                        </label>
+                        
+                        {bank.customLogoUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full text-xs"
+                            onClick={() => resetBankLogo(bank.id)}
+                          >
+                            Reset ke Logo Default
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Card Body - Account Details */}
+                    <div className="p-4 space-y-3 bg-white">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Nomor Rekening</p>
+                        <p className="font-mono font-semibold text-sm">{bank.accountNumber}</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Atas Nama</p>
+                        <p className="font-medium text-sm">{bank.accountName}</p>
+                      </div>
+                      
+                      {bank.branch && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Cabang</p>
+                          <p className="text-sm">{bank.branch}</p>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-2 border-t">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
+                          className="flex-1"
                           onClick={() => openBankDialog(bank)}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-3.5 w-3.5 mr-1" />
+                          Edit
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
+                          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => deleteBankAccount(bank.id)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5 mr-1" />
+                          Hapus
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -1013,7 +1124,7 @@ function BankAccountDialog({
 
   const handleSave = () => {
     if (!formData.bankName || !formData.accountNumber || !formData.accountName) {
-      toast.error('Please fill in all required fields')
+      toast.error('Mohon lengkapi semua field yang wajib diisi')
       return
     }
 
@@ -1023,69 +1134,129 @@ function BankAccountDialog({
     } as BankAccount)
   }
 
+  const bankOptions = [
+    { value: 'BCA', label: 'Bank Central Asia', code: 'BCA', color: 'bg-blue-500' },
+    { value: 'MANDIRI', label: 'Bank Mandiri', code: 'MANDIRI', color: 'bg-yellow-500' },
+    { value: 'BNI', label: 'Bank Negara Indonesia', code: 'BNI', color: 'bg-orange-500' },
+    { value: 'BRI', label: 'Bank Rakyat Indonesia', code: 'BRI', color: 'bg-blue-600' },
+    { value: 'BSI', label: 'Bank Syariah Indonesia', code: 'BSI', color: 'bg-green-600' },
+    { value: 'JAGO', label: 'Bank Jago', code: 'JAGO', color: 'bg-indigo-500' },
+    { value: 'CIMB', label: 'CIMB Niaga', code: 'CIMB', color: 'bg-red-600' },
+    { value: 'PERMATA', label: 'Bank Permata', code: 'PERMATA', color: 'bg-green-500' },
+    { value: 'BTN', label: 'Bank BTN', code: 'BTN', color: 'bg-blue-700' },
+    { value: 'DANAMON', label: 'Bank Danamon', code: 'DANAMON', color: 'bg-blue-600' },
+  ]
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{bank ? 'Edit' : 'Tambah'} Rekening Bank</DialogTitle>
-          <DialogDescription>
-            Masukkan detail rekening bank untuk pembayaran manual
-          </DialogDescription>
+      <DialogContent className="max-w-xl">
+        <DialogHeader className="space-y-3 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Building2 className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-2xl">{bank ? 'Edit' : 'Tambah'} Rekening Bank</DialogTitle>
+              <DialogDescription className="text-sm mt-1">
+                {bank ? 'Perbarui informasi rekening bank' : 'Tambahkan rekening bank untuk pembayaran manual transfer'}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <Label>Nama Bank *</Label>
+        <div className="space-y-5 py-4">
+          {/* Bank Selection */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Nama Bank <span className="text-red-500">*</span>
+            </Label>
             <Select
               value={formData.bankName}
               onValueChange={(value) => setFormData({ ...formData, bankName: value, bankCode: value })}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih bank" />
+              <SelectTrigger className="h-12 text-base">
+                <SelectValue placeholder="Pilih bank yang akan digunakan" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="BCA">Bank Central Asia (BCA)</SelectItem>
-                <SelectItem value="MANDIRI">Bank Mandiri</SelectItem>
-                <SelectItem value="BNI">Bank Negara Indonesia (BNI)</SelectItem>
-                <SelectItem value="BRI">Bank Rakyat Indonesia (BRI)</SelectItem>
-                <SelectItem value="BSI">Bank Syariah Indonesia (BSI)</SelectItem>
-                <SelectItem value="CIMB">CIMB Niaga</SelectItem>
-                <SelectItem value="PERMATA">Bank Permata</SelectItem>
-                <SelectItem value="BTN">Bank BTN</SelectItem>
-                <SelectItem value="DANAMON">Bank Danamon</SelectItem>
+                {bankOptions.map((bank) => (
+                  <SelectItem key={bank.value} value={bank.value} className="py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-md ${bank.color} flex items-center justify-center text-white font-bold text-xs shadow-sm`}>
+                        {bank.code.substring(0, 2)}
+                      </div>
+                      <span className="font-medium">{bank.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              Pilih bank sesuai dengan rekening yang akan digunakan
+            </p>
           </div>
 
-          <div>
-            <Label>Nomor Rekening *</Label>
+          {/* Account Number */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Nomor Rekening <span className="text-red-500">*</span>
+            </Label>
             <Input
               value={formData.accountNumber}
-              onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
-              placeholder="1234567890"
+              onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value.replace(/\D/g, '') })}
+              placeholder="Contoh: 1234567890"
+              className="h-12 text-base font-mono"
+              type="text"
+              inputMode="numeric"
             />
+            <p className="text-xs text-muted-foreground">
+              Masukkan nomor rekening tanpa spasi atau tanda baca
+            </p>
           </div>
 
-          <div>
-            <Label>Atas Nama *</Label>
+          {/* Account Name */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Nama Pemilik Rekening <span className="text-red-500">*</span>
+            </Label>
             <Input
               value={formData.accountName}
               onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
-              placeholder="PT Ekspor Yuk Indonesia"
+              placeholder="Contoh: PT Ekspor Yuk Indonesia"
+              className="h-12 text-base"
             />
+            <p className="text-xs text-muted-foreground">
+              Nama harus sesuai dengan buku rekening
+            </p>
           </div>
 
-          <div>
-            <Label>Cabang (Optional)</Label>
+          {/* Branch (Optional) */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Cabang <span className="text-xs text-muted-foreground font-normal">(Opsional)</span>
+            </Label>
             <Input
               value={formData.branch}
               onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-              placeholder="Jakarta Pusat"
+              placeholder="Contoh: Jakarta Pusat"
+              className="h-12 text-base"
             />
+            <p className="text-xs text-muted-foreground">
+              Informasi cabang bank (jika diperlukan)
+            </p>
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label>Aktif</Label>
+          {/* Active Status */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-semibold">Status Rekening</Label>
+              <p className="text-xs text-muted-foreground">
+                {formData.isActive ? 'Rekening aktif dan dapat dipilih customer' : 'Rekening tidak aktif dan tidak ditampilkan'}
+              </p>
+            </div>
             <Switch
               checked={formData.isActive}
               onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
@@ -1093,15 +1264,16 @@ function BankAccountDialog({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onClose} className="h-11">
             Batal
           </Button>
           <Button 
             onClick={handleSave}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-6"
           >
-            Simpan
+            <Check className="h-4 w-4 mr-2" />
+            {bank ? 'Simpan Perubahan' : 'Tambah Rekening'}
           </Button>
         </DialogFooter>
       </DialogContent>

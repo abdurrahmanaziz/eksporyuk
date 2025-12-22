@@ -58,26 +58,29 @@ export async function POST(request: NextRequest) {
         consentText,
         ipAddress,
         userAgent
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        course: {
-          select: {
-            title: true
-          }
-        }
       }
     })
+
+    // Fetch user and course info separately (no relations in schema)
+    const [user, course] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, email: true }
+      }),
+      prisma.course.findUnique({
+        where: { id: courseId },
+        select: { title: true }
+      })
+    ])
 
     return NextResponse.json({
       success: true,
       message: 'Persetujuan berhasil disimpan',
-      consent
+      consent: {
+        ...consent,
+        user,
+        course
+      }
     })
   } catch (error) {
     console.error('Error creating consent:', error)

@@ -24,13 +24,44 @@ export async function GET(request: NextRequest) {
     }
 
     const plans = await prisma.membership.findMany({
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        checkoutSlug: true,
+        checkoutTemplate: true,
+        description: true,
+        duration: true,
+        price: true,
+        commissionType: true,
+        affiliateCommissionRate: true,
+        features: true,
+        isBestSeller: true,
+        isPopular: true,
+        isMostPopular: true,
+        isActive: true,
+        status: true,
+        salesPageUrl: true,
+        alternativeUrl: true,
+        reminders: true,
+        formLogo: true,
+        formBanner: true,
+        formDescription: true,
+        mailketingListId: true,
+        mailketingListName: true,
+        autoAddToList: true,
+        autoRemoveOnExpire: true,
+        showInGeneralCheckout: true,
+        createdAt: true,
+        updatedAt: true,
         userMemberships: {
           take: 1,
           orderBy: {
             createdAt: 'desc'
           },
-          include: {
+          select: {
+            id: true,
+            createdAt: true,
             transaction: {
               select: {
                 createdAt: true
@@ -40,7 +71,10 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: {
-            userMemberships: true
+            userMemberships: true,
+            membershipGroups: true,
+            membershipCourses: true,
+            membershipProducts: true
           }
         }
       },

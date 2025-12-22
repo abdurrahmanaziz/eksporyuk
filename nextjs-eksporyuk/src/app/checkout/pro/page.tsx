@@ -203,34 +203,74 @@ export default function CheckoutProPage() {
       const res = await fetch('/api/payment-methods')
       const data = await res.json()
       
+      console.log('[Checkout Pro] Payment methods response:', data)
+      
       if (data.success) {
         const xenditChannels = data.data.xendit.channels || []
         const manualBankAccounts = data.data.manual.bankAccounts || []
         const enableManual = data.data.manual.enabled
         const enableXendit = data.data.xendit.enabled
 
+        console.log('[Checkout Pro] Xendit enabled:', enableXendit)
+        console.log('[Checkout Pro] Xendit channels:', xenditChannels)
+        console.log('[Checkout Pro] Bank transfer channels:', xenditChannels.filter((ch: PaymentChannel) => ch.type === 'bank_transfer' && ch.isActive))
+
+        // If no channels but Xendit is enabled, use default channels
+        const finalXenditChannels = (enableXendit && xenditChannels.length === 0) 
+          ? getDefaultChannels() 
+          : xenditChannels
+
         setAvailablePaymentMethods({
-          xenditChannels,
+          xenditChannels: finalXenditChannels,
           manualBankAccounts,
           enableManual,
           enableXendit
         })
 
-        // Auto-select first available payment method
-        if (enableXendit && xenditChannels.length > 0) {
-          const firstBankTransfer = xenditChannels.find((ch: PaymentChannel) => ch.type === 'bank_transfer' && ch.isActive)
+        // Auto-select first available payment method and expand section
+        if (enableXendit && finalXenditChannels.length > 0) {
+          const firstBankTransfer = finalXenditChannels.find((ch: PaymentChannel) => ch.type === 'bank_transfer' && ch.isActive)
           if (firstBankTransfer) {
+            console.log('[Checkout Pro] Auto-selecting bank transfer:', firstBankTransfer.code)
             setPaymentMethod('bank_transfer')
             setPaymentChannel(firstBankTransfer.code)
+            setExpandedSection('bank_transfer') // Auto-expand bank transfer section
           }
         } else if (enableManual && manualBankAccounts.length > 0) {
+          console.log('[Checkout Pro] Auto-selecting manual transfer')
           setPaymentMethod('manual')
           setPaymentChannel(manualBankAccounts[0].bankCode)
+          setExpandedSection('manual') // Auto-expand manual section
         }
       }
     } catch (err) {
       console.error('Error fetching payment methods:', err)
+      // Set default channels on error
+      const defaultChannels = getDefaultChannels()
+      setAvailablePaymentMethods({
+        xenditChannels: defaultChannels,
+        manualBankAccounts: [],
+        enableManual: false,
+        enableXendit: true
+      })
+      const firstBank = defaultChannels.find(ch => ch.type === 'bank_transfer' && ch.isActive)
+      if (firstBank) {
+        setPaymentMethod('bank_transfer')
+        setPaymentChannel(firstBank.code)
+        setExpandedSection('bank_transfer')
+      }
     }
+  }
+
+  // Default payment channels as fallback
+  const getDefaultChannels = (): PaymentChannel[] => {
+    return [
+      { code: 'BCA', name: 'Bank Central Asia (BCA)', type: 'bank_transfer', icon: '🏦', isActive: true },
+      { code: 'MANDIRI', name: 'Bank Mandiri', type: 'bank_transfer', icon: '🏦', isActive: true },
+      { code: 'BNI', name: 'Bank Negara Indonesia (BNI)', type: 'bank_transfer', icon: '🏦', isActive: true },
+      { code: 'BRI', name: 'Bank Rakyat Indonesia (BRI)', type: 'bank_transfer', icon: '🏦', isActive: true },
+      { code: 'BSI', name: 'Bank Syariah Indonesia (BSI)', type: 'bank_transfer', icon: '🏦', isActive: true },
+    ]
   }
 
   const handleValidateCoupon = async () => {

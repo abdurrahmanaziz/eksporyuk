@@ -27,10 +27,18 @@ export async function GET(request: NextRequest) {
 
     // If myGroups is true, only show groups user is a member of
     if (myGroups && session?.user?.id) {
-      where.members = {
-        some: {
-          userId: session.user.id,
-        },
+      // Get user's group IDs
+      const userMemberships = await prisma.groupMember.findMany({
+        where: { userId: session.user.id },
+        select: { groupId: true }
+      })
+      const userGroupIds = userMemberships.map(m => m.groupId)
+      
+      if (userGroupIds.length > 0) {
+        where.id = { in: userGroupIds }
+      } else {
+        // User has no groups, return empty
+        return NextResponse.json({ groups: [] })
       }
     } else {
       // For public listing, exclude HIDDEN groups unless user is a member
@@ -55,38 +63,59 @@ export async function GET(request: NextRequest) {
         coverImage: true,
         type: true,
         createdAt: true,
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-        ...(includeCount && {
-          _count: {
-            select: {
-              members: true,
-              posts: true,
-            },
-          },
-        }),
-        // Include user's membership status if logged in
-        ...(session?.user?.id && {
-          members: {
-            where: {
-              userId: session.user.id,
-            },
-            select: {
-              role: true,
-              joinedAt: true,
-            },
-          },
-        }),
+        ownerId: true,
       },
     })
 
+    // Manually fetch additional data
+    const groupIds = groups.map(g => g.id)
+    const ownerIds = [...new Set(groups.map(g => g.ownerId).filter(Boolean))]
+
+    const [owners, memberCounts, postCounts, userMemberships] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: ownerIds } },
+        select: { id: true, name: true, avatar: true }
+      }),
+      includeCount ? prisma.groupMember.groupBy({
+        by: ['groupId'],
+        where: { groupId: { in: groupIds } },
+        _count: { userId: true }
+      }) : Promise.resolve([]),
+      includeCount ? prisma.post.groupBy({
+        by: ['groupId'],
+        where: { groupId: { in: groupIds } },
+        _count: { id: true }
+      }) : Promise.resolve([]),
+      session?.user?.id ? prisma.groupMember.findMany({
+        where: {
+          userId: session.user.id,
+          groupId: { in: groupIds }
+        },
+        select: { groupId: true, role: true, joinedAt: true }
+      }) : Promise.resolve([])
+    ])
+
+    const ownerMap = new Map(owners.map(o => [o.id, o]))
+    const memberCountMap = new Map(memberCounts.map((m: any) => [m.groupId, m._count.userId]))
+    const postCountMap = new Map(postCounts.map((p: any) => [p.groupId, p._count.id]))
+    const membershipMap = new Map(userMemberships.map(m => [m.groupId, m]))
+
+    const enrichedGroups = groups.map(group => ({
+      ...group,
+      owner: group.ownerId ? ownerMap.get(group.ownerId) || null : null,
+      ...(includeCount && {
+        _count: {
+          members: memberCountMap.get(group.id) || 0,
+          posts: postCountMap.get(group.id) || 0,
+        }
+      }),
+      ...(session?.user?.id && {
+        members: membershipMap.has(group.id) ? [membershipMap.get(group.id)] : []
+      })
+    }))
+
     return NextResponse.json({
-      groups,
+      groups: enrichedGroups,
     })
   } catch (error) {
     console.error('Error fetching groups:', error)

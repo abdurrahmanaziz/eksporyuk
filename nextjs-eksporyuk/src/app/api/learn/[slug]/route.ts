@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 // GET /api/learn/[slug] - Get course details for learning (by slug)
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,45 +18,85 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { slug } = await params
+    const params = await context.params
+    const slug = params.slug
+    
+    console.log(`🔍 [API /learn/${slug}] Fetching course for user:`, session.user.email)
 
-    const course = await prisma.course.findUnique({
-      where: { slug },
-      include: {
-        mentor: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true
-              }
-            }
-          }
-        },
-        modules: {
-          include: {
-            lessons: {
-              include: {
-                files: {
-                  orderBy: { order: 'asc' }
-                }
-              },
-              orderBy: { order: 'asc' }
-            }
-          },
-          orderBy: { order: 'asc' }
-        }
+    // Fetch course without relations (Prisma schema doesn't have them defined)
+    // Note: slug is not @unique in schema, so use findFirst
+    const course = await prisma.course.findFirst({
+      where: { 
+        slug,
+        // Only show PUBLISHED courses or if user is ADMIN/MENTOR
+        ...(session.user.role !== 'ADMIN' && session.user.role !== 'MENTOR' 
+          ? { status: 'PUBLISHED', isPublished: true }
+          : {}
+        )
       }
     })
 
     if (!course) {
+      console.log(`❌ [API /learn/${slug}] Course not found`)
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
+    
+    console.log(`✅ [API /learn/${slug}] Course found:`, course.title, 'Status:', course.status)
+
+    // Fetch mentor profile separately
+    const mentor = course.mentorId ? await prisma.mentorProfile.findUnique({
+      where: { id: course.mentorId }
+    }) : null
+
+    // Fetch mentor user info if mentor exists
+    const mentorUser = mentor ? await prisma.user.findUnique({
+      where: { id: mentor.userId },
+      select: { id: true, name: true, email: true, avatar: true }
+    }) : null
+
+    // Fetch modules for this course
+    const modules = await prisma.courseModule.findMany({
+      where: { courseId: course.id },
+      orderBy: { order: 'asc' }
+    })
+    
+    console.log(`📚 [API /learn/${slug}] Found ${modules.length} modules`)
+
+    // Fetch lessons and files for each module
+    const modulesWithLessons = await Promise.all(
+      modules.map(async (mod) => {
+        const lessons = await prisma.courseLesson.findMany({
+          where: { moduleId: mod.id },
+          orderBy: { order: 'asc' }
+        })
+        
+        // Fetch files for each lesson
+        const lessonsWithFiles = await Promise.all(
+          lessons.map(async (lesson) => {
+            const files = await prisma.lessonFile.findMany({
+              where: { lessonId: lesson.id },
+              orderBy: { order: 'asc' }
+            })
+            return { ...lesson, files }
+          })
+        )
+        
+        return { ...mod, lessons: lessonsWithFiles }
+      })
+    )
+    
+    const totalLessons = modulesWithLessons.reduce((sum, m) => sum + m.lessons.length, 0)
+    console.log(`📖 [API /learn/${slug}] Total lessons: ${totalLessons}`)
+
+    // Construct course with mentor and modules
+    const courseWithRelations = {
+      ...course,
+      mentor: mentor ? { ...mentor, user: mentorUser } : null,
+      modules: modulesWithLessons
+    } as any
 
     // PRD: Check course status - DRAFT/ARCHIVED tidak bisa diakses kecuali admin
-    if (['DRAFT', 'ARCHIVED'].includes(course.status)) {
+    if (['DRAFT', 'ARCHIVED'].includes(courseWithRelations.status)) {
       if (session.user.role !== 'ADMIN' && session.user.role !== 'MENTOR') {
         return NextResponse.json({ 
           error: 'Kursus ini belum dipublikasikan atau tidak tersedia' 
@@ -65,10 +105,10 @@ export async function GET(
     }
 
     // PRD: Check roleAccess - validasi akses berdasarkan role
-    const courseRoleAccess = (course as any).roleAccess || 'PUBLIC'
+    const courseRoleAccess = courseWithRelations.roleAccess || 'PUBLIC'
     
     // AFFILIATE course - hanya affiliate yang bisa akses
-    if (courseRoleAccess === 'AFFILIATE' || course.affiliateOnly || course.isAffiliateTraining || course.isAffiliateMaterial) {
+    if (courseRoleAccess === 'AFFILIATE' || courseWithRelations.affiliateOnly || courseWithRelations.isAffiliateTraining || courseWithRelations.isAffiliateMaterial) {
       if (session.user.role !== 'ADMIN' && session.user.role !== 'AFFILIATE') {
         return NextResponse.json({ 
           error: 'Anda tidak memiliki izin untuk mengakses kelas ini. Kelas ini khusus untuk Affiliate.' 
@@ -118,7 +158,7 @@ export async function GET(
         where: {
           userId_courseId: {
             userId: session.user.id,
-            courseId: course.id
+            courseId: courseWithRelations.id
           }
         }
       })
@@ -127,7 +167,7 @@ export async function GET(
         await prisma.courseEnrollment.create({
           data: {
             userId: session.user.id,
-            courseId: course.id,
+            courseId: courseWithRelations.id,
             progress: 0
           }
         })
@@ -143,7 +183,7 @@ export async function GET(
         where: {
           userId_courseId: {
             userId: session.user.id,
-            courseId: course.id
+            courseId: courseWithRelations.id
           }
         }
       })
@@ -170,7 +210,7 @@ export async function GET(
             include: {
               membershipCourses: {
                 where: {
-                  courseId: course.id
+                  courseId: courseWithRelations.id
                 }
               }
             }
@@ -186,7 +226,7 @@ export async function GET(
           where: {
             userId_courseId: {
               userId: session.user.id,
-              courseId: course.id
+              courseId: courseWithRelations.id
             }
           }
         })
@@ -195,7 +235,7 @@ export async function GET(
           await prisma.courseEnrollment.create({
             data: {
               userId: session.user.id,
-              courseId: course.id,
+              courseId: courseWithRelations.id,
               enrolledAt: new Date(),
               progress: 0
             }
@@ -205,7 +245,7 @@ export async function GET(
     }
 
     // 3. PRD: Check membershipIncluded - kursus yang gratis untuk member aktif
-    if (!hasAccess && (course as any).membershipIncluded) {
+    if (!hasAccess && courseWithRelations.membershipIncluded) {
       const hasActiveMembership = await prisma.userMembership.findFirst({
         where: {
           userId: session.user.id,
@@ -224,7 +264,7 @@ export async function GET(
           where: {
             userId_courseId: {
               userId: session.user.id,
-              courseId: course.id
+              courseId: courseWithRelations.id
             }
           }
         })
@@ -233,7 +273,7 @@ export async function GET(
           await prisma.courseEnrollment.create({
             data: {
               userId: session.user.id,
-              courseId: course.id,
+              courseId: courseWithRelations.id,
               enrolledAt: new Date(),
               progress: 0
             }
@@ -247,36 +287,41 @@ export async function GET(
       where: {
         userId_courseId: {
           userId: session.user.id,
-          courseId: course.id
+          courseId: courseWithRelations.id
         }
       }
     })
 
     // If user doesn't have access (and is NOT admin/mentor), filter out locked lessons
     if (!hasAccess && session.user.role !== 'ADMIN' && session.user.role !== 'MENTOR') {
-      course.modules = course.modules.map(module => ({
+      courseWithRelations.modules = courseWithRelations.modules.map((module: any) => ({
         ...module,
-        lessons: module.lessons.filter(lesson => lesson.isFree)
+        lessons: module.lessons.filter((lesson: any) => lesson.isFree)
       }))
     }
 
     console.log('🎯 Final result:', {
       hasAccess,
       progress,
-      modulesCount: course.modules.length,
-      lessonsCount: course.modules.reduce((sum, m) => sum + m.lessons.length, 0)
+      modulesCount: courseWithRelations.modules.length,
+      lessonsCount: courseWithRelations.modules.reduce((sum: number, m: any) => sum + m.lessons.length, 0)
     })
+    
+    // Final validation - ensure modules and lessons exist
+    if (!courseWithRelations.modules || courseWithRelations.modules.length === 0) {
+      console.warn(`⚠️ [API /learn/${slug}] Course has NO modules!`)
+    }
 
     return NextResponse.json({
-      course,
+      course: courseWithRelations,
       hasAccess,
       progress,
       userProgress
     })
   } catch (error) {
-    console.error('Error fetching course for learning:', error)
+    console.error(`❌ [API /learn] Error fetching course:`, error)
     return NextResponse.json(
-      { error: 'Failed to fetch course' },
+      { error: 'Failed to fetch course', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

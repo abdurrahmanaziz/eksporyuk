@@ -85,6 +85,40 @@ export default function CheckoutPage() {
     password: ''
   })
 
+  // Helper function to get logo URL (same as checkout/pro)
+  const getLogoUrl = (code: string, customLogoUrl?: string) => {
+    // Prioritize custom logo if available
+    if (customLogoUrl) {
+      return customLogoUrl
+    }
+    
+    const baseUrl = '/images/payment-logos'
+    const logos: { [key: string]: string } = {
+      'BCA': `${baseUrl}/bca.svg`,
+      'MANDIRI': `${baseUrl}/mandiri.svg`,
+      'BNI': `${baseUrl}/bni.svg`,
+      'BRI': `${baseUrl}/bri.svg`,
+      'BSI': `${baseUrl}/bsi.svg`,
+      'CIMB': `${baseUrl}/cimb.svg`,
+      'PERMATA': `${baseUrl}/permata.svg`,
+      'JAGO': `${baseUrl}/jago.svg`,
+      'SAHABAT_SAMPOERNA': `${baseUrl}/sahabat-sampoerna.svg`,
+      'OVO': `${baseUrl}/ovo.svg`,
+      'DANA': `${baseUrl}/dana.svg`,
+      'GOPAY': `${baseUrl}/gopay.svg`,
+      'LINKAJA': `${baseUrl}/linkaja.svg`,
+      'SHOPEEPAY': `${baseUrl}/shopeepay.svg`,
+      'ASTRAPAY': `${baseUrl}/astrapay.svg`,
+      'JENIUSPAY': `${baseUrl}/jeniuspay.svg`,
+      'QRIS': `${baseUrl}/qris.svg`,
+      'ALFAMART': `${baseUrl}/alfamart.svg`,
+      'INDOMARET': `${baseUrl}/indomaret.svg`,
+      'KREDIVO': `${baseUrl}/kredivo.svg`,
+      'AKULAKU': `${baseUrl}/akulaku.svg`,
+    }
+    return logos[code] || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%230066CC'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='16' fill='white' font-family='Arial'%3E${code.substring(0, 3)}%3C/text%3E%3C/svg%3E`
+  }
+
   // Fetch payment logos and manual banks
   useEffect(() => {
     const fetchPaymentData = async () => {
@@ -107,10 +141,35 @@ export default function CheckoutPage() {
           if (methodsData.success) {
             setManualBankAccounts(methodsData.data.manual.bankAccounts || [])
             setEnableManualBank(methodsData.data.manual.enabled || false)
+            
+            // Auto-expand and select first available payment method
+            const enableXendit = methodsData.data.xendit?.enabled ?? true
+            const xenditChannels = methodsData.data.xendit?.channels || []
+            
+            if (enableXendit && (xenditChannels.length > 0 || Object.keys(activeChannels).length === 0)) {
+              // If has xendit channels or no channels configured, default to bank_transfer
+              setExpandedSection('bank_transfer')
+              setPaymentMethod('bank_transfer')
+              setPaymentChannel('BCA')
+            } else if (methodsData.data.manual.enabled && methodsData.data.manual.bankAccounts.length > 0) {
+              // Fallback to manual if available
+              setExpandedSection('manual')
+              setPaymentMethod('manual')
+              setPaymentChannel(methodsData.data.manual.bankAccounts[0]?.bankCode || 'MANUAL')
+            } else {
+              // Last resort: default to bank_transfer anyway
+              setExpandedSection('bank_transfer')
+              setPaymentMethod('bank_transfer')
+              setPaymentChannel('BCA')
+            }
           }
         }
       } catch (error) {
         console.error('Error fetching payment data:', error)
+        // On error, default to bank_transfer
+        setExpandedSection('bank_transfer')
+        setPaymentMethod('bank_transfer')
+        setPaymentChannel('BCA')
       }
     }
     fetchPaymentData()
@@ -118,6 +177,11 @@ export default function CheckoutPage() {
 
   // Helper function to check if payment method has active channels
   const hasActiveChannels = (method: 'bank_transfer' | 'ewallet' | 'qris' | 'retail' | 'paylater') => {
+    // If no activeChannels configured yet, show all by default
+    if (Object.keys(activeChannels).length === 0) {
+      return true
+    }
+    
     if (method === 'bank_transfer') {
       return ['BCA', 'MANDIRI', 'BNI', 'BRI', 'BSI', 'CIMB'].some(bank => activeChannels[bank] !== false)
     } else if (method === 'ewallet') {
@@ -1151,19 +1215,15 @@ export default function CheckoutPage() {
                               >
                                 <div className="flex items-center gap-4">
                                   <div className="h-16 w-16 flex items-center justify-center bg-white rounded-lg flex-shrink-0 border">
-                                    {account.logo ? (
-                                      <img 
-                                        src={account.logo}
-                                        alt={account.bankName}
-                                        className="max-h-full max-w-full object-contain p-1"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement
-                                          target.style.display = 'none'
-                                        }}
-                                      />
-                                    ) : (
-                                      <Building className="h-8 w-8 text-gray-400" />
-                                    )}
+                                    <img 
+                                      src={getLogoUrl(account.bankCode, account.customLogoUrl)}
+                                      alt={account.bankName}
+                                      className="max-h-full max-w-full object-contain p-1"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement
+                                        target.style.display = 'none'
+                                      }}
+                                    />
                                   </div>
                                   <div className="flex-1">
                                     <p className="font-semibold text-gray-900 dark:text-white">{account.bankName}</p>

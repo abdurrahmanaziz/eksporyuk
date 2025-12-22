@@ -95,14 +95,6 @@ export async function POST(request: Request) {
         coverImage: coverImage || null,
         ownerId: session.user.id,
         isActive: true
-      },
-      include: {
-        _count: {
-          select: {
-            members: true,
-            posts: true
-          }
-        }
       }
     })
 
@@ -115,7 +107,16 @@ export async function POST(request: Request) {
       }
     })
 
-    return NextResponse.json({ group }, { status: 201 })
+    // Return group with manual _count
+    return NextResponse.json({ 
+      group: {
+        ...group,
+        _count: {
+          members: 1, // Just the owner
+          posts: 0
+        }
+      }
+    }, { status: 201 })
     
   } catch (error) {
     console.error('Create group error:', error)

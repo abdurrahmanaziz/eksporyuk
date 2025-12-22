@@ -71,17 +71,9 @@ export async function GET(
             totalPayout: true,
           },
         },
-        userRoles: {
-          select: {
-            id: true,
-            role: true,
-            createdAt: true,
-          },
-        },
         _count: {
           select: {
             transactions: true,
-            courseEnrollments: true,
             userMemberships: true,
           },
         },

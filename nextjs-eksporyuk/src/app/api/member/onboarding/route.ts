@@ -84,31 +84,6 @@ export async function GET() {
         address: true,
         bio: true,
         profileCompleted: true,
-        userMemberships: {
-          where: {
-            isActive: true,
-            status: 'ACTIVE',
-          },
-          include: {
-            membership: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-                duration: true,
-              }
-            }
-          },
-          take: 1,
-        },
-        courseEnrollments: {
-          take: 1,
-          select: { id: true }
-        },
-        groupMemberships: {
-          take: 1,
-          select: { id: true }
-        }
       }
     })
 
@@ -119,17 +94,61 @@ export async function GET() {
       )
     }
 
+    // Manually fetch related data
+    const [userMemberships, courseEnrollments, groupMemberships] = await Promise.all([
+      prisma.userMembership.findMany({
+        where: {
+          userId: user.id,
+          isActive: true,
+          status: 'ACTIVE',
+        },
+        select: {
+          id: true,
+          membershipId: true,
+          startDate: true,
+          endDate: true,
+          status: true,
+        },
+        take: 1,
+      }),
+      prisma.courseEnrollment.findMany({
+        where: { userId: user.id },
+        select: { id: true },
+        take: 1
+      }),
+      prisma.groupMember.findMany({
+        where: { userId: user.id },
+        select: { id: true },
+        take: 1
+      })
+    ])
+
+    // Fetch membership details if exists
+    let activeMembership = null
+    if (userMemberships.length > 0) {
+      const membershipData = await prisma.membership.findUnique({
+        where: { id: userMemberships[0].membershipId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          duration: true,
+        }
+      })
+      activeMembership = {
+        ...userMemberships[0],
+        membership: membershipData
+      }
+    }
+
     // Check profile completion
     const profileCheck = checkProfileCompletion(user)
-    
-    // Get active membership
-    const activeMembership = user.userMemberships[0] || null
     
     // Check onboarding steps
     const hasCompletedProfile = profileCheck.isComplete
     const hasMembership = !!activeMembership
-    const hasJoinedGroup = user.groupMemberships.length > 0
-    const hasEnrolledCourse = user.courseEnrollments.length > 0
+    const hasJoinedGroup = groupMemberships.length > 0
+    const hasEnrolledCourse = courseEnrollments.length > 0
 
     // Calculate progress (profile is 50%, rest are bonuses)
     const profileProgress = Math.round((profileCheck.completedCount / profileCheck.totalRequired) * 50)

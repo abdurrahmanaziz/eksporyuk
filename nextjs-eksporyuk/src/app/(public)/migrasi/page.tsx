@@ -198,11 +198,11 @@ export default function MigrationPage() {
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                       <p className="text-sm text-gray-600 mb-2">URL Platform Baru:</p>
                       <a 
-                        href="https://app.eksporyuk.com" 
+                        href="https://eksporyuk.com" 
                         target="_blank"
                         className="text-lg font-bold text-blue-600 hover:text-blue-700 flex items-center gap-2"
                       >
-                        app.eksporyuk.com
+                        eksporyuk.com
                         <ExternalLink className="w-4 h-4" />
                       </a>
                     </div>

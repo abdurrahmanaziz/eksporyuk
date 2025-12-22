@@ -6,6 +6,23 @@ import { prisma } from '@/lib/prisma'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
+// Helper to get group with counts (no relations exist in schema)
+async function getGroupWithCounts(group: any) {
+  const [owner, membersCount, postsCount, eventsCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: group.ownerId },
+      select: { id: true, name: true, avatar: true, email: true }
+    }),
+    prisma.groupMember.count({ where: { groupId: group.id } }),
+    prisma.post.count({ where: { groupId: group.id } }),
+    prisma.event.count({ where: { groupId: group.id } })
+  ])
+  return {
+    ...group,
+    owner,
+    _count: { members: membersCount, posts: postsCount, events: eventsCount }
+  }
+}
 
 // GET /api/groups/[slug] - Get group detail
 export async function GET(
@@ -16,53 +33,36 @@ export async function GET(
     const session = await getServerSession(authOptions)
     const { slug } = await params
 
-    const group = await prisma.group.findUnique({
-      where: { slug },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            email: true,
-          },
-        },
-        members: {
-          where: session?.user?.id ? {
-            userId: session.user.id
-          } : undefined,
-          select: {
-            id: true,
-            role: true,
-            userId: true,
-            joinedAt: true,
-          },
-          orderBy: [
-            { role: 'asc' },
-            { joinedAt: 'desc' },
-          ],
-        },
-        _count: {
-          select: {
-            members: true,
-            posts: true,
-            events: true,
-          },
-        },
-      },
+    const group = await prisma.group.findFirst({
+      where: { slug }
     })
 
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    // Check if user is a member
-    const userMembership = session?.user?.id
-      ? group.members.find((m) => m.userId === session.user.id)
-      : null
+    // Get group with counts manually
+    const groupWithCounts = await getGroupWithCounts(group)
+
+    // Get user membership if logged in
+    let userMembership = null
+    if (session?.user?.id) {
+      userMembership = await prisma.groupMember.findFirst({
+        where: {
+          groupId: group.id,
+          userId: session.user.id
+        },
+        select: {
+          id: true,
+          role: true,
+          userId: true,
+          joinedAt: true
+        }
+      })
+    }
 
     return NextResponse.json({
-      group,
+      group: groupWithCounts,
       userMembership,
     })
   } catch (error) {

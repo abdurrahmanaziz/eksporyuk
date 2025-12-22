@@ -58,9 +58,9 @@ export async function GET(request: NextRequest) {
     // Search by name or email or memberCode
     if (search) {
       where.OR = [
-        { name: { contains: search } },
-        { email: { contains: search } },
-        { memberCode: { contains: search.toUpperCase() } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { memberCode: { contains: search.toUpperCase(), mode: 'insensitive' } },
       ];
     }
 
@@ -69,18 +69,27 @@ export async function GET(request: NextRequest) {
       where.role = role;
     }
 
-    // Get users with membership info
+    // Get users with explicit select to avoid Prisma schema cache issues
     const users = await prisma.user.findMany({
       where,
       skip,
       take: limit,
       orderBy: { createdAt: 'desc' },
-      include: {
+      select: {
+        id: true,
+        memberCode: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        emailVerified: true,
         userMemberships: {
           where: {
             status: 'ACTIVE',
           },
-          include: {
+          select: {
+            startDate: true,
+            endDate: true,
             membership: {
               select: {
                 name: true,
@@ -113,17 +122,27 @@ export async function GET(request: NextRequest) {
     // Get total count
     const total = await prisma.user.count({ where });
 
-    // Get stats
-    const [totalUsers, adminCount, mentorCount, affiliateCount, premiumCount, freeCount, supplierCount, activeMemberships] = await Promise.all([
-      prisma.user.count(),
-      prisma.user.count({ where: { role: 'ADMIN' } }),
-      prisma.user.count({ where: { role: 'MENTOR' } }),
-      prisma.user.count({ where: { role: 'AFFILIATE' } }),
-      prisma.user.count({ where: { role: 'MEMBER_PREMIUM' } }),
-      prisma.user.count({ where: { role: 'MEMBER_FREE' } }),
-      prisma.user.count({ where: { role: 'SUPPLIER' } }),
-      prisma.userMembership.count({ where: { status: 'ACTIVE' } }),
-    ]);
+    // Get stats - use raw queries to avoid enum type mismatch issues
+    const statsResult = await prisma.$queryRaw<Array<{role: string, count: bigint}>>`
+      SELECT role::text, COUNT(*) as count 
+      FROM "User" 
+      GROUP BY role
+    `;
+    
+    const roleStats: Record<string, number> = {};
+    for (const row of statsResult) {
+      roleStats[row.role] = Number(row.count);
+    }
+
+    const totalUsers = Object.values(roleStats).reduce((a, b) => a + b, 0);
+    const adminCount = roleStats['ADMIN'] || 0;
+    const mentorCount = roleStats['MENTOR'] || 0;
+    const affiliateCount = roleStats['AFFILIATE'] || 0;
+    const premiumCount = roleStats['MEMBER_PREMIUM'] || 0;
+    const freeCount = roleStats['MEMBER_FREE'] || 0;
+    const supplierCount = roleStats['SUPPLIER'] || 0;
+    
+    const activeMemberships = await prisma.userMembership.count({ where: { status: 'ACTIVE' } });
 
     // Format response
     const formattedUsers = filteredUsers.map((user: any) => {

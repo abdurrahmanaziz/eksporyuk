@@ -25,10 +25,31 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch all active memberships
+    // Fetch all active memberships with explicit select to avoid missing column errors
     const memberships = await prisma.membership.findMany({
       where: {
         isActive: true
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        checkoutSlug: true,
+        description: true,
+        duration: true,
+        price: true,
+        commissionType: true,
+        affiliateCommissionRate: true,
+        features: true,
+        isBestSeller: true,
+        isPopular: true,
+        isMostPopular: true,
+        isActive: true,
+        status: true,
+        salesPageUrl: true,
+        alternativeUrl: true,
+        createdAt: true,
+        updatedAt: true,
       },
       orderBy: [
         { duration: 'asc' }

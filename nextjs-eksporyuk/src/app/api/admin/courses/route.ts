@@ -32,13 +32,7 @@ export async function GET(request: NextRequest) {
         enrollmentCount: true,
         rating: true,
         createdAt: true,
-        // PRD Perbaikan Fitur Kelas - field baru
-        roleAccess: true,
-        membershipIncluded: true,
-        isPublicListed: true,
-        affiliateOnly: true,
-        isAffiliateTraining: true,
-        isAffiliateMaterial: true,
+        mentorId: true,
         _count: {
           select: {
             transactions: true
@@ -50,9 +44,32 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Fetch mentor data separately (no direct relation in schema)
+    const mentorIds = courses.map(c => c.mentorId).filter(Boolean)
+    const mentorProfiles = mentorIds.length > 0 ? await prisma.mentorProfile.findMany({
+      where: { userId: { in: mentorIds } },
+      select: { userId: true }
+    }) : []
+    
+    // Get user data for mentors
+    const users = mentorIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: mentorIds } },
+      select: { id: true, name: true, email: true }
+    }) : []
+    
+    // Map mentor data to courses
+    const coursesWithMentor = courses.map(course => ({
+      ...course,
+      mentor: course.mentorId ? {
+        id: course.mentorId,
+        user: users.find(u => u.id === course.mentorId) || { name: 'Unknown', email: '' }
+      } : null,
+      modules: [] // No modules relation defined
+    }))
+
     return NextResponse.json({ 
       success: true,
-      courses 
+      courses: coursesWithMentor 
     })
   } catch (error) {
     console.error('GET /api/admin/courses error:', error)

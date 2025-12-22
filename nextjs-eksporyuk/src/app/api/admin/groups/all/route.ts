@@ -16,35 +16,57 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Fetch groups without relations (schema doesn't have them)
     const groups = await prisma.group.findMany({
-      include: {
-        _count: {
-          select: {
-            members: true,
-            posts: true,
-            courses: true,
-            products: true
-          }
-        },
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
-    return NextResponse.json({ groups })
+    // Get owner info and counts for each group manually
+    const groupsWithDetails = await Promise.all(
+      groups.map(async (group) => {
+        // Get owner info
+        const owner = await prisma.user.findUnique({
+          where: { id: group.ownerId },
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        })
+
+        // Get member count
+        const membersCount = await prisma.groupMember.count({
+          where: { groupId: group.id }
+        })
+
+        // Get posts count
+        const postsCount = await prisma.post.count({
+          where: { groupId: group.id }
+        })
+
+        // Note: courses and products relations don't exist in schema
+        // Using 0 as default
+        return {
+          ...group,
+          owner,
+          _count: {
+            members: membersCount,
+            posts: postsCount,
+            courses: 0,
+            products: 0
+          }
+        }
+      })
+    )
+
+    return NextResponse.json({ groups: groupsWithDetails })
     
   } catch (error) {
     console.error('Get all groups error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch groups' },
+      { error: 'Failed to fetch groups', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

@@ -8,6 +8,62 @@ import { notificationService } from '@/lib/services/notificationService'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
+// Helper to get post with author and counts (no relations exist in schema)
+async function getPostWithDetails(post: any, includeComments = false) {
+  const [author, likesCount, reactionsCount, commentsCount, likes, reactions] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: post.authorId },
+      select: { id: true, name: true, email: true, avatar: true, role: true, lastActiveAt: true, province: true, city: true, locationVerified: true }
+    }),
+    prisma.postLike.count({ where: { postId: post.id } }),
+    prisma.postReaction.count({ where: { postId: post.id } }),
+    prisma.postComment.count({ where: { postId: post.id } }),
+    prisma.postLike.findMany({ where: { postId: post.id }, select: { userId: true } }),
+    prisma.postReaction.findMany({ where: { postId: post.id } })
+  ])
+
+  // Get reaction users
+  const reactionUserIds = reactions.map((r: any) => r.userId)
+  const reactionUsers = reactionUserIds.length > 0 ? await prisma.user.findMany({
+    where: { id: { in: reactionUserIds } },
+    select: { id: true, name: true, avatar: true }
+  }) : []
+  const reactionUserMap = new Map(reactionUsers.map(u => [u.id, u]))
+
+  const reactionsWithUsers = reactions.map((r: any) => ({
+    ...r,
+    user: reactionUserMap.get(r.userId) || null
+  }))
+
+  // Get comments if needed
+  let comments: any[] = []
+  if (includeComments) {
+    const rawComments = await prisma.postComment.findMany({
+      where: { postId: post.id },
+      take: 3,
+      orderBy: { createdAt: 'desc' }
+    })
+    const commentUserIds = rawComments.map((c: any) => c.userId)
+    const commentUsers = commentUserIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: commentUserIds } },
+      select: { id: true, name: true, avatar: true }
+    }) : []
+    const commentUserMap = new Map(commentUsers.map(u => [u.id, u]))
+    comments = rawComments.map((c: any) => ({
+      ...c,
+      user: commentUserMap.get(c.userId) || null
+    }))
+  }
+
+  return {
+    ...post,
+    author,
+    likes,
+    reactions: reactionsWithUsers,
+    comments,
+    _count: { comments: commentsCount, likes: likesCount, reactions: reactionsCount }
+  }
+}
 
 // GET /api/groups/[slug]/posts - Get group posts (feed)
 export async function GET(
@@ -25,125 +81,61 @@ export async function GET(
     const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN'
 
     // Find group by slug first
-    // Verify user has access to this group
-    const groupAccess = await prisma.group.findFirst({
-      where: {
-        slug,
-        isActive: true,
-        ...(isAdmin ? {} : {
-          OR: [
-            // User is member
-            ...(session?.user?.id ? [{ members: { some: { userId: session.user.id } } }] : []),
-            // User has membership access
-            ...(session?.user?.id ? [{ 
-              membershipGroups: {
-                some: {
-                  membership: {
-                    userMemberships: {
-                      some: {
-                        userId: session.user.id,
-                        isActive: true,
-                        startDate: { lte: new Date() },
-                        endDate: { gte: new Date() }
-                      }
-                    }
-                  }
-                }
-              }
-            }] : []),
-            // User is owner
-            ...(session?.user?.id ? [{ ownerId: session.user.id }] : []),
-            // Public group (for read access)
-            { type: 'PUBLIC' }
-          ]
-        })
-      },
-      select: { id: true, slug: true, requireApproval: true, type: true }
+    const group = await prisma.group.findFirst({
+      where: { slug, isActive: true }
     })
 
-    if (!groupAccess) {
-      return NextResponse.json(
-        { error: 'Access denied to this group' },
-        { status: 403 }
-      )
+    if (!group) {
+      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    const group = groupAccess
+    // Check access - simplified (no relations)
+    if (!isAdmin) {
+      const hasAccess = group.type === 'PUBLIC' || group.ownerId === session?.user?.id
+      
+      if (!hasAccess && session?.user?.id) {
+        // Check direct membership
+        const directMember = await prisma.groupMember.findFirst({
+          where: { groupId: group.id, userId: session.user.id }
+        })
+        
+        // Check membership access
+        const membershipAccess = await prisma.userMembership.findFirst({
+          where: {
+            userId: session.user.id,
+            isActive: true,
+            startDate: { lte: new Date() },
+            endDate: { gte: new Date() },
+            membership: {
+              membershipGroups: { some: { groupId: group.id } }
+            }
+          }
+        })
+
+        if (!directMember && !membershipAccess) {
+          return NextResponse.json({ error: 'Access denied to this group' }, { status: 403 })
+        }
+      } else if (!hasAccess) {
+        return NextResponse.json({ error: 'Access denied to this group' }, { status: 403 })
+      }
+    }
 
     const posts = await prisma.post.findMany({
       where: {
         groupId: group.id,
-        type: { in: ['POST', 'POLL', 'ANNOUNCEMENT'] }, // Include polls and announcements
-        approvalStatus: 'APPROVED', // Only show approved posts
+        type: { in: ['POST', 'POLL', 'ANNOUNCEMENT'] },
+        approvalStatus: 'APPROVED',
       },
       take: limit,
-      ...(cursor && {
-        skip: 1,
-        cursor: {
-          id: cursor,
-        },
-      }),
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            role: true,
-            lastActiveAt: true,
-            province: true,
-            city: true,
-            locationVerified: true,
-          },
-        },
-        likes: {
-          select: {
-            userId: true,
-          },
-        },
-        reactions: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-        comments: {
-          take: 3,
-          orderBy: {
-            createdAt: 'desc',
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            reactions: true,
-          },
-        },
-      },
-      orderBy: [
-        { isPinned: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      ...(cursor && { skip: 1, cursor: { id: cursor } }),
+      orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
     })
 
-    // Transform posts to ensure all required fields are present
-    const transformedPosts = posts.map(post => ({
+    // Get details for all posts
+    const transformedPosts = await Promise.all(posts.map(post => getPostWithDetails(post, true)))
+
+    // Ensure all required fields are present
+    const finalPosts = transformedPosts.map(post => ({
       ...post,
       images: post.images || [],
       videos: post.videos || [],
@@ -151,19 +143,16 @@ export async function GET(
       taggedUsers: post.taggedUsers || [],
       reactionsCount: post.reactionsCount || {},
       reactions: post.reactions || [],
-      commentsEnabled: post.commentsEnabled !== false, // Default to true
+      commentsEnabled: post.commentsEnabled !== false,
     }))
 
     return NextResponse.json({
-      posts: transformedPosts,
+      posts: finalPosts,
       nextCursor: posts.length === limit ? posts[posts.length - 1].id : null,
     })
   } catch (error) {
     console.error('Error fetching group posts:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch posts' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
   }
 }
 
@@ -184,76 +173,28 @@ export async function POST(
     const { content, images, type, metadata } = body
 
     if (!content || content.trim() === '') {
-      return NextResponse.json(
-        { error: 'Content is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
     // Check if user is ADMIN - bypass all access checks
     const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN'
 
-    // Verify user has access to post in this group
-    const groupAccess = await prisma.group.findFirst({
-      where: {
-        slug,
-        isActive: true,
-        ...(isAdmin ? {} : {
-          OR: [
-            // User is member
-            { members: { some: { userId: session.user.id } } },
-            // User has membership access
-            { 
-              membershipGroups: {
-                some: {
-                  membership: {
-                    userMemberships: {
-                      some: {
-                        userId: session.user.id,
-                        isActive: true,
-                        startDate: { lte: new Date() },
-                        endDate: { gte: new Date() }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            // User is owner
-            { ownerId: session.user.id }
-          ]
-        })
-      },
-      select: {
-        id: true,
-        bannedWords: true,
-        requireApproval: true,
-        ownerId: true
-      }
+    // Find group
+    const group = await prisma.group.findFirst({
+      where: { slug, isActive: true }
     })
 
-    if (!groupAccess) {
-      return NextResponse.json(
-        { error: 'Access denied to post in this group' },
-        { status: 403 }
-      )
+    if (!group) {
+      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    const group = groupAccess
+    // Check membership (no compound key in schema)
+    let membership = await prisma.groupMember.findFirst({
+      where: { groupId: group.id, userId: session.user.id }
+    })
 
     // ADMIN can skip membership check
     if (!isAdmin) {
-      // Check if user is a member or has membership access (more detailed check)
-      const membership = await prisma.groupMember.findUnique({
-        where: {
-          groupId_userId: {
-            groupId: group.id,
-            userId: session.user.id,
-          }
-        }
-      })
-
-      // Check if user has access via direct membership or membership plan
       const hasDirectMembership = !!membership
       const hasMembershipAccess = await prisma.userMembership.findFirst({
         where: {
@@ -261,28 +202,19 @@ export async function POST(
           isActive: true,
           startDate: { lte: new Date() },
           endDate: { gte: new Date() },
-          membership: {
-            membershipGroups: {
-              some: { groupId: group.id }
-            }
-          }
+          membership: { membershipGroups: { some: { groupId: group.id } } }
         }
       })
-
       const isOwner = group.ownerId === session.user.id
 
       if (!hasDirectMembership && !hasMembershipAccess && !isOwner) {
-        return NextResponse.json(
-          { error: 'You must be a member to post in this group' },
-          { status: 403 }
-        )
+        return NextResponse.json({ error: 'You must be a member to post in this group' }, { status: 403 })
       }
     }
 
     // Check for banned words
     let filteredContent = content
     const bannedWords = (group.bannedWords as string[]) || []
-    
     if (containsBannedWords(content, bannedWords)) {
       filteredContent = filterBannedWords(content, bannedWords)
     }
@@ -301,62 +233,39 @@ export async function POST(
         authorId: session.user.id,
         groupId: group.id,
         approvalStatus,
-        ...(type === 'STORY' && {
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        }),
-        ...(type === 'ANNOUNCEMENT' && {
-          isPinned: true
-        }),
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            role: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-          },
-        },
+        ...(type === 'STORY' && { expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }),
+        ...(type === 'ANNOUNCEMENT' && { isPinned: true }),
       },
     })
+
+    // Get author info manually (no relations)
+    const author = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, email: true, avatar: true, role: true }
+    })
+
+    const postWithAuthor = { ...post, author, _count: { comments: 0, likes: 0 } }
 
     // If post requires approval, notify moderators
     if (approvalStatus === 'PENDING') {
       const moderators = await prisma.groupMember.findMany({
-        where: {
-          groupId: group.id,
-          role: { in: ['OWNER', 'ADMIN', 'MODERATOR'] }
-        },
+        where: { groupId: group.id, role: { in: ['OWNER', 'ADMIN', 'MODERATOR'] } },
         select: { userId: true }
       })
-
       await prisma.notification.createMany({
         data: moderators.map(mod => ({
           userId: mod.userId,
           type: 'POST_PENDING_APPROVAL',
           title: 'Postingan Baru Menunggu Persetujuan',
           message: `${session.user.name} membuat postingan yang perlu disetujui`,
-          link: `/community/groups/${group.slug}`,
+          link: `/community/groups/${slug}`,
         }))
       })
     } else if (approvalStatus === 'APPROVED') {
-      // 🔔 NOTIFICATION TRIGGER: New post in group (notify all members)
       const groupMembers = await prisma.groupMember.findMany({
-        where: {
-          groupId: group.id,
-          userId: { not: session.user.id }, // Exclude post author
-        },
+        where: { groupId: group.id, userId: { not: session.user.id } },
         select: { userId: true }
       })
-
-      // Send notification to all group members (use subscription-based)
       if (groupMembers.length > 0) {
         await notificationService.sendToSubscribers({
           targetType: 'GROUP',
@@ -368,17 +277,14 @@ export async function POST(
           relatedId: post.id,
           relatedType: 'POST',
           actionUrl: `/community/groups/${slug}/posts/${post.id}`,
-          channels: ['pusher'], // Only in-app to avoid spam
+          channels: ['pusher'],
         })
       }
     }
 
-    return NextResponse.json({ post }, { status: 201 })
+    return NextResponse.json({ post: postWithAuthor }, { status: 201 })
   } catch (error) {
     console.error('Error creating post:', error)
-    return NextResponse.json(
-      { error: 'Failed to create post' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
   }
 }

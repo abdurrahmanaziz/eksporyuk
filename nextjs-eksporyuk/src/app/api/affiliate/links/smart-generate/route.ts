@@ -98,6 +98,16 @@ export async function POST(request: NextRequest) {
       if (targetType === 'membership') {
         targetItems = await prisma.membership.findMany({ 
           where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            checkoutSlug: true,
+            description: true,
+            price: true,
+            affiliateCommissionRate: true,
+            createdAt: true,
+          },
           orderBy: { createdAt: 'desc' }
         })
       } else if (targetType === 'product') {
@@ -149,7 +159,7 @@ export async function POST(request: NextRequest) {
         // Use live domain - prioritize production domain
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
                        process.env.NEXTAUTH_URL ||
-                       'https://app.eksporyuk.com'
+                       'https://eksporyuk.com'
         
         for (const linkType of linkTypes) {
           // Check if link already exists

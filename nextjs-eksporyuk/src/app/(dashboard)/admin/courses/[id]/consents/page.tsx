@@ -231,6 +231,132 @@ export default function CourseConsentsPage() {
     }
   }
 
+  // Generate PDF for single user consent
+  const generateSinglePdf = (consent: Consent) => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      toast.error('Pop-up diblokir. Izinkan pop-up untuk mencetak.')
+      return
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Surat Persetujuan Hak Cipta - ${consent.user.name}</title>
+        <style>
+          body { font-family: 'Times New Roman', serif; margin: 40px 60px; font-size: 14px; line-height: 1.6; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+          .header h1 { font-size: 20px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+          .header h2 { font-size: 16px; color: #333; margin-top: 5px; }
+          .logo { font-size: 24px; margin-bottom: 10px; }
+          .content { margin: 30px 0; }
+          .field { margin: 15px 0; }
+          .field-label { font-weight: bold; display: inline-block; width: 180px; }
+          .field-value { display: inline-block; }
+          .statement { background-color: #f9f9f9; border-left: 4px solid #2563eb; padding: 20px; margin: 25px 0; }
+          .legal-box { background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px 20px; margin: 25px 0; border-radius: 5px; }
+          .signature-area { margin-top: 50px; }
+          .signature-box { border: 1px dashed #999; padding: 20px; text-align: center; width: 250px; margin-top: 10px; }
+          .footer { margin-top: 40px; font-size: 11px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+          .badge { display: inline-block; background: #22c55e; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; }
+          @media print {
+            body { margin: 20px 40px; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">📜</div>
+          <h1>Surat Pernyataan Persetujuan</h1>
+          <h2>Ketentuan Hak Cipta Materi Pembelajaran</h2>
+        </div>
+        
+        <div class="content">
+          <p>Yang bertanda tangan di bawah ini:</p>
+          
+          <div class="field">
+            <span class="field-label">Nama Lengkap</span>
+            <span class="field-value">: <strong>${consent.user.name}</strong></span>
+          </div>
+          <div class="field">
+            <span class="field-label">Email</span>
+            <span class="field-value">: ${consent.user.email}</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Kode Member</span>
+            <span class="field-value">: ${consent.user.memberCode || '-'}</span>
+          </div>
+          <div class="field">
+            <span class="field-label">No. Telepon</span>
+            <span class="field-value">: ${consent.user.phone || consent.user.whatsapp || '-'}</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Nama Kursus</span>
+            <span class="field-value">: <strong>${course?.title || 'N/A'}</strong></span>
+          </div>
+          
+          <div class="statement">
+            <p>Dengan ini menyatakan bahwa saya <strong>TELAH MEMBACA, MEMAHAMI, dan MENYETUJUI</strong> seluruh ketentuan Hak Cipta yang berlaku untuk materi pembelajaran pada kursus tersebut di atas.</p>
+            
+            <p>Saya memahami bahwa:</p>
+            <ol>
+              <li>Seluruh materi pembelajaran dilindungi oleh Undang-Undang Hak Cipta</li>
+              <li>Materi hanya boleh digunakan untuk keperluan belajar pribadi</li>
+              <li>Dilarang menyebarluaskan, menjual, atau menduplikasi materi tanpa izin</li>
+              <li>Pelanggaran dapat dikenakan sanksi sesuai hukum yang berlaku</li>
+            </ol>
+          </div>
+
+          <div class="legal-box">
+            <strong>⚖️ Dasar Hukum:</strong><br/>
+            UU No. 28 Tahun 2014 tentang Hak Cipta dan UU No. 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik (UU ITE)
+          </div>
+
+          <div class="field">
+            <span class="field-label">Tanggal Persetujuan</span>
+            <span class="field-value">: ${new Date(consent.agreedAt).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' })}</span>
+          </div>
+          <div class="field">
+            <span class="field-label">IP Address</span>
+            <span class="field-value">: ${consent.ipAddress || '-'}</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Status</span>
+            <span class="field-value">: <span class="badge">✓ Tercatat Elektronik</span></span>
+          </div>
+
+          <div class="signature-area">
+            <p>Demikian surat pernyataan ini dibuat dengan sebenar-benarnya.</p>
+            <br/>
+            <p>Yang Menyatakan,</p>
+            <div class="signature-box">
+              <em>(Persetujuan Elektronik)</em><br/><br/>
+              <strong>${consent.user.name}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Dokumen ini digenerate secara otomatis oleh sistem Ekspor Yuk.</p>
+          <p>Persetujuan elektronik ini merupakan bukti yang sah sesuai UU ITE.</p>
+          <p>ID Consent: ${consent.id}</p>
+        </div>
+
+        <div class="no-print" style="margin-top: 20px; text-align: center;">
+          <button onclick="window.print()" style="padding: 10px 20px; font-size: 14px; cursor: pointer; background: #2563eb; color: white; border: none; border-radius: 5px;">
+            🖨️ Cetak / Save as PDF
+          </button>
+        </div>
+      </body>
+      </html>
+    `
+
+    printWindow.document.write(html)
+    printWindow.document.close()
+  }
+
   if (status === 'loading' || loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -360,6 +486,7 @@ export default function CourseConsentsPage() {
                     <TableHead>Kontak</TableHead>
                     <TableHead>Tanggal Persetujuan</TableHead>
                     <TableHead>IP Address</TableHead>
+                    <TableHead className="w-24 text-center">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -390,6 +517,16 @@ export default function CourseConsentsPage() {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {consent.ipAddress || '-'}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => generateSinglePdf(consent)}
+                          title="Download PDF Persetujuan"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

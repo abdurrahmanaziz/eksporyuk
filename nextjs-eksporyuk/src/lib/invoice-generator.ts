@@ -9,16 +9,33 @@ import { prisma } from './prisma'
  */
 export async function generateInvoiceNumber(): Promise<string> {
   try {
-    // Get the highest invoice number from database
-    const allTransactions = await prisma.transaction.findMany({
+    // OPTIMIZED: Get only the latest invoice with DESC ordering (much faster)
+    const latestTransaction = await prisma.transaction.findFirst({
       where: { 
         invoiceNumber: { startsWith: 'INV' }
       },
-      select: { invoiceNumber: true }
+      select: { invoiceNumber: true },
+      orderBy: { createdAt: 'desc' },
+      take: 100 // Get last 100 to scan for highest number
+    })
+    
+    // If no invoices yet, start from a safe number
+    if (!latestTransaction) {
+      return `INV${Date.now().toString().slice(-5)}` // 5 digits from timestamp
+    }
+    
+    // Get the last 100 transactions to find max number
+    const recentTransactions = await prisma.transaction.findMany({
+      where: { 
+        invoiceNumber: { startsWith: 'INV' }
+      },
+      select: { invoiceNumber: true },
+      orderBy: { createdAt: 'desc' },
+      take: 100
     })
     
     let maxNumber = 0
-    for (const tx of allTransactions) {
+    for (const tx of recentTransactions) {
       const match = tx.invoiceNumber?.match(/^INV(\d+)$/)
       if (match) {
         const num = parseInt(match[1])
@@ -33,8 +50,8 @@ export async function generateInvoiceNumber(): Promise<string> {
     return `INV${nextNumber}`
   } catch (error) {
     console.error('Error generating invoice number:', error)
-    // Fallback: use timestamp-based ID
-    return `INV${Date.now().toString().slice(-8)}`
+    // Fallback: use timestamp-based ID with random suffix to avoid collisions
+    return `INV${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 100)}`
   }
 }
 

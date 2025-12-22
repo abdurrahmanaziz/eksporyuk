@@ -48,42 +48,60 @@ export async function GET(
     }
 
     // Build where clause
-    const where: any = {
+    let where: any = {
       courseId
     }
 
+    // If searching, we need to filter by user after fetching
+    let searchFilter = ''
     if (search) {
-      where.user = {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } }
-        ]
-      }
+      searchFilter = search.toLowerCase()
     }
 
-    // Get total count
-    const total = await prisma.courseConsent.count({ where })
-
-    // Get consents with pagination
-    const consents = await prisma.courseConsent.findMany({
+    // Get all consents first (we'll filter and paginate after joining with users)
+    const allConsents = await prisma.courseConsent.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            memberCode: true,
-            phone: true,
-            whatsapp: true
-          }
-        }
-      },
-      orderBy: { agreedAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit
+      orderBy: { agreedAt: 'desc' }
     })
+
+    // Fetch all user data
+    const userIds = allConsents.map(c => c.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        memberCode: true,
+        phone: true,
+        whatsapp: true
+      }
+    })
+
+    // Map users to consents
+    const userMap = new Map(users.map(u => [u.id, u]))
+    let consentsWithUsers = allConsents.map(consent => ({
+      ...consent,
+      user: userMap.get(consent.userId) || null
+    }))
+
+    // Filter by search if needed
+    if (searchFilter) {
+      consentsWithUsers = consentsWithUsers.filter(c => {
+        const user = c.user
+        if (!user) return false
+        return (
+          user.name?.toLowerCase().includes(searchFilter) ||
+          user.email?.toLowerCase().includes(searchFilter)
+        )
+      })
+    }
+
+    // Calculate pagination
+    const total = consentsWithUsers.length
+    const startIndex = (page - 1) * limit
+    const consents = consentsWithUsers.slice(startIndex, startIndex + limit)
 
     return NextResponse.json({
       success: true,

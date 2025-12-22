@@ -119,21 +119,22 @@ export async function GET(
         type: 'ANNOUNCEMENT',
         isPinned: true
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       },
       take: 3
     })
 
-    return NextResponse.json({ announcements })
+    // Get author info manually (no relations in schema)
+    const announcementsWithAuthors = await Promise.all(announcements.map(async (post) => {
+      const author = await prisma.user.findUnique({
+        where: { id: post.authorId },
+        select: { id: true, name: true }
+      })
+      return { ...post, author }
+    }))
+
+    return NextResponse.json({ announcements: announcementsWithAuthors })
   } catch (error) {
     console.error('Get announcements error:', error)
     return NextResponse.json(

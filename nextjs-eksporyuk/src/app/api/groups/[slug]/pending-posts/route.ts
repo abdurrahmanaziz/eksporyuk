@@ -35,26 +35,23 @@ export async function GET(
         groupId: params.id,
         approvalStatus: 'PENDING'
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true
-          }
-        }
-      },
       orderBy: { createdAt: 'asc' }
     })
 
-    return NextResponse.json(posts)
+    // Get author info manually for each post (no relations in schema)
+    const postsWithAuthors = await Promise.all(posts.map(async (post) => {
+      const [author, commentsCount, likesCount] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: post.authorId },
+          select: { id: true, name: true, email: true, avatar: true }
+        }),
+        prisma.postComment.count({ where: { postId: post.id } }),
+        prisma.postLike.count({ where: { postId: post.id } })
+      ])
+      return { ...post, author, _count: { comments: commentsCount, likes: likesCount } }
+    }))
+
+    return NextResponse.json(postsWithAuthors)
   } catch (error) {
     console.error('Get pending posts error:', error)
     return NextResponse.json(

@@ -45,70 +45,62 @@ export async function GET(request: NextRequest) {
       um => um.membership.membershipGroups.map(mg => mg.groupId)
     )
 
-    // Find suggested groups
+    // Find suggested groups - simplified query (no invalid relations)
     const suggestedGroups = await prisma.group.findMany({
       where: {
         AND: [
           { isActive: true },
-          { id: { notIn: userGroupIds } }, // Not already a member
+          { id: { notIn: userGroupIds } },
           {
             OR: [
-              { type: 'PUBLIC' }, // Public groups
-              { id: { in: accessibleGroupIds } }, // Groups accessible via membership
-              // Groups with similar interests (simplified)
-              {
-                membershipGroups: {
-                  some: {
-                    membership: {
-                      userMemberships: {
-                        some: {
-                          userId: session.user.id,
-                          isActive: true
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+              { type: 'PUBLIC' },
+              { id: { in: accessibleGroupIds } }
             ]
           }
         ]
       },
-      include: {
-        _count: {
-          select: {
-            members: true,
-            posts: true
-          }
-        },
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        },
-        members: {
-          take: 3,
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: [
-        { members: { _count: 'desc' } }, // Most popular first
-        { createdAt: 'desc' }
-      ],
+      orderBy: { createdAt: 'desc' },
       take: 10
     })
 
-    return NextResponse.json(suggestedGroups)
+    // Get counts and owner info manually for each group
+    const groupsWithDetails = await Promise.all(suggestedGroups.map(async (group) => {
+      const [owner, membersCount, postsCount, sampleMembers] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: group.ownerId },
+          select: { id: true, name: true, avatar: true }
+        }),
+        prisma.groupMember.count({ where: { groupId: group.id } }),
+        prisma.post.count({ where: { groupId: group.id } }),
+        prisma.groupMember.findMany({
+          where: { groupId: group.id },
+          take: 3,
+          select: { userId: true }
+        })
+      ])
+
+      // Get user details for sample members
+      const memberUserIds = sampleMembers.map(m => m.userId)
+      const memberUsers = memberUserIds.length > 0 ? await prisma.user.findMany({
+        where: { id: { in: memberUserIds } },
+        select: { id: true, name: true, avatar: true }
+      }) : []
+
+      return {
+        ...group,
+        owner,
+        _count: { members: membersCount, posts: postsCount },
+        members: sampleMembers.map(m => ({
+          ...m,
+          user: memberUsers.find(u => u.id === m.userId) || null
+        }))
+      }
+    }))
+
+    // Sort by member count (most popular first)
+    groupsWithDetails.sort((a, b) => b._count.members - a._count.members)
+
+    return NextResponse.json(groupsWithDetails)
 
   } catch (error) {
     console.error('Error fetching suggested groups:', error)

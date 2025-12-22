@@ -466,8 +466,8 @@ export default function AdminCoursesPage() {
                         <div className="text-sm text-muted-foreground">{course.slug}</div>
                       </TableCell>
                       <TableCell>
-                        <div>{course.mentor.user.name}</div>
-                        <div className="text-sm text-muted-foreground">{course.mentor.user.email}</div>
+                        <div>{course.mentor?.user?.name || 'No Mentor'}</div>
+                        <div className="text-sm text-muted-foreground">{course.mentor?.user?.email || '-'}</div>
                       </TableCell>
                       <TableCell>{getStatusBadge(course.status)}</TableCell>
                       <TableCell>Rp {Number(course.price).toLocaleString('id-ID')}</TableCell>

@@ -24,7 +24,7 @@ export async function GET(
     twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
     
     // Find group by slug
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug: slug },
       select: { id: true }
     })
@@ -41,23 +41,21 @@ export async function GET(
           gte: twentyFourHoursAgo
         }
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            role: true
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
-    return NextResponse.json({ stories })
+    // Get author info manually for each story (no relations in schema)
+    const storiesWithAuthors = await Promise.all(stories.map(async (story) => {
+      const author = await prisma.user.findUnique({
+        where: { id: story.authorId },
+        select: { id: true, name: true, email: true, avatar: true, role: true }
+      })
+      return { ...story, author }
+    }))
+
+    return NextResponse.json({ stories: storiesWithAuthors })
   } catch (error) {
     console.error('Get stories error:', error)
     return NextResponse.json(

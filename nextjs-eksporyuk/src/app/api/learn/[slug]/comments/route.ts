@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 // GET /api/learn/[slug]/comments - Get comments for a lesson
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,7 +18,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { slug } = await params
+    const params = await context.params
+    const slug = params.slug
     const searchParams = request.nextUrl.searchParams
     const lessonId = searchParams.get('lessonId')
 
@@ -27,7 +28,7 @@ export async function GET(
     }
 
     // Get course
-    const course = await prisma.course.findUnique({
+    const course = await prisma.course.findFirst({
       where: { slug }
     })
 
@@ -85,7 +86,7 @@ export async function GET(
 // POST /api/learn/[slug]/comments - Create a new comment or reply
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -93,7 +94,8 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { slug } = await params
+    const params = await context.params
+    const slug = params.slug
     const body = await request.json()
     const { lessonId, content, parentId } = body
 
@@ -105,7 +107,7 @@ export async function POST(
     }
 
     // Get course
-    const course = await prisma.course.findUnique({
+    const course = await prisma.course.findFirst({
       where: { slug }
     })
 

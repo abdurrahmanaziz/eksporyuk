@@ -27,7 +27,7 @@ export async function PATCH(
     }
 
     // Get group
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug }
     })
 
@@ -43,14 +43,20 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Update member role
-    const member = await prisma.groupMember.update({
+    // Update member role - find first since no compound unique
+    const existingMember = await prisma.groupMember.findFirst({
       where: {
-        groupId_userId: {
-          groupId: group.id,
-          userId
-        }
-      },
+        groupId: group.id,
+        userId
+      }
+    })
+
+    if (!existingMember) {
+      return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+    }
+
+    const member = await prisma.groupMember.update({
+      where: { id: existingMember.id },
       data: { role }
     })
 
@@ -78,7 +84,7 @@ export async function DELETE(
 
     const { slug, userId } = await params
     // Get group
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug }
     })
 
@@ -102,13 +108,11 @@ export async function DELETE(
       )
     }
 
-    // Delete member
-    await prisma.groupMember.delete({
+    // Delete member - use deleteMany since no compound unique
+    await prisma.groupMember.deleteMany({
       where: {
-        groupId_userId: {
-          groupId: group.id,
-          userId
-        }
+        groupId: group.id,
+        userId
       }
     })
 

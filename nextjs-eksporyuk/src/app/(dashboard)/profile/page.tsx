@@ -127,27 +127,40 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch('/api/user/profile')
-      const data = await res.json()
+      const res = await fetch('/api/user/profile', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
       
       if (!res.ok) {
-        console.error('Profile API error:', data.error || res.statusText)
+        console.error('Profile API error:', res.status, res.statusText)
+        const errorText = await res.text()
+        console.error('Error response:', errorText)
+        
+        let errorData
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          errorData = { error: `HTTP ${res.status}: ${res.statusText}` }
+        }
+        
         if (res.status === 401) {
           toast.error('Session expired, silakan login ulang')
-          router.push('/login')
+          router.push('/auth/login')
           return
         }
         if (res.status === 404) {
-          toast.error('User tidak ditemukan - session mismatch')
-          // Auto redirect to clear session page
-          setTimeout(() => {
-            router.push('/clear-session')
-          }, 1500)
+          toast.error('User tidak ditemukan')
+          router.push('/auth/login')
           return
         }
-        toast.error(data.error || 'Gagal memuat profil')
+        toast.error(errorData.error || 'Gagal memuat profil')
         return
       }
+      
+      const data = await res.json()
       
       if (data.user) {
         setProfile(data.user)
@@ -340,13 +353,42 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate required fields
+    const requiredFields = {
+      name: 'Nama lengkap',
+      phone: 'Nomor telepon',
+      province: 'Provinsi',
+      city: 'Kota'
+    }
+    
+    const emptyFields = Object.entries(requiredFields)
+      .filter(([key]) => !formData[key as keyof typeof formData]?.trim())
+      .map(([_, label]) => label)
+    
+    if (emptyFields.length > 0) {
+      toast.error(`Field wajib belum diisi: ${emptyFields.join(', ')}`)
+      return
+    }
+    
+    // Validate phone number format
+    const phoneRegex = /^(\+62|62|0)[0-9]{8,13}$/
+    if (!phoneRegex.test(formData.phone.replace(/[\s-]/g, ''))) {
+      toast.error('Format nomor telepon tidak valid')
+      return
+    }
+    
     setSaving(true)
 
     try {
       const res = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          phone: formData.phone.replace(/[\s-]/g, ''), // Clean phone number
+          whatsapp: formData.whatsapp?.replace(/[\s-]/g, '') || '', // Clean WhatsApp number
+        })
       })
 
       const data = await res.json()
@@ -520,8 +562,39 @@ export default function ProfilePage() {
     return (
       <ResponsivePageWrapper>
         <div className="container mx-auto p-4 max-w-4xl">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="space-y-6">
+            {/* Header skeleton */}
+            <div className="space-y-4">
+              <div className="h-8 bg-muted animate-pulse rounded w-1/3" />
+              <div className="h-4 bg-muted animate-pulse rounded w-2/3" />
+            </div>
+            
+            {/* Profile card skeleton */}
+            <div className="bg-muted animate-pulse rounded-lg h-32" />
+            
+            {/* Form skeleton */}
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="h-6 bg-muted animate-pulse rounded w-1/4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="h-10 bg-muted animate-pulse rounded" />
+                  <div className="h-10 bg-muted animate-pulse rounded" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="h-10 bg-muted animate-pulse rounded" />
+                  <div className="h-10 bg-muted animate-pulse rounded" />
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="h-6 bg-muted animate-pulse rounded w-1/4" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="h-10 bg-muted animate-pulse rounded" />
+                  <div className="h-10 bg-muted animate-pulse rounded" />
+                  <div className="h-10 bg-muted animate-pulse rounded" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </ResponsivePageWrapper>

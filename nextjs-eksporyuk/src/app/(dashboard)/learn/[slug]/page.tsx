@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import {
   ArrowLeft, ChevronRight, ChevronLeft, ChevronDown, CheckCircle, Circle, Lock, 
   PlayCircle, FileText, MessageSquare, BookOpen, Clock,
-  Download, Save, Star, ThumbsUp, MessageCircle, Check, Eye, X, Award
+  Download, Save, Star, ThumbsUp, MessageCircle, Check, Eye, X, Award, Shield
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Separator } from '@/components/ui/separator'
@@ -323,8 +323,14 @@ export default function CoursePlayerPage() {
   useEffect(() => {
     if (!course) return
     
+    console.log('🎬 [Frontend] Setting initial lesson from course:', {
+      modulesCount: course.modules.length,
+      totalLessons: course.modules.reduce((sum, m) => sum + m.lessons.length, 0)
+    })
+    
     const lessonId = searchParams?.get('lesson')
     if (lessonId) {
+      console.log('🔗 [Frontend] Lesson ID from URL:', lessonId)
       const lesson = course.modules
         .flatMap(m => m.lessons)
         .find(l => l.id === lessonId)
@@ -332,6 +338,7 @@ export default function CoursePlayerPage() {
         const module = course.modules.find(m => 
           m.lessons.some(l => l.id === lessonId)
         )
+        console.log('✅ [Frontend] Found lesson from URL:', lesson.title)
         setCurrentLesson(lesson)
         setCurrentModule(module || null)
         
@@ -340,15 +347,24 @@ export default function CoursePlayerPage() {
           fetchLessonComments(lesson.id)
         }, 100)
         return
+      } else {
+        console.log('⚠️ [Frontend] Lesson ID not found in course modules')
       }
     }
     
-    if (!course.modules || course.modules.length === 0) return
+    if (!course.modules || course.modules.length === 0) {
+      console.log('❌ [Frontend] No modules in course')
+      return
+    }
     
     const moduleWithLessons = course.modules.find(m => m.lessons && m.lessons.length > 0)
-    if (!moduleWithLessons) return
+    if (!moduleWithLessons) {
+      console.log('❌ [Frontend] No module with lessons found')
+      return
+    }
     
     const firstLesson = moduleWithLessons.lessons[0]
+    console.log('✅ [Frontend] Setting first lesson:', firstLesson.title, 'from module:', moduleWithLessons.title)
     setCurrentLesson(firstLesson)
     setCurrentModule(moduleWithLessons)
     
@@ -371,9 +387,22 @@ export default function CoursePlayerPage() {
   const fetchCourse = async () => {
     try {
       setLoading(true)
+      console.log(`🔍 [Frontend] Fetching course: ${courseSlug}`)
+      
       const res = await fetch(`/api/learn/${courseSlug}`)
+      
+      console.log(`📡 [Frontend] API response status: ${res.status}`)
+      
       if (res.ok) {
         const data = await res.json()
+        
+        console.log(`✅ [Frontend] Course data received:`, {
+          courseId: data.course?.id,
+          courseTitle: data.course?.title,
+          modulesCount: data.course?.modules?.length || 0,
+          hasAccess: data.hasAccess,
+          progress: data.progress
+        })
         
         let processedCourse = data.course
         
@@ -391,19 +420,27 @@ export default function CoursePlayerPage() {
         setCourse(processedCourse)
         setHasAccess(data.hasAccess || false)
         setProgress(data.progress || 0)
+        
+        // Log final processed course
+        const totalLessons = processedCourse.modules.reduce((sum: number, m: any) => sum + (m.lessons?.length || 0), 0)
+        console.log(`✅ [Frontend] Course set successfully - Modules: ${processedCourse.modules.length}, Lessons: ${totalLessons}`)
+        
       } else if (res.status === 401) {
+        console.log('🔐 [Frontend] Unauthorized - redirecting to login')
         toast.error('Silakan login terlebih dahulu')
         router.push(`/login?redirect=/learn/${courseSlug}`)
       } else if (res.status === 404) {
+        console.log('❌ [Frontend] Course not found (404)')
         toast.error('Kursus tidak ditemukan')
         setCourse(null)
       } else {
         const errorData = await res.json()
+        console.log('❌ [Frontend] Error response:', errorData)
         toast.error(errorData.error || 'Terjadi kesalahan')
         setCourse(null)
       }
     } catch (error) {
-      console.error('Failed to fetch course:', error)
+      console.error('❌ [Frontend] Failed to fetch course:', error)
       toast.error('Terjadi kesalahan saat memuat kursus')
       setCourse(null)
     } finally {
@@ -993,6 +1030,7 @@ export default function CoursePlayerPage() {
   if (!currentLesson || !currentModule) {
     // Check if course has no modules/lessons
     if (course && (!course.modules || course.modules.length === 0 || course.modules.every(m => !m.lessons || m.lessons.length === 0))) {
+      console.log('⚠️ [Frontend] Course has no modules or lessons')
       return (
         <div className="container mx-auto py-12 px-4">
           <Card>
@@ -1006,7 +1044,7 @@ export default function CoursePlayerPage() {
                 Silakan hubungi admin atau tunggu hingga materi ditambahkan.
               </p>
               <div className="flex gap-3 justify-center">
-                <Link href="/courses">
+                <Link href="/learn">
                   <Button variant="outline">Lihat Kursus Lain</Button>
                 </Link>
                 <Link href="/dashboard">
@@ -1019,6 +1057,7 @@ export default function CoursePlayerPage() {
       )
     }
     
+    console.log('⏳ [Frontend] Waiting for currentLesson to be set...')
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -1058,7 +1097,16 @@ export default function CoursePlayerPage() {
           </div>
           
           {/* Action Button */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex items-center gap-2">
+            {/* Copyright/Hak Cipta Link */}
+            {hasConsented && (
+              <Link href={`/learn/${courseSlug}/copyright`} title="Lihat Persetujuan Hak Cipta">
+                <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+                  <Shield className="h-4 w-4 text-green-600" />
+                </Button>
+              </Link>
+            )}
+            
             {progress >= 100 ? (
               <Button
                 size="sm"
@@ -1246,27 +1294,27 @@ export default function CoursePlayerPage() {
                                   disabled={isLocked}
                                   className={`w-full text-left p-3 rounded-lg transition-colors disabled:opacity-60 flex items-center gap-3 ${
                                     isActive 
-                                      ? 'bg-primary/10 border border-primary' 
+                                      ? 'bg-primary text-primary-foreground' 
                                       : 'hover:bg-muted border border-transparent'
                                   }`}
                                 >
                                   <div className="flex-shrink-0">
                                     {lesson.isCompleted ? (
-                                      <CheckCircle className="h-5 w-5 text-green-600" />
+                                      <CheckCircle className={`h-5 w-5 ${isActive ? 'text-primary-foreground' : 'text-green-600'}`} />
                                     ) : isLocked ? (
-                                      <Lock className="h-5 w-5 text-muted-foreground" />
+                                      <Lock className={`h-5 w-5 ${isActive ? 'text-primary-foreground/70' : 'text-muted-foreground'}`} />
                                     ) : isActive ? (
-                                      <PlayCircle className="h-5 w-5 text-primary" />
+                                      <PlayCircle className="h-5 w-5 text-primary-foreground" />
                                     ) : (
                                       <Circle className="h-5 w-5 text-muted-foreground" />
                                     )}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className={`text-sm font-medium truncate ${isActive ? 'text-primary' : ''}`}>
+                                    <p className={`text-sm font-medium truncate ${isActive ? 'text-primary-foreground' : ''}`}>
                                       {lessonIdx + 1}. {lesson.title}
                                     </p>
                                     {lesson.duration && (
-                                      <p className="text-xs text-muted-foreground mt-0.5">
+                                      <p className={`text-xs mt-0.5 ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                                         {lesson.duration} menit
                                       </p>
                                     )}
@@ -1980,28 +2028,30 @@ export default function CoursePlayerPage() {
                               key={lesson.id}
                               onClick={() => !isLocked && handleLessonChange(lesson, module)}
                               disabled={isLocked}
-                              className={`w-full text-left p-3 border-b last:border-b-0 hover:bg-accent/50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-                                isActive ? 'bg-accent' : ''
+                              className={`w-full text-left p-3 border-b last:border-b-0 transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                                isActive 
+                                  ? 'bg-primary text-primary-foreground' 
+                                  : 'hover:bg-muted/50'
                               }`}
                             >
                               <div className="flex items-start gap-3">
                                 <div className="flex-shrink-0 mt-0.5">
                                   {lesson.isCompleted ? (
-                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                    <CheckCircle className={`h-4 w-4 ${isActive ? 'text-primary-foreground' : 'text-green-600'}`} />
                                   ) : isLocked ? (
-                                    <Lock className="h-4 w-4 text-muted-foreground" />
+                                    <Lock className={`h-4 w-4 ${isActive ? 'text-primary-foreground/70' : 'text-muted-foreground'}`} />
                                   ) : isActive ? (
-                                    <PlayCircle className="h-4 w-4 text-primary" />
+                                    <PlayCircle className="h-4 w-4 text-primary-foreground" />
                                   ) : (
                                     <Circle className="h-4 w-4 text-muted-foreground" />
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className={`text-sm font-medium ${isActive ? 'text-primary' : ''}`}>
+                                  <p className={`text-sm font-medium ${isActive ? 'text-primary-foreground' : ''}`}>
                                     {lessonIdx + 1}. {lesson.title}
                                   </p>
                                   {lesson.duration && (
-                                    <p className="text-xs text-muted-foreground mt-1">
+                                    <p className={`text-xs mt-1 ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                                       <Clock className="h-3 w-3 inline mr-1" />
                                       {lesson.duration} menit
                                     </p>

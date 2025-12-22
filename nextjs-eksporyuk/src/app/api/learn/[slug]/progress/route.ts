@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 // POST /api/learn/[slug]/progress - Mark lesson as complete
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,7 +18,8 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { slug } = await params
+    const params = await context.params
+    const slug = params.slug
     const body = await request.json()
     const { lessonId } = body
 
@@ -27,23 +28,26 @@ export async function POST(
     }
 
     // Get course
-    const course = await prisma.course.findUnique({
-      where: { slug },
-      include: {
-        modules: {
-          include: {
-            lessons: true
-          }
-        }
-      }
+    const course = await prisma.course.findFirst({
+      where: { slug }
     })
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
+    // Get modules and lessons to verify lesson exists
+    const modules = await prisma.courseModule.findMany({
+      where: { courseId: course.id }
+    })
+    
+    const lessonPromises = modules.map(m => 
+      prisma.courseLesson.findMany({ where: { moduleId: m.id } })
+    )
+    const lessonsArrays = await Promise.all(lessonPromises)
+    const allLessons = lessonsArrays.flat()
+    
     // Verify lesson exists in course
-    const allLessons = course.modules.flatMap(m => m.lessons)
     const lesson = allLessons.find(l => l.id === lessonId)
     if (!lesson) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })

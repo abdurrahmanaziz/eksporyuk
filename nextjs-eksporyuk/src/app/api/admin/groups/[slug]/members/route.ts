@@ -21,7 +21,7 @@ export async function GET(
 
     const { slug } = await params
     // Get group
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug }
     })
 
@@ -37,25 +37,35 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Get members with user details
+    // Get members - no relation to user in schema
     const members = await prisma.groupMember.findMany({
       where: { groupId: group.id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      },
       orderBy: [
         { role: 'asc' },
         { joinedAt: 'desc' }
       ]
     })
 
-    return NextResponse.json({ members })
+    // Get user details for each member
+    const membersWithUsers = await Promise.all(
+      members.map(async (member) => {
+        const user = await prisma.user.findUnique({
+          where: { id: member.userId },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        })
+        return {
+          ...member,
+          user: user || { id: member.userId, name: 'Unknown', email: '', avatar: null }
+        }
+      })
+    )
+
+    return NextResponse.json({ members: membersWithUsers })
   } catch (error) {
     console.error('Get members error:', error)
     return NextResponse.json(

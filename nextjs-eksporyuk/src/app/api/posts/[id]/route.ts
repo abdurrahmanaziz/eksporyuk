@@ -18,79 +18,59 @@ export async function GET(
 
     const post = await prisma.post.findUnique({
       where: { id },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            role: true,
-            username: true,
-          },
-        },
-        group: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        likes: {
-          select: {
-            userId: true,
-            user: {
-              select: {
-                name: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-        comments: {
-          where: {
-            parentId: null, // Top-level comments only
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              },
-            },
-            replies: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    avatar: true,
-                  },
-                },
-              },
-              orderBy: {
-                createdAt: 'asc',
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-          },
-        },
-      },
     })
 
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ post })
+    // Get all related data manually (no relations in schema)
+    const [author, group, likes, comments, likesCount, commentsCount] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: post.authorId },
+        select: { id: true, name: true, email: true, avatar: true, role: true, username: true }
+      }),
+      post.groupId ? prisma.group.findUnique({
+        where: { id: post.groupId },
+        select: { id: true, name: true }
+      }) : null,
+      prisma.postLike.findMany({ where: { postId: post.id } }),
+      prisma.postComment.findMany({ where: { postId: post.id, parentId: null }, orderBy: { createdAt: 'desc' } }),
+      prisma.postLike.count({ where: { postId: post.id } }),
+      prisma.postComment.count({ where: { postId: post.id } })
+    ])
+
+    // Get users for likes and comments
+    const likeUserIds = likes.map((l: any) => l.userId)
+    const commentUserIds = comments.map((c: any) => c.userId)
+    const allUserIds = [...new Set([...likeUserIds, ...commentUserIds])]
+    const users = allUserIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: allUserIds } },
+      select: { id: true, name: true, avatar: true }
+    }) : []
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    const likesWithUsers = likes.map((l: any) => ({
+      userId: l.userId,
+      user: userMap.get(l.userId) || null
+    }))
+
+    const commentsWithUsers = comments.map((c: any) => ({
+      ...c,
+      user: userMap.get(c.userId) || null,
+      replies: [] // Simplified - no nested replies for now
+    }))
+
+    const postWithDetails = {
+      ...post,
+      author,
+      group,
+      likes: likesWithUsers,
+      comments: commentsWithUsers,
+      _count: { comments: commentsCount, likes: likesCount }
+    }
+
+    return NextResponse.json({ post: postWithDetails })
   } catch (error) {
     console.error('Error fetching post:', error)
     return NextResponse.json(

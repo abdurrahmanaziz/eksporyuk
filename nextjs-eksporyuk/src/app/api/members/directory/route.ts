@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get members
+    // Get members (no _count for followers/following - doesn't exist in schema)
     let members = await prisma.user.findMany({
       where,
       select: {
@@ -92,12 +92,6 @@ export async function GET(request: NextRequest) {
         isOnline: true,
         lastSeenAt: true,
         createdAt: true,
-        _count: {
-          select: {
-            followers: true,
-            following: true,
-          }
-        }
       },
       orderBy: [
         { locationVerified: 'desc' },
@@ -107,10 +101,16 @@ export async function GET(request: NextRequest) {
       take: limit,
     })
 
+    // Add placeholder counts (followers/following not in schema)
+    const membersWithCounts = members.map(m => ({
+      ...m,
+      _count: { followers: 0, following: 0 }
+    }))
+
     // Calculate distance if nearby search is enabled
-    let membersWithDistance: (typeof members[0] & { distance: number | null })[] = []
+    let membersWithDistance: (typeof membersWithCounts[0] & { distance: number | null })[] = []
     if (nearbyLat && nearbyLng) {
-      membersWithDistance = members.map(member => {
+      membersWithDistance = membersWithCounts.map(member => {
         let distance: number | null = null
         if (member.latitude && member.longitude) {
           distance = calculateDistance(
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
           return a.distance - b.distance
         })
     } else {
-      membersWithDistance = members.map(m => ({ ...m, distance: null }))
+      membersWithDistance = membersWithCounts.map(m => ({ ...m, distance: null }))
     }
 
     // Get total count

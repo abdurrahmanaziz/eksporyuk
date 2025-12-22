@@ -180,6 +180,10 @@ export const authOptions: NextAuthOptions = {
                 { id: token.id as string },
                 { email: session.user.email || '' }
               ]
+            },
+            select: {
+              id: true,
+              email: true
             }
           })
 

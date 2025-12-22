@@ -35,101 +35,129 @@ export async function GET(
         lastSeenAt: true,
         isFounder: true,
         isCoFounder: true,
-        // Stats
-        _count: {
-          select: {
-            posts: true,
-            following: true,
-            followers: true,
-            groupMemberships: true,
-            courseEnrollments: true,
-          }
-        },
-        // Group memberships
-        groupMemberships: {
-          select: {
-            role: true,
-            joinedAt: true,
-            group: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-                avatar: true,
-                type: true,
-                _count: {
-                  select: {
-                    members: true
-                  }
-                }
-              }
-            }
-          },
-          orderBy: {
-            joinedAt: 'desc'
-          }
-        },
         // Role-specific profiles
         supplierProfile: {
           select: {
+            id: true,
             companyName: true,
             logo: true,
             banner: true,
             businessCategory: true,
-            _count: {
-              select: {
-                products: true
-              }
-            }
           }
         },
         affiliateProfile: {
           select: {
+            id: true,
             affiliateCode: true,
             tier: true,
             totalEarnings: true,
             totalConversions: true,
           }
-        },
-        mentorProfile: {
-          select: {
-            expertise: true,
-            bio: true,
-            rating: true,
-            totalStudents: true,
-            totalCourses: true,
-          }
         }
       }
     })
-
+    
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // Manually fetch stats
+    const [postsCount, followingCount, followersCount, groupMembershipsData, courseEnrollmentsCount] = await Promise.all([
+      prisma.post.count({ where: { authorId: user.id } }),
+      prisma.follow.count({ where: { followerId: user.id } }),
+      prisma.follow.count({ where: { followingId: user.id } }),
+      prisma.groupMember.findMany({
+        where: { userId: user.id },
+        select: {
+          role: true,
+          joinedAt: true,
+          groupId: true,
+        },
+        orderBy: { joinedAt: 'desc' }
+      }),
+      prisma.courseEnrollment.count({ where: { userId: user.id } })
+    ])
+
+    // Fetch groups for memberships
+    const groupIds = groupMembershipsData.map(gm => gm.groupId)
+    const groups = groupIds.length > 0 ? await prisma.group.findMany({
+      where: { id: { in: groupIds } },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        avatar: true,
+        type: true,
+      }
+    }) : []
+    
+    const groupMap = new Map(groups.map(g => [g.id, g]))
+    
+    // Get member counts for groups
+    const memberCounts = groupIds.length > 0 ? await prisma.groupMember.groupBy({
+      by: ['groupId'],
+      where: { groupId: { in: groupIds } },
+      _count: { id: true }
+    }) : []
+    
+    const memberCountMap = new Map(memberCounts.map(mc => [mc.groupId, mc._count.id]))
+    
+    const groupMemberships = groupMembershipsData.map(gm => ({
+      role: gm.role,
+      joinedAt: gm.joinedAt,
+      group: groupMap.get(gm.groupId) ? {
+        ...groupMap.get(gm.groupId),
+        _count: {
+          members: memberCountMap.get(gm.groupId) || 0
+        }
+      } : null
+    })).filter(gm => gm.group !== null)
+    
+    // Enrich user with stats
+    const enrichedUser = {
+      ...user,
+      _count: {
+        posts: postsCount,
+        following: followingCount,
+        followers: followersCount,
+        groupMemberships: groupMembershipsData.length,
+        courseEnrollments: courseEnrollmentsCount,
+      },
+      groupMemberships
+    }
+
     // Check if viewing own profile
     const isOwnProfile = session?.user?.email ? 
-      (await prisma.user.findUnique({ where: { email: session.user.email } }))?.id === user.id 
+      (await prisma.user.findUnique({ where: { email: session.user.email } }))?.id === enrichedUser.id 
       : false
 
     // Check if following
-    const isFollowing = session?.user?.email ? await prisma.follow.findFirst({
-      where: {
-        follower: { email: session.user.email },
-        followingId: user.id
+    let isFollowing = false
+    if (session?.user?.email) {
+      const currentUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true }
+      })
+      if (currentUser) {
+        isFollowing = await prisma.follow.findFirst({
+          where: {
+            followerId: currentUser.id,
+            followingId: enrichedUser.id
+          }
+        }) !== null
       }
-    }) !== null : false
+    }
 
     // Get recent posts
     const recentPosts = await prisma.post.findMany({
       where: {
-        authorId: user.id,
+        authorId: enrichedUser.id,
         OR: [
-          { group: null }, // Global posts
-          { group: { type: 'PUBLIC' } }, // Public group posts
+          { groupId: null }, // Global posts
+          // Public group posts - we'll filter manually
         ]
       },
-      take: 10,
+      take: 20, // Get extra to filter
       orderBy: [
         { isPinned: 'desc' }, // Pinned posts first
         { createdAt: 'desc' }
@@ -142,40 +170,99 @@ export async function GET(
         commentsEnabled: true,
         createdAt: true,
         updatedAt: true,
-        author: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            username: true,
-          }
-        },
-        group: {
-          select: {
-            name: true,
-            slug: true,
-            avatar: true,
-          }
-        },
-        _count: {
-          select: {
-            likes: true,
-            comments: true,
-          }
-        },
-        reactions: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              }
-            }
-          }
-        }
+        authorId: true,
+        groupId: true,
       }
     })
+    
+    // Fetch authors, groups for posts
+    const postGroupIds = [...new Set(recentPosts.map(p => p.groupId).filter(Boolean))] as string[]
+    const [postAuthors, postGroups] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: [enrichedUser.id] } },
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          username: true,
+        }
+      }),
+      postGroupIds.length > 0 ? prisma.group.findMany({
+        where: { 
+          id: { in: postGroupIds },
+          type: 'PUBLIC'
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          avatar: true,
+          type: true,
+        }
+      }) : []
+    ])
+    
+    const authorMap = new Map(postAuthors.map(a => [a.id, a]) as [string, typeof postAuthors[0]][])
+    const postGroupMap = new Map(postGroups.map(g => [g.id, g]) as [string, typeof postGroups[0]][])
+    
+    // Get reaction counts and user reactions
+    const postIds = recentPosts.map(p => p.id)
+    const [reactions, likeCounts, commentCounts] = await Promise.all([
+      postIds.length > 0 ? prisma.postReaction.findMany({
+        where: { postId: { in: postIds } },
+        select: {
+          id: true,
+          postId: true,
+          userId: true,
+          type: true,
+        }
+      }) : [],
+      postIds.length > 0 ? prisma.postLike.groupBy({
+        by: ['postId'],
+        where: { postId: { in: postIds } },
+        _count: { id: true }
+      }) : [],
+      postIds.length > 0 ? prisma.postComment.groupBy({
+        by: ['postId'],
+        where: { postId: { in: postIds } },
+        _count: { id: true }
+      }) : []
+    ])
+    
+    const likeCountMap = new Map(likeCounts.map(lc => [lc.postId, lc._count.id]) as [string, number][])
+    const commentCountMap = new Map(commentCounts.map(cc => [cc.postId, cc._count.id]) as [string, number][])
+    
+    // Fetch reaction users
+    const reactionUserIds = [...new Set(reactions.map(r => r.userId))]
+    const reactionUsers = reactionUserIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: reactionUserIds } },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+      }
+    }) : []
+    const reactionUserMap = new Map(reactionUsers.map(u => [u.id, u]))
+    
+    // Enrich posts - only include public group posts or global posts
+    const enrichedPosts = recentPosts
+      .filter(post => !post.groupId || postGroupMap.has(post.groupId))
+      .slice(0, 10) // Take only 10 after filtering
+      .map(post => ({
+        ...post,
+        author: authorMap.get(post.authorId),
+        group: post.groupId ? postGroupMap.get(post.groupId) : null,
+        _count: {
+          likes: likeCountMap.get(post.id) || 0,
+          comments: commentCountMap.get(post.id) || 0,
+        },
+        reactions: reactions
+          .filter(r => r.postId === post.id)
+          .map(r => ({
+            ...r,
+            user: reactionUserMap.get(r.userId)
+          }))
+      }))
 
     // Role-specific data
     let roleData: any = {}
@@ -183,11 +270,11 @@ export async function GET(
     // Note: SUPPLIER role doesn't exist in current schema, skip product loading
     // Products are linked to users directly via creatorId
     
-    if (user.role === 'AFFILIATE' && user.affiliateProfile) {
+    if (enrichedUser.role === 'AFFILIATE') {
       // Only show to profile owner
       if (isOwnProfile) {
         const topLinks = await prisma.affiliateLink.findMany({
-          where: { userId: user.id },
+          where: { userId: enrichedUser.id },
           take: 5,
           orderBy: { conversions: 'desc' },
           select: {
@@ -203,34 +290,40 @@ export async function GET(
       }
     }
 
-    if (user.role === 'MENTOR' && user.mentorProfile) {
-      const courses = await prisma.course.findMany({
-        where: {
-          mentorId: user.mentorProfile.id,
-          isPublished: true,
-        },
-        take: 6,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          thumbnail: true,
-          price: true,
-          monetizationType: true,
-          enrollmentCount: true,
-        }
+    if (enrichedUser.role === 'MENTOR') {
+      const mentorProfile = await prisma.mentorProfile.findUnique({
+        where: { userId: enrichedUser.id },
+        select: { id: true }
       })
-      roleData = { courses }
+      if (mentorProfile) {
+        const courses = await prisma.course.findMany({
+          where: {
+            mentorId: mentorProfile.id,
+            isPublished: true,
+          },
+          take: 6,
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            thumbnail: true,
+            price: true,
+            monetizationType: true,
+            enrollmentCount: true,
+          }
+        })
+        roleData = { courses }
+      }
     }
 
     return NextResponse.json({
       user: {
-        ...user,
+        ...enrichedUser,
         isOwnProfile,
         isFollowing,
       },
-      posts: recentPosts,
+      posts: enrichedPosts,
       roleData,
     })
 

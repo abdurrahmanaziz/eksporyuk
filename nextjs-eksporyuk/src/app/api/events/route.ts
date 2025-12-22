@@ -52,48 +52,75 @@ export async function GET(request: NextRequest) {
 
     const events = await prisma.event.findMany({
       where,
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        group: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        rsvps: {
-          select: {
-            id: true,
-            status: true,
-          },
-        },
-        _count: {
-          select: {
-            rsvps: true,
-          },
-        },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        type: true,
+        startDate: true,
+        endDate: true,
+        location: true,
+        isOnline: true,
+        meetingUrl: true,
+        maxAttendees: true,
+        isPublished: true,
+        bannerImage: true,
+        createdAt: true,
+        updatedAt: true,
+        creatorId: true,
+        groupId: true,
       },
       orderBy: {
         startDate: 'asc',
       },
-    });
+    })
 
-    // Add computed fields
-    const eventsWithStats = events.map((event) => ({
-      ...event,
-      attendeesCount: event.rsvps.filter((r) => r.status === 'GOING').length,
-      availableSlots: event.maxAttendees
-        ? event.maxAttendees - event.rsvps.filter((r) => r.status === 'GOING').length
-        : null,
-    }));
+    // Manually fetch related data
+    const eventIds = events.map(e => e.id)
+    const creatorIds = [...new Set(events.map(e => e.creatorId).filter(Boolean))]
+    const groupIds = [...new Set(events.map(e => e.groupId).filter(Boolean))]
 
-    return NextResponse.json({ events: eventsWithStats });
+    const [creators, groups, rsvps] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: creatorIds } },
+        select: { id: true, name: true, email: true, avatar: true }
+      }),
+      groupIds.length > 0 ? prisma.group.findMany({
+        where: { id: { in: groupIds } },
+        select: { id: true, name: true }
+      }) : Promise.resolve([]),
+      prisma.eventRSVP.findMany({
+        where: { eventId: { in: eventIds } },
+        select: { id: true, eventId: true, status: true }
+      })
+    ])
+
+    const creatorMap = new Map(creators.map(c => [c.id, c]))
+    const groupMap = new Map(groups.map(g => [g.id, g]))
+    const rsvpsByEvent = rsvps.reduce((acc: any, rsvp) => {
+      if (!acc[rsvp.eventId]) acc[rsvp.eventId] = []
+      acc[rsvp.eventId].push(rsvp)
+      return acc
+    }, {})
+
+    const eventsWithStats = events.map((event) => {
+      const eventRsvps = rsvpsByEvent[event.id] || []
+      const goingCount = eventRsvps.filter((r: any) => r.status === 'GOING').length
+      
+      return {
+        ...event,
+        creator: event.creatorId ? creatorMap.get(event.creatorId) || null : null,
+        group: event.groupId ? groupMap.get(event.groupId) || null : null,
+        rsvps: eventRsvps,
+        _count: {
+          rsvps: eventRsvps.length
+        },
+        attendeesCount: goingCount,
+        availableSlots: event.maxAttendees ? event.maxAttendees - goingCount : null,
+      }
+    })
+
+    return NextResponse.json({ events: eventsWithStats })
   } catch (error) {
     console.error('Error fetching events:', error);
     return NextResponse.json(

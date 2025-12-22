@@ -6,6 +6,32 @@ import { prisma } from '@/lib/prisma'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
+// Helper function to get group with counts
+async function getGroupWithCounts(group: any) {
+  const owner = await prisma.user.findUnique({
+    where: { id: group.ownerId },
+    select: { id: true, name: true, email: true }
+  })
+
+  const membersCount = await prisma.groupMember.count({
+    where: { groupId: group.id }
+  })
+
+  const postsCount = await prisma.post.count({
+    where: { groupId: group.id }
+  })
+
+  return {
+    ...group,
+    owner,
+    _count: {
+      members: membersCount,
+      posts: postsCount,
+      courses: 0,
+      products: 0
+    }
+  }
+}
 
 // GET /api/admin/groups/[slug] - Get single group details
 export async function GET(
@@ -20,25 +46,8 @@ export async function GET(
     }
 
     const { slug } = await params
-    const group = await prisma.group.findUnique({
-      where: { slug },
-      include: {
-        _count: {
-          select: {
-            members: true,
-            posts: true,
-            courses: true,
-            products: true
-          }
-        },
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
+    const group = await prisma.group.findFirst({
+      where: { slug }
     })
 
     if (!group) {
@@ -48,7 +57,9 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ group })
+    const groupWithCounts = await getGroupWithCounts(group)
+
+    return NextResponse.json({ group: groupWithCounts })
     
   } catch (error) {
     console.error('Get group error:', error)
@@ -76,7 +87,7 @@ export async function PATCH(
     const { name, description, type, avatar, coverImage } = body
 
     // Check if group exists
-    const existingGroup = await prisma.group.findUnique({
+    const existingGroup = await prisma.group.findFirst({
       where: { slug }
     })
 
@@ -131,18 +142,12 @@ export async function PATCH(
         type: type || existingGroup.type,
         avatar: avatar !== undefined ? avatar : existingGroup.avatar,
         coverImage: coverImage !== undefined ? coverImage : existingGroup.coverImage
-      },
-      include: {
-        _count: {
-          select: {
-            members: true,
-            posts: true
-          }
-        }
       }
     })
 
-    return NextResponse.json({ group })
+    const groupWithCounts = await getGroupWithCounts(group)
+
+    return NextResponse.json({ group: groupWithCounts })
     
   } catch (error) {
     console.error('Update group error:', error)
@@ -167,16 +172,8 @@ export async function DELETE(
 
     const { slug } = await params
     // Check if group exists
-    const existingGroup = await prisma.group.findUnique({
-      where: { slug },
-      include: {
-        _count: {
-          select: {
-            members: true,
-            posts: true
-          }
-        }
-      }
+    const existingGroup = await prisma.group.findFirst({
+      where: { slug }
     })
 
     if (!existingGroup) {
@@ -185,6 +182,14 @@ export async function DELETE(
         { status: 404 }
       )
     }
+
+    // Get counts before deletion
+    const membersCount = await prisma.groupMember.count({
+      where: { groupId: existingGroup.id }
+    })
+    const postsCount = await prisma.post.count({
+      where: { groupId: existingGroup.id }
+    })
 
     // Check permission: only owner or admin can delete
     const isOwner = existingGroup.ownerId === session.user.id
@@ -197,7 +202,15 @@ export async function DELETE(
       )
     }
 
-    // Delete group (cascade will handle members, posts, etc.)
+    // Delete related data first (no cascade in schema)
+    await prisma.groupMember.deleteMany({
+      where: { groupId: existingGroup.id }
+    })
+    await prisma.post.deleteMany({
+      where: { groupId: existingGroup.id }
+    })
+
+    // Delete group
     await prisma.group.delete({
       where: { slug }
     })
@@ -206,8 +219,8 @@ export async function DELETE(
       message: 'Group deleted successfully',
       deletedGroup: {
         name: existingGroup.name,
-        membersDeleted: existingGroup._count.members,
-        postsDeleted: existingGroup._count.posts
+        membersDeleted: membersCount,
+        postsDeleted: postsCount
       }
     })
     

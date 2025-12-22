@@ -41,13 +41,6 @@ export async function GET(request: NextRequest) {
         locationVerified: true,
         bio: true,
         createdAt: true,
-        _count: {
-          select: {
-            posts: true,
-            followers: true,
-            following: true,
-          }
-        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -56,9 +49,38 @@ export async function GET(request: NextRequest) {
       take: limit
     })
 
+    // Manually fetch counts
+    const memberIds = members.map(m => m.id)
+    const [postCounts, followerCounts, followingCounts] = await Promise.all([
+      prisma.post.groupBy({
+        by: ['authorId'],
+        where: { authorId: { in: memberIds } },
+        _count: { id: true }
+      }),
+      prisma.follow.groupBy({
+        by: ['followingId'],
+        where: { followingId: { in: memberIds } },
+        _count: { followerId: true }
+      }),
+      prisma.follow.groupBy({
+        by: ['followerId'],
+        where: { followerId: { in: memberIds } },
+        _count: { followingId: true }
+      })
+    ])
+
+    const postCountMap = new Map(postCounts.map((p: any) => [p.authorId, p._count.id]))
+    const followerCountMap = new Map(followerCounts.map((f: any) => [f.followingId, f._count.followerId]))
+    const followingCountMap = new Map(followingCounts.map((f: any) => [f.followerId, f._count.followingId]))
+
     // Transform data
     const transformedMembers = members.map(member => ({
       ...member,
+      _count: {
+        posts: postCountMap.get(member.id) || 0,
+        followers: followerCountMap.get(member.id) || 0,
+        following: followingCountMap.get(member.id) || 0,
+      },
       memberSince: member.createdAt.toISOString(),
     }))
 

@@ -40,61 +40,71 @@ export async function GET(
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
-    // Get comments (discussions) for this lesson
+    // Get top-level comments (discussions) for this lesson
     const comments = await prisma.courseDiscussion.findMany({
       where: {
         courseId: course.id,
         lessonId: lessonId,
         parentId: null // Only top-level comments
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        },
-        replies: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true
-              }
-            }
-          },
-          orderBy: {
-            createdAt: 'asc'
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
-    // Transform to match frontend type
-    const transformedComments = comments.map(comment => ({
-      id: comment.id,
-      lessonId: comment.lessonId,
-      content: comment.content,
-      user: {
-        name: comment.user.name || 'Anonymous',
-        avatar: comment.user.avatar || undefined
+    // Get replies for these comments
+    const commentIds = comments.map(c => c.id)
+    const replies = await prisma.courseDiscussion.findMany({
+      where: {
+        parentId: { in: commentIds }
       },
-      createdAt: comment.createdAt.toISOString(),
-      replies: comment.replies.map(reply => ({
-        id: reply.id,
-        content: reply.content,
+      orderBy: {
+        createdAt: 'asc'
+      }
+    })
+
+    // Get all user IDs
+    const allUserIds = [...new Set([...comments.map(c => c.userId), ...replies.map(r => r.userId)])]
+    const users = await prisma.user.findMany({
+      where: { id: { in: allUserIds } },
+      select: { id: true, name: true, avatar: true }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    // Group replies by parentId
+    const repliesByParentId = replies.reduce((acc, reply) => {
+      if (!acc[reply.parentId!]) acc[reply.parentId!] = []
+      acc[reply.parentId!].push(reply)
+      return acc
+    }, {} as Record<string, typeof replies>)
+
+    // Transform to match frontend type
+    const transformedComments = comments.map(comment => {
+      const user = userMap.get(comment.userId)
+      const commentReplies = repliesByParentId[comment.id] || []
+      return {
+        id: comment.id,
+        lessonId: comment.lessonId,
+        content: comment.content,
         user: {
-          name: reply.user.name || 'Anonymous',
-          avatar: reply.user.avatar || undefined
+          name: user?.name || 'Anonymous',
+          avatar: user?.avatar || undefined
         },
-        createdAt: reply.createdAt.toISOString()
-      }))
-    }))
+        createdAt: comment.createdAt.toISOString(),
+        replies: commentReplies.map(reply => {
+          const replyUser = userMap.get(reply.userId)
+          return {
+            id: reply.id,
+            content: reply.content,
+            user: {
+              name: replyUser?.name || 'Anonymous',
+              avatar: replyUser?.avatar || undefined
+            },
+            createdAt: reply.createdAt.toISOString()
+          }
+        })
+      }
+    })
 
     return NextResponse.json({ comments: transformedComments })
   } catch (error) {
@@ -159,16 +169,13 @@ export async function POST(
         content: content,
         userId: session.user.id,
         parentId: parentId || null
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        }
       }
+    })
+
+    // Fetch user info separately (no relation in schema)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, avatar: true }
     })
 
     // Transform to match frontend type
@@ -177,8 +184,8 @@ export async function POST(
       lessonId: comment.lessonId,
       content: comment.content,
       user: {
-        name: comment.user.name || 'Anonymous',
-        avatar: comment.user.avatar || undefined
+        name: user?.name || 'Anonymous',
+        avatar: user?.avatar || undefined
       },
       createdAt: comment.createdAt.toISOString()
     }

@@ -21,57 +21,20 @@ export async function GET(
 
     const { id: courseId } = await params
 
+    // Fetch course without non-existent relations
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
-        mentor: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-                avatar: true
-              }
-            }
-          }
-        },
-        modules: {
-          include: {
-            lessons: {
-              orderBy: {
-                order: 'asc'
-              }
-            }
-          },
-          orderBy: {
-            order: 'asc'
-          }
-        },
-        group: true,
-        enrollments: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-                avatar: true
-              }
-            }
-          },
+        transactions: {
           take: 10,
-          orderBy: {
-            createdAt: 'desc'
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: {
+              select: { name: true, email: true, avatar: true }
+            }
           }
         },
-        _count: {
-          select: {
-            enrollments: true,
-            modules: true,
-            quizzes: true,
-            assignments: true,
-            certificates: true
-          }
-        }
+        membershipCourses: true,
       }
     })
 
@@ -79,9 +42,62 @@ export async function GET(
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
+    // Fetch modules separately (no relation in schema)
+    const modules = await prisma.courseModule.findMany({
+      where: { courseId: courseId },
+      orderBy: { order: 'asc' }
+    })
+
+    // Fetch lessons for each module
+    const modulesWithLessons = await Promise.all(
+      modules.map(async (mod) => {
+        const lessons = await prisma.courseLesson.findMany({
+          where: { moduleId: mod.id },
+          orderBy: { order: 'asc' }
+        })
+        return { ...mod, lessons }
+      })
+    )
+
+    // Fetch group if groupId exists
+    let group = null
+    if (course.groupId) {
+      group = await prisma.group.findUnique({
+        where: { id: course.groupId }
+      })
+    }
+
+    // Fetch mentor data separately if mentorId exists
+    let mentorData = null
+    if (course.mentorId) {
+      const mentor = await prisma.mentorProfile.findUnique({
+        where: { id: course.mentorId }
+      })
+      if (mentor) {
+        const user = await prisma.user.findUnique({
+          where: { id: mentor.userId },
+          select: {
+            name: true,
+            email: true,
+            avatar: true
+          }
+        })
+        mentorData = { ...mentor, user }
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      course
+      course: {
+        ...course,
+        modules: modulesWithLessons,
+        group,
+        mentor: mentorData,
+        _count: {
+          modules: modules.length,
+          transactions: course.transactions?.length || 0
+        }
+      }
     })
   } catch (error) {
     console.error('GET /api/admin/courses/[id] error:', error)
@@ -135,24 +151,33 @@ export async function PUT(
       data: {
         ...body,
         updatedAt: new Date()
-      },
-      include: {
-        mentor: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true
-              }
-            }
-          }
-        }
       }
     })
 
+    // Fetch mentor data separately if mentorId exists
+    let mentorData = null
+    if (updatedCourse.mentorId) {
+      const mentor = await prisma.mentorProfile.findUnique({
+        where: { id: updatedCourse.mentorId }
+      })
+      if (mentor) {
+        const user = await prisma.user.findUnique({
+          where: { id: mentor.userId },
+          select: {
+            name: true,
+            email: true
+          }
+        })
+        mentorData = { ...mentor, user }
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      course: updatedCourse
+      course: {
+        ...updatedCourse,
+        mentor: mentorData
+      }
     })
   } catch (error) {
     console.error('PUT /api/admin/courses/[id] error:', error)
@@ -179,31 +204,43 @@ export async function DELETE(
 
     // Check if course exists
     const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        _count: {
-          select: {
-            enrollments: true
-          }
-        }
-      }
+      where: { id: courseId }
     })
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
-    // Warning if course has enrollments
-    if (course._count.enrollments > 0) {
-      // Optionally, you can prevent deletion if there are enrollments
-      // Uncomment below to enforce:
+    // Check for transactions
+    const transactionCount = await prisma.transaction.count({
+      where: { courseId: courseId }
+    })
+
+    // Warning if course has transactions
+    if (transactionCount > 0) {
+      // Optionally, you can prevent deletion if there are transactions
       // return NextResponse.json(
-      //   { error: `Cannot delete course with ${course._count.enrollments} active enrollments` },
+      //   { error: `Cannot delete course with ${transactionCount} transactions` },
       //   { status: 400 }
       // )
     }
 
-    // Delete course (cascade will delete modules, lessons, enrollments, etc.)
+    // Delete related modules and lessons first (no cascade without relations)
+    const modules = await prisma.courseModule.findMany({
+      where: { courseId: courseId }
+    })
+    
+    for (const mod of modules) {
+      await prisma.courseLesson.deleteMany({
+        where: { moduleId: mod.id }
+      })
+    }
+    
+    await prisma.courseModule.deleteMany({
+      where: { courseId: courseId }
+    })
+
+    // Delete course
     await prisma.course.delete({
       where: { id: courseId }
     })

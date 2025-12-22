@@ -27,10 +27,41 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Fetch membership plan
+    // Fetch membership plan with explicit select to avoid missing column errors
     const plan = await prisma.membership.findUnique({
       where: { id: id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        checkoutSlug: true,
+        checkoutTemplate: true,
+        description: true,
+        duration: true,
+        price: true,
+        originalPrice: true,
+        discount: true,
+        commissionType: true,
+        affiliateCommissionRate: true,
+        features: true,
+        isBestSeller: true,
+        isPopular: true,
+        isMostPopular: true,
+        isActive: true,
+        status: true,
+        salesPageUrl: true,
+        alternativeUrl: true,
+        reminders: true,
+        formLogo: true,
+        formBanner: true,
+        formDescription: true,
+        mailketingListId: true,
+        mailketingListName: true,
+        autoAddToList: true,
+        autoRemoveOnExpire: true,
+        showInGeneralCheckout: true,
+        createdAt: true,
+        updatedAt: true,
         _count: {
           select: {
             userMemberships: true

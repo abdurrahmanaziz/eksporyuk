@@ -36,12 +36,7 @@ export async function GET(
         passingScore: true,
         timeLimit: true,
         maxAttempts: true,
-        courseId: true,
-        _count: {
-          select: {
-            questions: true
-          }
-        }
+        courseId: true
       }
     })
 
@@ -51,6 +46,11 @@ export async function GET(
         { status: 200 }
       )
     }
+
+    // Count questions separately (no relation in schema)
+    const questionCount = await prisma.quizQuestion.count({
+      where: { quizId: quiz.id }
+    })
 
     // Get user's attempts
     const attempts = await prisma.quizAttempt.findMany({
@@ -97,7 +97,7 @@ export async function GET(
         passingScore: quiz.passingScore,
         timeLimit: quiz.timeLimit,
         maxAttempts: quiz.maxAttempts,
-        questionCount: quiz._count.questions
+        questionCount: questionCount
       },
       userStatus: {
         hasActiveAttempt: !!activeAttempt,

@@ -102,7 +102,7 @@ export async function getBrandConfig() {
     
     // If logo is relative path, convert to absolute URL
     if (logoUrl && logoUrl.startsWith('/')) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.eksporyuk.com'
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'
       logoUrl = `${appUrl}${logoUrl}`
     }
     
@@ -178,7 +178,7 @@ const DEFAULT_BRANDED_TEMPLATES: Record<string, any> = {
     previewData: {
       name: 'Free User',
       email: 'user@example.com',
-      verification_url: 'https://app.eksporyuk.com/auth/verify-email?token=example'
+      verification_url: 'https://eksporyuk.com/auth/verify-email?token=example'
     }
   }
 }

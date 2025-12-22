@@ -37,75 +37,54 @@ export async function GET(request: NextRequest) {
           id: cursor,
         },
       }),
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            role: true,
-            lastActiveAt: true,
-            province: true,
-            city: true,
-            locationVerified: true,
-          },
-        },
-        likes: {
-          select: {
-            userId: true,
-          },
-        },
-        reactions: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-        comments: {
-          take: 3,
-          orderBy: {
-            createdAt: 'desc',
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            reactions: true,
-          },
-        },
-      },
       orderBy: [
         { isPinned: 'desc' },
         { createdAt: 'desc' },
       ],
     })
 
-    // Transform posts to ensure all required fields are present
-    const transformedPosts = posts.map(post => ({
-      ...post,
-      images: post.images || [],
-      videos: post.videos || [],
-      documents: post.documents || [],
-      taggedUsers: post.taggedUsers || [],
-      reactionsCount: post.reactionsCount || {},
-      reactions: post.reactions || [],
-      commentsEnabled: post.commentsEnabled !== false,
+    // Get details for each post manually (no relations in schema)
+    const transformedPosts = await Promise.all(posts.map(async (post) => {
+      const [author, likes, reactions, comments, likesCount, reactionsCount, commentsCount] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: post.authorId },
+          select: { id: true, name: true, email: true, avatar: true, role: true, lastActiveAt: true, province: true, city: true, locationVerified: true }
+        }),
+        prisma.postLike.findMany({ where: { postId: post.id }, select: { userId: true } }),
+        prisma.postReaction.findMany({ where: { postId: post.id } }),
+        prisma.postComment.findMany({ where: { postId: post.id }, take: 3, orderBy: { createdAt: 'desc' } }),
+        prisma.postLike.count({ where: { postId: post.id } }),
+        prisma.postReaction.count({ where: { postId: post.id } }),
+        prisma.postComment.count({ where: { postId: post.id } })
+      ])
+
+      // Get users for reactions and comments
+      const reactionUserIds = reactions.map((r: any) => r.userId)
+      const commentUserIds = comments.map((c: any) => c.userId)
+      const allUserIds = [...new Set([...reactionUserIds, ...commentUserIds])]
+      const users = allUserIds.length > 0 ? await prisma.user.findMany({
+        where: { id: { in: allUserIds } },
+        select: { id: true, name: true, avatar: true }
+      }) : []
+      const userMap = new Map(users.map(u => [u.id, u]))
+
+      const reactionsWithUsers = reactions.map((r: any) => ({ ...r, user: userMap.get(r.userId) || null }))
+      const commentsWithUsers = comments.map((c: any) => ({ ...c, user: userMap.get(c.userId) || null }))
+
+      return {
+        ...post,
+        author,
+        likes,
+        reactions: reactionsWithUsers,
+        comments: commentsWithUsers,
+        _count: { comments: commentsCount, likes: likesCount, reactions: reactionsCount },
+        images: post.images || [],
+        videos: post.videos || [],
+        documents: post.documents || [],
+        taggedUsers: post.taggedUsers || [],
+        reactionsCount: post.reactionsCount || {},
+        commentsEnabled: post.commentsEnabled !== false,
+      }
     }))
 
     return NextResponse.json({
@@ -182,27 +161,21 @@ export async function POST(request: NextRequest) {
         groupId: null, // Public timeline post (not in group)
         approvalStatus: 'APPROVED', // Personal posts don't need approval
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            role: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            reactions: true,
-          },
-        },
-      },
     })
 
-    return NextResponse.json({ post }, { status: 201 })
+    // Get author info manually (no relations in schema)
+    const author = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, email: true, avatar: true, role: true }
+    })
+
+    const postWithDetails = {
+      ...post,
+      author,
+      _count: { comments: 0, likes: 0, reactions: 0 }
+    }
+
+    return NextResponse.json({ post: postWithDetails }, { status: 201 })
   } catch (error) {
     console.error('Error creating post:', error)
     return NextResponse.json(

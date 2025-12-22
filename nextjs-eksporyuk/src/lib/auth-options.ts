@@ -272,7 +272,7 @@ export const authOptions: NextAuthOptions = {
                           <li>Mulai belajar ekspor!</li>
                         </ul>
                         <div style="text-align: center; margin: 30px 0;">
-                          <a href="https://app.eksporyuk.com/dashboard" 
+                          <a href="https://eksporyuk.com/dashboard" 
                              style="display: inline-block; background: #f97316; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold;">
                             Kunjungi Dashboard
                           </a>
@@ -395,7 +395,7 @@ export const authOptions: NextAuthOptions = {
               whatsapp: true,
               emailVerified: true,
               memberCode: true,
-              isAuthorizedSupplierReviewer: true,
+              // isAuthorizedSupplierReviewer: true,  // Field not in current DB schema
               affiliateMenuEnabled: true,
               affiliateProfile: {
                 select: {
@@ -423,7 +423,7 @@ export const authOptions: NextAuthOptions = {
             token.emailVerified = dbUser.emailVerified
             token.memberCode = dbUser.memberCode
             token.isGoogleAuth = true
-            token.isAuthorizedSupplierReviewer = dbUser.isAuthorizedSupplierReviewer
+            // token.isAuthorizedSupplierReviewer = dbUser.isAuthorizedSupplierReviewer  // Field not in current DB schema
             token.affiliateMenuEnabled = dbUser.affiliateMenuEnabled
             token.hasAffiliateProfile = !!dbUser.affiliateProfile && dbUser.affiliateProfile.isActive
           } else {
@@ -466,7 +466,7 @@ export const authOptions: NextAuthOptions = {
         session.user.whatsapp = token.whatsapp as string
         session.user.isGoogleAuth = token.isGoogleAuth as boolean
         session.user.emailVerified = token.emailVerified as boolean || false
-        session.user.isAuthorizedSupplierReviewer = token.isAuthorizedSupplierReviewer as boolean || false
+        // session.user.isAuthorizedSupplierReviewer = token.isAuthorizedSupplierReviewer as boolean || false  // Field not in current DB schema
         session.user.affiliateMenuEnabled = token.affiliateMenuEnabled as boolean || false
         session.user.hasAffiliateProfile = token.hasAffiliateProfile as boolean || false
         

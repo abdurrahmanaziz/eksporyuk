@@ -81,10 +81,10 @@ export default function AdminGroupsPage() {
   const [activeTab, setActiveTab] = useState('all')
   const [editingGroup, setEditingGroup] = useState<Group | null>(null)
   
-  // Dialogs
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  // Dialogs (only delete dialog remains, create moved to tab)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
   
   // Form data
   const [formData, setFormData] = useState({
@@ -205,7 +205,8 @@ export default function AdminGroupsPage() {
       }
 
       toast.success('Grup berhasil dibuat!')
-      setShowCreateDialog(false)
+      setIsCreating(false)
+      setActiveTab('all')
       resetForm()
       fetchGroups()
     } catch (error: any) {
@@ -311,6 +312,19 @@ export default function AdminGroupsPage() {
     setEditingGroup(null)
     setActiveTab('all')
     resetForm()
+  }
+
+  const cancelCreate = () => {
+    setIsCreating(false)
+    setActiveTab('all')
+    resetForm()
+  }
+
+  const openCreateTab = () => {
+    resetForm()
+    setEditingGroup(null)
+    setIsCreating(true)
+    setActiveTab('create')
   }
 
   // Upload image function
@@ -459,11 +473,7 @@ export default function AdminGroupsPage() {
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-          <Button onClick={() => {
-            resetForm()
-            setSelectedGroup(null)
-            setShowCreateDialog(true)
-          }}>
+          <Button onClick={openCreateTab}>
             <Plus className="w-4 h-4 mr-2" />
             Buat Grup
           </Button>
@@ -567,6 +577,11 @@ export default function AdminGroupsPage() {
                 <TabsTrigger value="hidden">
                   Hidden ({stats.hidden})
                 </TabsTrigger>
+                {isCreating && (
+                  <TabsTrigger value="create" className="bg-green-50">
+                    + Buat Grup Baru
+                  </TabsTrigger>
+                )}
                 {editingGroup && (
                   <TabsTrigger value="edit" className="bg-blue-50">
                     Edit: {editingGroup.name}
@@ -574,7 +589,7 @@ export default function AdminGroupsPage() {
                 )}
               </TabsList>
               
-              {activeTab !== 'edit' && (
+              {activeTab !== 'edit' && activeTab !== 'create' && (
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
@@ -587,8 +602,8 @@ export default function AdminGroupsPage() {
               )}
             </div>
 
-            {/* Table View - All Tabs except Edit */}
-            {activeTab !== 'edit' && (
+            {/* Table View - All Tabs except Edit and Create */}
+            {activeTab !== 'edit' && activeTab !== 'create' && (
               <TabsContent value={activeTab} className="space-y-4">
                 <div className="rounded-md border overflow-hidden">
                   <div className="overflow-x-auto">
@@ -713,6 +728,235 @@ export default function AdminGroupsPage() {
                   </Table>
                   </div>
                 </div>
+              </TabsContent>
+            )}
+
+            {/* Create Tab Content */}
+            {activeTab === 'create' && isCreating && (
+              <TabsContent value="create" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Plus className="h-5 w-5" />
+                      Buat Grup Baru
+                    </CardTitle>
+                    <CardDescription>
+                      Buat grup komunitas baru untuk member Anda
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleCreate} className="space-y-4 max-w-3xl">
+                      <div className="w-full">
+                        <Label htmlFor="create-name">Nama Grup *</Label>
+                        <Input
+                          id="create-name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Contoh: Komunitas Ekspor Jepang"
+                          required
+                          className="w-full"
+                        />
+                      </div>
+                      
+                      <div className="w-full">
+                        <Label htmlFor="create-description">Deskripsi *</Label>
+                        <Textarea
+                          id="create-description"
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          placeholder="Jelaskan tentang grup ini..."
+                          rows={4}
+                          required
+                          className="resize-none w-full"
+                        />
+                      </div>
+                      
+                      <div className="w-full">
+                        <Label htmlFor="create-type">Tipe Grup *</Label>
+                        <Select
+                          value={formData.type}
+                          onValueChange={(value: any) => setFormData({ ...formData, type: value })}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PUBLIC">Publik</SelectItem>
+                            <SelectItem value="PRIVATE">Privat</SelectItem>
+                            <SelectItem value="HIDDEN">Tersembunyi</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formData.type === 'PUBLIC' && 'Semua orang bisa bergabung'}
+                          {formData.type === 'PRIVATE' && 'Perlu persetujuan untuk bergabung'}
+                          {formData.type === 'HIDDEN' && 'Hanya dengan undangan'}
+                        </p>
+                      </div>
+                      
+                      <div className="w-full">
+                        <Label htmlFor="create-avatar">Avatar Grup</Label>
+                        <div className="space-y-2">
+                          {formData.avatar && (
+                            <div className="relative w-24 h-24 rounded-lg overflow-hidden border">
+                              <Image 
+                                src={formData.avatar} 
+                                alt="Avatar preview" 
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <Input
+                              id="create-avatar"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleImageUpload(file, 'avatar')
+                              }}
+                              className="w-full"
+                              disabled={uploadingAvatar}
+                            />
+                            {uploadingAvatar && (
+                              <div className="flex items-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Atau masukkan URL:
+                          </p>
+                          <Input
+                            value={formData.avatar}
+                            onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
+                            placeholder="https://..."
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="w-full">
+                        <Label htmlFor="create-coverImage">Cover Image</Label>
+                        <div className="space-y-2">
+                          {formData.coverImage && (
+                            <div className="relative w-full h-32 rounded-lg overflow-hidden border">
+                              <Image 
+                                src={formData.coverImage} 
+                                alt="Cover preview" 
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <Input
+                              id="create-coverImage"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleImageUpload(file, 'cover')
+                              }}
+                              className="w-full"
+                              disabled={uploadingCover}
+                            />
+                            {uploadingCover && (
+                              <div className="flex items-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Atau masukkan URL:
+                          </p>
+                          <Input
+                            value={formData.coverImage}
+                            onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
+                            placeholder="https://..."
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="w-full">
+                        <Label htmlFor="create-bannedWords">Kata Terlarang (pisahkan dengan koma)</Label>
+                        <Textarea
+                          id="create-bannedWords"
+                          value={formData.bannedWords}
+                          onChange={(e) => setFormData({ ...formData, bannedWords: e.target.value })}
+                          placeholder="spam, iklan, promo, dll"
+                          rows={2}
+                          className="resize-none w-full"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Post yang mengandung kata-kata ini akan ditolak otomatis
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-3 rounded-lg border p-4 w-full">
+                        <h4 className="text-sm font-semibold">Pengaturan Grup</h4>
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="space-y-0.5 flex-1 min-w-0">
+                            <Label htmlFor="create-isActive">Status Aktif</Label>
+                            <p className="text-xs text-muted-foreground">
+                              Grup aktif dapat diakses oleh anggota
+                            </p>
+                          </div>
+                          <Switch
+                            id="create-isActive"
+                            checked={formData.isActive}
+                            onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                            className="flex-shrink-0"
+                          />
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="space-y-0.5 flex-1 min-w-0">
+                            <Label htmlFor="create-requireApproval">Persetujuan Admin</Label>
+                            <p className="text-xs text-muted-foreground">
+                              Anggota baru harus disetujui dulu
+                            </p>
+                          </div>
+                          <Switch
+                            id="create-requireApproval"
+                            checked={formData.requireApproval}
+                            onCheckedChange={(checked) => setFormData({ ...formData, requireApproval: checked })}
+                            className="flex-shrink-0"
+                          />
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="space-y-0.5 flex-1 min-w-0">
+                            <Label htmlFor="create-showStats">Tampilkan Statistik</Label>
+                            <p className="text-xs text-muted-foreground">
+                              Tampilkan jumlah member, post, event, kelas & mentor
+                            </p>
+                          </div>
+                          <Switch
+                            id="create-showStats"
+                            checked={formData.showStats}
+                            onCheckedChange={(checked) => setFormData({ ...formData, showStats: checked })}
+                            className="flex-shrink-0"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={cancelCreate}
+                          disabled={submitting}
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Batal
+                        </Button>
+                        <Button type="submit" disabled={submitting}>
+                          {submitting ? 'Membuat...' : 'Buat Grup'}
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
               </TabsContent>
             )}
 
@@ -1044,211 +1288,6 @@ export default function AdminGroupsPage() {
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-          <form onSubmit={handleCreate} className="flex flex-col h-full">
-            <DialogHeader className="flex-shrink-0">
-              <DialogTitle>Buat Grup Baru</DialogTitle>
-              <DialogDescription>
-                Buat grup komunitas baru untuk member Anda
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 px-6 py-4 overflow-y-auto flex-1">
-              <div className="w-full">
-                <Label htmlFor="name">Nama Grup *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Contoh: Komunitas Ekspor Jepang"
-                  required
-                  className="w-full"
-                />
-              </div>
-              <div className="w-full">
-                <Label htmlFor="description">Deskripsi *</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Jelaskan tentang grup ini..."
-                  rows={4}
-                  required
-                  className="resize-none w-full"
-                />
-              </div>
-              <div className="w-full">
-                <Label htmlFor="type">Tipe Grup *</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value: any) => setFormData({ ...formData, type: value })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PUBLIC">Publik</SelectItem>
-                    <SelectItem value="PRIVATE">Privat</SelectItem>
-                    <SelectItem value="HIDDEN">Tersembunyi</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {formData.type === 'PUBLIC' && 'Semua orang bisa bergabung'}
-                  {formData.type === 'PRIVATE' && 'Perlu persetujuan untuk bergabung'}
-                  {formData.type === 'HIDDEN' && 'Hanya dengan undangan'}
-                </p>
-              </div>
-              <div className="w-full">
-                <Label htmlFor="avatar">Avatar Grup</Label>
-                <div className="space-y-2">
-                  {formData.avatar && (
-                    <div className="relative w-24 h-24 rounded-lg overflow-hidden border">
-                      <Image 
-                        src={formData.avatar} 
-                        alt="Avatar preview" 
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Input
-                      id="avatar"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) handleImageUpload(file, 'avatar')
-                      }}
-                      className="w-full"
-                      disabled={uploadingAvatar}
-                    />
-                    {uploadingAvatar && (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Atau masukkan URL:
-                  </p>
-                  <Input
-                    value={formData.avatar}
-                    onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full"
-                  />
-                </div>
-              </div>
-              <div className="w-full">
-                <Label htmlFor="coverImage">Cover Image</Label>
-                <div className="space-y-2">
-                  {formData.coverImage && (
-                    <div className="relative w-full h-32 rounded-lg overflow-hidden border">
-                      <Image 
-                        src={formData.coverImage} 
-                        alt="Cover preview" 
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Input
-                      id="coverImage"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) handleImageUpload(file, 'cover')
-                      }}
-                      className="w-full"
-                      disabled={uploadingCover}
-                    />
-                    {uploadingCover && (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Atau masukkan URL:
-                  </p>
-                  <Input
-                    value={formData.coverImage}
-                    onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full"
-                  />
-                </div>
-              </div>
-              <div className="w-full">
-                <Label htmlFor="bannedWords">Kata Terlarang (pisahkan dengan koma)</Label>
-                <Textarea
-                  id="bannedWords"
-                  value={formData.bannedWords}
-                  onChange={(e) => setFormData({ ...formData, bannedWords: e.target.value })}
-                  placeholder="spam, iklan, promo, dll"
-                  rows={2}
-                  className="resize-none w-full"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Post yang mengandung kata-kata ini akan ditolak otomatis
-                </p>
-              </div>
-              <div className="space-y-3 rounded-lg border p-4 w-full">
-                <h4 className="text-sm font-semibold">Pengaturan Grup</h4>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="space-y-0.5 flex-1 min-w-0">
-                    <Label htmlFor="isActive">Status Aktif</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Grup aktif dapat diakses oleh anggota
-                    </p>
-                  </div>
-                  <Switch
-                    id="isActive"
-                    checked={formData.isActive}
-                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                    className="flex-shrink-0"
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="space-y-0.5 flex-1 min-w-0">
-                    <Label htmlFor="requireApproval">Persetujuan Admin</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Anggota baru harus disetujui dulu
-                    </p>
-                  </div>
-                  <Switch
-                    id="requireApproval"
-                    checked={formData.requireApproval}
-                    onCheckedChange={(checked) => setFormData({ ...formData, requireApproval: checked })}
-                    className="flex-shrink-0"
-                  />
-                </div>
-              </div>
-            </div>
-            <DialogFooter className="flex-shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setShowCreateDialog(false)
-                  resetForm()
-                }}
-                disabled={submitting}
-              >
-                Batal
-              </Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting ? 'Membuat...' : 'Buat Grup'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         name: true,
         duration: true,
         price: true,
-        marketingPrice: true,
+        // marketingPrice: true, // Commented - column not synced with Prisma client
         features: true,
         isBestSeller: true,
         isMostPopular: true,
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       name: membership.name,
       duration: membership.duration,
       price: Number(membership.price),
-      marketingPrice: membership.marketingPrice ? Number(membership.marketingPrice) : null,
+      marketingPrice: null, // Disabled - column not synced with Prisma client
       features: typeof membership.features === 'string' 
         ? JSON.parse(membership.features) 
         : Array.isArray(membership.features) ? membership.features : [],
