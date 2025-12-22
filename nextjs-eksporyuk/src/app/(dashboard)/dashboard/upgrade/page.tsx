@@ -592,8 +592,7 @@ export default function UpgradePage() {
           </Link>
         </div>
       </div>
-    </div>
-    </div>
+      </div>
     </ResponsivePageWrapper>
   )
 }
