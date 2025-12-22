@@ -40,7 +40,7 @@ interface TransactionDetail {
   id: string
   invoiceNumber: string | null
   type: 'MEMBERSHIP' | 'PRODUCT' | 'COURSE' | 'SUPPLIER' | 'OTHER'
-  status: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'REFUNDED'
+  status: 'PENDING' | 'SUCCESS' | 'PAID' | 'FAILED' | 'EXPIRED' | 'REFUNDED'
   amount: number
   originalAmount: number | null
   discountAmount: number | null
@@ -88,6 +88,7 @@ interface TransactionDetail {
 
 const statusConfig = {
   PENDING: { label: 'Menunggu Pembayaran', color: 'bg-yellow-100 text-yellow-800 border-yellow-300', icon: Clock },
+  SUCCESS: { label: 'Pembayaran Berhasil', color: 'bg-green-100 text-green-800 border-green-300', icon: CheckCircle },
   PAID: { label: 'Pembayaran Berhasil', color: 'bg-green-100 text-green-800 border-green-300', icon: CheckCircle },
   FAILED: { label: 'Pembayaran Gagal', color: 'bg-red-100 text-red-800 border-red-300', icon: XCircle },
   EXPIRED: { label: 'Kadaluarsa', color: 'bg-gray-100 text-gray-800 border-gray-300', icon: AlertCircle },
