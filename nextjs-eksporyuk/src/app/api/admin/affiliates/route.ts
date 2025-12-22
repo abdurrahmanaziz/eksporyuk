@@ -82,13 +82,6 @@ export async function GET(request: NextRequest) {
               avatar: true,
             },
           },
-          _count: {
-            select: {
-              links: true,
-              clicks: true,
-              conversions: true,
-            },
-          },
         },
         orderBy: [
           { totalEarnings: 'desc' }, // Highest earners first
