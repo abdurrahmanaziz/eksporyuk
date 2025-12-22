@@ -6,7 +6,7 @@
 - ✅ All commits pushed to origin/main
 
 ### Production Status
-- Domain: https://app.eksporyuk.com
+- Domain: https://eksporyuk.com
 - x-vercel-cache: PRERENDER
 - x-vercel-id: sin1::6kd2r-1765627265687-758608068923
 

@@ -49,7 +49,7 @@ role: 'MEMBER_FREE'
 
 ### **Test 1: Register Normal (Manual)**
 
-**URL**: https://app.eksporyuk.com/auth/register
+**URL**: https://eksporyuk.com/auth/register
 
 **Test Cases:**
 
@@ -92,7 +92,7 @@ role: 'MEMBER_FREE'
 
 ### **Test 2: Google OAuth Login**
 
-**URL**: https://app.eksporyuk.com/auth/login
+**URL**: https://eksporyuk.com/auth/login
 
 **Test Cases:**
 
@@ -139,7 +139,7 @@ role: 'MEMBER_FREE'
 ### **Check Logs (Production)**
 
 ```bash
-vercel logs https://app.eksporyuk.com --since 1h
+vercel logs https://eksporyuk.com --since 1h
 ```
 
 **Look for:**
@@ -194,7 +194,7 @@ WHERE memberCode IS NULL;
 
 ```bash
 # Check register endpoint
-curl -X POST https://app.eksporyuk.com/api/auth/register \
+curl -X POST https://eksporyuk.com/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@gmail.com","name":"Test","password":"12345678"}' \
   | jq '.success'
@@ -265,10 +265,10 @@ If issues persist:
 
 ```bash
 # Rollback to previous deployment
-vercel rollback https://app.eksporyuk.com
+vercel rollback https://eksporyuk.com
 
 # Or rollback to specific deployment
-vercel rollback https://app.eksporyuk.com <deployment-id>
+vercel rollback https://eksporyuk.com <deployment-id>
 
 # Check previous deployments
 vercel list eksporyuk

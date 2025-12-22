@@ -6,15 +6,15 @@ Email Template System memungkinkan admin mengelola semua email templates dari ad
 
 ## Quick Access
 
-- **Admin Panel**: https://app.eksporyuk.com/admin/branded-templates
-- **API Endpoint**: https://app.eksporyuk.com/api/admin/templates
+- **Admin Panel**: https://eksporyuk.com/admin/branded-templates
+- **API Endpoint**: https://eksporyuk.com/api/admin/templates
 - **Helper Functions**: `/src/lib/email-template-helper.ts`
 
 ## ⚡ Quick Start (5 menit)
 
 ### 1. Test Template List API
 ```bash
-curl https://app.eksporyuk.com/api/admin/templates?action=list \
+curl https://eksporyuk.com/api/admin/templates?action=list \
   -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN"
 ```
 
@@ -36,13 +36,13 @@ Response:
 
 ### 2. Preview Template dengan Variables
 ```bash
-curl "https://app.eksporyuk.com/api/admin/templates?action=preview&slug=welcome-email&userName=John&dashboardUrl=https://app.eksporyuk.com/dashboard" \
+curl "https://eksporyuk.com/api/admin/templates?action=preview&slug=welcome-email&userName=John&dashboardUrl=https://eksporyuk.com/dashboard" \
   -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN"
 ```
 
 ### 3. Send Test Email
 ```bash
-curl -X POST https://app.eksporyuk.com/api/admin/templates \
+curl -X POST https://eksporyuk.com/api/admin/templates \
   -H "Content-Type: application/json" \
   -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN" \
   -d '{
@@ -51,7 +51,7 @@ curl -X POST https://app.eksporyuk.com/api/admin/templates \
     "to": "test@example.com",
     "variables": {
       "userName": "John Doe",
-      "dashboardUrl": "https://app.eksporyuk.com/dashboard"
+      "dashboardUrl": "https://eksporyuk.com/dashboard"
     }
   }'
 ```
@@ -90,7 +90,7 @@ await sendBrandedEmail(
   'welcome-email',
   {
     userName: 'John Doe',
-    dashboardUrl: 'https://app.eksporyuk.com/dashboard'
+    dashboardUrl: 'https://eksporyuk.com/dashboard'
   }
 )
 ```
@@ -114,7 +114,7 @@ import { previewTemplate } from '@/lib/email-template-helper'
 
 const preview = await previewTemplate('welcome-email', {
   userName: 'John Doe',
-  dashboardUrl: 'https://app.eksporyuk.com/dashboard'
+  dashboardUrl: 'https://eksporyuk.com/dashboard'
 })
 
 console.log(preview.subject) // "Selamat Datang di EksporYuk!"
@@ -136,7 +136,7 @@ await mailketing.sendEmail({
 
 ### Step 2: Check Template Availability
 ```bash
-curl https://app.eksporyuk.com/api/admin/templates?action=list
+curl https://eksporyuk.com/api/admin/templates?action=list
 ```
 
 ### Step 3: Replace dengan Template System
@@ -155,7 +155,7 @@ await sendBrandedEmail(
 ### Step 4: Test
 ```bash
 # Test sending
-curl -X POST https://app.eksporyuk.com/api/admin/templates \
+curl -X POST https://eksporyuk.com/api/admin/templates \
   -H "Content-Type: application/json" \
   -d '{
     "action": "send-test",
@@ -163,7 +163,7 @@ curl -X POST https://app.eksporyuk.com/api/admin/templates \
     "to": "your-email@example.com",
     "variables": {
       "userName": "Test User",
-      "dashboardUrl": "https://app.eksporyuk.com/dashboard"
+      "dashboardUrl": "https://eksporyuk.com/dashboard"
     }
   }'
 ```
@@ -247,21 +247,21 @@ await sendBrandedEmail(
 
 ### Check Template Exists
 ```bash
-curl "https://app.eksporyuk.com/api/admin/templates?action=get&slug=welcome-email"
+curl "https://eksporyuk.com/api/admin/templates?action=get&slug=welcome-email"
 ```
 
 ### Check Variables Required
 ```bash
-curl "https://app.eksporyuk.com/api/admin/templates?action=get&slug=welcome-email" | grep variables
+curl "https://eksporyuk.com/api/admin/templates?action=get&slug=welcome-email" | grep variables
 ```
 
 ### Test Email Sending
 ```bash
 # Check Mailketing config
-curl https://app.eksporyuk.com/api/test-email
+curl https://eksporyuk.com/api/test-email
 
 # Send test template
-curl -X POST https://app.eksporyuk.com/api/admin/templates \
+curl -X POST https://eksporyuk.com/api/admin/templates \
   -H "Content-Type: application/json" \
   -d '{"action": "send-test", "slug": "welcome-email", "to": "test@example.com", "variables": {"userName": "Test"}}'
 ```

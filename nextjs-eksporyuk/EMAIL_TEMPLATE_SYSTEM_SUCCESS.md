@@ -53,7 +53,7 @@ Created `/src/app/api/admin/templates/route.ts`:
 
 ### Via Admin Panel
 ```
-1. Open: https://app.eksporyuk.com/admin/branded-templates
+1. Open: https://eksporyuk.com/admin/branded-templates
 2. Lihat list 10 templates
 3. Click untuk edit
 4. Update subject/content
@@ -70,7 +70,7 @@ await sendBrandedEmail(
   'welcome-email',
   {
     userName: user.name,
-    dashboardUrl: 'https://app.eksporyuk.com/dashboard'
+    dashboardUrl: 'https://eksporyuk.com/dashboard'
   }
 )
 ```
@@ -203,7 +203,7 @@ Test template API (no auth needed for GET):
 curl "http://localhost:3000/api/admin/templates?action=get&slug=welcome-email"
 
 # Preview dengan variables
-curl "http://localhost:3000/api/admin/templates?action=preview&slug=welcome-email&userName=TestUser&dashboardUrl=https://app.eksporyuk.com/dashboard"
+curl "http://localhost:3000/api/admin/templates?action=preview&slug=welcome-email&userName=TestUser&dashboardUrl=https://eksporyuk.com/dashboard"
 ```
 
 ---
@@ -217,7 +217,7 @@ curl "http://localhost:3000/api/admin/templates?action=preview&slug=welcome-emai
 
 **Test Email Sending:**
 ```bash
-curl https://app.eksporyuk.com/api/test-email
+curl https://eksporyuk.com/api/test-email
 ```
 
 ---

@@ -113,7 +113,7 @@ slug: 'transaction-failed'
   transactionDate: 'DD MMM YYYY, HH:mm WIB',
   paymentMethod: 'Virtual Account BCA',
   accessMessage: 'Pesan khusus',
-  dashboardUrl: 'https://app.eksporyuk.com/dashboard',
+  dashboardUrl: 'https://eksporyuk.com/dashboard',
   expiryDate: 'Batas waktu (for PENDING)',
   cancelReason: 'Alasan pembatalan (for FAILED)',
   retryUrl: 'URL untuk coba lagi'

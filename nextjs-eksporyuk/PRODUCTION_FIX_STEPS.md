@@ -24,7 +24,7 @@ DATABASE_URL = postgresql://neondb_owner:npg_YUbWXw6urZ0d@ep-purple-breeze-a1ovf
 #### AUTHENTICATION (CRITICAL)
 ```
 NEXTAUTH_SECRET = eksporyuk-secret-key-2024-production
-NEXTAUTH_URL = https://app.eksporyuk.com
+NEXTAUTH_URL = https://eksporyuk.com
 ```
 
 #### GOOGLE OAUTH (Optional)
@@ -49,9 +49,9 @@ Setelah environment variables di-set:
 ## LANGKAH 3: Verifikasi
 
 Test beberapa URL production:
-- https://app.eksporyuk.com/auth/login
-- https://app.eksporyuk.com/api/auth/providers
-- https://app.eksporyuk.com/api/test-db
+- https://eksporyuk.com/auth/login
+- https://eksporyuk.com/api/auth/providers
+- https://eksporyuk.com/api/test-db
 
 ## LANGKAH 4: File Upload System Fix
 

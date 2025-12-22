@@ -10,9 +10,9 @@ Email template sudah dibuat dan siap digunakan di:
 ## 🚀 Cara Menggunakan di Admin Broadcast
 
 ### Step 1: Buka Admin Broadcast
-1. Login sebagai Admin: https://app.eksporyuk.com/auth/login
+1. Login sebagai Admin: https://eksporyuk.com/auth/login
 2. Navigasi ke: **Admin → Broadcast → Buat Campaign**
-3. Atau langsung ke: https://app.eksporyuk.com/admin/broadcast/create
+3. Atau langsung ke: https://eksporyuk.com/admin/broadcast/create
 
 ### Step 2: Konfigurasi Campaign
 
@@ -47,7 +47,7 @@ Template sudah menggunakan shortcode berikut (akan otomatis diganti oleh sistem)
 
 **Call-to-Action:**
 - **CTA Text**: "Login Sekarang"
-- **CTA Link**: https://app.eksporyuk.com/auth/login
+- **CTA Link**: https://eksporyuk.com/auth/login
 
 ### Step 4: Jadwalkan atau Kirim
 
@@ -106,14 +106,14 @@ Platform Eksporyuk sudah UPGRADE! 🎉
 • Tools affiliate lengkap
 
 🔗 *Login Sekarang:*
-https://app.eksporyuk.com
+https://eksporyuk.com
 
 📧 Email: {email}
 🔑 Password: gunakan password lama
 
 ⚠️ Akun Anda sudah otomatis ter-migrasi!
 
-Panduan lengkap: https://app.eksporyuk.com/migrasi
+Panduan lengkap: https://eksporyuk.com/migrasi
 
 Butuh bantuan? Reply chat ini.
 
@@ -151,4 +151,4 @@ Tim Eksporyuk
 Jika ada kendala:
 - WhatsApp: +62 812-3456-7890
 - Email: support@eksporyuk.com
-- Documentation: https://app.eksporyuk.com/migrasi
+- Documentation: https://eksporyuk.com/migrasi

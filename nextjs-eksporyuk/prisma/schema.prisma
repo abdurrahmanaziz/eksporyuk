@@ -366,6 +366,9 @@ model Membership {
 
   // Relations
   userMemberships         UserMembership[]
+  membershipGroups        MembershipGroup[]
+  membershipCourses       MembershipCourse[]
+  membershipProducts      MembershipProduct[]
 
   @@index([duration])
   @@index([isActive])
@@ -373,10 +376,13 @@ model Membership {
 }
 
 model MembershipGroup {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   membershipId String
   groupId      String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime   @default(now())
+
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  group        Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([membershipId, groupId])
   @@index([membershipId])
@@ -384,10 +390,13 @@ model MembershipGroup {
 }
 
 model MembershipCourse {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   membershipId String
   courseId     String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime   @default(now())
+
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([membershipId, courseId])
   @@index([membershipId])
@@ -395,10 +404,13 @@ model MembershipCourse {
 }
 
 model MembershipProduct {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   membershipId String
   productId    String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime   @default(now())
+
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([membershipId, productId])
   @@index([membershipId])
@@ -819,6 +831,7 @@ model Product {
 
   // Relations  
   transactions            Transaction[]
+  membershipProducts      MembershipProduct[]
 }
 
 model UserProduct {
@@ -902,6 +915,7 @@ model Course {
 
   // Relations
   transactions            Transaction[]
+  membershipCourses       MembershipCourse[]
 }
 
 model UserCourseProgress {
@@ -918,6 +932,8 @@ model UserCourseProgress {
   accessExpiresAt  DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+
+  @@unique([userId, courseId])
 }
 
 model CourseModule {
@@ -966,6 +982,8 @@ model CourseEnrollment {
   transactionId String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@unique([userId, courseId])
 }
 
 model CourseConsent {
@@ -976,31 +994,35 @@ model CourseConsent {
   ipAddress   String?
   userAgent   String?
   agreedAt    DateTime @default(now())
+
+  @@unique([userId, courseId])
 }
 
 model Group {
-  id              String    @id @default(cuid())
-  name            String
-  description     String
-  avatar          String?
-  coverImage      String?
-  type            GroupType @default(PUBLIC)
-  ownerId         String
-  bannedWords     Json?
-  requireApproval Boolean   @default(false)
-  isActive        Boolean   @default(true)
-  postingSettings Json?
-  allowRichText   Boolean   @default(true)
-  allowMedia      Boolean   @default(true)
-  allowPolls      Boolean   @default(true)
-  allowEvents     Boolean   @default(true)
-  allowScheduling Boolean   @default(true)
-  allowReactions  Boolean   @default(true)
-  allowMentions   Boolean   @default(true)
-  moderatesPosts  Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  slug            String?
+  id               String            @id @default(cuid())
+  name             String
+  description      String
+  avatar           String?
+  coverImage       String?
+  type             GroupType         @default(PUBLIC)
+  ownerId          String
+  bannedWords      Json?
+  requireApproval  Boolean           @default(false)
+  isActive         Boolean           @default(true)
+  postingSettings  Json?
+  allowRichText    Boolean           @default(true)
+  allowMedia       Boolean           @default(true)
+  allowPolls       Boolean           @default(true)
+  allowEvents      Boolean           @default(true)
+  allowScheduling  Boolean           @default(true)
+  allowReactions   Boolean           @default(true)
+  allowMentions    Boolean           @default(true)
+  moderatesPosts   Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  slug             String?           @unique
+
+  membershipGroups MembershipGroup[]
 }
 
 model GroupMember {
@@ -1877,7 +1899,7 @@ model Settings {
 
 model IntegrationConfig {
   id           String    @id @default(cuid())
-  service      String
+  service      String    @unique
   config       Json
   isActive     Boolean   @default(false)
   lastTestedAt DateTime?
@@ -3211,6 +3233,8 @@ enum GroupRole {
 
 enum MembershipDuration {
   FREE
+  ONE_MONTH
+  THREE_MONTHS
   SIX_MONTHS
   TWELVE_MONTHS
   LIFETIME

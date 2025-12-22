@@ -6,7 +6,7 @@
 
 1. **Logo URL Conversion**
    - ❌ Before: `/uploads/logo_1765934743686.png` (relative path)
-   - ✅ After: `https://app.eksporyuk.com/uploads/logo_1765934743686.png` (absolute URL)
+   - ✅ After: `https://eksporyuk.com/uploads/logo_1765934743686.png` (absolute URL)
    
 2. **Database Update**
    - Updated `Settings.siteLogo` in Neon PostgreSQL
@@ -24,17 +24,17 @@
 ### Logo Source Check:
 ```
 Database Settings.siteLogo: 
-  https://app.eksporyuk.com/uploads/logo_1765934743686.png
+  https://eksporyuk.com/uploads/logo_1765934743686.png
 
 Brand Config logoUrl:
-  https://app.eksporyuk.com/uploads/logo_1765934743686.png
+  https://eksporyuk.com/uploads/logo_1765934743686.png
 
 ✅ MATCH: YES
 ```
 
 ### Email HTML Output:
 ```html
-<img src="https://app.eksporyuk.com/uploads/logo_1765934743686.png" 
+<img src="https://eksporyuk.com/uploads/logo_1765934743686.png" 
      alt="PT Ekspor Yuk Indonesia" 
      style="max-height: 60px; width: auto;" />
 ```
@@ -99,7 +99,7 @@ Current settings from Neon DB:
 ```json
 {
   "name": "PT Ekspor Yuk Indonesia",
-  "logoUrl": "https://app.eksporyuk.com/uploads/logo_1765934743686.png",
+  "logoUrl": "https://eksporyuk.com/uploads/logo_1765934743686.png",
   "tagline": "Platform pembelajaran ekspor terpercaya untuk UMKM Indonesia",
   "supportEmail": "support@eksporyuk.com",
   "address": "Sukabumi - Jawa Barat",

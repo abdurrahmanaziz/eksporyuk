@@ -13,7 +13,7 @@
 - ✅ FAQ dan support section included
 
 ### 2️⃣ LANDING PAGE
-🌐 **URL Live**: https://app.eksporyuk.com/migrasi
+🌐 **URL Live**: https://eksporyuk.com/migrasi
 
 **Features:**
 - ✅ Step-by-step panduan login (4 langkah mudah)
@@ -39,14 +39,14 @@
 
 ### Step A: Login Admin
 ```
-URL: https://app.eksporyuk.com/auth/login
+URL: https://eksporyuk.com/auth/login
 Role: ADMIN
 ```
 
 ### Step B: Buka Broadcast Creator
 ```
 Navigate: Admin → Broadcast → Buat Campaign
-Direct URL: https://app.eksporyuk.com/admin/broadcast/create
+Direct URL: https://eksporyuk.com/admin/broadcast/create
 ```
 
 ### Step C: Setup Campaign
@@ -73,7 +73,7 @@ Direct URL: https://app.eksporyuk.com/admin/broadcast/create
 
 **CTA:**
 - Text: `Login Sekarang`
-- Link: `https://app.eksporyuk.com/auth/login`
+- Link: `https://eksporyuk.com/auth/login`
 
 ### Step D: Kirim atau Jadwalkan
 
@@ -94,7 +94,7 @@ Direct URL: https://app.eksporyuk.com/admin/broadcast/create
 
 ### Real-time Analytics
 ```
-URL: https://app.eksporyuk.com/admin/broadcast
+URL: https://eksporyuk.com/admin/broadcast
 Atau: Admin → Broadcast → Statistik
 ```
 
@@ -165,11 +165,11 @@ Jika punya database WhatsApp user:
 Halo {name}!
 Eksporyuk sudah upgrade! 
 
-Login: app.eksporyuk.com
+Login: eksporyuk.com
 Email: {email}
 Pass: password lama
 
-Panduan: app.eksporyuk.com/migrasi
+Panduan: eksporyuk.com/migrasi
 
 Tim Eksporyuk
 ```

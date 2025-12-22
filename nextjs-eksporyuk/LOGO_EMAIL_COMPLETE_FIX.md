@@ -7,7 +7,7 @@
 #### ❌ Masalah Sebelumnya:
 1. Logo menggunakan path `/uploads/logo_xxx.png` (relative path)
 2. Logo tidak bisa diakses dari email client
-3. URL `https://app.eksporyuk.com/uploads/...` return 404
+3. URL `https://eksporyuk.com/uploads/...` return 404
 4. Logo tidak muncul di email yang diterima
 
 #### ✅ Solusi yang Diterapkan:
@@ -42,7 +42,7 @@ export async function getBrandConfig() {
     
     // If logo is relative path, convert to absolute URL
     if (logoUrl && logoUrl.startsWith('/')) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.eksporyuk.com'
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'
       logoUrl = `${appUrl}${logoUrl}`
     }
     

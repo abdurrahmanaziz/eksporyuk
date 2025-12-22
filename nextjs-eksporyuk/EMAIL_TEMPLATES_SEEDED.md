@@ -63,7 +63,7 @@
 
 ## Akses Template di Admin Panel
 
-1. Login ke admin: `https://app.eksporyuk.com/admin`
+1. Login ke admin: `https://eksporyuk.com/admin`
 2. Buka menu: **Branded Templates** 
 3. Semua 10 templates akan terlihat di list
 
@@ -191,7 +191,7 @@ export async function sendBrandedEmail(
 
 ### Test via API Endpoint
 ```bash
-curl -X POST https://app.eksporyuk.com/api/test-email \
+curl -X POST https://eksporyuk.com/api/test-email \
   -H "Content-Type: application/json" \
   -d '{
     "to": "test@example.com",

@@ -23,10 +23,10 @@ const nextConfig = {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
     // optimizeCss: true,
     // cssChunking: 'loose',
-    // Fix for turbopack root detection
-    turbo: {
-      root: __dirname,
-    },
+    // Disable turbo for development
+    // turbo: {
+    //   root: __dirname,
+    // },
   },
   
   typescript: {

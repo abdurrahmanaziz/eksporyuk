@@ -80,7 +80,7 @@ const pusher = new Pusher(pusherKey, {
 ## Next Steps for User
 
 1. **Clear browser cache**: Cmd+Shift+R (Mac) / Ctrl+Shift+R (Windows)
-2. **Visit**: https://app.eksporyuk.com/admin
+2. **Visit**: https://eksporyuk.com/admin
 3. **Login**: admin@eksporyuk.com / password123
 4. **Open DevTools Console** (F12)
 5. **Verify**: No Pusher errors should appear
