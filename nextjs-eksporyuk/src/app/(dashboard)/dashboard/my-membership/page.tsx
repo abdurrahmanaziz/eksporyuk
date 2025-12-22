@@ -401,21 +401,38 @@ export default function MyMembershipPage() {
 
         {/* Actions */}
         <div className="px-8 py-6 bg-gray-50 border-t border-gray-200 flex flex-wrap gap-3">
-          <Link
-            href={`/checkout/${membership.membership.checkoutSlug}`}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium text-white shadow-sm hover:shadow-md transition-all"
-            style={{ backgroundColor: theme.primary }}
-          >
-            <RefreshCw className="w-4 h-4" />
-            Perpanjang Membership
-          </Link>
-          <Link
-            href="/pricing"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all"
-          >
-            <Sparkles className="w-4 h-4" />
-            Upgrade Paket
-          </Link>
+          {/* Only show renew button if not lifetime membership */}
+          {!membership.membership.name.toLowerCase().includes('lifetime') && (
+            <Link
+              href={`/checkout/${membership.membership.checkoutSlug}`}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium text-white shadow-sm hover:shadow-md transition-all"
+              style={{ backgroundColor: theme.primary }}
+            >
+              <RefreshCw className="w-4 h-4" />
+              Perpanjang Membership
+            </Link>
+          )}
+          
+          {/* Only show upgrade button if not lifetime membership */}
+          {!membership.membership.name.toLowerCase().includes('lifetime') && (
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all"
+            >
+              <Sparkles className="w-4 h-4" />
+              Upgrade Paket
+            </Link>
+          )}
+          
+          {/* Show message for lifetime members */}
+          {membership.membership.name.toLowerCase().includes('lifetime') && (
+            <div className="w-full text-center py-2">
+              <p className="text-sm text-gray-600 flex items-center justify-center gap-2">
+                <Crown className="w-4 h-4 text-yellow-600" />
+                <span className="font-semibold text-gray-900">Membership Lifetime Aktif</span> - Anda memiliki akses selamanya!
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

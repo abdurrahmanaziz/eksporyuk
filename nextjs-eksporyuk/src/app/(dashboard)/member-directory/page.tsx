@@ -196,7 +196,7 @@ export default function MemberDirectoryPage() {
                 <Users className="h-10 w-10 text-amber-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold mb-2">Member Directory</h2>
+                <h2 className="text-2xl font-bold mb-2">Member Regional</h2>
                 <p className="text-muted-foreground text-lg">
                   Fitur Eksklusif Member Premium
                 </p>
@@ -248,7 +248,7 @@ export default function MemberDirectoryPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Users className="h-6 w-6 text-primary" />
-          Member Directory
+          Member Regional
         </h1>
         <p className="text-muted-foreground mt-1">
           Temukan member EksporYuk di sekitar Anda untuk networking dan kolaborasi
