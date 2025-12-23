@@ -2,6 +2,7 @@
 
 import { SessionProvider } from 'next-auth/react'
 import DashboardLayoutClient from '@/components/layout/DashboardLayoutClient'
+import AffiliateOnboardingGuard from '@/components/affiliate/AffiliateOnboardingGuard'
 
 export default function AffiliateLayout({
   children,
@@ -11,7 +12,9 @@ export default function AffiliateLayout({
   return (
     <SessionProvider>
       <DashboardLayoutClient>
-        {children}
+        <AffiliateOnboardingGuard>
+          {children}
+        </AffiliateOnboardingGuard>
       </DashboardLayoutClient>
     </SessionProvider>
   )
