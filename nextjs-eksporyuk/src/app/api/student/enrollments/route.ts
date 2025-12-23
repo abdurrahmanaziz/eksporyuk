@@ -21,23 +21,19 @@ export async function GET(req: NextRequest) {
       },
       include: {
         course: {
-          include: {
-            mentor: {
-              include: {
-                user: {
-                  select: {
-                    name: true,
-                    avatar: true
-                  }
-                }
-              }
-            },
-            _count: {
-              select: {
-                modules: true,
-                enrollments: true
-              }
-            }
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            shortDescription: true,
+            thumbnail: true,
+            mentorId: true,
+            isPublished: true,
+            difficulty: true,
+            category: true,
+            price: true,
+            discountedPrice: true
           }
         }
       },
