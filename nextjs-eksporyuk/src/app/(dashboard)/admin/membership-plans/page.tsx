@@ -1,26 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { AlertTriangle, Plus, Edit, Trash2, Eye, RefreshCw, Upload, Link, Package, Users, GraduationCap, X, Check, Info, Bell, Send } from 'lucide-react'
+import { Plus, Search, Filter, MoreVertical, Copy, ExternalLink, TrendingUp, ArrowUpward, Users as UsersIcon, CreditCard, Package as PackageIcon, GraduationCap, Bell, Send, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { FileUpload } from '@/components/ui/file-upload'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import MailketingListSelector from '@/components/admin/MailketingListSelector'
 
 type MembershipStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 
@@ -47,20 +31,15 @@ interface MembershipPlan {
   createdAt: string
 }
 
-interface FollowUpMessage {
-  title: string
-  message: string
-}
-
 interface PriceOption {
   duration: 'SIX_MONTHS' | 'TWELVE_MONTHS' | 'LIFETIME'
-  label: string // Display name: "6 Bulan", "12 Bulan", "Lifetime"
+  label: string
   price: number
   discount?: number
-  pricePerMonth?: number // Auto-calculated harga per bulan
-  benefits: string[] // List benefit untuk paket ini
-  badge?: string // "Hemat 10%", "Hemat 25%", dst
-  isPopular?: boolean // Badge "Paling Laris"
+  pricePerMonth?: number
+  benefits: string[]
+  badge?: string
+  isPopular?: boolean
 }
 
 export default function MembershipPlansPage() {
@@ -68,86 +47,11 @@ export default function MembershipPlansPage() {
   const router = useRouter()
   const [plans, setPlans] = useState<MembershipPlan[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editMode, setEditMode] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<MembershipPlan | null>(null)
-  
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    logo: '',
-    banner: '',
-    salespage: '',
-    isPopular: false,
-    affiliateCommission: 0.30,
-    isActive: true,
-    mailketingListId: null as string | null,
-    mailketingListName: null as string | null,
-    autoAddToList: true,
-    autoRemoveOnExpire: false
-  })
-  
-  const [commissionType, setCommissionType] = useState<'PERCENTAGE' | 'FLAT'>('PERCENTAGE')
-  
-  const [prices, setPrices] = useState<PriceOption[]>([
-    { 
-      duration: 'SIX_MONTHS', 
-      label: 'Membership 6 Bulan',
-      price: 0,
-      benefits: [],
-      badge: '',
-      isPopular: false
-    }
-  ])
-  
-  const [followUps, setFollowUps] = useState<FollowUpMessage[]>([
-    { title: '', message: '' }
-  ])
-  
-  const [logoFile, setLogoFile] = useState<File | null>(null)
-  const [bannerFile, setBannerFile] = useState<File | null>(null)
-  const [selectedGroups, setSelectedGroups] = useState<string[]>([])
-  const [selectedCourses, setSelectedCourses] = useState<string[]>([])
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
-  const [availableGroups, setAvailableGroups] = useState<any[]>([])
-  const [availableCourses, setAvailableCourses] = useState<any[]>([])
-  const [availableProducts, setAvailableProducts] = useState<any[]>([])
-  const [reminders, setReminders] = useState<any[]>([])
-  const [reminderDialogOpen, setReminderDialogOpen] = useState(false)
-  const [editingReminder, setEditingReminder] = useState<any>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchPlans()
-    fetchAvailableResources()
   }, [])
-
-  const fetchAvailableResources = async () => {
-    try {
-      // Fetch groups
-      const groupsRes = await fetch('/api/admin/groups')
-      if (groupsRes.ok) {
-        const groupsData = await groupsRes.json()
-        setAvailableGroups(groupsData.groups || [])
-      }
-
-      // Fetch courses
-      const coursesRes = await fetch('/api/admin/courses')
-      if (coursesRes.ok) {
-        const coursesData = await coursesRes.json()
-        setAvailableCourses(coursesData.courses || [])
-      }
-
-      // Fetch products
-      const productsRes = await fetch('/api/admin/products')
-      if (productsRes.ok) {
-        const productsData = await productsRes.json()
-        setAvailableProducts(productsData.products || [])
-      }
-    } catch (error) {
-      console.error('Error fetching resources:', error)
-    }
-  }
 
   const fetchPlans = async () => {
     setLoading(true)
@@ -155,15 +59,7 @@ export default function MembershipPlansPage() {
       const response = await fetch('/api/admin/membership-plans')
       if (response.ok) {
         const data = await response.json()
-        // Debug: Log status field for each plan
-        console.log('=== Plans Status Debug ===')
-        data.plans?.forEach((p: any) => {
-          console.log(`${p.name}: status=${p.status}`)
-        })
-        // Filter out Member Free - this is a default role, not a sellable membership
-        const filteredPlans = (data.plans || []).filter((p: any) => 
-          p.slug !== 'member-free'
-        )
+        const filteredPlans = (data.plans || []).filter((p: any) => p.slug !== 'member-free')
         setPlans(filteredPlans)
       } else {
         toast.error('Gagal memuat paket membership')
@@ -176,171 +72,42 @@ export default function MembershipPlansPage() {
     }
   }
 
-  const openCreateDialog = () => {
-    setEditMode(false)
-    setSelectedPlan(null)
-    resetForm()
-    setDialogOpen(true)
+  const getDurationLabel = (duration: string) => {
+    switch(duration) {
+      case 'SIX_MONTHS': return '6 Bulan'
+      case 'TWELVE_MONTHS': return '1 Tahun'
+      case 'LIFETIME': return 'Selamanya'
+      default: return duration
+    }
   }
 
-  const openEditDialog = async (plan: MembershipPlan) => {
-    setEditMode(true)
-    setSelectedPlan(plan)
-    
-    // Set commission type based on value
-    const commValue = plan.affiliateCommission || 0.30
-    setCommissionType(commValue < 1 ? 'PERCENTAGE' : 'FLAT')
-    
-    setFormData({
-      name: plan.name,
-      description: plan.description || '',
-      logo: plan.formLogo || '',
-      banner: plan.formBanner || '',
-      isPopular: plan.isPopular,
-      salespage: plan.salespage || '',
-      affiliateCommission: commValue,
-      isActive: plan.isActive,
-      mailketingListId: (plan as any).mailketingListId || null,
-      mailketingListName: (plan as any).mailketingListName || null,
-      autoAddToList: (plan as any).autoAddToList !== false,
-      autoRemoveOnExpire: (plan as any).autoRemoveOnExpire || false
-    })
-    
-    // Properly handle prices with default values to avoid NaN errors
-    if (Array.isArray(plan.prices) && plan.prices.length > 0) {
-      setPrices(plan.prices.map(p => ({
-        duration: p.duration || 'SIX_MONTHS',
-        label: p.label || getDurationLabel(p.duration || 'SIX_MONTHS'),
-        price: typeof p.price === 'number' ? p.price : parseFloat(p.price || '0'),
-        discount: p.discount,
-        pricePerMonth: p.pricePerMonth,
-        benefits: p.benefits || [],
-        badge: p.badge || '',
-        isPopular: p.isPopular || false
-      })))
-    } else {
-      setPrices([{ 
-        duration: 'SIX_MONTHS',
-        label: 'Membership 6 Bulan',
-        price: 0,
-        benefits: [],
-        badge: '',
-        isPopular: false
-      }])
+  const getDurationIcon = (duration: string) => {
+    switch(duration) {
+      case 'LIFETIME': return 'all_inclusive'
+      case 'TWELVE_MONTHS': return 'calendar_today'
+      case 'SIX_MONTHS': return 'calendar_month'
+      default: return 'schedule'
     }
-    
-    setFollowUps(Array.isArray(plan.followUpMessages) ? plan.followUpMessages : [{ title: '', message: '' }])
-    
-    // Load existing relations from API
-    try {
-      const response = await fetch(`/api/admin/membership-plans/${plan.id}`)
-      if (response.ok) {
-        const { plan: detailedPlan } = await response.json()
-        
-        // Extract IDs from relations
-        const groupIds = detailedPlan.membershipGroups?.map((mg: any) => mg.groupId) || []
-        const courseIds = detailedPlan.membershipCourses?.map((mc: any) => mc.courseId) || []
-        const productIds = detailedPlan.membershipProducts?.map((mp: any) => mp.productId) || []
-        
-        setSelectedGroups(groupIds)
-        setSelectedCourses(courseIds)
-        setSelectedProducts(productIds)
-      }
-    } catch (error) {
-      console.error('Error loading plan details:', error)
-    }
-    
-    setDialogOpen(true)
   }
 
-  const closeDialog = () => {
-    setDialogOpen(false)
-    setEditMode(false)
-    setSelectedPlan(null)
-    resetForm()
-    setLogoFile(null)
-    setBannerFile(null)
-    setSelectedGroups([])
-    setSelectedCourses([])
-    setSelectedProducts([])
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value)
   }
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      logo: '',
-      banner: '',
-      salespage: '',
-      isPopular: false,
-      affiliateCommission: 0.30,
-      isActive: true,
-      mailketingListId: null,
-      mailketingListName: null,
-      autoAddToList: true,
-      autoRemoveOnExpire: false
-    })
-    setPrices([{ 
-      duration: 'SIX_MONTHS',
-      label: '6 Bulan',
-      price: 0,
-      benefits: [],
-      badge: '',
-      isPopular: false
-    }])
-    setFollowUps([{ title: '', message: '' }])
-  }
-
-  const handleSubmit = async () => {
-    // Validation
-    if (!formData.name.trim()) {
-      toast.error('Nama paket wajib diisi')
-      return
-    }
-
-    // Skip price validation for Pro (checkout umum)
-    const isPro = selectedPlan?.slug === 'pro' || formData.name.toLowerCase().includes('pro')
-    if (!isPro && (prices.length === 0 || prices.some(p => p.price <= 0))) {
-      toast.error('Mohon tambahkan minimal satu harga yang valid')
-      return
-    }
-
-    try {
-      const url = editMode ? `/api/admin/membership-plans/${selectedPlan?.id}` : '/api/admin/membership-plans'
-      const method = editMode ? 'PATCH' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          prices: isPro ? [] : prices.filter(p => p.price > 0),
-          followUpMessages: followUps.filter(f => f.message.trim()),
-          groups: selectedGroups,
-          courses: selectedCourses,
-          products: selectedProducts
-        })
-      })
-
-      if (response.ok) {
-        toast.success(`Paket membership berhasil ${editMode ? 'diperbarui' : 'dibuat'}`)
-        setDialogOpen(false)
-        fetchPlans()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Gagal menyimpan paket membership')
-      }
-    } catch (error) {
-      console.error('Error saving plan:', error)
-      toast.error('Gagal menyimpan paket membership')
-    }
+  const copyToClipboard = (text: string, message: string) => {
+    navigator.clipboard.writeText(text)
+    toast.success(message)
   }
 
   const handleDelete = async (id: string) => {
     const plan = plans.find(p => p.id === id)
     if (!plan) return
 
-    // Build detailed warning message
     const warnings: string[] = []
     if (plan._count.userMemberships > 0) {
       warnings.push(`${plan._count.userMemberships} anggota aktif`)
@@ -351,27 +118,18 @@ export default function MembershipPlansPage() {
     if (plan._count.membershipCourses > 0) {
       warnings.push(`${plan._count.membershipCourses} kursus terkait`)
     }
-    if (plan._count.membershipProducts > 0) {
-      warnings.push(`${plan._count.membershipProducts} produk terkait`)
-    }
 
     let confirmMessage = `⚠️ HAPUS PAKET: ${plan.name}\n\n`
     
     if (warnings.length > 0) {
-      confirmMessage += `❌ TIDAK BISA DIHAPUS!\n\nPaket ini terhubung dengan:\n${warnings.map(w => `• ${w}`).join('\n')}\n\n`
-      confirmMessage += `💡 Saran: Nonaktifkan paket ini daripada menghapusnya untuk menjaga integritas data.`
-      
+      confirmMessage += `❌ TIDAK BISA DIHAPUS!\n\nPaket ini terhubung dengan:\n${warnings.map(w => `• ${w}`).join('\n')}`
       alert(confirmMessage)
       return
-    } else {
-      confirmMessage += `✅ Paket ini aman untuk dihapus (tidak ada data terkait).\n\n`
-      confirmMessage += `Apakah Anda yakin ingin menghapus paket ini?\n\n`
-      confirmMessage += `⚠️ Tindakan ini TIDAK DAPAT DIBATALKAN!`
     }
 
-    if (!confirm(confirmMessage)) {
-      return
-    }
+    confirmMessage += `✅ Paket ini aman untuk dihapus.\n\nApakah Anda yakin?`
+
+    if (!confirm(confirmMessage)) return
 
     try {
       const response = await fetch(`/api/admin/membership-plans/${id}`, {
@@ -384,12 +142,7 @@ export default function MembershipPlansPage() {
         toast.success(data.message || 'Paket membership berhasil dihapus')
         fetchPlans()
       } else {
-        // Show detailed error from backend
-        const errorMsg = data.details 
-          ? `${data.error}\n\n${data.details}\n\n${data.suggestion || ''}`
-          : data.error || 'Gagal menghapus paket membership'
-        
-        toast.error(errorMsg, { duration: 6000 })
+        toast.error(data.error || 'Gagal menghapus paket membership')
       }
     } catch (error) {
       console.error('Error deleting plan:', error)
@@ -397,448 +150,281 @@ export default function MembershipPlansPage() {
     }
   }
 
-  const addPrice = () => {
-    setPrices([...prices, { 
-      duration: 'SIX_MONTHS', 
-      label: 'Membership 6 Bulan',
-      price: 0,
-      benefits: [],
-      badge: '',
-      isPopular: false
-    }])
-  }
+  // Calculate stats
+  const totalActivePlans = plans.filter(p => p.status === 'PUBLISHED').length
+  const totalMembers = plans.reduce((sum, p) => sum + (p._count?.userMemberships || 0), 0)
+  const totalRevenue = plans.reduce((sum, p) => {
+    if (!Array.isArray(p.prices)) return sum
+    const avgPrice = p.prices.reduce((pSum: number, price: PriceOption) => pSum + (price.price || 0), 0) / (p.prices.length || 1)
+    return sum + (avgPrice * (p._count?.userMemberships || 0))
+  }, 0)
 
-  const removePrice = (index: number) => {
-    setPrices(prices.filter((_, i) => i !== index))
-  }
-
-  const updatePrice = (index: number, field: string, value: any) => {
-    const newPrices = [...prices]
-    newPrices[index] = { ...newPrices[index], [field]: value }
-    
-    // Auto-calculate pricePerMonth if not lifetime
-    if (field === 'price' || field === 'duration') {
-      const p = newPrices[index]
-      if (p.duration !== 'LIFETIME') {
-        const months = p.duration === 'SIX_MONTHS' ? 6 : 12
-        p.pricePerMonth = Math.round(p.price / months)
-      }
-    }
-    
-    setPrices(newPrices)
-  }
-
-  const addFollowUp = () => {
-    setFollowUps([...followUps, { title: '', message: '' }])
-  }
-
-  const removeFollowUp = (index: number) => {
-    setFollowUps(followUps.filter((_, i) => i !== index))
-  }
-
-  const updateFollowUp = (index: number, field: 'title' | 'message', value: any) => {
-    const newFollowUps = [...followUps]
-    newFollowUps[index] = { ...newFollowUps[index], [field]: value }
-    setFollowUps(newFollowUps)
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount)
-  }
-
-  const getDurationLabel = (duration: string) => {
-    const labels: Record<string, string> = {
-      'SIX_MONTHS': 'Membership 6 Bulan',
-      'TWELVE_MONTHS': 'Membership 12 Bulan',
-      'LIFETIME': 'Membership Selamanya',
-      // Support for imported Sejoli tiers
-      '6_MONTH': 'Membership 6 Bulan',
-      '12_MONTH': 'Membership 12 Bulan',
-      'FREE': 'Membership Gratis'
-    }
-    return labels[duration] || `Membership ${duration}`
-  }
-
-  if (!session || session.user.role !== 'ADMIN') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-[400px]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              Access Denied
-            </CardTitle>
-            <CardDescription>
-              You need admin privileges to access this page.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Memuat paket membership...</p>
-        </div>
-      </div>
-    )
-  }
+  const filteredPlans = plans.filter(plan =>
+    plan.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    plan.slug.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
-    <ResponsivePageWrapper>
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Paket Membership</h1>
-          <p className="text-gray-600">Buat dan kelola paket membership</p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => window.open('/checkout/pro', '_blank')} 
-            variant="outline" 
-            className="gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
-          >
-            <Package className="h-4 w-4" />
-            Lihat Checkout Umum
-          </Button>
-          <Button onClick={fetchPlans} variant="outline" className="gap-2 border-gray-300 text-gray-700 hover:bg-gray-50">
-            <RefreshCw className="h-4 w-4" />
-            Muat Ulang
-          </Button>
-          <Button onClick={() => window.location.href = '/admin/membership-plans/create'} className="gap-2 btn-primary">
-            <Plus className="h-4 w-4" />
-            Buat Paket
-          </Button>
-        </div>
-      </div>
-
-      {/* Plans Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900">Paket Membership ({plans.length})</h2>
-          <p className="text-sm text-gray-600">
-            All membership packages and their configurations
-          </p>
-        </div>
-        <div className="p-6">
-          {/* Pro Checkout Info Banner */}
-          {plans.some(p => p.slug === 'pro') && (
-            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
-              <div className="flex items-start gap-3">
-                <Package className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 mb-1">
-                    🎉 Pro Checkout - Kumpulan Semua Paket
-                  </h4>
-                  <p className="text-sm text-gray-700 mb-2">
-                    Paket "Pro" menampilkan semua membership aktif dalam satu halaman checkout. 
-                    User dapat membandingkan fitur dan memilih paket yang sesuai.
-                  </p>
-                  <Button 
-                    onClick={() => window.open('/checkout/pro', '_blank')}
-                    size="sm"
-                    className="btn-primary"
-                  >
-                    <Link className="h-4 w-4 mr-2" />
-                    Buka Pro Checkout
-                  </Button>
-                </div>
-              </div>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="px-6 py-4 flex items-center justify-between">
+          <div className="flex-1 max-w-xl">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Cari paket..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
-          )}
-          
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nama Paket</TableHead>
-                <TableHead>Paket Membership</TableHead>
-                <TableHead>Transaksi</TableHead>
-                <TableHead>Fitur</TableHead>
-                <TableHead>Marketing</TableHead>
-                <TableHead>Link Checkout</TableHead>
-                <TableHead>Pengguna</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {plans.map((plan) => (
-                <TableRow key={plan.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      {plan.formLogo && (
-                        <img src={plan.formLogo} alt={plan.name} className="w-10 h-10 rounded object-cover" />
-                      )}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{plan.name}</span>
-                          {plan.slug === 'pro' && (
-                            <Badge className="bg-gradient-to-r from-orange-500 to-purple-500 text-white text-xs">
-                              Checkout Umum
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground">{plan.slug}</div>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+            <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600">
+              <span className="text-sm font-medium hidden sm:block">Keluar</span>
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="p-6 lg:p-8">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Manajemen Paket</h2>
+            <p className="text-sm text-gray-500 mt-1">Konfigurasi dan kelola produk membership.</p>
+          </div>
+          <div className="flex gap-3">
+            <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filter
+            </button>
+            <button 
+              onClick={() => router.push('/admin/membership-plans/create')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-md hover:shadow-lg flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Tambah Paket
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-500">Paket Aktif</h3>
+              <span className="p-1.5 bg-blue-100 text-blue-600 rounded-lg">
+                <PackageIcon className="h-5 w-5" />
+              </span>
+            </div>
+            <div className="flex items-end gap-2">
+              <p className="text-2xl font-bold text-gray-900">{totalActivePlans}</p>
+              <span className="text-xs font-medium text-green-500 bg-green-50 px-1.5 py-0.5 rounded flex items-center gap-0.5 mb-0.5">
+                <TrendingUp className="h-3 w-3" /> 100%
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-500">Total Member</h3>
+              <span className="p-1.5 bg-purple-100 text-purple-600 rounded-lg">
+                <UsersIcon className="h-5 w-5" />
+              </span>
+            </div>
+            <div className="flex items-end gap-2">
+              <p className="text-2xl font-bold text-gray-900">{totalMembers.toLocaleString('id-ID')}</p>
+              <p className="text-xs text-gray-400 mb-0.5">user</p>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-500">Pendapatan</h3>
+              <span className="p-1.5 bg-green-100 text-green-600 rounded-lg">
+                <CreditCard className="h-5 w-5" />
+              </span>
+            </div>
+            <div className="flex items-end gap-2">
+              <p className="text-2xl font-bold text-gray-900">
+                {(totalRevenue / 1000000).toFixed(1)}jt
+              </p>
+              <span className="text-xs font-medium text-green-500 bg-green-50 px-1.5 py-0.5 rounded flex items-center gap-0.5 mb-0.5">
+                <ArrowUpward className="h-3 w-3" /> 12%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                  <th className="pl-6 pr-4 py-4 w-64">Paket</th>
+                  <th className="px-4 py-4">Harga & Durasi</th>
+                  <th className="px-4 py-4">Performa</th>
+                  <th className="px-4 py-4">Fitur</th>
+                  <th className="px-4 py-4 text-center">Link</th>
+                  <th className="px-4 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredPlans.map((plan) => (
+                  <tr key={plan.id} className="group hover:bg-gray-50">
+                    <td className="pl-6 pr-4 py-4 align-top">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-gray-900 text-sm">{plan.name}</span>
+                        <span className="text-xs text-gray-500 mt-1">Paket Ekspor Yuk</span>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {plan.slug === 'pro' ? (
-                      <div className="text-sm text-blue-600 font-medium">Checkout Umum</div>
-                    ) : Array.isArray(plan.prices) && plan.prices.length > 0 ? (
-                      <div className="space-y-1">
-                        {plan.prices.slice(0, 2).map((price: PriceOption, i: number) => (
-                          <div key={i} className="flex flex-col">
-                            <span className="font-medium text-gray-800 text-sm">
-                              {getDurationLabel(price.duration)}
-                            </span>
-                            <span className="text-blue-600 text-xs font-semibold">
-                              {formatCurrency(price.price)}
+                    </td>
+                    <td className="px-4 py-4 align-top">
+                      {Array.isArray(plan.prices) && plan.prices.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold text-gray-900">
+                              {formatCurrency(plan.prices[0].price)}
                             </span>
                           </div>
-                        ))}
-                        {plan.prices.length > 2 && (
-                          <div className="text-xs text-blue-600 font-medium mt-1">
-                            +{plan.prices.length - 2} paket lainnya
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                            <span className="material-icons-round text-sm">
+                              {getDurationIcon(plan.prices[0].duration)}
+                            </span>
+                            <span>{getDurationLabel(plan.prices[0].duration)}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-sm">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-gray-700">
+                            {plan._count?.userMemberships || 0}
+                          </span>
+                          <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Trans.</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-gray-700">
+                            {plan._count?.userMemberships || 0}
+                          </span>
+                          <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Member</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex items-center gap-3">
+                        {plan._count?.membershipGroups > 0 && (
+                          <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600" title={`${plan._count.membershipGroups} Grup Diskusi`}>
+                            <UsersIcon className="h-4 w-4" />
+                          </div>
+                        )}
+                        {plan._count?.membershipCourses > 0 && (
+                          <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600" title={`${plan._count.membershipCourses} Kelas Eksklusif`}>
+                            <GraduationCap className="h-4 w-4" />
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground">Tidak ada harga</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      {(plan as any)._count?.userMemberships > 0 ? (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-                              {(plan as any)._count.userMemberships} Member
-                            </Badge>
-                          </div>
-                          {(plan as any).userMemberships?.[0]?.transaction?.createdAt && (
-                            <div className="text-xs text-gray-500">
-                              Terakhir: {new Date((plan as any).userMemberships[0].transaction.createdAt).toLocaleDateString('id-ID', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                              })}
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-xs text-gray-400">Belum ada member</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2 flex-wrap">
-                      {plan._count.membershipGroups > 0 && (
-                        <Badge variant="outline" className="gap-1">
-                          <Users className="h-3 w-3" />
-                          {plan._count.membershipGroups} Grup
-                        </Badge>
-                      )}
-                      {plan._count.membershipCourses > 0 && (
-                        <Badge variant="outline" className="gap-1">
-                          <GraduationCap className="h-3 w-3" />
-                          {plan._count.membershipCourses} Kelas
-                        </Badge>
-                      )}
-                      {plan._count.membershipProducts > 0 && (
-                        <Badge variant="outline" className="gap-1">
-                          <Package className="h-3 w-3" />
-                          {plan._count.membershipProducts} Produk
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2 items-center flex-wrap">
-                      {plan.isPopular && (
-                        <Badge className="bg-blue-100 text-blue-800 border-blue-300">Paling Laris</Badge>
-                      )}
-                      {plan.prices && Array.isArray(plan.prices) && plan.prices.length > 0 && plan.prices[0].benefits && plan.prices[0].benefits.length > 0 && (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-7 px-2 hover:bg-gray-100"
-                            >
-                              <Info className="h-4 w-4 text-blue-600" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80">
-                            <div className="space-y-2">
-                              <h4 className="font-semibold text-sm">Fitur & Benefit</h4>
-                              <div className="space-y-1">
-                                {plan.prices[0].benefits.map((benefit: string, i: number) => (
-                                  <div key={i} className="flex gap-2 items-start text-sm">
-                                    <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                                    <span>{benefit}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                      {plan.salespage && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs gap-1"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            window.open(plan.salespage, '_blank', 'noopener,noreferrer')
-                          }}
+                    </td>
+                    <td className="px-4 py-4 align-top text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => copyToClipboard(`${window.location.origin}/checkout/${plan.slug}`, 'Link berhasil disalin!')}
+                          className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-gray-100"
+                          title="Copy Link"
                         >
-                          <Link className="h-3 w-3" />
-                          Salespage
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      {plan.slug === 'pro' ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 text-xs gap-2 w-full"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const checkoutUrl = `${window.location.origin}/checkout/pro`
-                            navigator.clipboard.writeText(checkoutUrl)
-                            toast.success('Link checkout umum berhasil disalin!')
-                          }}
+                          <Copy className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => window.open(`/checkout/${plan.slug}`, '_blank')}
+                          className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-gray-100"
+                          title="Buka Halaman Checkout"
                         >
-                          <Link className="h-3 w-3" />
-                          /checkout/pro
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 text-xs gap-2 w-full"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const checkoutUrl = `${window.location.origin}/checkout/${plan.slug || plan.id}`
-                            navigator.clipboard.writeText(checkoutUrl)
-                            toast.success('Link checkout berhasil disalin!')
-                          }}
+                          <ExternalLink className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 align-top">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                        Active
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 align-top text-right">
+                      <div className="flex gap-1 justify-end">
+                        <button
+                          onClick={() => router.push(`/admin/membership-plans/${plan.id}/edit`)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                          title="Edit"
                         >
-                          <Link className="h-3 w-3" />
-                          /checkout/{plan.slug || plan.id}
-                        </Button>
-                      )}
-                      {plan.slug !== 'pro' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs gap-2 w-full text-muted-foreground hover:text-primary"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const checkoutProUrl = `${window.location.origin}/checkout/pro?plan=${plan.id}`
-                            navigator.clipboard.writeText(checkoutProUrl)
-                            toast.success('Link checkout/pro berhasil disalin!')
-                          }}
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(plan.id)}
+                          disabled={plan._count?.userMemberships > 0}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Hapus"
                         >
-                          <Link className="h-3 w-3" />
-                          Di /checkout/pro
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {plan._count.userMemberships} pengguna
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={
-                      (plan.status || 'PUBLISHED') === 'PUBLISHED' ? 'bg-green-100 text-green-800 border border-green-300' :
-                      (plan.status || 'PUBLISHED') === 'DRAFT' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
-                      'bg-gray-100 text-gray-800 border border-gray-300'
-                    }>
-                      {(plan.status || 'PUBLISHED') === 'PUBLISHED' ? '✅ PUBLISHED' :
-                       (plan.status || 'PUBLISHED') === 'DRAFT' ? '📝 DRAFT' :
-                       '📦 ARCHIVED'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push(`/admin/membership-plans/${plan.id}/edit`)}
-                        title="Edit Plan"
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.location.href = `/admin/membership-plans/${plan.id}/reminders`}
-                        title="Kelola Reminders"
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                      >
-                        <Bell className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.location.href = `/admin/membership-plans/${plan.id}/follow-ups`}
-                        title="Kelola Follow Up"
-                        className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.location.href = `/admin/memberships/${plan.id}/courses`}
-                        title="Kelola Kursus"
-                      >
-                        <GraduationCap className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(plan.id)}
-                        disabled={plan._count.userMemberships > 0}
-                        title="Hapus Plan"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {plans.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              No membership plans found. Create your first plan to get started.
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg">
+                          <MoreVertical className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              Menampilkan <span className="font-medium text-gray-900">1-{filteredPlans.length}</span> dari <span className="font-medium text-gray-900">{filteredPlans.length}</span> data
+            </p>
+            <div className="flex gap-2">
+              <button className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50" disabled>
+                Prev
+              </button>
+              <button className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50" disabled>
+                Next
+              </button>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-      </div>
+
+        {/* Empty State */}
+        {filteredPlans.length === 0 && !loading && (
+          <div className="text-center py-12 text-gray-500">
+            Tidak ada paket membership ditemukan.
+          </div>
+        )}
+      </main>
+
+      {/* Mobile FAB */}
+      <button 
+        onClick={() => router.push('/admin/membership-plans/create')}
+        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 z-50"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+
+      {/* Material Icons Font */}
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
     </div>
-    </ResponsivePageWrapper>
   )
 }

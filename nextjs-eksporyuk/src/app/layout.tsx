@@ -29,12 +29,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={poppins.variable}>
+    <html lang="id" className={poppins.variable} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={`${poppins.className} font-sans antialiased`}>
+      <body className={`${poppins.className} font-sans antialiased bg-white text-gray-900 transition-colors duration-200`}>
         <ReactQueryProvider>
           <AuthProvider>
             <OneSignalProvider />

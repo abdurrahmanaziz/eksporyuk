@@ -408,19 +408,19 @@ export default function AdminPage() {
                     { month: 'Des', value: 100, amount: '3.2M' },
                   ].map((item, index) => (
                     <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                      <span className="text-xs font-medium text-gray-600">Rp {item.amount}</span>
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Rp {item.amount}</span>
                       <div 
                         className="w-full bg-gradient-to-t from-emerald-500 to-green-400 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-green-500"
                         style={{ height: `${item.value}%` }}
                       ></div>
-                      <span className="text-xs text-gray-500">{item.month}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-500">{item.month}</span>
                     </div>
                   ))}
                 </div>
-                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">Total Bulan Ini</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats?.revenue.total || 0)}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Bulan Ini</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats?.revenue.total || 0)}</p>
                   </div>
                   <Link href="/admin/sales">
                     <Button variant="outline" size="sm" className="gap-2">
@@ -434,7 +434,7 @@ export default function AdminPage() {
           </Card>
 
           {/* Lifetime Stats */}
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -442,45 +442,45 @@ export default function AdminPage() {
                     <Target className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Lifetime Statistics</CardTitle>
-                    <CardDescription>Data keseluruhan platform</CardDescription>
+                    <CardTitle className="text-lg dark:text-white">Lifetime Statistics</CardTitle>
+                    <CardDescription className="dark:text-gray-400">Data keseluruhan platform</CardDescription>
                   </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-medium text-blue-600">Total Members</span>
+                    <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Total Members</span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.users.total.toLocaleString() || '0'}</p>
-                  <p className="text-xs text-gray-500 mt-1">Sejak awal</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.users.total.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Sejak awal</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
-                    <DollarSign className="w-4 h-4 text-green-600" />
-                    <span className="text-xs font-medium text-green-600">Total Revenue</span>
+                    <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <span className="text-xs font-medium text-green-600 dark:text-green-400">Total Revenue</span>
                   </div>
-                  <p className="text-xl font-bold text-gray-900">{formatCurrency(stats?.revenue.lifetime || stats?.revenue.total || 0)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Lifetime</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats?.revenue.lifetime || stats?.revenue.total || 0)}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Lifetime</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl">
+                <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
-                    <ShoppingCart className="w-4 h-4 text-amber-600" />
-                    <span className="text-xs font-medium text-amber-600">Transactions</span>
+                    <ShoppingCart className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Transactions</span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.transactions.total.toLocaleString() || '0'}</p>
-                  <p className="text-xs text-gray-500 mt-1">Total transaksi</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.transactions.total.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total transaksi</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl">
+                <div className="p-4 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/30 dark:to-rose-900/30 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
-                    <Crown className="w-4 h-4 text-pink-600" />
-                    <span className="text-xs font-medium text-pink-600">Active Members</span>
+                    <Crown className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                    <span className="text-xs font-medium text-pink-600 dark:text-pink-400">Active Members</span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.memberships.active.toLocaleString() || '0'}</p>
-                  <p className="text-xs text-gray-500 mt-1">Membership aktif</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.memberships.active.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Membership aktif</p>
                 </div>
               </div>
             </CardContent>
@@ -490,7 +490,7 @@ export default function AdminPage() {
         {/* Affiliate Performance Section */}
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-5">
           {/* Affiliate Chart */}
-          <Card className="border-0 shadow-lg lg:col-span-3">
+          <Card className="border-0 shadow-lg lg:col-span-3 bg-white dark:bg-gray-800">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -498,8 +498,8 @@ export default function AdminPage() {
                     <Link2 className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Affiliate Performance</CardTitle>
-                    <CardDescription>Performa affiliate 7 hari terakhir</CardDescription>
+                    <CardTitle className="text-lg dark:text-white">Affiliate Performance</CardTitle>
+                    <CardDescription className="dark:text-gray-400">Performa affiliate 7 hari terakhir</CardDescription>
                   </div>
                 </div>
                 <Link href="/admin/affiliates">
@@ -526,44 +526,44 @@ export default function AdminPage() {
                 {/* Grid lines */}
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
                   {[0, 1, 2, 3].map((_, i) => (
-                    <div key={i} className="border-t border-dashed border-gray-200"></div>
+                    <div key={i} className="border-t border-dashed border-gray-200 dark:border-gray-700"></div>
                   ))}
                 </div>
               </div>
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                 {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((day, i) => (
                   <span key={i}>{day}</span>
                 ))}
               </div>
               {/* Stats Summary */}
-              <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-1 text-cyan-600 mb-1">
+                  <div className="flex items-center justify-center gap-1 text-cyan-600 dark:text-cyan-400 mb-1">
                     <Eye className="w-4 h-4" />
                     <span className="text-xs font-medium">Total Clicks</span>
                   </div>
-                  <p className="text-xl font-bold text-gray-900">{stats?.affiliates.totalClicks?.toLocaleString() || '0'}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{stats?.affiliates.totalClicks?.toLocaleString() || '0'}</p>
                 </div>
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
+                  <div className="flex items-center justify-center gap-1 text-blue-600 dark:text-blue-400 mb-1">
                     <MousePointer className="w-4 h-4" />
                     <span className="text-xs font-medium">Conversions</span>
                   </div>
-                  <p className="text-xl font-bold text-gray-900">{stats?.affiliates.conversions || '0'}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{stats?.affiliates.conversions || '0'}</p>
                 </div>
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-1 text-green-600 mb-1">
+                  <div className="flex items-center justify-center gap-1 text-green-600 dark:text-green-400 mb-1">
                     <DollarSign className="w-4 h-4" />
                     <span className="text-xs font-medium">Commission</span>
                   </div>
-                  <p className="text-xl font-bold text-gray-900">{formatCurrency(stats?.affiliates.totalCommission || 0)}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats?.affiliates.totalCommission || 0)}</p>
                 </div>
               </div>
 
               {/* Traffic Source Section */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-gray-700">Sumber Traffic</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Sumber Traffic</h4>
                   <span className="text-xs text-gray-400">30 hari terakhir</span>
                 </div>
                 {trafficLoading ? (
@@ -582,8 +582,8 @@ export default function AdminPage() {
                         >
                           {source.name.charAt(0)}
                         </div>
-                        <span className="text-xs font-medium text-gray-700 w-20 truncate">{source.name}</span>
-                        <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 w-20 truncate">{source.name}</span>
+                        <div className="flex-1 h-5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                           <div 
                             className="h-full rounded-full transition-all duration-500"
                             style={{ 
@@ -592,7 +592,7 @@ export default function AdminPage() {
                             }}
                           ></div>
                         </div>
-                        <span className="text-xs font-bold text-gray-600 w-14 text-right">{source.count.toLocaleString()}</span>
+                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300 w-14 text-right">{source.count.toLocaleString()}</span>
                         <span className="text-[10px] text-gray-400 w-8">{source.percentage}%</span>
                       </div>
                     ))}
@@ -607,7 +607,7 @@ export default function AdminPage() {
           </Card>
 
           {/* Top Affiliates List - Top 10 */}
-          <Card className="border-0 shadow-lg lg:col-span-2">
+          <Card className="border-0 shadow-lg lg:col-span-2 bg-white dark:bg-gray-800">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -615,8 +615,8 @@ export default function AdminPage() {
                     <Award className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Top 10 Affiliates</CardTitle>
-                    <CardDescription>{affiliatesPeriod || 'Bulan ini'}</CardDescription>
+                    <CardTitle className="text-lg dark:text-white">Top 10 Affiliates</CardTitle>
+                    <CardDescription className="dark:text-gray-400">{affiliatesPeriod || 'Bulan ini'}</CardDescription>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">

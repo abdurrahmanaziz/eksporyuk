@@ -348,9 +348,10 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - 6 cards: 3 top, 3 bottom */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Row 1 */}
           <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 rounded-xl">
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
             <div className="p-5 relative z-10">
@@ -390,6 +391,7 @@ export default function AdminUsersPage() {
             </div>
           </div>
 
+          {/* Row 2 */}
           <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 rounded-xl">
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400/20 to-green-600/20 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
             <div className="p-5 relative z-10">
@@ -400,6 +402,19 @@ export default function AdminUsersPage() {
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Active Memberships</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.activeMemberships}</p>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 rounded-xl">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
+            <div className="p-5 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg shadow-md">
+                  <Share2 className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Affiliates</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.byRole.affiliate || 0}</p>
             </div>
           </div>
 

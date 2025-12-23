@@ -410,6 +410,29 @@ export default function DashboardSidebar() {
   const userRole = session?.user?.role || 'MEMBER_FREE'
   const { settings } = useSettings()
 
+  // Initialize dark mode from localStorage or system preference
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode')
+    if (savedDarkMode !== null) {
+      const isDark = savedDarkMode === 'true'
+      setDarkMode(isDark)
+      document.documentElement.classList.toggle('dark', isDark)
+    } else {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      setDarkMode(prefersDark)
+      document.documentElement.classList.toggle('dark', prefersDark)
+    }
+  }, [])
+
+  // Toggle dark mode function
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode
+    setDarkMode(newDarkMode)
+    localStorage.setItem('darkMode', newDarkMode.toString())
+    document.documentElement.classList.toggle('dark', newDarkMode)
+  }
+
   // Fetch affiliate menu status for non-affiliate users
   useEffect(() => {
     if (!session?.user?.id || userRole === 'AFFILIATE') return
@@ -586,25 +609,32 @@ export default function DashboardSidebar() {
         {/* Header with Logo */}
         <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200 dark:border-gray-800">
           <Link href={getDashboardUrl()} className="flex items-center gap-3">
-            {/* Logo Icon */}
-            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0">
-              {settings.siteLogo ? (
+            {settings.siteLogo ? (
+              /* When logo is uploaded - show only the logo image (no green box, no text) */
+              <div className="flex items-center">
                 <Image 
                   src={getLogo()} 
                   alt="Logo" 
-                  width={24} 
-                  height={24} 
-                  className="w-6 h-6 object-contain"
+                  width={collapsed ? 32 : 140} 
+                  height={32} 
+                  className={cn(
+                    "object-contain",
+                    collapsed ? "w-8 h-8" : "h-8 w-auto max-w-[140px]"
+                  )}
                 />
-              ) : (
-                <span className="text-white font-bold text-sm">E</span>
-              )}
-            </div>
-            {/* Brand Name */}
-            {!collapsed && (
-              <span className="font-semibold text-gray-900 dark:text-white">
-                {userRole === 'AFFILIATE' ? 'Affiliate' : 'Eksporyuk'}
-              </span>
+              </div>
+            ) : (
+              /* Fallback when no logo uploaded - show green box + text */
+              <>
+                <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-bold text-sm">E</span>
+                </div>
+                {!collapsed && (
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {userRole === 'AFFILIATE' ? 'Affiliate' : 'Eksporyuk'}
+                  </span>
+                )}
+              </>
             )}
           </Link>
           
@@ -650,13 +680,13 @@ export default function DashboardSidebar() {
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all',
                         isActive
-                          ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
-                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800',
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : 'text-gray-600 hover:bg-gray-100',
                         collapsed && 'justify-center px-0'
                       )}
                       title={collapsed ? item.name : undefined}
                     >
-                      <Icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'text-emerald-600 dark:text-emerald-400')} />
+                      <Icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'text-emerald-600')} />
                       {!collapsed && (
                         <>
                           <span className="flex-1 truncate">{item.name}</span>
@@ -664,8 +694,8 @@ export default function DashboardSidebar() {
                             <span className={cn(
                               'px-1.5 py-0.5 text-[10px] font-semibold rounded-full',
                               item.badge === 'NEW' || item.badge === '🔥'
-                                ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
-                                : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                ? 'bg-orange-100 text-orange-600'
+                                : 'bg-emerald-100 text-emerald-600'
                             )}>
                               {item.badge}
                             </span>
@@ -681,29 +711,8 @@ export default function DashboardSidebar() {
         </nav>
 
         {/* Footer Section */}
-        <div className="border-t border-gray-200 dark:border-gray-800 p-3 space-y-2">
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={cn(
-              'flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-all',
-              collapsed && 'justify-center px-0'
-            )}
-          >
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            {!collapsed && <span>Dark mode</span>}
-            {!collapsed && (
-              <div className={cn(
-                'ml-auto w-8 h-5 rounded-full transition-colors',
-                darkMode ? 'bg-emerald-500' : 'bg-gray-300'
-              )}>
-                <div className={cn(
-                  'w-4 h-4 bg-white rounded-full mt-0.5 transition-transform',
-                  darkMode ? 'translate-x-3.5' : 'translate-x-0.5'
-                )} />
-              </div>
-            )}
-          </button>
+        <div className="border-t border-gray-200 p-3 space-y-2">
+          {/* Dark mode toggle removed */}
 
           {/* User Profile */}
           <div className={cn(
@@ -725,10 +734,10 @@ export default function DashboardSidebar() {
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-medium text-gray-900 truncate">
                   {session?.user?.name || 'User'}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <p className="text-xs text-gray-500 truncate">
                   {userRole.replace('_', ' ')}
                 </p>
               </div>
@@ -739,7 +748,7 @@ export default function DashboardSidebar() {
           <button
             onClick={handleSignOut}
             className={cn(
-              'flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all',
+              'flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all',
               collapsed && 'justify-center px-0'
             )}
           >
