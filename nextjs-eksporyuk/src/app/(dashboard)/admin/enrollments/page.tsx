@@ -81,6 +81,12 @@ export default function AdminEnrollmentsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [courseFilter, setCourseFilter] = useState('all')
   
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const pageSize = 50
+  
   // Modals
   const [showAddModal, setShowAddModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -108,12 +114,14 @@ export default function AdminEnrollmentsPage() {
     }
   }, [status, session, router])
 
-  const fetchEnrollments = async () => {
+  const fetchEnrollments = async (page = currentPage) => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
       if (courseFilter !== 'all') params.set('courseId', courseFilter)
       if (statusFilter !== 'all') params.set('status', statusFilter)
+      params.set('page', page.toString())
+      params.set('limit', pageSize.toString())
       
       const res = await fetch(`/api/admin/enrollments?${params.toString()}`)
       if (res.ok) {
@@ -121,6 +129,9 @@ export default function AdminEnrollmentsPage() {
         setEnrollments(data.enrollments || [])
         setCourses(data.courses || [])
         setStats(data.stats || { total: 0, completed: 0, inProgress: 0, avgProgress: 0 })
+        setTotalRecords(data.total || 0)
+        setTotalPages(data.totalPages || 1)
+        setCurrentPage(data.page || 1)
       } else {
         toast.error('Gagal memuat data enrollment')
       }
@@ -131,6 +142,14 @@ export default function AdminEnrollmentsPage() {
       setLoading(false)
     }
   }
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
+      setCurrentPage(1)
+      fetchEnrollments(1)
+    }
+  }, [courseFilter, statusFilter])
 
   const searchUsers = async (query: string) => {
     if (query.length < 2) {
@@ -223,6 +242,48 @@ export default function AdminEnrollmentsPage() {
     }
   }
 
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return
+    setCurrentPage(page)
+    fetchEnrollments(page)
+  }
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const showPages = 5
+    
+    if (totalPages <= showPages + 2) {
+      // Show all pages
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      // Show first page
+      pages.push(1)
+      
+      if (currentPage > 3) {
+        pages.push('...')
+      }
+      
+      // Show pages around current
+      const start = Math.max(2, currentPage - 1)
+      const end = Math.min(totalPages - 1, currentPage + 1)
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+      
+      if (currentPage < totalPages - 2) {
+        pages.push('...')
+      }
+      
+      // Show last page
+      pages.push(totalPages)
+    }
+    
+    return pages
+  }
+
   const exportToCSV = () => {
     const headers = ['User', 'Email', 'Course', 'Progress', 'Status', 'Quiz Attempts', 'Assignments', 'Enrolled Date']
     const rows = filteredEnrollments.map(e => [
@@ -289,7 +350,7 @@ export default function AdminEnrollmentsPage() {
             <p className="text-sm text-muted-foreground">Kelola dan pantau progress siswa di semua kursus</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={fetchEnrollments}>
+            <Button variant="outline" size="sm" onClick={() => fetchEnrollments()}>
               <RefreshCw className="h-4 w-4 mr-1" />
               Refresh
             </Button>
@@ -519,6 +580,70 @@ export default function AdminEnrollmentsPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+              
+            {/* Pagination */}
+            {totalPages > 1 && filteredEnrollments.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  Menampilkan {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalRecords)} dari {totalRecords.toLocaleString()} data
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentPage === 1}
+                    className="h-8 px-2"
+                  >
+                    ««
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="h-8 px-2"
+                  >
+                    «
+                  </Button>
+                  
+                  {getPageNumbers().map((page, index) => (
+                    typeof page === 'number' ? (
+                      <Button
+                        key={index}
+                        variant={currentPage === page ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className={`h-8 w-8 ${currentPage === page ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
+                      >
+                        {page}
+                      </Button>
+                    ) : (
+                      <span key={index} className="px-2 text-muted-foreground">...</span>
+                    )
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="h-8 px-2"
+                  >
+                    »
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="h-8 px-2"
+                  >
+                    »»
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
