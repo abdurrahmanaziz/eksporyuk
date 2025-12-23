@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, MoreVertical, Copy, ExternalLink, TrendingUp, ArrowUpward, Users as UsersIcon, CreditCard, Package as PackageIcon, GraduationCap, Bell, Send, Edit, Trash2 } from 'lucide-react'
+import { Plus, Search, Filter, MoreVertical, Copy, ExternalLink, TrendingUp, ArrowUp, Users as UsersIcon, CreditCard, Package as PackageIcon, GraduationCap, Bell, Send, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 type MembershipStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
@@ -261,7 +261,7 @@ export default function MembershipPlansPage() {
                 {(totalRevenue / 1000000).toFixed(1)}jt
               </p>
               <span className="text-xs font-medium text-green-500 bg-green-50 px-1.5 py-0.5 rounded flex items-center gap-0.5 mb-0.5">
-                <ArrowUpward className="h-3 w-3" /> 12%
+                <ArrowUp className="h-3 w-3" /> 12%
               </span>
             </div>
           </div>

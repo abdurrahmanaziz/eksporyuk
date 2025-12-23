@@ -39,8 +39,7 @@ export async function GET(
         description: true,
         duration: true,
         price: true,
-        originalPrice: true,
-        discount: true,
+        marketingPrice: true,
         commissionType: true,
         affiliateCommissionRate: true,
         features: true,
@@ -119,14 +118,13 @@ export async function GET(
         if (Array.isArray(featuresData)) {
           benefits = featuresData
           const basePrice = parseFloat(plan.price?.toString() || '0')
-          const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
+          const marketingPrice = parseFloat(plan.marketingPrice?.toString() || basePrice.toString())
           
           prices = [{
             duration: plan.duration || 'ONE_MONTH',
             label: plan.name,
             price: basePrice,
-            originalPrice: originalPrice,
-            discount: plan.discount || 0,
+            marketingPrice: marketingPrice,
             benefits: benefits,
             badge: '',
             isPopular: plan.isPopular || false
