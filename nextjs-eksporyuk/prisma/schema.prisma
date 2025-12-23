@@ -69,6 +69,14 @@ model User {
   supplierReviewsAssigned SupplierProfile[] @relation("MentorSupplierReviews")
   wallet                 Wallet?
   userMemberships        UserMembership[]
+  
+  // Post Relations
+  posts                  Post[]         @relation("UserPosts")
+  postLikes              PostLike[]     @relation("UserPostLikes")
+  postComments           PostComment[]  @relation("UserPostComments")
+  postReactions          PostReaction[] @relation("UserPostReactions")
+  commentReactions       CommentReaction[] @relation("UserCommentReactions")
+  savedPosts             SavedPost[]    @relation("UserSavedPosts")
 
   @@index([email])
   @@index([username])
@@ -1023,6 +1031,7 @@ model Group {
   slug             String?           @unique
 
   membershipGroups MembershipGroup[]
+  posts            Post[]            @relation("GroupPosts")
 }
 
 model GroupMember {
@@ -1062,6 +1071,14 @@ model Post {
   expiresAt        DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+
+  // Relations
+  author           User           @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  group            Group?         @relation("GroupPosts", fields: [groupId], references: [id], onDelete: SetNull)
+  likes            PostLike[]     @relation("PostLikes")
+  comments         PostComment[]  @relation("PostComments")
+  reactions        PostReaction[] @relation("PostReactions")
+  savedBy          SavedPost[]    @relation("SavedPosts")
 }
 
 model PostLike {
@@ -1069,6 +1086,12 @@ model PostLike {
   postId    String
   userId    String
   createdAt DateTime @default(now())
+
+  // Relations
+  post      Post     @relation("PostLikes", fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserPostLikes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
 }
 
 model PostComment {
@@ -1083,6 +1106,13 @@ model PostComment {
   images           Json?
   mentionedUsers   Json?
   reactionsCount   Json?
+
+  // Relations
+  post             Post              @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
+  author           User              @relation("UserPostComments", fields: [userId], references: [id], onDelete: Cascade)
+  parent           PostComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies          PostComment[]     @relation("CommentReplies")
+  reactions        CommentReaction[] @relation("CommentReactions")
 }
 
 model PostReaction {
@@ -1091,6 +1121,12 @@ model PostReaction {
   userId    String
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
+
+  // Relations
+  post      Post         @relation("PostReactions", fields: [postId], references: [id], onDelete: Cascade)
+  user      User         @relation("UserPostReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId, type])
 }
 
 model CommentReaction {
@@ -1099,6 +1135,12 @@ model CommentReaction {
   userId    String
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
+
+  // Relations
+  comment   PostComment  @relation("CommentReactions", fields: [commentId], references: [id], onDelete: Cascade)
+  user      User         @relation("UserCommentReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, type])
 }
 
 model SavedPost {
@@ -1106,6 +1148,12 @@ model SavedPost {
   postId    String
   userId    String
   createdAt DateTime @default(now())
+
+  // Relations
+  post      Post     @relation("SavedPosts", fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserSavedPosts", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
 }
 
 model Event {
