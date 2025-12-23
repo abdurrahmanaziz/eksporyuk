@@ -81,6 +81,7 @@ export default function AdminUserDetailPage() {
   const [user, setUser] = useState<UserDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [activatingAffiliate, setActivatingAffiliate] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -200,6 +201,71 @@ export default function AdminUserDetailPage() {
       // Revert on error
       setFormData({ ...formData, affiliateMenuEnabled: !newValue })
       setError('Gagal mengubah status menu affiliate')
+    }
+  }
+
+  // Activate user as affiliate (create profile + enable menu)
+  const activateAsAffiliate = async () => {
+    if (!confirm('Aktifkan user ini sebagai affiliate? Ini akan membuat profil affiliate baru dengan status APPROVED.')) {
+      return
+    }
+
+    setActivatingAffiliate(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/activate-affiliate`, {
+        method: 'POST',
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to activate affiliate')
+      }
+
+      setSuccess(`✅ ${data.message}. Kode referral: ${data.affiliateProfile?.affiliateCode || '-'}`)
+      fetchUser() // Refresh user data
+      
+      setTimeout(() => setSuccess(''), 5000)
+    } catch (error) {
+      console.error('Error activating affiliate:', error)
+      setError(error instanceof Error ? error.message : 'Gagal mengaktifkan affiliate')
+    } finally {
+      setActivatingAffiliate(false)
+    }
+  }
+
+  // Deactivate affiliate
+  const deactivateAffiliate = async () => {
+    if (!confirm('Nonaktifkan affiliate untuk user ini?')) {
+      return
+    }
+
+    setActivatingAffiliate(true)
+    setError('')
+
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/activate-affiliate`, {
+        method: 'DELETE',
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to deactivate affiliate')
+      }
+
+      setSuccess('Affiliate berhasil dinonaktifkan')
+      fetchUser()
+      
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (error) {
+      console.error('Error deactivating affiliate:', error)
+      setError(error instanceof Error ? error.message : 'Gagal menonaktifkan affiliate')
+    } finally {
+      setActivatingAffiliate(false)
     }
   }
 
@@ -472,9 +538,53 @@ export default function AdminUserDetailPage() {
               </div>
 
               {formData.affiliateMenuEnabled && !user.affiliateProfile && (
-                <p className="mt-3 text-xs text-orange-700 bg-orange-200 p-2 rounded">
-                  💡 User perlu apply jadi affiliate sebelum bisa menggunakan fitur affiliate.
-                </p>
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs text-orange-700 bg-orange-200 p-2 rounded">
+                    💡 User belum punya profil affiliate.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={activateAsAffiliate}
+                    disabled={activatingAffiliate}
+                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50"
+                  >
+                    {activatingAffiliate ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Mengaktifkan...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        Aktifkan sebagai Affiliate
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {!user.affiliateProfile && !formData.affiliateMenuEnabled && (
+                <div className="mt-4 pt-4 border-t border-orange-200">
+                  <p className="text-xs text-gray-600 mb-2">Atau langsung aktifkan sebagai affiliate:</p>
+                  <button
+                    type="button"
+                    onClick={activateAsAffiliate}
+                    disabled={activatingAffiliate}
+                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50"
+                  >
+                    {activatingAffiliate ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Mengaktifkan...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        Aktifkan sebagai Affiliate
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
 
@@ -513,6 +623,47 @@ export default function AdminUserDetailPage() {
                     <span className="text-gray-600">Konversi</span>
                     <span className="font-semibold">{user.affiliateProfile.totalConversions}</span>
                   </div>
+                </div>
+
+                {/* Toggle Affiliate Status */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Status Affiliate</span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      user.affiliateProfile.isActive 
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {user.affiliateProfile.isActive ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={user.affiliateProfile.isActive ? deactivateAffiliate : activateAsAffiliate}
+                    disabled={activatingAffiliate}
+                    className={`mt-2 w-full px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50 ${
+                      user.affiliateProfile.isActive 
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  >
+                    {activatingAffiliate ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : user.affiliateProfile.isActive ? (
+                      <>
+                        <XCircle className="w-4 h-4" />
+                        Nonaktifkan Affiliate
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        Aktifkan Affiliate
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             )}
