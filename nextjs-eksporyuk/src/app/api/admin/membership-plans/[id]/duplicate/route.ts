@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 // Generate slug
 function generateSlug(name: string): string {
   return name
@@ -14,19 +17,18 @@ function generateSlug(name: string): string {
 // POST - Duplicate membership plan
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     console.log('Duplicate request - Session:', session?.user?.role)
-    console.log('Duplicate request - Plan ID:', params.id)
+    console.log('Duplicate request - Plan ID:', id)
     
     if (!session || session.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { id } = params
 
     // Find original plan
     const originalPlan = await prisma.membership.findUnique({
