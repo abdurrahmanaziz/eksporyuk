@@ -37,12 +37,7 @@ export async function GET(request: NextRequest) {
     // Get single campaign by ID
     if (id) {
       const campaign = await prisma.broadcastCampaign.findUnique({
-        where: { id },
-        include: {
-          _count: {
-            select: { logs: true }
-          }
-        }
+        where: { id }
       })
       
       if (!campaign) {

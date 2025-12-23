@@ -39,9 +39,6 @@ export async function GET(request: NextRequest) {
           lte: endDate
         }
       },
-      include: {
-        logs: true
-      },
       orderBy: {
         createdAt: 'desc'
       }
@@ -57,9 +54,6 @@ export async function GET(request: NextRequest) {
           gte: prevStartDate,
           lt: startDate
         }
-      },
-      include: {
-        logs: true
       }
     })
 
