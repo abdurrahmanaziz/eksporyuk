@@ -539,22 +539,62 @@ export default function DashboardSidebar() {
   
   // Add affiliate menu for non-affiliate users if enabled
   if (affiliateMenuEnabled && userRole !== 'AFFILIATE') {
-    const affiliateMenuCategory: NavCategory = {
-      title: 'PROGRAM AFFILIATE',
-      items: hasAffiliateProfile && affiliateStatus === 'APPROVED'
-        ? [
-            { name: 'Dashboard Affiliate', href: '/affiliate/dashboard', icon: Home },
-            { name: 'Link Affiliasi', href: '/affiliate/links', icon: Share2 },
-            { name: 'Statistik', href: '/affiliate/statistics', icon: BarChart3 },
-            { name: 'Penghasilan', href: '/affiliate/earnings', icon: DollarSign },
+    if (hasAffiliateProfile && affiliateStatus === 'APPROVED') {
+      // Full affiliate menu for approved affiliates (same as AFFILIATE role)
+      const fullAffiliateMenu: NavCategory[] = [
+        {
+          title: 'PROGRAM AFFILIATE',
+          items: [
+            { name: 'Dashboard', href: '/affiliate/dashboard', icon: Home },
+            { name: 'Performa', href: '/affiliate/performance', icon: TrendingUp },
           ]
-        : hasAffiliateProfile && affiliateStatus === 'PENDING'
-        ? [{ name: '⏳ Menunggu Approval', href: '/dashboard/affiliate-status', icon: Clock }]
-        : hasAffiliateProfile && affiliateStatus === 'REJECTED'
-        ? [{ name: '❌ Aplikasi Ditolak', href: '/dashboard/affiliate-status', icon: XCircle }]
-        : [{ name: 'Jadi Affiliate', href: '/dashboard/apply-affiliate', icon: Share2 }]
+        },
+        {
+          title: 'BOOSTER SUITE',
+          items: [
+            { name: 'Bio Page', href: '/affiliate/bio', icon: Layout },
+            { name: 'Optin Forms', href: '/affiliate/optin-forms', icon: ClipboardList },
+            { name: 'Leads (CRM)', href: '/affiliate/leads', icon: UserPlus },
+            { name: 'Follow Up', href: '/affiliate/follow-ups', icon: Send },
+            { name: 'Broadcast', href: '/affiliate/broadcast', icon: Mail },
+            { name: 'Automation', href: '/affiliate/automation', icon: Zap },
+            { name: 'Kredit', href: '/affiliate/credits', icon: Coins },
+          ]
+        },
+        {
+          title: 'AFFILIATE',
+          items: [
+            { name: 'Link Affiliasi', href: '/affiliate/links', icon: Share2 },
+            { name: 'Short Link', href: '/affiliate/short-links', icon: Zap },
+            { name: 'Kupon', href: '/affiliate/coupons', icon: Ticket },
+            { name: 'Statistik', href: '/affiliate/statistics', icon: BarChart3 },
+            { name: 'Konversi', href: '/affiliate/conversions', icon: Target },
+            { name: 'Materi', href: '/affiliate/materials', icon: FileText },
+          ]
+        },
+        {
+          title: 'KEUANGAN',
+          items: [
+            { name: 'Tantangan', href: '/affiliate/challenges', icon: Trophy },
+            { name: 'Penghasilan', href: '/affiliate/earnings', icon: DollarSign },
+            { name: 'Saldo Saya', href: '/affiliate/wallet', icon: CreditCard },
+            { name: 'Penarikan', href: '/affiliate/payouts', icon: Wallet },
+          ]
+        },
+      ]
+      baseNavigation = [...baseNavigation, ...fullAffiliateMenu]
+    } else {
+      // Status menu for pending/rejected/not-applied
+      const affiliateStatusMenu: NavCategory = {
+        title: 'PROGRAM AFFILIATE',
+        items: hasAffiliateProfile && affiliateStatus === 'PENDING'
+          ? [{ name: '⏳ Menunggu Approval', href: '/dashboard/affiliate-status', icon: Clock }]
+          : hasAffiliateProfile && affiliateStatus === 'REJECTED'
+          ? [{ name: '❌ Aplikasi Ditolak', href: '/dashboard/affiliate-status', icon: XCircle }]
+          : [{ name: 'Jadi Affiliate', href: '/dashboard/apply-affiliate', icon: Share2 }]
+      }
+      baseNavigation = [...baseNavigation, affiliateStatusMenu]
     }
-    baseNavigation = [...baseNavigation, affiliateMenuCategory]
   }
   
   const categoriesWithBadges = updateCategoriesWithBadges(baseNavigation)
