@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic to prevent build-time evaluation
+export const dynamic = 'force-dynamic'
+
 // GET /aff/[userId]/[code] - Salespage (redirect ke external dengan cookies)
 // GET /aff/[userId]/[code]/checkout - Direct checkout
 // GET /aff/[userId]/[code]/0-link-alternatif - Backup salespage
