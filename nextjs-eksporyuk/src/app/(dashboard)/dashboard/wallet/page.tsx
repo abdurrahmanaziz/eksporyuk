@@ -27,6 +27,13 @@ export default function UserWalletPage() {
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const [withdrawAmount, setWithdrawAmount] = useState('')
+  const [withdrawBankName, setWithdrawBankName] = useState('')
+  const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('')
+  const [withdrawAccountName, setWithdrawAccountName] = useState('')
+  const [withdrawing, setWithdrawing] = useState(false)
+  const [withdrawError, setWithdrawError] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -55,6 +62,67 @@ export default function UserWalletPage() {
       console.error('Error fetching wallet:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setWithdrawError('')
+
+    const amount = parseFloat(withdrawAmount)
+    if (isNaN(amount) || amount <= 0) {
+      setWithdrawError('Jumlah tidak valid')
+      return
+    }
+
+    if (amount > (wallet?.balance || 0)) {
+      setWithdrawError('Saldo tidak mencukupi')
+      return
+    }
+
+    if (amount < 10000) {
+      setWithdrawError('Minimal penarikan Rp 10.000')
+      return
+    }
+
+    if (!withdrawBankName || !withdrawAccountNumber || !withdrawAccountName) {
+      setWithdrawError('Lengkapi semua data bank')
+      return
+    }
+
+    setWithdrawing(true)
+
+    try {
+      const response = await fetch('/api/wallet/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          bankName: withdrawBankName,
+          accountNumber: withdrawAccountNumber,
+          accountName: withdrawAccountName
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal mengajukan penarikan')
+      }
+
+      // Success
+      setShowWithdrawModal(false)
+      setWithdrawAmount('')
+      setWithdrawBankName('')
+      setWithdrawAccountNumber('')
+      setWithdrawAccountName('')
+      fetchWallet() // Refresh wallet
+      alert('Penarikan berhasil diajukan! Tunggu konfirmasi admin.')
+
+    } catch (error: any) {
+      setWithdrawError(error.message)
+    } finally {
+      setWithdrawing(false)
     }
   }
 
@@ -137,7 +205,10 @@ export default function UserWalletPage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <div className="group bg-white p-5 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 cursor-pointer flex flex-row md:flex-col items-center md:items-start gap-4">
+        <div 
+          onClick={() => setShowWithdrawModal(true)}
+          className="group bg-white p-5 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 cursor-pointer flex flex-row md:flex-col items-center md:items-start gap-4"
+        >
           <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center transition-transform group-hover:scale-110">
             <ArrowUpRight className="w-6 h-6" />
           </div>
@@ -342,6 +413,123 @@ export default function UserWalletPage() {
                 Tutup
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Withdraw Modal */}
+      {showWithdrawModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-3xl z-10">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold mb-1">Ajukan Penarikan</h3>
+                  <p className="text-blue-100 text-sm">Saldo: Rp {wallet?.balance.toLocaleString('id-ID')}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowWithdrawModal(false)
+                    setWithdrawError('')
+                  }}
+                  className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleWithdraw} className="p-6 space-y-4">
+              {withdrawError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                  {withdrawError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Jumlah Penarikan
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
+                    Rp
+                  </span>
+                  <input
+                    type="number"
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                    placeholder="0"
+                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg font-semibold"
+                    required
+                    min="10000"
+                    step="1000"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Minimal penarikan Rp 10.000</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nama Bank
+                </label>
+                <input
+                  type="text"
+                  value={withdrawBankName}
+                  onChange={(e) => setWithdrawBankName(e.target.value)}
+                  placeholder="BCA, Mandiri, BNI, dll"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nomor Rekening
+                </label>
+                <input
+                  type="text"
+                  value={withdrawAccountNumber}
+                  onChange={(e) => setWithdrawAccountNumber(e.target.value)}
+                  placeholder="1234567890"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nama Pemilik Rekening
+                </label>
+                <input
+                  type="text"
+                  value={withdrawAccountName}
+                  onChange={(e) => setWithdrawAccountName(e.target.value)}
+                  placeholder="Sesuai rekening bank"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="pt-4 space-y-2">
+                <button
+                  type="submit"
+                  disabled={withdrawing}
+                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {withdrawing ? 'Memproses...' : 'Ajukan Penarikan'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowWithdrawModal(false)
+                    setWithdrawError('')
+                  }}
+                  className="w-full py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

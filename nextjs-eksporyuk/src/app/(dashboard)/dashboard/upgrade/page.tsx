@@ -152,7 +152,7 @@ export default function UpgradePage() {
   return (
     <ResponsivePageWrapper>
       <div className="min-h-screen bg-gray-50 pb-20">
-        <div className="container max-w-md mx-auto px-4 py-6 space-y-6">
+        <div className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
           
           {/* Header */}
           <div className="text-center space-y-3">
@@ -192,28 +192,37 @@ export default function UpgradePage() {
             <h2 className="text-lg font-bold text-gray-900">Pilih Plan Yang Sesuai</h2>
           </div>
 
-          {currentMembership && !currentMembership.isLifetime && (
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          {currentMembership && (
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 max-w-2xl mx-auto">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColors.primary}15` }}>
-                  <Clock className="w-5 h-5" style={{ color: themeColors.primary }} />
+                  {currentMembership.isLifetime ? (
+                    <Crown className="w-5 h-5" style={{ color: themeColors.primary }} />
+                  ) : (
+                    <Clock className="w-5 h-5" style={{ color: themeColors.primary }} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-sm text-gray-900 mb-1">
-                    Durasi {formatDuration(currentMembership.plan.duration)}
+                    {currentMembership.isLifetime ? 'Membership Lifetime Aktif' : `Durasi ${formatDuration(currentMembership.plan.duration)}`}
                   </h3>
                   <p className="text-xs text-gray-600">
-                    Sisa <strong className="text-gray-900">{currentMembership.daysRemaining} hari</strong> aktif
+                    {currentMembership.isLifetime ? (
+                      <span>Anda sudah memiliki <strong className="text-green-600">akses selamanya</strong></span>
+                    ) : (
+                      <span>Sisa <strong className="text-gray-900">{currentMembership.daysRemaining} hari</strong> aktif</span>
+                    )}
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {plans.map((plan) => {
               const isCurrent = isCurrentPlan(plan.id)
               const isLifetime = plan.duration === 'LIFETIME'
+              const isUpgradeable = currentMembership?.isLifetime ? false : !isCurrent
 
               return (
                 <div
@@ -308,17 +317,25 @@ export default function UpgradePage() {
                     )}
                   </div>
 
-                  {isCurrent ? (
+                  {currentMembership?.isLifetime ? (
                     <button 
-                      className="w-full py-3 rounded-xl bg-gray-100 text-gray-500 font-semibold text-sm cursor-default"
+                      className="w-full py-3 rounded-xl bg-gray-100 text-gray-500 font-semibold text-sm cursor-not-allowed"
+                      disabled
+                      title="Anda sudah memiliki akses Lifetime"
+                    >
+                      Sudah Lifetime
+                    </button>
+                  ) : isCurrent ? (
+                    <button 
+                      className="w-full py-3 rounded-xl bg-green-100 text-green-700 font-semibold text-sm cursor-default border-2 border-green-300"
                       disabled
                     >
-                      Bukan Upgrade
+                      Paket Aktif Anda
                     </button>
                   ) : (
                     <button
                       onClick={() => handleUpgrade(plan)}
-                      className="w-full py-3 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all active:scale-95"
+                      className="w-full py-3 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 hover:opacity-90"
                       style={{ backgroundColor: themeColors.primary }}
                     >
                       {isLifetime ? 'Upgrade ke Lifetime' : 'Upgrade Sekarang'}
@@ -329,7 +346,7 @@ export default function UpgradePage() {
             })}
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-4 mt-6">
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-4 mt-6 max-w-4xl mx-auto">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: `${themeColors.primary}15` }}>
                 <Sparkles className="w-4 h-4" style={{ color: themeColors.primary }} />
@@ -340,7 +357,7 @@ export default function UpgradePage() {
               Nikmati berbagai keuntungan eksklusif
             </p>
             
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColors.primary}15` }}>
                   <BookOpen className="w-5 h-5" style={{ color: themeColors.primary }} />
@@ -379,7 +396,7 @@ export default function UpgradePage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 text-center space-y-4">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 text-center space-y-4 max-w-2xl mx-auto">
             <h3 className="font-bold text-base text-gray-900">Punya Pertanyaan?</h3>
             <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
               Tim support kami siap membantu Anda memilih plan yang tepat dan menjawab semua pertanyaan.
