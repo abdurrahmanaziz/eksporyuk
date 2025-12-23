@@ -258,7 +258,12 @@ export default function MembershipPlansPage() {
             </div>
             <div className="flex items-end gap-2">
               <p className="text-2xl font-bold text-gray-900">
-                {(totalRevenue / 1000000).toFixed(1)}jt
+                {totalRevenue >= 1000000000 
+                  ? `${(totalRevenue / 1000000000).toFixed(1)}M`
+                  : totalRevenue >= 1000000
+                  ? `${(totalRevenue / 1000000).toFixed(1)} jt`
+                  : `Rp ${totalRevenue.toLocaleString('id-ID')}`
+                }
               </p>
               <span className="text-xs font-medium text-green-500 bg-green-50 px-1.5 py-0.5 rounded flex items-center gap-0.5 mb-0.5">
                 <ArrowUp className="h-3 w-3" /> 12%
