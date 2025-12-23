@@ -23,14 +23,11 @@ export async function POST(
     const { id } = await params
     const session = await getServerSession(authOptions)
     
-    console.log('Duplicate request - Session:', session?.user?.role)
-    console.log('Duplicate request - Plan ID:', id)
-    
     if (!session || session.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Find original plan
+    // Find original plan with relations
     const originalPlan = await prisma.membership.findUnique({
       where: { id },
       include: {
@@ -41,114 +38,96 @@ export async function POST(
     })
 
     if (!originalPlan) {
-      console.error('Plan not found:', id)
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
     }
 
-    console.log('Original plan found:', originalPlan.name)
-
     // Create duplicate with modified name
     const duplicateName = `${originalPlan.name} (Copy)`
-    const duplicateSlug = generateSlug(duplicateName)
+    const baseSlug = generateSlug(duplicateName)
 
-    // Check if slug already exists and make it unique
-    let finalSlug = duplicateSlug
+    // Find unique slug (both slug and checkoutSlug will be the same)
+    let finalSlug = baseSlug
     let counter = 1
-    while (await prisma.membership.findUnique({ where: { slug: finalSlug } })) {
-      finalSlug = `${duplicateSlug}-${counter}`
+    while (
+      await prisma.membership.findFirst({
+        where: {
+          OR: [
+            { slug: finalSlug },
+            { checkoutSlug: finalSlug }
+          ]
+        }
+      })
+    ) {
+      finalSlug = `${baseSlug}-${counter}`
       counter++
     }
 
-    console.log('Creating duplicate with data:', {
-      name: duplicateName,
-      slug: finalSlug,
-      duration: originalPlan.duration,
-      price: originalPlan.price.toString()
-    })
-
-    // Prepare the data object
-    const createData: any = {
-      name: duplicateName,
-      slug: finalSlug,
-      checkoutSlug: finalSlug,
-      checkoutTemplate: originalPlan.checkoutTemplate || 'modern',
-      description: originalPlan.description,
-      duration: originalPlan.duration,
-      price: originalPlan.price,
-      marketingPrice: originalPlan.marketingPrice,
-      commissionType: originalPlan.commissionType,
-      affiliateCommissionRate: originalPlan.affiliateCommissionRate,
-      features: originalPlan.features,
-      isBestSeller: false,
-      isPopular: false,
-      isMostPopular: false,
-      isActive: false,
-      status: 'DRAFT',
-      salesPageUrl: originalPlan.salesPageUrl,
-      alternativeUrl: originalPlan.alternativeUrl,
-      reminders: originalPlan.reminders,
-      formLogo: originalPlan.formLogo,
-      formBanner: originalPlan.formBanner,
-      formDescription: originalPlan.formDescription,
-      mailketingListId: originalPlan.mailketingListId,
-      mailketingListName: originalPlan.mailketingListName,
-      autoAddToList: originalPlan.autoAddToList,
-      autoRemoveOnExpire: originalPlan.autoRemoveOnExpire,
-      showInGeneralCheckout: false,
-    }
-
-    // Add relations only if they exist
-    if (originalPlan.membershipGroups.length > 0) {
-      createData.membershipGroups = {
-        create: originalPlan.membershipGroups.map(mg => ({
-          groupId: mg.groupId
-        }))
-      }
-    }
-
-    if (originalPlan.membershipCourses.length > 0) {
-      createData.membershipCourses = {
-        create: originalPlan.membershipCourses.map(mc => ({
-          courseId: mc.courseId
-        }))
-      }
-    }
-
-    if (originalPlan.membershipProducts.length > 0) {
-      createData.membershipProducts = {
-        create: originalPlan.membershipProducts.map(mp => ({
-          productId: mp.productId
-        }))
-      }
-    }
-
-    console.log('Final create data keys:', Object.keys(createData))
-
+    // Create the duplicate - only include non-null values
+    // Prisma requires undefined (not null) for optional fields we want to skip
     const duplicatedPlan = await prisma.membership.create({
-      data: createData
+      data: {
+        name: duplicateName,
+        slug: finalSlug,
+        checkoutSlug: finalSlug,
+        checkoutTemplate: originalPlan.checkoutTemplate ?? 'modern',
+        description: originalPlan.description,
+        duration: originalPlan.duration,
+        // Convert Decimal to number for proper handling
+        price: Number(originalPlan.price),
+        marketingPrice: originalPlan.marketingPrice ? Number(originalPlan.marketingPrice) : undefined,
+        commissionType: originalPlan.commissionType,
+        affiliateCommissionRate: Number(originalPlan.affiliateCommissionRate),
+        features: originalPlan.features,
+        // Reset flags for duplicate
+        isBestSeller: false,
+        isPopular: false,
+        isMostPopular: false,
+        isActive: false,
+        status: 'DRAFT',
+        // Optional fields - only include if not null
+        salesPageUrl: originalPlan.salesPageUrl ?? undefined,
+        alternativeUrl: originalPlan.alternativeUrl ?? undefined,
+        reminders: originalPlan.reminders ?? undefined,
+        formLogo: originalPlan.formLogo ?? undefined,
+        formBanner: originalPlan.formBanner ?? undefined,
+        formDescription: originalPlan.formDescription ?? undefined,
+        mailketingListId: originalPlan.mailketingListId ?? undefined,
+        mailketingListName: originalPlan.mailketingListName ?? undefined,
+        autoAddToList: originalPlan.autoAddToList,
+        autoRemoveOnExpire: originalPlan.autoRemoveOnExpire,
+        showInGeneralCheckout: false,
+        // Relations
+        membershipGroups: originalPlan.membershipGroups.length > 0 ? {
+          create: originalPlan.membershipGroups.map(mg => ({
+            groupId: mg.groupId
+          }))
+        } : undefined,
+        membershipCourses: originalPlan.membershipCourses.length > 0 ? {
+          create: originalPlan.membershipCourses.map(mc => ({
+            courseId: mc.courseId
+          }))
+        } : undefined,
+        membershipProducts: originalPlan.membershipProducts.length > 0 ? {
+          create: originalPlan.membershipProducts.map(mp => ({
+            productId: mp.productId
+          }))
+        } : undefined,
+      }
     })
-
-    console.log('Duplicate created successfully:', duplicatedPlan.id)
 
     return NextResponse.json({
       message: 'Paket berhasil diduplikasi',
       plan: duplicatedPlan
     })
   } catch (error) {
-    console.error('Error duplicating plan - Full error:', error)
+    console.error('Error duplicating plan:', error)
     
-    // More detailed error message
     const errorMessage = error instanceof Error ? error.message : 'Failed to duplicate plan'
-    const errorStack = error instanceof Error ? error.stack : undefined
-    
-    console.error('Error message:', errorMessage)
-    console.error('Error stack:', errorStack)
     
     return NextResponse.json(
       { 
         error: 'Failed to duplicate plan',
-        details: errorMessage,
-        ...(process.env.NODE_ENV === 'development' && { stack: errorStack })
+        details: errorMessage
       },
       { status: 500 }
     )
