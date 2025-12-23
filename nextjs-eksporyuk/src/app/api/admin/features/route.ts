@@ -22,35 +22,48 @@ export async function GET(request: NextRequest) {
     if (userId) {
       // Get user's specific permissions
       const userPermissions = await prisma.userPermission.findMany({
-        where: { userId },
-        include: {
-          user: {
-            select: { id: true, name: true, email: true, role: true }
-          }
-        }
+        where: { userId }
       })
+
+      // Get user data separately
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true, role: true }
+      })
+
+      // Attach user data
+      const permissionsWithUser = userPermissions.map(perm => ({
+        ...perm,
+        user
+      }))
 
       return NextResponse.json({
         success: true,
-        permissions: userPermissions
+        permissions: permissionsWithUser
       })
     }
 
-    // Get all features and permissions overview
+    // Get all permissions
     const allPermissions = await prisma.userPermission.findMany({
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, role: true }
-        }
-      },
-      orderBy: [
-        { feature: 'asc' },
-        { user: { name: 'asc' } }
-      ]
+      orderBy: { feature: 'asc' }
     })
 
+    // Get unique user IDs and fetch user data
+    const userIds = [...new Set(allPermissions.map(p => p.userId))]
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, email: true, role: true }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    // Attach user data to permissions
+    const permissionsWithUsers = allPermissions.map(perm => ({
+      ...perm,
+      user: userMap.get(perm.userId) || null
+    }))
+
     // Group by feature
-    const featureGroups = allPermissions.reduce((acc: any, perm) => {
+    const featureGroups = permissionsWithUsers.reduce((acc: any, perm) => {
       if (!acc[perm.feature]) {
         acc[perm.feature] = []
       }
@@ -113,17 +126,15 @@ export async function POST(request: NextRequest) {
         feature,
         enabled: enabled !== undefined ? enabled : true,
         value: value || null
-      },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, role: true }
-        }
       }
     })
 
     return NextResponse.json({
       success: true,
-      permission
+      permission: {
+        ...permission,
+        user: { id: user.id, name: user.name, email: user.email, role: user.role }
+      }
     })
 
   } catch (error) {

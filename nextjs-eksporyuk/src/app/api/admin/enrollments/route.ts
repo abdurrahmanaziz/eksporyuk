@@ -91,25 +91,33 @@ export async function GET(req: NextRequest) {
           }
         })
 
-        // Get quiz attempts count
-        const quizAttempts = await prisma.quizAttempt.count({
+        // Get quiz attempts count - need to get quiz IDs first since no relation
+        const courseQuizzes = await prisma.quiz.findMany({
+          where: { courseId: enrollment.courseId },
+          select: { id: true }
+        })
+        const quizIds = courseQuizzes.map(q => q.id)
+        
+        const quizAttempts = quizIds.length > 0 ? await prisma.quizAttempt.count({
           where: {
             userId: enrollment.userId,
-            quiz: {
-              courseId: enrollment.courseId
-            }
+            quizId: { in: quizIds }
           }
-        })
+        }) : 0
 
-        // Get assignment submissions count
-        const assignmentSubmissions = await prisma.assignmentSubmission.count({
+        // Get assignment submissions count - need to get assignment IDs first since no relation
+        const courseAssignments = await prisma.assignment.findMany({
+          where: { courseId: enrollment.courseId },
+          select: { id: true }
+        })
+        const assignmentIds = courseAssignments.map(a => a.id)
+        
+        const assignmentSubmissions = assignmentIds.length > 0 ? await prisma.assignmentSubmission.count({
           where: {
             userId: enrollment.userId,
-            assignment: {
-              courseId: enrollment.courseId
-            }
+            assignmentId: { in: assignmentIds }
           }
-        })
+        }) : 0
 
         const user = userMap.get(enrollment.userId)
         const course = courseMap.get(enrollment.courseId)
