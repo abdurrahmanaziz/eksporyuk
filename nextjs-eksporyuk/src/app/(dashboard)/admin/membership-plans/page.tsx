@@ -152,6 +152,29 @@ export default function MembershipPlansPage() {
     }
   }
 
+  const handleDuplicate = async (id: string) => {
+    if (!confirm('Duplikat paket membership ini? Anda akan diarahkan ke halaman edit untuk menyesuaikan detail paket baru.')) return
+    
+    try {
+      const response = await fetch(`/api/admin/membership-plans/${id}/duplicate`, {
+        method: 'POST'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        toast.success('Paket berhasil diduplikasi!')
+        // Redirect to edit page
+        router.push(`/admin/membership-plans/${data.plan.id}/edit`)
+      } else {
+        const data = await response.json()
+        toast.error(data.error || 'Gagal menduplikasi paket')
+      }
+    } catch (error) {
+      console.error('Error duplicating plan:', error)
+      toast.error('Gagal menduplikasi paket')
+    }
+  }
+
   // Calculate stats
   const totalActivePlans = plans.filter(p => p.status === 'PUBLISHED').length
   const totalMembers = plans.reduce((sum, p) => sum + (p._count?.userMemberships || 0), 0)
@@ -374,6 +397,13 @@ export default function MembershipPlansPage() {
                           title="Edit"
                         >
                           <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDuplicate(plan.id)}
+                          className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
+                          title="Duplikat Paket"
+                        >
+                          <Copy className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(plan.id)}
