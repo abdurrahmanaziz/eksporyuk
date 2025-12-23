@@ -51,8 +51,8 @@ export default function AdminDocumentsPage() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [filterCategory, setFilterCategory] = useState<string>('')
-  const [filterVisibility, setFilterVisibility] = useState<string>('')
-  const [filterStatus, setFilterStatus] = useState<string>('')
+  const [filterVisibility, setFilterVisibility] = useState<string>('all')
+  const [filterStatus, setFilterStatus] = useState<string>('all')
   const [openUploadDialog, setOpenUploadDialog] = useState(false)
   const [openEditDialog, setOpenEditDialog] = useState(false)
   const [editingDocument, setEditingDocument] = useState<Document | null>(null)
@@ -84,8 +84,8 @@ export default function AdminDocumentsPage() {
       setLoading(true)
       const params = new URLSearchParams()
       if (filterCategory) params.append('category', filterCategory)
-      if (filterVisibility) params.append('visibility', filterVisibility)
-      if (filterStatus) params.append('status', filterStatus)
+      if (filterVisibility && filterVisibility !== 'all') params.append('visibility', filterVisibility)
+      if (filterStatus && filterStatus !== 'all') params.append('status', filterStatus)
 
       const response = await fetch(`/api/admin/documents?${params}`)
       if (!response.ok) throw new Error('Failed to fetch')
@@ -332,7 +332,7 @@ export default function AdminDocumentsPage() {
                 <SelectValue placeholder="Semua level" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua level</SelectItem>
+                <SelectItem value="all">Semua level</SelectItem>
                 <SelectItem value="SILVER">Silver</SelectItem>
                 <SelectItem value="GOLD">Gold</SelectItem>
                 <SelectItem value="PLATINUM">Platinum</SelectItem>
@@ -347,7 +347,7 @@ export default function AdminDocumentsPage() {
                 <SelectValue placeholder="Semua status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua status</SelectItem>
+                <SelectItem value="all">Semua status</SelectItem>
                 <SelectItem value="active">Aktif</SelectItem>
                 <SelectItem value="inactive">Nonaktif</SelectItem>
               </SelectContent>
