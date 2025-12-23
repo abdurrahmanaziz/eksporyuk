@@ -18,6 +18,10 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession(authOptions)
+    
+    console.log('Duplicate request - Session:', session?.user?.role)
+    console.log('Duplicate request - Plan ID:', params.id)
+    
     if (!session || session.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -35,8 +39,11 @@ export async function POST(
     })
 
     if (!originalPlan) {
+      console.error('Plan not found:', id)
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
     }
+
+    console.log('Original plan found:', originalPlan.name)
 
     // Create duplicate with modified name
     const duplicateName = `${originalPlan.name} (Copy)`
@@ -49,6 +56,13 @@ export async function POST(
       finalSlug = `${duplicateSlug}-${counter}`
       counter++
     }
+
+    console.log('Creating duplicate with data:', {
+      name: duplicateName,
+      slug: finalSlug,
+      duration: originalPlan.duration,
+      price: originalPlan.price.toString()
+    })
 
     const duplicatedPlan = await prisma.membership.create({
       data: {
@@ -105,20 +119,27 @@ export async function POST(
       }
     })
 
+    console.log('Duplicate created successfully:', duplicatedPlan.id)
+
     return NextResponse.json({
       message: 'Paket berhasil diduplikasi',
       plan: duplicatedPlan
     })
   } catch (error) {
-    console.error('Error duplicating plan:', error)
+    console.error('Error duplicating plan - Full error:', error)
     
     // More detailed error message
     const errorMessage = error instanceof Error ? error.message : 'Failed to duplicate plan'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
+    console.error('Error message:', errorMessage)
+    console.error('Error stack:', errorStack)
     
     return NextResponse.json(
       { 
         error: 'Failed to duplicate plan',
-        details: errorMessage 
+        details: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && { stack: errorStack })
       },
       { status: 500 }
     )
