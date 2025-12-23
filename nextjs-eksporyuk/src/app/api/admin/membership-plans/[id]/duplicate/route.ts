@@ -64,59 +64,66 @@ export async function POST(
       price: originalPlan.price.toString()
     })
 
-    const duplicatedPlan = await prisma.membership.create({
-      data: {
-        name: duplicateName,
-        slug: finalSlug,
-        checkoutSlug: finalSlug, // Same as slug for checkout
-        checkoutTemplate: originalPlan.checkoutTemplate || 'modern',
-        description: originalPlan.description || '',
-        duration: originalPlan.duration,
-        price: originalPlan.price,
-        marketingPrice: originalPlan.marketingPrice,
-        commissionType: originalPlan.commissionType || 'PERCENTAGE',
-        affiliateCommissionRate: originalPlan.affiliateCommissionRate || 30,
-        features: originalPlan.features || [],
-        isBestSeller: false, // Reset badges
-        isPopular: false,
-        isMostPopular: false,
-        isActive: false, // Set as inactive by default
-        status: 'DRAFT', // Set as draft
-        salesPageUrl: originalPlan.salesPageUrl,
-        alternativeUrl: originalPlan.alternativeUrl,
-        reminders: originalPlan.reminders,
-        formLogo: originalPlan.formLogo,
-        formBanner: originalPlan.formBanner,
-        formDescription: originalPlan.formDescription,
-        mailketingListId: originalPlan.mailketingListId,
-        mailketingListName: originalPlan.mailketingListName,
-        autoAddToList: originalPlan.autoAddToList ?? true,
-        autoRemoveOnExpire: originalPlan.autoRemoveOnExpire ?? false,
-        showInGeneralCheckout: false, // Don't show in general checkout by default
-        
-        // Copy relations only if they exist
-        ...(originalPlan.membershipGroups.length > 0 && {
-          membershipGroups: {
-            create: originalPlan.membershipGroups.map(mg => ({
-              groupId: mg.groupId
-            }))
-          }
-        }),
-        ...(originalPlan.membershipCourses.length > 0 && {
-          membershipCourses: {
-            create: originalPlan.membershipCourses.map(mc => ({
-              courseId: mc.courseId
-            }))
-          }
-        }),
-        ...(originalPlan.membershipProducts.length > 0 && {
-          membershipProducts: {
-            create: originalPlan.membershipProducts.map(mp => ({
-              productId: mp.productId
-            }))
-          }
-        })
+    // Prepare the data object
+    const createData: any = {
+      name: duplicateName,
+      slug: finalSlug,
+      checkoutSlug: finalSlug,
+      checkoutTemplate: originalPlan.checkoutTemplate || 'modern',
+      description: originalPlan.description,
+      duration: originalPlan.duration,
+      price: originalPlan.price,
+      marketingPrice: originalPlan.marketingPrice,
+      commissionType: originalPlan.commissionType,
+      affiliateCommissionRate: originalPlan.affiliateCommissionRate,
+      features: originalPlan.features,
+      isBestSeller: false,
+      isPopular: false,
+      isMostPopular: false,
+      isActive: false,
+      status: 'DRAFT',
+      salesPageUrl: originalPlan.salesPageUrl,
+      alternativeUrl: originalPlan.alternativeUrl,
+      reminders: originalPlan.reminders,
+      formLogo: originalPlan.formLogo,
+      formBanner: originalPlan.formBanner,
+      formDescription: originalPlan.formDescription,
+      mailketingListId: originalPlan.mailketingListId,
+      mailketingListName: originalPlan.mailketingListName,
+      autoAddToList: originalPlan.autoAddToList,
+      autoRemoveOnExpire: originalPlan.autoRemoveOnExpire,
+      showInGeneralCheckout: false,
+    }
+
+    // Add relations only if they exist
+    if (originalPlan.membershipGroups.length > 0) {
+      createData.membershipGroups = {
+        create: originalPlan.membershipGroups.map(mg => ({
+          groupId: mg.groupId
+        }))
       }
+    }
+
+    if (originalPlan.membershipCourses.length > 0) {
+      createData.membershipCourses = {
+        create: originalPlan.membershipCourses.map(mc => ({
+          courseId: mc.courseId
+        }))
+      }
+    }
+
+    if (originalPlan.membershipProducts.length > 0) {
+      createData.membershipProducts = {
+        create: originalPlan.membershipProducts.map(mp => ({
+          productId: mp.productId
+        }))
+      }
+    }
+
+    console.log('Final create data keys:', Object.keys(createData))
+
+    const duplicatedPlan = await prisma.membership.create({
+      data: createData
     })
 
     console.log('Duplicate created successfully:', duplicatedPlan.id)
