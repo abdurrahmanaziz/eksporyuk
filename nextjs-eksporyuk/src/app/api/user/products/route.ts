@@ -15,111 +15,86 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Fetch user's products with full product details
+    // Fetch user's products with product details
     const userProducts = await prisma.userProduct.findMany({
       where: {
-        userId: session.user.id
-      },
-      include: {
-        product: true,
-        transaction: {
-          select: {
-            id: true,
-            amount: true,
-            status: true
-          }
-        }
+        userId: session.user.id,
+        isActive: true
       },
       orderBy: {
         purchaseDate: 'desc'
-      }
-    })
-    
-    // Get target membership for upsell
-    const membershipIds = userProducts
-      .map(up => up.product.upsaleTargetMemberships)
-      .filter(Boolean) as string[]
-    
-    const targetMemberships = membershipIds.length > 0 
-      ? await prisma.membership.findMany({
-          where: { id: { in: membershipIds } },
-          select: { id: true, name: true, slug: true, price: true }
-        })
-      : []
-    
-    // Check user's current membership
-    const userMembership = await prisma.userMembership.findFirst({
-      where: { 
-        userId: session.user.id,
-        status: 'ACTIVE'
       },
-      include: {
-        membership: { select: { id: true, name: true } }
+      take: 100
+    })
+
+    // If no products, return empty
+    if (!userProducts || userProducts.length === 0) {
+      return NextResponse.json({
+        success: true,
+        products: []
+      })
+    }
+
+    // Get all product details
+    const productIds = userProducts.map(up => up.productId)
+    const products = await prisma.product.findMany({
+      where: {
+        id: { in: productIds }
       }
     })
 
-    // Format response with nested relationships
+    // Create map for quick lookup
+    const productMap = new Map(products.map(p => [p.id, p]))
+
+    // Format response
     const formattedProducts = userProducts.map(up => {
-      // Find target membership for this product
-      const targetMembership = targetMemberships.find(
-        m => m.id === up.product.upsaleTargetMemberships
-      )
-      
+      const product = productMap.get(up.productId)
+      if (!product) return null
+
       return {
         id: up.id,
         userId: up.userId,
         productId: up.productId,
         transactionId: up.transactionId,
         purchaseDate: up.purchaseDate,
-        price: up.price,
+        expiresAt: up.expiresAt,
+        price: parseFloat(up.price.toString()),
         product: {
-          id: up.product.id,
-          name: up.product.name,
-          slug: up.product.slug,
-          checkoutSlug: up.product.checkoutSlug,
-          description: up.product.description || '',
-          shortDescription: up.product.shortDescription || '',
-          thumbnail: up.product.thumbnail || '',
-          productType: up.product.productType,
-          price: Number(up.product.price),
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          description: product.description || '',
+          shortDescription: product.shortDescription || '',
+          thumbnail: product.thumbnail || '',
+          type: product.productType || 'DIGITAL',
+          price: parseFloat(product.price.toString()),
           
           // Event fields
-          eventDate: up.product.eventDate,
-          eventEndDate: up.product.eventEndDate,
-          eventUrl: up.product.eventUrl,
-          meetingId: up.product.meetingId,
-          meetingPassword: up.product.meetingPassword,
-          eventVisibility: up.product.eventVisibility,
-          
-          // Upsell membership
-          targetMembership: targetMembership || null,
-          upsaleMessage: up.product.upsaleMessage,
-          upsaleDiscount: up.product.upsaleDiscount,
+          eventDate: product.eventDate,
+          eventTime: product.eventTime,
+          eventLocation: product.eventLocation,
+          eventUrl: product.eventUrl,
+          eventVisibility: product.eventVisibility,
           
           // Files
-          downloadableFiles: up.product.downloadableFiles ? 
-            (typeof up.product.downloadableFiles === 'string' ? 
-              JSON.parse(up.product.downloadableFiles) : 
-              up.product.downloadableFiles
+          downloadableFiles: product.downloadableFiles ? 
+            (typeof product.downloadableFiles === 'string' ? 
+              JSON.parse(product.downloadableFiles) : 
+              product.downloadableFiles
             ) : []
         }
       }
-    })
+    }).filter(Boolean)
 
     return NextResponse.json({
       success: true,
-      products: formattedProducts,
-      userMembership: userMembership ? {
-        id: userMembership.id,
-        membershipId: userMembership.membershipId,
-        membershipName: userMembership.membership.name
-      } : null
+      products: formattedProducts
     })
 
   } catch (error) {
     console.error('[API User Products] Error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Gagal memuat produk', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
