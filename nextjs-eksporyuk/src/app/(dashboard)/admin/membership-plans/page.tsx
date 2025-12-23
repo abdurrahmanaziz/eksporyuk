@@ -48,6 +48,7 @@ export default function MembershipPlansPage() {
   const [plans, setPlans] = useState<MembershipPlan[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [totalRevenue, setTotalRevenue] = useState(0)
 
   useEffect(() => {
     fetchPlans()
@@ -61,6 +62,7 @@ export default function MembershipPlansPage() {
         const data = await response.json()
         const filteredPlans = (data.plans || []).filter((p: any) => p.slug !== 'member-free')
         setPlans(filteredPlans)
+        setTotalRevenue(data.totalRevenue || 0)
       } else {
         toast.error('Gagal memuat paket membership')
       }
@@ -153,11 +155,7 @@ export default function MembershipPlansPage() {
   // Calculate stats
   const totalActivePlans = plans.filter(p => p.status === 'PUBLISHED').length
   const totalMembers = plans.reduce((sum, p) => sum + (p._count?.userMemberships || 0), 0)
-  const totalRevenue = plans.reduce((sum, p) => {
-    if (!Array.isArray(p.prices)) return sum
-    const avgPrice = p.prices.reduce((pSum: number, price: PriceOption) => pSum + (price.price || 0), 0) / (p.prices.length || 1)
-    return sum + (avgPrice * (p._count?.userMemberships || 0))
-  }, 0)
+  // totalRevenue now comes from API (actual transactions)
 
   const filteredPlans = plans.filter(plan =>
     plan.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

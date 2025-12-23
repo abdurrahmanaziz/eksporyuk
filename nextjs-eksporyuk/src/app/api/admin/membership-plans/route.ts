@@ -23,6 +23,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get total revenue from actual transactions
+    const totalRevenueResult = await prisma.transaction.aggregate({
+      where: {
+        status: 'SUCCESS',
+        type: 'MEMBERSHIP'
+      },
+      _sum: {
+        amount: true
+      }
+    })
+
+    const totalRevenue = totalRevenueResult._sum.amount || 0
+
     const plans = await prisma.membership.findMany({
       select: {
         id: true,
@@ -178,7 +191,10 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ plans: plansWithPrices })
+    return NextResponse.json({ 
+      plans: plansWithPrices,
+      totalRevenue: totalRevenue
+    })
 
   } catch (error) {
     console.error('Error fetching membership plans:', error)
