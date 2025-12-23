@@ -43,20 +43,6 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          uploader: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          _count: {
-            select: {
-              downloadLogs: true,
-            },
-          },
-        },
       }),
       prisma.membershipDocument.count({ where }),
     ])

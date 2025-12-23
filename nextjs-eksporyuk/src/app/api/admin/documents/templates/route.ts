@@ -45,20 +45,6 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          createdByUser: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          _count: {
-            select: {
-              generated: true,
-            },
-          },
-        },
       }),
       prisma.exportDocument.count({ where }),
     ])
