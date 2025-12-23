@@ -26,14 +26,14 @@ export async function POST(request: NextRequest) {
     const title = formData.get('title') as string
     const description = formData.get('description') as string
     const category = formData.get('category') as string
-    const visibility = formData.get('visibility') as string // SILVER, GOLD, PLATINUM, LIFETIME
+    const minimumLevel = formData.get('minimumLevel') as string // SILVER, GOLD, PLATINUM, LIFETIME
 
     // Validation
     if (!file) {
       return NextResponse.json({ error: 'File is required' }, { status: 400 })
     }
 
-    if (!title || !category || !visibility) {
+    if (!title || !category || !minimumLevel) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
     await writeFile(filepath, buffer)
 
-    // Save metadata to database
-    const document = await prisma.document.create({
+    // Save metadata to database using MembershipDocument model
+    const document = await prisma.membershipDocument.create({
       data: {
         title,
         description: description || '',
@@ -72,11 +72,11 @@ export async function POST(request: NextRequest) {
         fileName: filename,
         fileSize: file.size,
         fileType: file.type,
-        visibility, // SILVER, GOLD, PLATINUM, LIFETIME
+        minimumLevel, // SILVER, GOLD, PLATINUM, LIFETIME
         uploaderId: session.user.id,
-        active: true,
-        views: 0,
-        downloads: 0
+        isActive: true,
+        viewCount: 0,
+        downloadCount: 0
       }
     })
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         id: document.id,
         title: document.title,
         fileUrl: document.fileUrl,
-        uploadDate: document.uploadDate
+        createdAt: document.createdAt
       }
     })
 

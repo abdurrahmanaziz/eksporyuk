@@ -29,27 +29,27 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get document
-    const document = await prisma.document.findUnique({
+    // Get document using MembershipDocument model
+    const document = await prisma.membershipDocument.findUnique({
       where: { id },
       select: {
         id: true,
         fileName: true,
         fileType: true,
         title: true,
-        visibility: true,
-        active: true,
-        views: true,
-        downloads: true
+        minimumLevel: true,
+        isActive: true,
+        viewCount: true,
+        downloadCount: true
       }
     })
 
-    if (!document || !document.active) {
+    if (!document || !document.isActive) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
 
     // Check access based on membership level
-    if (document.visibility !== 'LIFETIME') {
+    if (document.minimumLevel !== 'LIFETIME') {
       const userMembership = await prisma.userMembership.findFirst({
         where: { userId: session.user.id, isActive: true },
         select: {
@@ -69,7 +69,7 @@ export async function GET(
         else if (membershipName.includes('SILVER')) userLevel = MEMBERSHIP_LEVELS.SILVER
       }
 
-      const requiredLevel = MEMBERSHIP_LEVELS[document.visibility as keyof typeof MEMBERSHIP_LEVELS] || 0
+      const requiredLevel = MEMBERSHIP_LEVELS[document.minimumLevel as keyof typeof MEMBERSHIP_LEVELS] || 0
 
       if (userLevel < requiredLevel) {
         return NextResponse.json(
@@ -99,17 +99,16 @@ export async function GET(
         data: {
           documentId: id,
           userId: session.user.id,
-          membershipLevel: document.visibility,
-          downloadDate: new Date(),
+          membershipLevel: document.minimumLevel,
           ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
           status: 'SUCCESS'
         }
       }),
-      prisma.document.update({
+      prisma.membershipDocument.update({
         where: { id },
         data: {
-          downloads: { increment: 1 },
-          views: { increment: 1 }
+          downloadCount: { increment: 1 },
+          viewCount: { increment: 1 }
         }
       })
     ])

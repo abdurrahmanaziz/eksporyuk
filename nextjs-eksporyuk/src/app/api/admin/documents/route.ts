@@ -21,30 +21,32 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
-    const visibility = searchParams.get('visibility')
+    const minimumLevel = searchParams.get('minimumLevel')
     const status = searchParams.get('status')
 
     const whereClause: any = {}
     if (category) whereClause.category = category
-    if (visibility) whereClause.visibility = visibility
-    if (status === 'active') whereClause.active = true
-    if (status === 'inactive') whereClause.active = false
+    if (minimumLevel) whereClause.minimumLevel = minimumLevel
+    if (status === 'active') whereClause.isActive = true
+    if (status === 'inactive') whereClause.isActive = false
 
-    const documents = await prisma.document.findMany({
+    const documents = await prisma.membershipDocument.findMany({
       where: whereClause,
-      orderBy: { uploadDate: 'desc' },
+      orderBy: { createdAt: 'desc' },
       select: {
         id: true,
         title: true,
         description: true,
         category: true,
-        visibility: true,
-        uploadDate: true,
-        views: true,
-        downloads: true,
-        active: true,
+        minimumLevel: true,
+        createdAt: true,
+        viewCount: true,
+        downloadCount: true,
+        isActive: true,
         fileType: true,
-        fileSize: true
+        fileSize: true,
+        fileName: true,
+        fileUrl: true
       }
     })
 
@@ -74,7 +76,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Document ID required' }, { status: 400 })
     }
 
-    const document = await prisma.document.findUnique({
+    const document = await prisma.membershipDocument.findUnique({
       where: { id: documentId }
     })
 
@@ -91,7 +93,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete from database
-    await prisma.document.delete({
+    await prisma.membershipDocument.delete({
       where: { id: documentId }
     })
 
@@ -119,20 +121,20 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const { id, title, description, category, visibility, active } = await request.json()
+    const { id, title, description, category, minimumLevel, isActive } = await request.json()
 
     if (!id) {
       return NextResponse.json({ error: 'Document ID required' }, { status: 400 })
     }
 
-    const document = await prisma.document.update({
+    const document = await prisma.membershipDocument.update({
       where: { id },
       data: {
         ...(title && { title }),
         ...(description && { description }),
         ...(category && { category }),
-        ...(visibility && { visibility }),
-        ...(active !== undefined && { active })
+        ...(minimumLevel && { minimumLevel }),
+        ...(isActive !== undefined && { isActive })
       }
     })
 

@@ -9,22 +9,22 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
 
-    const whereClause: any = { active: true }
+    const whereClause: any = { isActive: true }
     if (category) whereClause.category = category
 
-    const documents = await prisma.document.findMany({
+    const documents = await prisma.membershipDocument.findMany({
       where: whereClause,
-      orderBy: { uploadDate: 'desc' },
+      orderBy: { createdAt: 'desc' },
       select: {
         id: true,
         title: true,
         description: true,
         category: true,
-        visibility: true,
-        uploadDate: true,
-        views: true,
-        downloads: true,
-        active: true,
+        minimumLevel: true,
+        createdAt: true,
+        viewCount: true,
+        downloadCount: true,
+        isActive: true,
         fileType: true
       }
     })
