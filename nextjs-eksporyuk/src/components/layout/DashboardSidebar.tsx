@@ -147,6 +147,12 @@ const navigationByRole = {
       ]
     },
     {
+      title: 'Manajemen Dokumen',
+      items: [
+        { name: 'Dokumen & Resource', href: '/admin/documents', icon: FileText },
+      ]
+    },
+    {
       title: 'Sistem Supplier',
       items: [
         { name: 'Semua Supplier', href: '/admin/supplier', icon: Building2 },
@@ -316,6 +322,12 @@ const navigationByRole = {
       ]
     },
     {
+      title: 'Resource',
+      items: [
+        { name: 'Dokumen & Resource', href: '/dashboard/documents', icon: FileText },
+      ]
+    },
+    {
       title: 'Bisnis',
       items: [
         { name: 'Produk', href: '/mentor/products', icon: ShoppingBag },
@@ -452,6 +464,12 @@ const navigationByRole = {
         { name: 'Dokumen Ekspor', href: '/documents/export', icon: FileCheck },
         { name: 'Dokumen Membership', href: '/membership-documents', icon: FileText },
         { name: 'Generator Dokumen', href: '/documents/generator', icon: File },
+      ]
+    },
+    {
+      title: 'Resource',
+      items: [
+        { name: 'Dokumen & Resource', href: '/dashboard/documents', icon: FileText },
       ]
     },
     {
