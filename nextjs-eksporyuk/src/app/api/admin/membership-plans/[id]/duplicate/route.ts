@@ -55,14 +55,14 @@ export async function POST(
         name: duplicateName,
         slug: finalSlug,
         checkoutSlug: finalSlug, // Same as slug for checkout
-        checkoutTemplate: originalPlan.checkoutTemplate,
-        description: originalPlan.description,
+        checkoutTemplate: originalPlan.checkoutTemplate || 'modern',
+        description: originalPlan.description || '',
         duration: originalPlan.duration,
         price: originalPlan.price,
         marketingPrice: originalPlan.marketingPrice,
-        commissionType: originalPlan.commissionType,
-        affiliateCommissionRate: originalPlan.affiliateCommissionRate,
-        features: originalPlan.features,
+        commissionType: originalPlan.commissionType || 'PERCENTAGE',
+        affiliateCommissionRate: originalPlan.affiliateCommissionRate || 30,
+        features: originalPlan.features || [],
         isBestSeller: false, // Reset badges
         isPopular: false,
         isMostPopular: false,
@@ -76,26 +76,32 @@ export async function POST(
         formDescription: originalPlan.formDescription,
         mailketingListId: originalPlan.mailketingListId,
         mailketingListName: originalPlan.mailketingListName,
-        autoAddToList: originalPlan.autoAddToList,
-        autoRemoveOnExpire: originalPlan.autoRemoveOnExpire,
+        autoAddToList: originalPlan.autoAddToList ?? true,
+        autoRemoveOnExpire: originalPlan.autoRemoveOnExpire ?? false,
         showInGeneralCheckout: false, // Don't show in general checkout by default
         
-        // Copy relations
-        membershipGroups: {
-          create: originalPlan.membershipGroups.map(mg => ({
-            groupId: mg.groupId
-          }))
-        },
-        membershipCourses: {
-          create: originalPlan.membershipCourses.map(mc => ({
-            courseId: mc.courseId
-          }))
-        },
-        membershipProducts: {
-          create: originalPlan.membershipProducts.map(mp => ({
-            productId: mp.productId
-          }))
-        }
+        // Copy relations only if they exist
+        ...(originalPlan.membershipGroups.length > 0 && {
+          membershipGroups: {
+            create: originalPlan.membershipGroups.map(mg => ({
+              groupId: mg.groupId
+            }))
+          }
+        }),
+        ...(originalPlan.membershipCourses.length > 0 && {
+          membershipCourses: {
+            create: originalPlan.membershipCourses.map(mc => ({
+              courseId: mc.courseId
+            }))
+          }
+        }),
+        ...(originalPlan.membershipProducts.length > 0 && {
+          membershipProducts: {
+            create: originalPlan.membershipProducts.map(mp => ({
+              productId: mp.productId
+            }))
+          }
+        })
       }
     })
 
@@ -105,8 +111,15 @@ export async function POST(
     })
   } catch (error) {
     console.error('Error duplicating plan:', error)
+    
+    // More detailed error message
+    const errorMessage = error instanceof Error ? error.message : 'Failed to duplicate plan'
+    
     return NextResponse.json(
-      { error: 'Failed to duplicate plan' },
+      { 
+        error: 'Failed to duplicate plan',
+        details: errorMessage 
+      },
       { status: 500 }
     )
   }
