@@ -48,16 +48,7 @@ export async function GET(req: NextRequest) {
           { isVerified: 'desc' },
           { rating: 'desc' },
           { createdAt: 'desc' }
-        ],
-        include: {
-          addedByUser: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          }
-        }
+        ]
       }),
       prisma.forwarder.count({ where })
     ])

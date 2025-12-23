@@ -26,38 +26,6 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     const template = await prisma.brandedTemplate.findUnique({
       where: { id: params.id },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        usages: {
-          select: {
-            id: true,
-            userId: true,
-            userRole: true,
-            context: true,
-            success: true,
-            createdAt: true,
-            user: {
-              select: {
-                name: true,
-                email: true
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' },
-          take: 10
-        },
-        _count: {
-          select: {
-            usages: true
-          }
-        }
-      }
     })
 
     if (!template) {
@@ -182,15 +150,6 @@ export async function PATCH(request: NextRequest, { params }: Props) {
         ...(previewData !== undefined && { previewData }),
         ...(customBranding !== undefined && { customBranding })
       },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
     })
 
     return NextResponse.json({

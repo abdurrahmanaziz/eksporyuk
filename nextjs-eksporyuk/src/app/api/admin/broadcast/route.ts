@@ -78,12 +78,7 @@ export async function GET(request: NextRequest) {
         where,
         orderBy: { createdAt: 'desc' },
         take: limit,
-        skip,
-        include: {
-          _count: {
-            select: { logs: true }
-          }
-        }
+        skip
       }),
       prisma.broadcastCampaign.count({ where })
     ])

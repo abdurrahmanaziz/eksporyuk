@@ -24,16 +24,7 @@ export async function GET(request: NextRequest) {
       prisma.buyerLike.findMany({
         where: { userId: session.user.id },
         include: {
-          buyer: {
-            include: {
-              addedByUser: {
-                select: {
-                  name: true,
-                  email: true
-                }
-              }
-            }
-          }
+          buyer: true
         },
         orderBy: { likedAt: 'desc' },
         skip,

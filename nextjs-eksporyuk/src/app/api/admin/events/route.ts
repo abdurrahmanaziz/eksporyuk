@@ -59,9 +59,6 @@ export async function GET(request: Request) {
       },
       orderBy: { eventDate: 'desc' },
       include: {
-        creator: {
-          select: { id: true, name: true, email: true }
-        },
         _count: {
           select: { userProducts: true },
         },
@@ -200,11 +197,6 @@ export async function POST(request: Request) {
         // Reminders
         reminders,
       },
-      include: {
-        creator: {
-          select: { id: true, name: true, email: true }
-        }
-      }
     })
 
     // Create EventMembership relations

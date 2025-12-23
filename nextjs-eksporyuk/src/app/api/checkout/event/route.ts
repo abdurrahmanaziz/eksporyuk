@@ -36,9 +36,6 @@ export async function POST(request: NextRequest) {
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
-        creator: {
-          select: { id: true, name: true, email: true }
-        },
         rsvps: {
           where: {
             userId: session.user.id

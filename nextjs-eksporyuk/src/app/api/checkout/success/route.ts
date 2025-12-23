@@ -43,11 +43,7 @@ export async function POST(request: NextRequest) {
         ]
       },
       include: {
-        product: {
-          include: {
-            creator: true
-          }
-        }
+        product: true
       }
     })
 

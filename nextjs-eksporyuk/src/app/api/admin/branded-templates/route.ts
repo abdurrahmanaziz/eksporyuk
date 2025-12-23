@@ -45,20 +45,6 @@ export async function GET(request: NextRequest) {
     const [templates, totalCount] = await Promise.all([
       prisma.brandedTemplate.findMany({
         where,
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          },
-          _count: {
-            select: {
-              usages: true
-            }
-          }
-        },
         orderBy: {
           [sortBy]: sortOrder as 'asc' | 'desc'
         },
@@ -179,15 +165,6 @@ export async function POST(request: NextRequest) {
         customBranding: customBranding || null,
         createdBy: session.user.id
       },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
     })
 
     return NextResponse.json({

@@ -47,21 +47,6 @@ export async function GET(
     const quiz = await prisma.groupQuiz.findUnique({
       where: { id: quizId },
       include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        },
-        rewardBadge: {
-          select: {
-            id: true,
-            name: true,
-            icon: true,
-            color: true
-          }
-        },
         questions: {
           orderBy: { order: 'asc' },
           select: {
@@ -75,12 +60,6 @@ export async function GET(
             // Note: explanation is not included until after answering
           }
         },
-        _count: {
-          select: {
-            questions: true,
-            attempts: true
-          }
-        }
       }
     })
 
@@ -244,13 +223,6 @@ export async function PUT(
         isActive
       },
       include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        },
         questions: true
       }
     })

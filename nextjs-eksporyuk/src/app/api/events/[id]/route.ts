@@ -22,37 +22,15 @@ export async function GET(
     const event = await prisma.event.findUnique({
       where: { id },
       include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        group: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
         rsvps: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-        _count: {
           select: {
-            rsvps: true,
+            id: true,
+            status: true,
+            userId: true,
           },
         },
+      },
+    });
       },
     });
 
@@ -150,16 +128,6 @@ export async function PUT(
         groupId,
         isPublished,
         isFeatured,
-      },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        group: true,
       },
     });
 

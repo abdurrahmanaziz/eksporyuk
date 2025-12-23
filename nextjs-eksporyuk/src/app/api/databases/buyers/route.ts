@@ -53,15 +53,7 @@ export async function GET(request: NextRequest) {
         orderBy: [
           { isVerified: 'desc' },
           { createdAt: 'desc' }
-        ],
-        include: {
-          addedByUser: {
-            select: {
-              name: true,
-              email: true
-            }
-          }
-        }
+        ]
       }),
       prisma.buyer.count({ where })
     ]);

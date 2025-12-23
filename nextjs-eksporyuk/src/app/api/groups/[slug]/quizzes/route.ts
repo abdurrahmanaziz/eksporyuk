@@ -76,29 +76,6 @@ export async function GET(
 
     const quizzes = await prisma.groupQuiz.findMany({
       where: whereCondition,
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        },
-        rewardBadge: {
-          select: {
-            id: true,
-            name: true,
-            icon: true,
-            color: true
-          }
-        },
-        _count: {
-          select: {
-            questions: true,
-            attempts: true
-          }
-        }
-      },
       orderBy: { createdAt: 'desc' }
     })
 
@@ -236,15 +213,7 @@ export async function POST(
         }
       },
       include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        },
-        questions: true,
-        rewardBadge: true
+        questions: true
       }
     })
 

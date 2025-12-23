@@ -35,9 +35,6 @@ export async function GET(
         productType: 'EVENT'
       },
       include: {
-        creator: {
-          select: { id: true, name: true, email: true }
-        },
         userProducts: {
           include: {
             user: {
@@ -192,11 +189,6 @@ export async function PUT(
         ...(reminders !== undefined && { reminders }),
         ...(targetMembershipId !== undefined && { upsaleTargetMemberships: targetMembershipId || null }),
       },
-      include: {
-        creator: {
-          select: { id: true, name: true, email: true }
-        }
-      }
     })
 
     // Update EventMembership relations

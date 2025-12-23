@@ -190,16 +190,6 @@ export async function POST(request: NextRequest) {
         isFeatured: isFeatured || false,
         creatorId: session.user.id,
       },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        group: true,
-      },
     });
 
     return NextResponse.json({ event }, { status: 201 });

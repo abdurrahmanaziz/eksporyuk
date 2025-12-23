@@ -18,16 +18,7 @@ export async function GET(
     }
 
     const forwarder = await prisma.forwarder.findUnique({
-      where: { id: params.id },
-      include: {
-        addedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
+      where: { id: params.id }
     })
 
     if (!forwarder) {

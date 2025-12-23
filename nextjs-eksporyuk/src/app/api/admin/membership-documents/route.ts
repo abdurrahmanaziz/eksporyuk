@@ -125,15 +125,6 @@ export async function POST(request: NextRequest) {
         fileType: file.type,
         uploaderId: session.user.id,
       },
-      include: {
-        uploader: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
     })
 
     return NextResponse.json({

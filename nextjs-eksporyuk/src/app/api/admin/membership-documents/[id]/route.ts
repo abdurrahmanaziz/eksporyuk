@@ -27,33 +27,6 @@ export async function GET(
 
     const document = await prisma.membershipDocument.findUnique({
       where: { id: params.id },
-      include: {
-        uploader: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        downloadLogs: {
-          take: 10,
-          orderBy: { downloadedAt: 'desc' },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-        _count: {
-          select: {
-            downloadLogs: true,
-          },
-        },
-      },
     })
 
     if (!document) {
@@ -94,15 +67,6 @@ export async function PUT(
         category,
         minimumLevel,
         isActive,
-      },
-      include: {
-        uploader: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
       },
     })
 

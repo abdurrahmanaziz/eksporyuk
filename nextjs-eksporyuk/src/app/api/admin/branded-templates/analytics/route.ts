@@ -19,19 +19,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all templates with usage counts
-    const templates = await prisma.brandedTemplate.findMany({
-      include: {
-        _count: {
-          select: { usages: true }
-        },
-        creator: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      }
-    })
+    const templates = await prisma.brandedTemplate.findMany({})
 
     // Get usage statistics
     const usageStats = await prisma.brandedTemplateUsage.groupBy({

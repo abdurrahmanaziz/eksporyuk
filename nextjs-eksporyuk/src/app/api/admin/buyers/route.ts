@@ -48,14 +48,6 @@ export async function GET(request: NextRequest) {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        include: {
-          addedByUser: {
-            select: {
-              name: true,
-              email: true
-            }
-          }
-        },
         orderBy: { createdAt: 'desc' }
       }),
       prisma.buyer.count({ where })

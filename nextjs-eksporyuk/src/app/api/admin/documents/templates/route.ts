@@ -112,15 +112,6 @@ export async function POST(request: NextRequest) {
         isPremium: isPremium ?? false,
         createdBy: session.user.id,
       },
-      include: {
-        createdByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
     })
 
     return NextResponse.json({
