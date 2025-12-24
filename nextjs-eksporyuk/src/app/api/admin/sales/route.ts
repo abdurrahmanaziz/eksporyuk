@@ -22,15 +22,12 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate') || searchParams.get('dateTo')
     const status = searchParams.get('status')
     const type = searchParams.get('type')
-    const membershipDuration = searchParams.get('membershipDuration') // NEW: Filter by membership duration
+    const membershipDuration = searchParams.get('membershipDuration')
     const userId = searchParams.get('userId')
     const affiliateId = searchParams.get('affiliateId')
     const productId = searchParams.get('productId')
     const search = searchParams.get('search') || searchParams.get('invoice') || ''
     const paymentMethod = searchParams.get('paymentMethod')
-    const membershipName = searchParams.get('membershipName')
-    const productName = searchParams.get('productName')
-    const courseName = searchParams.get('courseName')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '200')
     
@@ -53,150 +50,45 @@ export async function GET(request: NextRequest) {
       where.status = status
     }
     
-    // Filter by payment method if provided (VA | EWALLET | QRIS | RETAIL | MANUAL)
     if (paymentMethod && paymentMethod !== 'ALL') {
       where.paymentMethod = paymentMethod
     }
     
-    // Handle type filter with membership duration
     if (type && type !== 'ALL') {
-      // Check if type includes duration (e.g., "MEMBERSHIP_ONE_MONTH")
       if (type.startsWith('MEMBERSHIP_')) {
         where.type = 'MEMBERSHIP'
-        // Duration will be filtered after query (via membership relation or metadata)
       } else {
         where.type = type
       }
     }
     
-    // Filter by membership duration (will be applied in post-processing)
     const filterDuration = membershipDuration || (type?.startsWith('MEMBERSHIP_') ? type.replace('MEMBERSHIP_', '') : null)
     
     if (userId) {
       where.userId = userId
     }
     
-    if (affiliateId) {
-      where.affiliateConversion = {
-        affiliateId: affiliateId
-      }
-    }
-    
     if (productId) {
       where.productId = productId
     }
     
-    // Filter by membership name
-    if (membershipName) {
-      where.membership = {
-        membership: {
-          name: {
-            contains: membershipName
-          }
-        }
-      }
-    }
-    
-    // Filter by product name
-    if (productName) {
-      where.product = {
-        name: {
-          contains: productName
-        }
-      }
-    }
-    
-    // Filter by course name
-    if (courseName) {
-      where.course = {
-        title: {
-          contains: courseName
-        }
-      }
-    }
-    
-    // Search by invoice ID, user name, email
+    // Search by invoice/externalId (simple search without relations)
     if (search) {
       where.OR = [
         { id: { contains: search } },
         { invoiceNumber: { contains: search } },
         { externalId: { contains: search } },
-        { user: { name: { contains: search } } },
-        { user: { email: { contains: search } } },
+        { customerEmail: { contains: search } },
+        { customerName: { contains: search } },
       ]
     }
     
     // Get total count
     const total = await prisma.transaction.count({ where })
     
-    // Get transactions with relations
-    const transactions = await prisma.transaction.findMany({
+    // Get transactions WITHOUT relations (manual lookup)
+    const rawTransactions = await prisma.transaction.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            whatsapp: true,
-          }
-        },
-        product: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-            reminders: true,
-          }
-        },
-        course: {
-          select: {
-            id: true,
-            title: true,
-            price: true,
-            reminders: true,
-          }
-        },
-        membership: {
-          select: {
-            membership: {
-              select: {
-                id: true,
-                name: true,
-                // duration intentionally omitted to avoid enum decode errors from legacy values
-                price: true,
-                reminders: true,
-              }
-            }
-          }
-        },
-        coupon: {
-          select: {
-            id: true,
-            code: true,
-            discountType: true,
-            discountValue: true,
-          }
-        },
-        affiliateConversion: {
-          include: {
-            affiliate: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    phone: true,
-                    whatsapp: true,
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       },
@@ -204,240 +96,121 @@ export async function GET(request: NextRequest) {
       take: limit,
     })
     
-    // Enrich transactions with membership data from metadata if relation is null
-    const enrichedTransactions = await Promise.all(
-      transactions.map(async (tx) => {
-        // If it's a MEMBERSHIP transaction but membership relation is null
-        if (tx.type === 'MEMBERSHIP' && !tx.membership) {
-          const metadata = tx.metadata as any
-          const membershipId = metadata?.membershipId
-          
-          if (membershipId) {
-            // Lookup membership directly
-            const membership = await prisma.membership.findUnique({
-              where: { id: membershipId },
-              select: {
-                id: true,
-                name: true,
-                // duration intentionally omitted to avoid enum decode errors
-                price: true,
-                reminders: true,
-              }
-            })
-            // Safely fetch duration via raw SQL (use quoted table name for PostgreSQL)
-            let derivedDuration: string | null = null
-            try {
-              const dRows: any[] = await prisma.$queryRaw`SELECT duration FROM "Membership" WHERE id = ${membershipId} LIMIT 1`
-              derivedDuration = (dRows?.[0]?.duration as string) || null
-            } catch (_) {
-              derivedDuration = null
-            }
-            
-            if (membership) {
-              return {
-                ...tx,
-                // attach relation without enum duration
-                membership: {
-                  membership: membership
-                },
-                // ensure metadata carries duration for UI grouping/filtering
-                metadata: {
-                  ...(tx.metadata as any || {}),
-                  membershipDuration: (tx.metadata as any)?.membershipDuration || derivedDuration || null,
-                }
-              }
-            }
-          }
-        }
-        // If it has membership relation but no metadata duration, try to derive
-        if (tx.type === 'MEMBERSHIP' && tx.membership && !((tx.metadata as any)?.membershipDuration)) {
-          const mId = tx.membership.membership.id
-          let derivedDuration: string | null = null
-          try {
-            const dRows: any[] = await prisma.$queryRaw`SELECT duration FROM "Membership" WHERE id = ${mId} LIMIT 1`
-            derivedDuration = (dRows?.[0]?.duration as string) || null
-          } catch (_) {
-            derivedDuration = null
-          }
-          return {
-            ...tx,
-            metadata: {
-              ...(tx.metadata as any || {}),
-              membershipDuration: derivedDuration,
-            }
-          }
-        }
-        return tx
-      })
-    )
+    // Collect all IDs for batch lookup
+    const userIds = [...new Set(rawTransactions.map(t => t.userId).filter(Boolean))]
+    const productIds = [...new Set(rawTransactions.map(t => t.productId).filter(Boolean))]
+    const couponIds = [...new Set(rawTransactions.map(t => t.couponId).filter(Boolean))]
+    const courseIds = [...new Set(rawTransactions.map(t => t.courseId).filter(Boolean))]
+    const transactionIds = rawTransactions.map(t => t.id)
     
-    // Enrich transactions with affiliate data from metadata for PENDING transactions
-    // This shows affiliate info even before payment is completed
-    const fullyEnrichedTransactions = await Promise.all(
-      enrichedTransactions.map(async (tx) => {
-        // If transaction doesn't have affiliateConversion but has affiliate data in metadata
-        if (!tx.affiliateConversion) {
-          const metadata = tx.metadata as any
-          const affiliateId = metadata?.affiliate_id || metadata?.affiliateId
-          const affiliateName = metadata?.affiliate_name || metadata?.affiliateName
-          
-          if (affiliateId || affiliateName) {
-            // Try to find the affiliate profile
-            let affiliateProfile = null
-            
-            // First try to find by existing mapping from conversions
-            if (affiliateId) {
-              const existingConversion = await prisma.affiliateConversion.findFirst({
-                where: {
-                  transaction: {
-                    metadata: {
-                      path: ['affiliate_id'],
-                      equals: affiliateId
-                    }
-                  }
-                },
-                include: {
-                  affiliate: {
-                    include: {
-                      user: {
-                        select: {
-                          id: true,
-                          name: true,
-                          email: true,
-                          phone: true,
-                          whatsapp: true,
-                        }
-                      }
-                    }
-                  }
-                }
-              })
-              affiliateProfile = existingConversion?.affiliate
-            }
-            
-            // Create a virtual affiliateConversion object for display
-            // Note: commissionAmount is null for PENDING - only shown after SUCCESS
-            return {
-              ...tx,
-              // Virtual affiliate data from metadata (for display only)
-              affiliateFromMetadata: {
-                name: affiliateName || affiliateProfile?.user?.name || null,
-                affiliateId: affiliateId,
-                affiliate: affiliateProfile ? {
-                  id: affiliateProfile.id,
-                  user: affiliateProfile.user
-                } : null,
-                // Commission only shown if transaction is SUCCESS
-                commissionAmount: tx.status === 'SUCCESS' ? (metadata?.commissionAmount || null) : null,
-              }
-            }
-          }
+    // Batch fetch related data
+    const [users, products, coupons, courses, conversions] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: userIds as string[] } },
+        select: { id: true, name: true, email: true, phone: true, whatsapp: true }
+      }),
+      prisma.product.findMany({
+        where: { id: { in: productIds as string[] } },
+        select: { id: true, name: true, price: true }
+      }),
+      prisma.coupon.findMany({
+        where: { id: { in: couponIds as string[] } },
+        select: { id: true, code: true, discountType: true, discountValue: true }
+      }),
+      prisma.course.findMany({
+        where: { id: { in: courseIds as string[] } },
+        select: { id: true, title: true, price: true }
+      }),
+      prisma.affiliateConversion.findMany({
+        where: { transactionId: { in: transactionIds } },
+        select: { 
+          id: true, 
+          transactionId: true, 
+          affiliateId: true, 
+          commissionAmount: true,
+          paidOut: true 
         }
-        return tx
       })
-    )
+    ])
     
-    // Filter by membership duration if specified
-    let filteredTransactions = fullyEnrichedTransactions
+    // Create lookup maps
+    const userMap = Object.fromEntries(users.map(u => [u.id, u]))
+    const productMap = Object.fromEntries(products.map(p => [p.id, p]))
+    const couponMap = Object.fromEntries(coupons.map(c => [c.id, c]))
+    const courseMap = Object.fromEntries(courses.map(c => [c.id, c]))
+    const conversionMap = Object.fromEntries(conversions.map(c => [c.transactionId, c]))
+    
+    // Fetch affiliate users for conversions
+    const affiliateUserIds = [...new Set(conversions.map(c => c.affiliateId).filter(Boolean))]
+    const affiliateUsers = await prisma.user.findMany({
+      where: { id: { in: affiliateUserIds } },
+      select: { id: true, name: true, email: true, phone: true, whatsapp: true }
+    })
+    const affiliateUserMap = Object.fromEntries(affiliateUsers.map(u => [u.id, u]))
+    
+    // Enrich transactions
+    const transactions = rawTransactions.map(tx => {
+      const conversion = conversionMap[tx.id]
+      return {
+        ...tx,
+        user: tx.userId ? userMap[tx.userId] || null : null,
+        product: tx.productId ? productMap[tx.productId] || null : null,
+        coupon: tx.couponId ? couponMap[tx.couponId] || null : null,
+        course: tx.courseId ? courseMap[tx.courseId] || null : null,
+        membership: null, // No relation for now
+        affiliateConversion: conversion ? {
+          ...conversion,
+          affiliate: {
+            user: affiliateUserMap[conversion.affiliateId] || null
+          }
+        } : null
+      }
+    })
+    
+    // Filter by duration if needed (from metadata)
+    let filteredTransactions = transactions
     if (filterDuration) {
-      filteredTransactions = fullyEnrichedTransactions.filter(tx => {
+      filteredTransactions = transactions.filter(tx => {
         if (tx.type !== 'MEMBERSHIP') return false
-        // Prefer metadata-derived duration to avoid enum decoding on relation
-        const duration = (tx.metadata as any)?.membershipDuration 
-          || (tx.metadata as any)?.duration 
-          || tx.membership?.membership?.duration
+        const duration = (tx.metadata as any)?.membershipDuration || (tx.metadata as any)?.duration
         return String(duration) === String(filterDuration)
       })
     }
     
-    // Debug: Log full first transaction to see data structure
-    if (filteredTransactions.length > 0) {
-      const firstTx = filteredTransactions[0]
-      console.log('[Sales API] First enriched transaction:', JSON.stringify({
-        id: firstTx.id,
-        type: firstTx.type,
-        amount: firstTx.amount,
-        hasAffiliateConversion: !!firstTx.affiliateConversion,
-        affiliateConversion: firstTx.affiliateConversion ? {
-          id: firstTx.affiliateConversion.id,
-          commissionAmount: firstTx.affiliateConversion.commissionAmount,
-          affiliateName: firstTx.affiliateConversion.affiliate?.user?.name,
-        } : null,
-      }, null, 2))
+    // Filter by affiliate if specified
+    if (affiliateId) {
+      filteredTransactions = filteredTransactions.filter(tx => 
+        tx.affiliateConversion?.affiliateId === affiliateId
+      )
     }
     
     // Get stats
     const stats = await prisma.transaction.aggregate({
       where,
-      _sum: {
-        amount: true,
-      },
+      _sum: { amount: true },
       _count: true,
     })
     
     const successStats = await prisma.transaction.aggregate({
-      where: {
-        ...where,
-        status: 'SUCCESS'
-      },
-      _sum: {
-        amount: true,
-      },
+      where: { ...where, status: 'SUCCESS' },
+      _sum: { amount: true },
       _count: true,
     })
     
     const pendingStats = await prisma.transaction.aggregate({
-      where: {
-        ...where,
-        status: 'PENDING'
-      },
-      _sum: {
-        amount: true,
-      },
+      where: { ...where, status: 'PENDING' },
+      _sum: { amount: true },
       _count: true,
     })
 
-    // Get unique users and affiliates for filter options
-    const users = await prisma.user.findMany({
-      where: {
-        transactions: {
-          some: {}
-        }
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-      take: 100,
-    })
-
-    const affiliates = await prisma.affiliateProfile.findMany({
-      where: {
-        conversions: {
-          some: {}
-        }
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        }
-      },
-      take: 100,
-    })
-    
     return NextResponse.json({
       success: true,
       transactions: filteredTransactions,
       pagination: {
         page,
         limit,
-        total: filterDuration ? filteredTransactions.length : total,
-        totalPages: Math.ceil((filterDuration ? filteredTransactions.length : total) / limit),
+        total: filterDuration || affiliateId ? filteredTransactions.length : total,
+        totalPages: Math.ceil((filterDuration || affiliateId ? filteredTransactions.length : total) / limit),
       },
       stats: {
         total: {
@@ -454,14 +227,14 @@ export async function GET(request: NextRequest) {
         }
       },
       filterOptions: {
-        users,
-        affiliates,
+        users: [],
+        affiliates: [],
       }
     })
   } catch (error) {
     console.error('Error fetching sales:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch sales data' },
+      { error: 'Failed to fetch sales data', details: String(error) },
       { status: 500 }
     )
   }
@@ -479,7 +252,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { filters } = body
     
-    // Build where clause (same as GET)
+    // Build where clause
     const where: any = {}
     
     if (filters.startDate || filters.endDate) {
@@ -503,54 +276,34 @@ export async function POST(request: NextRequest) {
     }
     
     // Get all transactions
-    const transactions = await prisma.transaction.findMany({
+    const rawTransactions = await prisma.transaction.findMany({
       where,
-      include: {
-        user: true,
-        product: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-            reminders: true,
-          }
-        },
-        course: {
-          select: {
-            id: true,
-            title: true,
-            price: true,
-            reminders: true,
-          }
-        },
-        membership: {
-          include: {
-            membership: {
-              select: {
-                id: true,
-                name: true,
-                // duration intentionally omitted to avoid enum decode errors from legacy values
-                price: true,
-                reminders: true,
-              }
-            }
-          }
-        },
-        coupon: true,
-        affiliateConversion: {
-          include: {
-            affiliate: {
-              include: {
-                user: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
+      orderBy: { createdAt: 'desc' },
     })
+    
+    // Batch fetch users and products
+    const userIds = [...new Set(rawTransactions.map(t => t.userId).filter(Boolean))]
+    const productIds = [...new Set(rawTransactions.map(t => t.productId).filter(Boolean))]
+    
+    const [users, products] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: userIds as string[] } },
+        select: { id: true, name: true, email: true, phone: true }
+      }),
+      prisma.product.findMany({
+        where: { id: { in: productIds as string[] } },
+        select: { id: true, name: true, price: true }
+      })
+    ])
+    
+    const userMap = Object.fromEntries(users.map(u => [u.id, u]))
+    const productMap = Object.fromEntries(products.map(p => [p.id, p]))
+    
+    const transactions = rawTransactions.map(tx => ({
+      ...tx,
+      user: tx.userId ? userMap[tx.userId] || null : null,
+      product: tx.productId ? productMap[tx.productId] || null : null,
+    }))
     
     return NextResponse.json({
       success: true,

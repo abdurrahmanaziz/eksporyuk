@@ -1,0 +1,71 @@
+spawn ssh -o StrictHostKeyChecking=no aziz@103.125.181.47
+aziz@103.125.181.47's password: 
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-164-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Wed Dec 24 15:49:01 WIB 2025
+
+  System load:  2.18               Processes:             205
+  Usage of /:   25.5% of 87.04GB   Users logged in:       1
+  Memory usage: 20%                IPv4 address for eth0: 103.125.181.47
+  Swap usage:   0%
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+147 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+13 additional security updates can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+Last login: Wed Dec 24 15:49:16 2025 from 182.10.99.33
+[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ cd /home/aziz/web/member.eksporyuk.com/public_html
+[?2004l[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ DB_USER=$(grep 'DB_USER' wp-config.php | cut -d "'" -f 4) && DB_PASS=$(grep 'DB_PASSWORD' wp-config.php | cut -d "'" -f 4) && DB_NAME=$(grep 'DB_NAME' wp-config.php | cut -d "'" -f 4)
+[?2004l[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ echo '=== AFFILIATE TABLE STRUCTURE ===' && mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "DESCRIBE wp_sejolisa_affiliates;" 2>/dev/null
+[?2004l=== AFFILIATE TABLE STRUCTURE ===
++--------------+------------------+------+-----+---------------------+----------------+
+| Field        | Type             | Null | Key | Default             | Extra          |
++--------------+------------------+------+-----+---------------------+----------------+
+| ID           | int(10) unsigned | NO   | PRI | NULL                | auto_increment |
+| created_at   | datetime         | NO   |     | NULL                |                |
+| updated_at   | datetime         | NO   |     | 0000-00-00 00:00:00 |                |
+| deleted_at   | datetime         | NO   |     | 0000-00-00 00:00:00 |                |
+| order_id     | int(11)          | NO   |     | NULL                |                |
+| affiliate_id | int(11)          | NO   |     | NULL                |                |
+| product_id   | int(11)          | NO   |     | NULL                |                |
+| tier         | int(11)          | NO   |     | NULL                |                |
+| commission   | double(12,2)     | NO   |     | NULL                |                |
+| status       | varchar(100)     | NO   |     | pending             |                |
+| paid_status  | tinyint(4)       | NO   |     | 0                   |                |
++--------------+------------------+------+-----+---------------------+----------------+
+[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ echo '=== SAMPLE AFFILIATES ===' && mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "SELECT * FROM wp_sejolisa_affiliates LIMIT 5;" 2>/dev/null
+[?2004l=== SAMPLE AFFILIATES ===
++----+---------------------+---------------------+---------------------+----------+--------------+------------+------+------------+-----------+-------------+
+| ID | created_at          | updated_at          | deleted_at          | order_id | affiliate_id | product_id | tier | commission | status    | paid_status |
++----+---------------------+---------------------+---------------------+----------+--------------+------------+------+------------+-----------+-------------+
+|  1 | 2022-03-23 11:56:42 | 2022-04-02 07:30:56 | 0000-00-00 00:00:00 |      117 |          113 |        179 |    1 |  135000.00 | cancelled |           0 |
+|  2 | 2022-03-23 14:39:06 | 2022-04-02 07:30:54 | 0000-00-00 00:00:00 |      118 |          123 |        179 |    1 |  135000.00 | cancelled |           0 |
+|  3 | 2022-03-23 21:52:43 | 2022-04-02 07:30:53 | 0000-00-00 00:00:00 |      119 |          125 |        179 |    1 |  135000.00 | cancelled |           0 |
+|  4 | 2022-03-24 12:08:36 | 2022-03-24 13:18:55 | 0000-00-00 00:00:00 |      123 |          114 |        179 |    1 |  135000.00 | added     |           1 |
+|  5 | 2022-03-24 21:49:58 | 2022-04-02 07:30:45 | 0000-00-00 00:00:00 |      124 |           97 |        179 |    1 |  135000.00 | cancelled |           0 |
++----+---------------------+---------------------+---------------------+----------+--------------+------------+------+------------+-----------+-------------+
+[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ echo '=== TOTAL AFFILIATE KOMISI ===' && mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -N -e "SELECT SUM(total_affiliate) FROM wp_sejolisa_orders WHERE status='completed' AND affiliate_id > 0;" 2>/dev/null
+[?2004l=== TOTAL AFFILIATE KOMISI ===
+[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ echo '=== ORDERS WITH AFFILIATE ===' && mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "SELECT COUNT(*) as orders_with_affiliate FROM wp_sejolisa_orders WHERE status='completed' AND affiliate_id > 0;" 2>/dev/null
+[?2004l=== ORDERS WITH AFFILIATE ===
++-----------------------+
+| orders_with_affiliate |
++-----------------------+
+|                 11632 |
++-----------------------+
+[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ exit
+[?2004llogout
+Connection to 103.125.181.47 closed.

@@ -1,0 +1,70 @@
+spawn ssh -o StrictHostKeyChecking=no aziz@103.125.181.47
+aziz@103.125.181.47's password: 
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-164-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Wed Dec 24 14:35:44 WIB 2025
+
+  System load:  3.92               Processes:             210
+  Usage of /:   25.5% of 87.04GB   Users logged in:       1
+  Memory usage: 21%                IPv4 address for eth0: 103.125.181.47
+  Swap usage:   0%
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+147 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+13 additional security updates can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+Last login: Wed Dec 24 14:29:34 2025 from 182.10.99.33
+[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ cd /home/aziz/web/member.eksporyuk.com/public_html
+[?2004l[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ DB_USER=$(grep 'DB_USER' wp-config.php | cut -d "'" -f 4) && DB_PASS=$(grep 'DB_PASSWORD' wp-config.php | cut -d "'" -f 4) && DB_NAME=$(grep 'DB_NAME' wp-config.php | cut -d "'" -f 4) && mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "SELECT p.ID, p.post_title, p.post_parent, p.menu_order FROM wp_posts p WHERE p.post_type = 'topics' AND p.post_status = 'publish' ORDER BY p.post_parent, p.menu_order;"
+[?2004lmysql: Deprecated program name. It will be removed in a future release, use '/usr/bin/mariadb' instead
++-------+-----------------------------------------------+-------------+------------+
+| ID    | post_title                                    | post_parent | menu_order |
++-------+-----------------------------------------------+-------------+------------+
+|  1681 | Modul 1 : Pengenalan Tentang Ekspor           |        1678 |          1 |
+|  1682 | Modul 2 : Demand & Komoditas                  |        1678 |          2 |
+|  1683 | Modul 3 : Suplier                             |        1678 |          3 |
+|  1684 | Modul 4 : Senjata Perang                      |        1678 |          4 |
+|  1685 | Modul 5 : Payment                             |        1678 |          5 |
+|  1686 | Modul 6 : Buyer                               |        1678 |          6 |
+|  1687 | Modul 7 : Forwarder                           |        1678 |          7 |
+|  1799 | Zoominar Bulanan                              |        1678 |          8 |
+| 21519 | Zoom Mingguan                                 |        1678 |         10 |
+|  3287 | JOIN GRUP TELEGRAM                            |        2984 |          1 |
+|  2987 | ORDER DAN AKTIVASI APLIKASI EYA               |        2984 |          2 |
+|  3013 | FITURE DAN FUNGSI APLIKASI EYA                |        2984 |          4 |
+|  3318 | SOLUSI-SOLUSI                                 |        2984 |          5 |
+|  3928 | JOIN GRUP TELEGRAM (Copy 3)                   |        3913 |          1 |
+|  3914 | ORDER APLIKASI EYA (Copy 3)                   |        3913 |          2 |
+|  3917 | CARA DOWNLOAD APLIKASI EYA (Copy 3)           |        3913 |          3 |
+|  3919 | FITURE DAN FUNGSI APLIKASI EYA (Copy 3)       |        3913 |          4 |
+|  3930 | SOLUSI-SOLUSI (Copy 3)                        |        3913 |          5 |
+|  3938 | Modul 1 : Pengenalan Tentang Ekspor (Copy 1)  |        3937 |          1 |
+|  3945 | Modul 2 : Demand & Komoditas (Copy 1)         |        3937 |          2 |
+|  3950 | Modul 3 : Suplier (Copy 1)                    |        3937 |          3 |
+|  3957 | Modul 4 : Senjata Perang (Copy 1)             |        3937 |          4 |
+|  3975 | Modul 5 : Payment (Copy 1)                    |        3937 |          5 |
+|  3982 | Modul 6 : Buyer (Copy 1)                      |        3937 |          6 |
+|  3995 | Modul 7 : Forwarder (Copy 1)                  |        3937 |          7 |
+|  4028 | Modul 8 : Website Ekspor (Copy 1)             |        3937 |          8 |
+|  4004 | Panduan Komunitas (Copy 1)                    |        3937 |          9 |
+|  4006 | Zoominar Bulanan (Copy 1)                     |        3937 |         10 |
+|  4021 | Bonus-bonus (Copy 1)                          |        3937 |         11 |
+|  8822 | Kelas Website Ekspor                          |        8692 |          1 |
+| 10948 | Zoom Praktek Website Ekspor                   |        8692 |          2 |
++-------+-----------------------------------------------+-------------+------------+
+[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ exit
+[?2004llogout
+Connection to 103.125.181.47 closed.

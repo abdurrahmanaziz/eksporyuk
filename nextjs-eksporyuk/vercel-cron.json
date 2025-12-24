@@ -1,0 +1,10 @@
+{
+  "name": "Hourly Database Backup",
+  "description": "Backup database setiap jam via Vercel Cron",
+  "crons": [
+    {
+      "path": "/api/backup",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

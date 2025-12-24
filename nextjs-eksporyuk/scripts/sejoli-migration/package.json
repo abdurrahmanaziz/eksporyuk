@@ -1,0 +1,15 @@
+{
+  "name": "sejoli-migration",
+  "version": "1.0.0",
+  "description": "Migration scripts from Sejoli WordPress to Eksporyuk",
+  "scripts": {
+    "inspect": "node 01-inspect-database.js",
+    "export": "node 02-export-sejoli-data.js",
+    "migrate": "node 03-migrate-to-eksporyuk.js",
+    "full-migration": "npm run inspect && npm run export && npm run migrate"
+  },
+  "dependencies": {
+    "mysql2": "^3.6.5",
+    "dotenv": "^16.3.1"
+  }
+}

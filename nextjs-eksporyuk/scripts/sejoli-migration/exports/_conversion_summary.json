@@ -1,0 +1,43 @@
+{
+  "convertedAt": "2025-12-24T03:46:41.709Z",
+  "totalRecords": {
+    "users": 18752,
+    "userMeta": 56256,
+    "affiliates": 16987,
+    "orders": 5000,
+    "products": 1591,
+    "wallet": 1
+  },
+  "sampleUser": {
+    "ID": "1",
+    "user_login": "eksporyuk",
+    "user_email": "admin@member.eksporyuk.com",
+    "user_registered": "2022-01-29 19:52:29",
+    "user_status": "0",
+    "display_name": "eksporyuk"
+  },
+  "sampleAffiliate": {
+    "ID": "1",
+    "user_id": "2022-03-23 11:56:42",
+    "affiliate_code": "2022-04-02 07:30:56",
+    "commission_type": "0000-00-00 00:00:00",
+    "commission_value": "117",
+    "total_commission": "113",
+    "total_referrals": "179",
+    "status": "1",
+    "created_at": "135000.00",
+    "updated_at": "cancelled"
+  },
+  "sampleOrder": {
+    "ID": "1",
+    "user_id": "2022-02-11 11:38:33",
+    "product_id": "2022-02-13 22:06:57",
+    "grand_total": "0000-00-00 00:00:00",
+    "status": "0",
+    "payment_method": "28",
+    "payment_gateway": "1",
+    "created_at": "0",
+    "updated_at": "0",
+    "order_via": "manual"
+  }
+}

@@ -13,14 +13,24 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions)
     
     const { searchParams } = new URL(req.url)
-    const period = searchParams.get('period') || 'weekly' // weekly, monthly, all-time
+    const period = searchParams.get('period') || 'weekly' // weekly, monthly, all-time, or YYYY-MM for specific month
     const limit = parseInt(searchParams.get('limit') || '10')
 
     // Calculate date range
     let startDate: Date | undefined
+    let endDate: Date | undefined
     const now = new Date()
     
-    if (period === 'weekly') {
+    // Check if period is a specific month (YYYY-MM format)
+    const monthMatch = period.match(/^(\d{4})-(\d{2})$/)
+    
+    if (monthMatch) {
+      // Specific month: e.g., "2025-10" for October 2025
+      const year = parseInt(monthMatch[1])
+      const month = parseInt(monthMatch[2]) - 1 // 0-indexed
+      startDate = new Date(year, month, 1)
+      endDate = new Date(year, month + 1, 1) // First day of next month
+    } else if (period === 'weekly') {
       startDate = new Date(now)
       startDate.setDate(startDate.getDate() - 7)
     } else if (period === 'monthly') {
@@ -41,9 +51,15 @@ export async function GET(req: NextRequest) {
       }
     }
     
-    // Only add date filter if not all-time
-    if (startDate) {
-      whereClause.createdAt = { gte: startDate }
+    // Add date filters
+    if (startDate || endDate) {
+      whereClause.createdAt = {}
+      if (startDate) {
+        whereClause.createdAt.gte = startDate
+      }
+      if (endDate) {
+        whereClause.createdAt.lt = endDate
+      }
     }
     
     const conversions = await prisma.affiliateConversion.findMany({

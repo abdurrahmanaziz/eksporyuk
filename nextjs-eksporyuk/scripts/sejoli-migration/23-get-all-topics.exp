@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout 120
+spawn ssh -o StrictHostKeyChecking=no aziz@103.125.181.47
+expect "password:"
+send "Bismillah.2022\r"
+expect "$ "
+send "cd /home/aziz/web/member.eksporyuk.com/public_html\r"
+expect "$ "
+send "DB_USER=\$(grep 'DB_USER' wp-config.php | cut -d \"'\" -f 4) && DB_PASS=\$(grep 'DB_PASSWORD' wp-config.php | cut -d \"'\" -f 4) && DB_NAME=\$(grep 'DB_NAME' wp-config.php | cut -d \"'\" -f 4) && mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SELECT t.ID as topic_id, t.post_title as topic_title, t.menu_order as topic_order, c.ID as course_id, c.post_title as course_title FROM wp_posts t JOIN wp_posts c ON t.post_parent = c.ID WHERE t.post_type = 'topics' AND t.post_status = 'publish' AND c.post_type = 'courses' ORDER BY c.ID, t.menu_order;\"\r"
+expect "$ "
+send "exit\r"
+expect eof

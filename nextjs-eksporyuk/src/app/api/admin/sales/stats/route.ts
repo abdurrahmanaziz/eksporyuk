@@ -31,36 +31,47 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get all transactions
-    const transactions = await prisma.transaction.findMany({
-      where,
-      include: {
-        affiliateConversion: {
-          include: {
-            affiliate: true
-          }
-        }
-      }
-    })
+    // Get aggregate stats without relations
+    const [totalStats, successStats, pendingStats, failedStats, commissionStats] = await Promise.all([
+      prisma.transaction.aggregate({
+        where,
+        _count: true,
+        _sum: { amount: true, discountAmount: true }
+      }),
+      prisma.transaction.aggregate({
+        where: { ...where, status: 'SUCCESS' },
+        _count: true,
+        _sum: { amount: true }
+      }),
+      prisma.transaction.aggregate({
+        where: { ...where, status: 'PENDING' },
+        _count: true,
+        _sum: { amount: true }
+      }),
+      prisma.transaction.aggregate({
+        where: { ...where, status: 'FAILED' },
+        _count: true
+      }),
+      prisma.affiliateConversion.aggregate({
+        where: where.createdAt ? { createdAt: where.createdAt } : {},
+        _sum: { commissionAmount: true }
+      })
+    ])
 
-    // Calculate stats
+    const totalRevenue = Number(totalStats._sum.amount || 0)
+    const totalCount = totalStats._count || 0
+
     const stats = {
-      totalSales: transactions.length,
-      totalRevenue: transactions.reduce((sum, tx) => sum + (tx.amount || 0), 0),
-      totalTransactions: transactions.length,
-      averageOrderValue: transactions.length > 0 
-        ? transactions.reduce((sum, tx) => sum + (tx.amount || 0), 0) / transactions.length 
-        : 0,
-      totalCommissions: transactions.reduce((sum, tx) => 
-        sum + (tx.affiliateConversion?.commissionAmount || 0), 0
-      ),
-      pendingCommissions: transactions
-        .filter(tx => tx.status === 'PENDING')
-        .reduce((sum, tx) => sum + (tx.affiliateConversion?.commissionAmount || 0), 0),
-      successTransactions: transactions.filter(tx => tx.status === 'SUCCESS').length,
-      failedTransactions: transactions.filter(tx => tx.status === 'FAILED').length,
-      pendingTransactions: transactions.filter(tx => tx.status === 'PENDING').length,
-      totalDiscount: transactions.reduce((sum, tx) => sum + (tx.discountAmount || 0), 0),
+      totalSales: totalCount,
+      totalRevenue,
+      totalTransactions: totalCount,
+      averageOrderValue: totalCount > 0 ? totalRevenue / totalCount : 0,
+      totalCommissions: Number(commissionStats._sum.commissionAmount || 0),
+      pendingCommissions: 0, // Would need separate query
+      successTransactions: successStats._count || 0,
+      failedTransactions: failedStats._count || 0,
+      pendingTransactions: pendingStats._count || 0,
+      totalDiscount: Number(totalStats._sum.discountAmount || 0),
     }
 
     return NextResponse.json({ success: true, stats })

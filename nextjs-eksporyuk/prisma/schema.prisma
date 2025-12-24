@@ -55,29 +55,6 @@ model User {
   withdrawalPin          String?
   withdrawalPinSetAt     DateTime?
   coverImage             String?
-  
-  // Mentor Authorization for Supplier Review
-  isAuthorizedSupplierReviewer Boolean @default(false)
-  supplierReviewerAuthorizedAt DateTime?
-  supplierReviewerAuthorizedBy String?
-
-  // Relations
-  transactions           Transaction[]
-  affiliateProfile       AffiliateProfile?
-  mentorProfile          MentorProfile?
-  supplierMemberships    SupplierMembership[]
-  supplierProfile        SupplierProfile?
-  supplierReviewsAssigned SupplierProfile[] @relation("MentorSupplierReviews")
-  wallet                 Wallet?
-  userMemberships        UserMembership[]
-  
-  // Post Relations
-  posts                  Post[]         @relation("UserPosts")
-  postLikes              PostLike[]     @relation("UserPostLikes")
-  postComments           PostComment[]  @relation("UserPostComments")
-  postReactions          PostReaction[] @relation("UserPostReactions")
-  commentReactions       CommentReaction[] @relation("UserCommentReactions")
-  savedPosts             SavedPost[]    @relation("UserSavedPosts")
 
   @@index([email])
   @@index([username])
@@ -96,9 +73,6 @@ model Wallet {
   totalPayout    Decimal  @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
-  // Relations
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -188,10 +162,6 @@ model AffiliateProfile {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  // Relations
-  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversions           AffiliateConversion[]
-
   @@index([affiliateCode])
   @@index([userId])
   @@index([shortLinkUsername])
@@ -250,10 +220,6 @@ model AffiliateConversion {
   paidOut          Boolean   @default(false)
   paidOutAt        DateTime?
   createdAt        DateTime  @default(now())
-
-  // Relations
-  affiliate        AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  transaction      Transaction      @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@index([affiliateId])
   @@index([transactionId])
@@ -338,9 +304,6 @@ model MentorProfile {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  // Relations
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@index([userId])
 }
 
@@ -353,7 +316,8 @@ model Membership {
   description             String
   duration                MembershipDuration
   price                   Decimal
-  marketingPrice          Decimal?
+  originalPrice           Decimal?
+  discount                Int                @default(0)
   commissionType          CommissionType     @default(PERCENTAGE)
   affiliateCommissionRate Decimal            @default(30)
   features                Json
@@ -376,25 +340,16 @@ model Membership {
   createdAt               DateTime           @default(now())
   updatedAt               DateTime           @updatedAt
 
-  // Relations
-  userMemberships         UserMembership[]
-  membershipGroups        MembershipGroup[]
-  membershipCourses       MembershipCourse[]
-  membershipProducts      MembershipProduct[]
-
   @@index([duration])
   @@index([isActive])
   @@index([status])
 }
 
 model MembershipGroup {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   membershipId String
   groupId      String
-  createdAt    DateTime   @default(now())
-
-  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  group        Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
 
   @@unique([membershipId, groupId])
   @@index([membershipId])
@@ -402,13 +357,10 @@ model MembershipGroup {
 }
 
 model MembershipCourse {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   membershipId String
   courseId     String
-  createdAt    DateTime   @default(now())
-
-  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
 
   @@unique([membershipId, courseId])
   @@index([membershipId])
@@ -416,13 +368,10 @@ model MembershipCourse {
 }
 
 model MembershipProduct {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   membershipId String
   productId    String
-  createdAt    DateTime   @default(now())
-
-  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
 
   @@unique([membershipId, productId])
   @@index([membershipId])
@@ -457,11 +406,6 @@ model UserMembership {
   transactionId String?   @unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
-  // Relations
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  membership    Membership   @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
 
   @@unique([userId, membershipId])
   @@index([userId])
@@ -840,10 +784,6 @@ model Product {
   clickCount              Int             @default(0)
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
-
-  // Relations  
-  transactions            Transaction[]
-  membershipProducts      MembershipProduct[]
 }
 
 model UserProduct {
@@ -924,10 +864,6 @@ model Course {
   isPublicListed          Boolean                @default(true)
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
-
-  // Relations
-  transactions            Transaction[]
-  membershipCourses       MembershipCourse[]
 }
 
 model UserCourseProgress {
@@ -944,8 +880,6 @@ model UserCourseProgress {
   accessExpiresAt  DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-
-  @@unique([userId, courseId])
 }
 
 model CourseModule {
@@ -994,8 +928,6 @@ model CourseEnrollment {
   transactionId String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
-  @@unique([userId, courseId])
 }
 
 model CourseConsent {
@@ -1006,36 +938,31 @@ model CourseConsent {
   ipAddress   String?
   userAgent   String?
   agreedAt    DateTime @default(now())
-
-  @@unique([userId, courseId])
 }
 
 model Group {
-  id               String            @id @default(cuid())
-  name             String
-  description      String
-  avatar           String?
-  coverImage       String?
-  type             GroupType         @default(PUBLIC)
-  ownerId          String
-  bannedWords      Json?
-  requireApproval  Boolean           @default(false)
-  isActive         Boolean           @default(true)
-  postingSettings  Json?
-  allowRichText    Boolean           @default(true)
-  allowMedia       Boolean           @default(true)
-  allowPolls       Boolean           @default(true)
-  allowEvents      Boolean           @default(true)
-  allowScheduling  Boolean           @default(true)
-  allowReactions   Boolean           @default(true)
-  allowMentions    Boolean           @default(true)
-  moderatesPosts   Boolean           @default(false)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  slug             String?           @unique
-
-  membershipGroups MembershipGroup[]
-  posts            Post[]            @relation("GroupPosts")
+  id              String    @id @default(cuid())
+  name            String
+  description     String
+  avatar          String?
+  coverImage      String?
+  type            GroupType @default(PUBLIC)
+  ownerId         String
+  bannedWords     Json?
+  requireApproval Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  postingSettings Json?
+  allowRichText   Boolean   @default(true)
+  allowMedia      Boolean   @default(true)
+  allowPolls      Boolean   @default(true)
+  allowEvents     Boolean   @default(true)
+  allowScheduling Boolean   @default(true)
+  allowReactions  Boolean   @default(true)
+  allowMentions   Boolean   @default(true)
+  moderatesPosts  Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  slug            String?
 }
 
 model GroupMember {
@@ -1075,14 +1002,6 @@ model Post {
   expiresAt        DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-
-  // Relations
-  author           User           @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  group            Group?         @relation("GroupPosts", fields: [groupId], references: [id], onDelete: SetNull)
-  likes            PostLike[]     @relation("PostLikes")
-  comments         PostComment[]  @relation("PostComments")
-  reactions        PostReaction[] @relation("PostReactions")
-  savedBy          SavedPost[]    @relation("SavedPosts")
 }
 
 model PostLike {
@@ -1090,12 +1009,6 @@ model PostLike {
   postId    String
   userId    String
   createdAt DateTime @default(now())
-
-  // Relations
-  post      Post     @relation("PostLikes", fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserPostLikes", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId])
 }
 
 model PostComment {
@@ -1110,13 +1023,6 @@ model PostComment {
   images           Json?
   mentionedUsers   Json?
   reactionsCount   Json?
-
-  // Relations
-  post             Post              @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
-  author           User              @relation("UserPostComments", fields: [userId], references: [id], onDelete: Cascade)
-  parent           PostComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies          PostComment[]     @relation("CommentReplies")
-  reactions        CommentReaction[] @relation("CommentReactions")
 }
 
 model PostReaction {
@@ -1125,12 +1031,6 @@ model PostReaction {
   userId    String
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
-
-  // Relations
-  post      Post         @relation("PostReactions", fields: [postId], references: [id], onDelete: Cascade)
-  user      User         @relation("UserPostReactions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId, type])
 }
 
 model CommentReaction {
@@ -1139,12 +1039,6 @@ model CommentReaction {
   userId    String
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
-
-  // Relations
-  comment   PostComment  @relation("CommentReactions", fields: [commentId], references: [id], onDelete: Cascade)
-  user      User         @relation("UserCommentReactions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([commentId, userId, type])
 }
 
 model SavedPost {
@@ -1152,12 +1046,6 @@ model SavedPost {
   postId    String
   userId    String
   createdAt DateTime @default(now())
-
-  // Relations
-  post      Post     @relation("SavedPosts", fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserSavedPosts", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId])
 }
 
 model Event {
@@ -1233,14 +1121,6 @@ model Transaction {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   invoiceNumber    String?
-
-  // Relations
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product          Product?  @relation(fields: [productId], references: [id])
-  course           Course?   @relation(fields: [courseId], references: [id])
-  coupon           Coupon?   @relation(fields: [couponId], references: [id])
-  affiliateConversion AffiliateConversion?
-  membership       UserMembership?
 }
 
 model Coupon {
@@ -1267,9 +1147,6 @@ model Coupon {
   createdBy               String?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
-
-  // Relations
-  transactions            Transaction[]
 }
 
 model Follow {
@@ -1951,7 +1828,7 @@ model Settings {
 
 model IntegrationConfig {
   id           String    @id @default(cuid())
-  service      String    @unique
+  service      String
   config       Json
   isActive     Boolean   @default(false)
   lastTestedAt DateTime?
@@ -2296,60 +2173,35 @@ model AffiliateBioCTA {
   updatedAt        DateTime @updatedAt
 }
 
-model LeadMagnet {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  type        String   // "PDF", "VIDEO", "EVENT", "WHATSAPP"
-  fileUrl     String?  // URL for PDF or Video
-  eventLink   String?  // Link for Zoom/Event
-  whatsappUrl String?  // WhatsApp group link
-  thumbnailUrl String?
-  isActive    Boolean  @default(true)
-  createdBy   String   // Admin user ID
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  optinForms  AffiliateOptinForm[]
-  
-  @@index([type])
-  @@index([isActive])
-}
-
 model AffiliateOptinForm {
-  id               String       @id @default(cuid())
+  id               String    @id @default(cuid())
   affiliateId      String
   bioPageId        String?
   slug             String?
   formName         String
   headline         String
   description      String?
-  submitButtonText String       @default("Submit")
-  successMessage   String       @default("Terima kasih! Data Anda telah kami terima.")
-  redirectType     String       @default("message")
+  submitButtonText String    @default("Submit")
+  successMessage   String    @default("Terima kasih! Data Anda telah kami terima.")
+  redirectType     String    @default("message")
   redirectUrl      String?
   redirectWhatsapp String?
-  collectName      Boolean      @default(true)
-  collectEmail     Boolean      @default(true)
-  collectPhone     Boolean      @default(true)
-  isActive         Boolean      @default(true)
-  submissionCount  Int          @default(0)
-  viewCount        Int          @default(0)
-  leadMagnetId     String?
+  collectName      Boolean   @default(true)
+  collectEmail     Boolean   @default(true)
+  collectPhone     Boolean   @default(true)
+  isActive         Boolean   @default(true)
+  submissionCount  Int       @default(0)
   bannerTitle      String?
   bannerSubtitle   String?
-  bannerBadgeText  String?      @default("Event Terbatas - Daftar Sekarang!")
-  primaryColor     String?      @default("#2563eb")
-  secondaryColor   String?      @default("#4f46e5")
-  showCountdown    Boolean      @default(false)
+  bannerBadgeText  String?   @default("Event Terbatas - Daftar Sekarang!")
+  primaryColor     String?   @default("#2563eb")
+  secondaryColor   String?   @default("#4f46e5")
+  showCountdown    Boolean   @default(false)
   countdownEndDate DateTime?
-  benefits         Json?        @default("[]")
-  faqs             Json?        @default("[]")
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  leadMagnet       LeadMagnet?  @relation(fields: [leadMagnetId], references: [id], onDelete: SetNull)
-  
-  @@index([leadMagnetId])
+  benefits         Json?     @default("[]")
+  faqs             Json?     @default("[]")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model AffiliateLead {
@@ -2610,51 +2462,40 @@ model EmailVerificationToken {
 }
 
 model SupplierPackage {
-  id                      String                 @id @default(cuid())
+  id                      String              @id @default(cuid())
   name                    String
-  slug                    String                 @unique
+  slug                    String
   type                    SupplierPackageType
   duration                SupplierDuration
   price                   Decimal
   originalPrice           Decimal?
-  commissionType          CommissionType         @default(PERCENTAGE)
-  affiliateCommissionRate Decimal                @default(30)
+  commissionType          CommissionType      @default(PERCENTAGE)
+  affiliateCommissionRate Decimal             @default(30)
   features                Json
   description             String?
-  isActive                Boolean                @default(true)
-  displayOrder            Int                    @default(0)
-  createdAt               DateTime               @default(now())
-  updatedAt               DateTime               @updatedAt
-  
-  // Relations
-  memberships             SupplierMembership[]
+  isActive                Boolean             @default(true)
+  displayOrder            Int                 @default(0)
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
 }
 
 model SupplierMembership {
-  id            String           @id @default(cuid())
+  id            String    @id @default(cuid())
   userId        String
   packageId     String
   startDate     DateTime
   endDate       DateTime?
-  isActive      Boolean          @default(true)
-  autoRenew     Boolean          @default(false)
+  isActive      Boolean   @default(true)
+  autoRenew     Boolean   @default(false)
   price         Decimal
   paymentId     String?
   paymentMethod String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  
-  // Relations
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package       SupplierPackage  @relation(fields: [packageId], references: [id], onDelete: Restrict)
-  
-  @@index([userId])
-  @@index([packageId])
-  @@index([isActive])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model SupplierProfile {
-  id               String         @id @default(cuid())
+  id               String    @id @default(cuid())
   userId           String
   companyName      String
   slug             String
@@ -2676,91 +2517,20 @@ model SupplierProfile {
   twitterUrl       String?
   legalityDoc      String?
   nibDoc           String?
-  isVerified       Boolean        @default(false)
+  isVerified       Boolean   @default(false)
   verifiedAt       DateTime?
   verifiedBy       String?
-  isSuspended      Boolean        @default(false)
+  isSuspended      Boolean   @default(false)
   suspendedAt      DateTime?
   suspendedBy      String?
   suspendReason    String?
-  viewCount        Int            @default(0)
-  totalProducts    Int            @default(0)
-  totalChats       Int            @default(0)
-  rating           Float?         @default(0)
-  totalReviews     Int            @default(0)
-  
-  // ===== NEW FIELDS FROM PRD =====
-  // Supplier Type & Status
-  supplierType     SupplierType?  // PRODUSEN, PABRIK, TRADER, AGGREGATOR
-  status           SupplierStatus @default(DRAFT) // Status workflow
-  
-  // Tab 1: Identitas Usaha
-  legalEntityType  String?        // PT, CV, UD, dll
-  businessField    String?        // Bidang Usaha
-  mainProducts     String?        // Produk Utama
-  establishedYear  Int?           // Tahun Berdiri
-  
-  // Tab 2: Alamat & Lokasi (expanded)
-  district         String?        // Kecamatan
-  postalCode       String?        // Kode Pos
-  productionLocation String?      // Lokasi Produksi (jika berbeda)
-  
-  // Tab 3: Kontak Perusahaan (expanded)
-  picPosition      String?        // Jabatan PIC
-  businessEmail    String?        // Email Bisnis
-  
-  // Tab 4: Legalitas (expanded)
-  nibNumber        String?        // NIB
-  npwpNumber       String?        // NPWP
-  siupNumber       String?        // SIUP/IUI
-  certifications   Json?          // Array sertifikasi (upload multiple)
-  
-  // Tab 5: Bio Supplier
-  companyAdvantages String?       // Keunggulan Produk
-  uniqueValue      String?        // Unique Value
-  
-  // Audit & Review
-  mentorReviewedBy String?        // Mentor yang review
-  mentorReviewedAt DateTime?      // Waktu mentor review
-  mentorNotes      String?        // Catatan mentor
-  adminApprovedBy  String?        // Admin yang approve
-  adminApprovedAt  DateTime?      // Waktu admin approve
-  adminNotes       String?        // Catatan admin
-  assignedMentorId String?        // Mentor yang di-assign untuk review (by admin)
-  
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  
-  // Relations
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assignedMentor   User?          @relation("MentorSupplierReviews", fields: [assignedMentorId], references: [id])
-  assessments      SupplierAssessment[]
-  auditLogs        SupplierAuditLog[]
-  products         SupplierProduct[]
-  
-  // Indexes & Constraints
-  @@unique([userId])
-  @@unique([slug])
-  @@index([userId])
-  @@index([supplierType])
-  @@index([status])
-}
-
-enum SupplierType {
-  PRODUSEN
-  PABRIK
-  TRADER
-  AGGREGATOR
-}
-
-enum SupplierStatus {
-  DRAFT              // Baru login, belum isi data
-  ONBOARDING         // Sedang isi profil
-  WAITING_REVIEW     // Sudah submit, menunggu mentor
-  RECOMMENDED_BY_MENTOR // Direkomendasikan mentor
-  VERIFIED           // Disetujui admin
-  LIMITED            // Terbatas (perlu perbaikan)
-  SUSPENDED          // Ditangguhkan
+  viewCount        Int       @default(0)
+  totalProducts    Int       @default(0)
+  totalChats       Int       @default(0)
+  rating           Float?    @default(0)
+  totalReviews     Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model SupplierProduct {
@@ -2781,104 +2551,6 @@ model SupplierProduct {
   inquiryCount Int                   @default(0)
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
-  
-  // Relations
-  supplier     SupplierProfile       @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  
-  @@index([supplierId])
-  @@index([status])
-  @@unique([supplierId, slug])
-}
-
-// ===== SUPPLIER ASSESSMENT SYSTEM =====
-model SupplierAssessment {
-  id            String                    @id @default(cuid())
-  supplierId    String
-  supplierType  SupplierType
-  totalScore    Int                       @default(0)
-  maxScore      Int                       @default(0)
-  percentage    Float                     @default(0)
-  isCompleted   Boolean                   @default(false)
-  submittedAt   DateTime?
-  reviewedBy    String?                   // Mentor ID
-  reviewedAt    DateTime?
-  reviewNotes   String?
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
-  
-  // Relations
-  supplier      SupplierProfile           @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  answers       SupplierAssessmentAnswer[]
-  
-  @@index([supplierId])
-}
-
-model SupplierAssessmentQuestion {
-  id            String                    @id @default(cuid())
-  supplierType  SupplierType              // Pertanyaan spesifik per tipe supplier
-  category      String                    // Kategori: Kapasitas, Kualitas, Legalitas, dll
-  question      String
-  questionType  AssessmentQuestionType    @default(RANGE)
-  options       Json?                     // Untuk ABC atau multiple choice
-  minValue      Int?                      // Untuk range
-  maxValue      Int?                      // Untuk range
-  weight        Int                       @default(1) // Bobot pertanyaan
-  isActive      Boolean                   @default(true)
-  order         Int                       @default(0)
-  createdBy     String?                   // Mentor/Admin yang buat
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
-  
-  // Relations
-  answers       SupplierAssessmentAnswer[]
-  
-  @@index([supplierType, isActive])
-}
-
-model SupplierAssessmentAnswer {
-  id            String                      @id @default(cuid())
-  assessmentId  String
-  questionId    String
-  answer        String                      // Jawaban supplier (text/number/selection)
-  score         Int                         @default(0)
-  maxScore      Int                         @default(0)
-  createdAt     DateTime                    @default(now())
-  updatedAt     DateTime                    @updatedAt
-  
-  // Relations
-  assessment    SupplierAssessment          @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  question      SupplierAssessmentQuestion  @relation(fields: [questionId], references: [id])
-  
-  @@unique([assessmentId, questionId])
-  @@index([assessmentId])
-}
-
-// ===== SUPPLIER AUDIT LOG =====
-model SupplierAuditLog {
-  id            String          @id @default(cuid())
-  supplierId    String
-  userId        String          // Who made the change
-  action        String          // PROFILE_EDIT, STATUS_CHANGE, MENTOR_REVIEW, ADMIN_APPROVAL, dll
-  fieldChanged  String?         // Field yang diubah
-  oldValue      String?
-  newValue      String?
-  notes         String?
-  ipAddress     String?
-  userAgent     String?
-  createdAt     DateTime        @default(now())
-  
-  // Relations
-  supplier      SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  
-  @@index([supplierId, createdAt])
-}
-
-enum AssessmentQuestionType {
-  ABC           // Pilihan A, B, C
-  RANGE         // Range 1-10
-  MULTIPLE_CHOICE
-  TEXT
-  NUMBER
 }
 
 model GroupQuiz {
@@ -3292,7 +2964,6 @@ enum Role {
   AFFILIATE
   MEMBER_PREMIUM
   MEMBER_FREE
-  SUPPLIER
 }
 
 enum GroupType {
@@ -3309,9 +2980,6 @@ enum GroupRole {
 }
 
 enum MembershipDuration {
-  FREE
-  ONE_MONTH
-  THREE_MONTHS
   SIX_MONTHS
   TWELVE_MONTHS
   LIFETIME

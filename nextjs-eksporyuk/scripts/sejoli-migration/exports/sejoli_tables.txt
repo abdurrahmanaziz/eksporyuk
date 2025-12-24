@@ -1,0 +1,64 @@
+spawn ssh -o StrictHostKeyChecking=no aziz@103.125.181.47
+aziz@103.125.181.47's password: 
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-164-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Wed Dec 24 15:15:25 WIB 2025
+
+  System load:  4.09               Processes:             210
+  Usage of /:   25.6% of 87.04GB   Users logged in:       1
+  Memory usage: 21%                IPv4 address for eth0: 103.125.181.47
+  Swap usage:   0%
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+147 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+13 additional security updates can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+Last login: Wed Dec 24 15:15:25 2025 from 182.10.99.33
+[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ cd /home/aziz/web/member.eksporyuk.com/public_html
+[?2004l[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ DB_USER=$(grep 'DB_USER' wp-config.php | cut -d "'" -f 4) && DB_PASS=$(grep 'DB_PASSWORD' wp-config.php | cut -d "'" -f 4) && DB_NAME=$(grep 'DB_NAME' wp-config.php | cut -d "'" -f 4)
+[?2004l[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ echo '=== TABLES ===' && mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "SHOW TABLES LIKE '%sejoli%';"
+[?2004l=== TABLES ===
+mysql: Deprecated program name. It will be removed in a future release, use '/usr/bin/mariadb' instead
++------------------------------------------------+
+| Tables_in_aziz_member.eksporyuk.com (%sejoli%) |
++------------------------------------------------+
+| wp_bb_sejoli_mentors                           |
+| wp_bb_sejoli_reward_log                        |
+| wp_sejolisa_acquisition                        |
+| wp_sejolisa_acquisition_order                  |
+| wp_sejolisa_affiliates                         |
+| wp_sejolisa_bca_transaction                    |
+| wp_sejolisa_bni_transaction                    |
+| wp_sejolisa_bri_transaction                    |
+| wp_sejolisa_confirmations                      |
+| wp_sejolisa_coupons                            |
+| wp_sejolisa_duitku_transaction                 |
+| wp_sejolisa_jv                                 |
+| wp_sejolisa_licenses                           |
+| wp_sejolisa_mandiri_transaction                |
+| wp_sejolisa_manual_transaction                 |
+| wp_sejolisa_moota_transaction                  |
+| wp_sejolisa_orders                             |
+| wp_sejolisa_reminders                          |
+| wp_sejolisa_reward_points                      |
+| wp_sejolisa_subscriptions                      |
+| wp_sejolisa_tripay_transaction                 |
+| wp_sejolisa_wallet                             |
+| wp_sejolisa_xendit_transaction                 |
++------------------------------------------------+
+[?2004h]0;aziz@eksporyuk: ~/web/member.eksporyuk.com/public_html[01;32maziz@eksporyuk[00m:[01;34m~/web/member.eksporyuk.com/public_html[00m$ exit
+[?2004llogout
+Connection to 103.125.181.47 closed.
