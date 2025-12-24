@@ -22,14 +22,18 @@ export async function GET(
 
     const followUp = await (prisma as any).membershipFollowUp.findUnique({
       where: { id: followUpId },
-      include: { membership: { select: { name: true } } }
     })
 
     if (!followUp) {
       return NextResponse.json({ error: 'Follow-up not found' }, { status: 404 })
     }
+    
+    // Get membership name separately (manual lookup)
+    const membership = followUp.membershipId
+      ? await prisma.membership.findUnique({ where: { id: followUp.membershipId }, select: { name: true } })
+      : null
 
-    return NextResponse.json(followUp)
+    return NextResponse.json({ ...followUp, membership })
   } catch (error) {
     console.error('Error fetching follow-up:', error)
     return NextResponse.json({ error: 'Failed to fetch follow-up' }, { status: 500 })

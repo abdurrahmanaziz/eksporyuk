@@ -28,10 +28,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { reminderId, channel, testUserId } = body
 
-    // Get reminder
+    // Get reminder (no relations in schema)
     const reminder = await prisma.membershipReminder.findUnique({
       where: { id: reminderId },
-      include: { membership: true },
     })
 
     if (!reminder) {
@@ -40,6 +39,11 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       )
     }
+    
+    // Get membership separately (manual lookup)
+    const membership = reminder.membershipId 
+      ? await prisma.membership.findUnique({ where: { id: reminder.membershipId } })
+      : null
 
     // Use test user or current admin
     const targetUserId = testUserId || session.user.id
@@ -68,7 +72,7 @@ export async function POST(request: NextRequest) {
       name: user.name || 'Test User',
       email: user.email,
       phone: user.phone || user.whatsapp,
-      plan_name: reminder.membership?.name || 'Test Plan',
+      plan_name: membership?.name || 'Test Plan',
       expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID'),
       days_left: 30,
       payment_link: `${process.env.NEXT_PUBLIC_APP_URL}/memberships`,
