@@ -34,17 +34,15 @@ export default function MembershipCheckoutPage() {
 
   const fetchMemberships = async () => {
     try {
-      // Use public API endpoint, not admin API
-      const response = await fetch("/api/memberships/packages");
+      // Use simple public API endpoint that works
+      const response = await fetch("/api/memberships");
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const result = await response.json();
-      
-      // API returns { packages: [...] } format
-      const data = result.packages || result.plans || result || [];
+      // This API returns array directly
+      const data = await response.json();
 
       // Validate data is array
       if (!Array.isArray(data)) {
@@ -53,8 +51,8 @@ export default function MembershipCheckoutPage() {
         return;
       }
 
-      // Data already filtered by API - isActive, PUBLISHED, showInGeneralCheckout
-      const filtered = data;
+      // Filter only active memberships
+      const filtered = data.filter((m: any) => m.isActive);
 
       // Normalize features to array
       const normalized = filtered.map((m: any) => {
