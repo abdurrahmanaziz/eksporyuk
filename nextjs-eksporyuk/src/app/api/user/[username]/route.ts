@@ -16,7 +16,7 @@ export async function GET(
     const { username } = await params
     const session = await getServerSession(authOptions)
 
-    // Fetch user profile
+    // Fetch user profile (manual lookups for production)
     const user = await prisma.user.findUnique({
       where: { username },
       select: {
@@ -35,25 +35,6 @@ export async function GET(
         lastSeenAt: true,
         isFounder: true,
         isCoFounder: true,
-        // Role-specific profiles
-        supplierProfile: {
-          select: {
-            id: true,
-            companyName: true,
-            logo: true,
-            banner: true,
-            businessCategory: true,
-          }
-        },
-        affiliateProfile: {
-          select: {
-            id: true,
-            affiliateCode: true,
-            tier: true,
-            totalEarnings: true,
-            totalConversions: true,
-          }
-        }
       }
     })
     
@@ -61,13 +42,44 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // Manual lookups for role-specific profiles
+    const [supplierProfile, affiliateProfile] = await Promise.all([
+      prisma.supplierProfile.findFirst({
+        where: { userId: user.id },
+        select: {
+          id: true,
+          companyName: true,
+          logo: true,
+          banner: true,
+          businessCategory: true,
+        }
+      }),
+      prisma.affiliateProfile.findUnique({
+        where: { userId: user.id },
+        select: {
+          id: true,
+          affiliateCode: true,
+          tier: true,
+          totalEarnings: true,
+          totalConversions: true,
+        }
+      })
+    ])
+
+    // Enrich user with profiles
+    const userWithProfiles = {
+      ...user,
+      supplierProfile,
+      affiliateProfile,
+    }
+
     // Manually fetch stats
     const [postsCount, followingCount, followersCount, groupMembershipsData, courseEnrollmentsCount] = await Promise.all([
-      prisma.post.count({ where: { authorId: user.id } }),
-      prisma.follow.count({ where: { followerId: user.id } }),
-      prisma.follow.count({ where: { followingId: user.id } }),
+      prisma.post.count({ where: { authorId: userWithProfiles.id } }),
+      prisma.follow.count({ where: { followerId: userWithProfiles.id } }),
+      prisma.follow.count({ where: { followingId: userWithProfiles.id } }),
       prisma.groupMember.findMany({
-        where: { userId: user.id },
+        where: { userId: userWithProfiles.id },
         select: {
           role: true,
           joinedAt: true,
@@ -115,7 +127,7 @@ export async function GET(
     
     // Enrich user with stats
     const enrichedUser = {
-      ...user,
+      ...userWithProfiles,
       _count: {
         posts: postsCount,
         following: followingCount,

@@ -491,7 +491,7 @@ export async function getWalletSummary(userId: string) {
 }
 
 /**
- * Get affiliate commission from link code
+ * Get affiliate commission from link code (manual lookups for production)
  */
 export async function getAffiliateFromCode(code: string) {
   try {
@@ -501,13 +501,6 @@ export async function getAffiliateFromCode(code: string) {
           { code },
           { shortCode: code }
         ]
-      },
-      include: {
-        user: {
-          include: {
-            affiliateProfile: true
-          }
-        }
       }
     })
 
@@ -515,9 +508,14 @@ export async function getAffiliateFromCode(code: string) {
       return null
     }
 
+    // Manual lookup for affiliate profile
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: link.userId }
+    })
+
     return {
       affiliateId: link.userId,
-      commissionRate: link.user.affiliateProfile?.commissionRate || 10
+      commissionRate: affiliateProfile?.commissionRate || 10
     }
   } catch (error) {
     console.error('Get affiliate from code error:', error)

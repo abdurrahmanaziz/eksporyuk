@@ -72,31 +72,10 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // 4. Fetch payouts with pagination
-    const [payouts, total] = await Promise.all([
+    // 4. Fetch payouts with pagination (manual lookups for production)
+    const [rawPayouts, total] = await Promise.all([
       prisma.payout.findMany({
         where,
-        include: {
-          wallet: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  avatar: true,
-                  affiliateProfile: {
-                    select: {
-                      affiliateCode: true,
-                      tier: true,
-                      totalEarnings: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
         orderBy: [
           { status: 'asc' }, // PENDING first
           { createdAt: 'desc' },
@@ -106,6 +85,54 @@ export async function GET(request: NextRequest) {
       }),
       prisma.payout.count({ where }),
     ])
+
+    // Manual lookups for wallets, users, and affiliate profiles
+    const walletIds = [...new Set(rawPayouts.map(p => p.walletId))]
+    const wallets = walletIds.length > 0 ? await prisma.wallet.findMany({
+      where: { id: { in: walletIds } }
+    }) : []
+    const walletMap = new Map(wallets.map(w => [w.id, w]))
+
+    const userIds = [...new Set(wallets.map(w => w.userId))]
+    const [users, affiliateProfiles] = await Promise.all([
+      userIds.length > 0 ? prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+        }
+      }) : [],
+      userIds.length > 0 ? prisma.affiliateProfile.findMany({
+        where: { userId: { in: userIds } },
+        select: {
+          userId: true,
+          affiliateCode: true,
+          tier: true,
+          totalEarnings: true,
+        }
+      }) : []
+    ])
+    const userMap = new Map(users.map(u => [u.id, u]))
+    const affiliateMap = new Map(affiliateProfiles.map(ap => [ap.userId, ap]))
+
+    // Combine data manually
+    const payouts = rawPayouts.map(payout => {
+      const wallet = walletMap.get(payout.walletId)
+      const user = wallet ? userMap.get(wallet.userId) : null
+      const affiliateProfile = wallet ? affiliateMap.get(wallet.userId) : null
+      return {
+        ...payout,
+        wallet: wallet ? {
+          ...wallet,
+          user: user ? {
+            ...user,
+            affiliateProfile: affiliateProfile || null
+          } : null
+        } : null
+      }
+    })
 
     // 6. Calculate stats
     async function calculatePayoutStats() {

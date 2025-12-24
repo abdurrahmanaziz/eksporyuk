@@ -33,7 +33,7 @@ export async function POST(
 
     const { id: userId } = await params
 
-    // Get user data
+    // Get user data (manual lookup for production)
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -42,7 +42,6 @@ export async function POST(
         email: true,
         whatsapp: true,
         role: true,
-        affiliateProfile: true,
       },
     })
 
@@ -50,11 +49,16 @@ export async function POST(
       return NextResponse.json({ error: 'User tidak ditemukan' }, { status: 404 })
     }
 
+    // Manual lookup for affiliate profile
+    const existingAffiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: userId }
+    })
+
     // Check if already has affiliate profile
-    if (user.affiliateProfile) {
+    if (existingAffiliateProfile) {
       // Just activate the existing profile
       await prisma.affiliateProfile.update({
-        where: { id: user.affiliateProfile.id },
+        where: { id: existingAffiliateProfile.id },
         data: {
           isActive: true,
           applicationStatus: 'APPROVED',
@@ -71,7 +75,7 @@ export async function POST(
       return NextResponse.json({
         success: true,
         message: 'Profil affiliate sudah ada dan diaktifkan',
-        affiliateProfile: user.affiliateProfile,
+        affiliateProfile: existingAffiliateProfile,
       })
     }
 
@@ -203,12 +207,11 @@ export async function DELETE(
 
     const { id: userId } = await params
 
-    // Get user with affiliate profile
+    // Get user (manual lookup for production)
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
-        affiliateProfile: true,
       },
     })
 
@@ -216,13 +219,18 @@ export async function DELETE(
       return NextResponse.json({ error: 'User tidak ditemukan' }, { status: 404 })
     }
 
-    if (!user.affiliateProfile) {
+    // Manual lookup for affiliate profile
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: userId }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'User tidak memiliki profil affiliate' }, { status: 400 })
     }
 
     // Deactivate affiliate profile
     await prisma.affiliateProfile.update({
-      where: { id: user.affiliateProfile.id },
+      where: { id: affiliateProfile.id },
       data: {
         isActive: false,
       },
