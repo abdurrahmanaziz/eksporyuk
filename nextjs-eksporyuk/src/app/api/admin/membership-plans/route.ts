@@ -159,7 +159,9 @@ export async function GET(request: NextRequest) {
         featureTags,
         features: [...featureTags, ...benefits], // Backward compatible flat array
         affiliateCommission: parseFloat(plan.affiliateCommissionRate?.toString() || '0.30'),
-        salespage: plan.salesPageUrl || ''
+        salespage: plan.salesPageUrl || '',
+        memberCount: countMap.get(plan.id) || 0,
+        _count: { userMemberships: countMap.get(plan.id) || 0 }
       }
     })
 

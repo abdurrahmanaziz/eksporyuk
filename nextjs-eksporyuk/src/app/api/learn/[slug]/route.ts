@@ -154,12 +154,10 @@ export async function GET(
       console.log(`✅ ${session.user.role} bypass - Full access granted to: ${session.user.email}`)
       
       // Auto-create enrollment for admin/mentor to track progress
-      const existingEnrollment = await prisma.courseEnrollment.findUnique({
+      const existingEnrollment = await prisma.courseEnrollment.findFirst({
         where: {
-          userId_courseId: {
-            userId: session.user.id,
-            courseId: courseWithRelations.id
-          }
+          userId: session.user.id,
+          courseId: courseWithRelations.id
         }
       })
 
@@ -179,12 +177,10 @@ export async function GET(
 
     // 1. Check direct enrollment
     if (!hasAccess) {
-      const enrollment = await prisma.courseEnrollment.findUnique({
+      const enrollment = await prisma.courseEnrollment.findFirst({
         where: {
-          userId_courseId: {
-            userId: session.user.id,
-            courseId: courseWithRelations.id
-          }
+          userId: session.user.id,
+          courseId: courseWithRelations.id
         }
       })
 
@@ -196,6 +192,7 @@ export async function GET(
 
     // 2. Check membership access
     if (!hasAccess) {
+      // Get user's active memberships
       const userMembership = await prisma.userMembership.findFirst({
         where: {
           userId: session.user.id,
@@ -204,30 +201,29 @@ export async function GET(
           endDate: {
             gte: new Date()
           }
-        },
-        include: {
-          membership: {
-            include: {
-              membershipCourses: {
-                where: {
-                  courseId: courseWithRelations.id
-                }
-              }
-            }
-          }
         }
       })
 
-      if (userMembership && userMembership.membership.membershipCourses.length > 0) {
+      // Check if membership includes this course
+      let membershipHasCourse = false
+      if (userMembership) {
+        const membershipCourse = await prisma.membershipCourse.findFirst({
+          where: {
+            membershipId: userMembership.membershipId,
+            courseId: courseWithRelations.id
+          }
+        })
+        membershipHasCourse = !!membershipCourse
+      }
+
+      if (membershipHasCourse) {
         hasAccess = true
         
         // Auto-enroll user if accessing via membership
-        const existingEnrollment = await prisma.courseEnrollment.findUnique({
+        const existingEnrollment = await prisma.courseEnrollment.findFirst({
           where: {
-            userId_courseId: {
-              userId: session.user.id,
-              courseId: courseWithRelations.id
-            }
+            userId: session.user.id,
+            courseId: courseWithRelations.id
           }
         })
 
@@ -260,12 +256,10 @@ export async function GET(
         console.log(`✅ membershipIncluded access granted to: ${session.user.email}`)
         
         // Auto-enroll
-        const existingEnrollment = await prisma.courseEnrollment.findUnique({
+        const existingEnrollment = await prisma.courseEnrollment.findFirst({
           where: {
-            userId_courseId: {
-              userId: session.user.id,
-              courseId: courseWithRelations.id
-            }
+            userId: session.user.id,
+            courseId: courseWithRelations.id
           }
         })
 
@@ -283,12 +277,10 @@ export async function GET(
     }
 
     // 4. Get user progress
-    const userProgress = await prisma.userCourseProgress.findUnique({
+    const userProgress = await prisma.userCourseProgress.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: courseWithRelations.id
-        }
+        userId: session.user.id,
+        courseId: courseWithRelations.id
       }
     })
 

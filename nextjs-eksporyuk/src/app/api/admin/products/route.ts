@@ -36,14 +36,24 @@ export async function GET() {
         productType: { not: 'EVENT' }, // Exclude EVENT type - managed in Events section
       },
       orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: { transactions: true },
-        },
-      },
     })
 
-    return NextResponse.json({ products })
+    // Get transaction counts manually (no relations in schema)
+    const productIds = products.map(p => p.id)
+    const transactionCounts = productIds.length > 0 ? await prisma.transaction.groupBy({
+      by: ['productId'],
+      where: { productId: { in: productIds } },
+      _count: true
+    }) : []
+    const countMap = new Map(transactionCounts.map(c => [c.productId, c._count]))
+
+    // Attach _count to each product
+    const productsWithCounts = products.map(product => ({
+      ...product,
+      _count: { transactions: countMap.get(product.id) || 0 }
+    }))
+
+    return NextResponse.json({ products: productsWithCounts })
   } catch (error) {
     console.error('Error fetching products:', error)
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 })

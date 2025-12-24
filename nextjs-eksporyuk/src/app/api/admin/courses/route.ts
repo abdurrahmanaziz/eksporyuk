@@ -33,19 +33,23 @@ export async function GET(request: NextRequest) {
         rating: true,
         createdAt: true,
         mentorId: true,
-        _count: {
-          select: {
-            transactions: true
-          }
-        }
       },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
+    // Get transaction counts manually (no relations in schema)
+    const courseIds = courses.map(c => c.id)
+    const transactionCounts = courseIds.length > 0 ? await prisma.transaction.groupBy({
+      by: ['courseId'],
+      where: { courseId: { in: courseIds } },
+      _count: true
+    }) : []
+    const countMap = new Map(transactionCounts.map(c => [c.courseId, c._count]))
+
     // Fetch mentor data separately (no direct relation in schema)
-    const mentorIds = courses.map(c => c.mentorId).filter(Boolean)
+    const mentorIds = courses.map(c => c.mentorId).filter(Boolean) as string[]
     const mentorProfiles = mentorIds.length > 0 ? await prisma.mentorProfile.findMany({
       where: { userId: { in: mentorIds } },
       select: { userId: true }
@@ -57,9 +61,10 @@ export async function GET(request: NextRequest) {
       select: { id: true, name: true, email: true }
     }) : []
     
-    // Map mentor data to courses
+    // Map mentor data to courses with _count
     const coursesWithMentor = courses.map(course => ({
       ...course,
+      _count: { transactions: countMap.get(course.id) || 0 },
       mentor: course.mentorId ? {
         id: course.mentorId,
         user: users.find(u => u.id === course.mentorId) || { name: 'Unknown', email: '' }
