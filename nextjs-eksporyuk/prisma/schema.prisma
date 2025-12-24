@@ -2292,35 +2292,60 @@ model AffiliateBioCTA {
   updatedAt        DateTime @updatedAt
 }
 
+model LeadMagnet {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        String   // "PDF", "VIDEO", "EVENT", "WHATSAPP"
+  fileUrl     String?  // URL for PDF or Video
+  eventLink   String?  // Link for Zoom/Event
+  whatsappUrl String?  // WhatsApp group link
+  thumbnailUrl String?
+  isActive    Boolean  @default(true)
+  createdBy   String   // Admin user ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  optinForms  AffiliateOptinForm[]
+  
+  @@index([type])
+  @@index([isActive])
+}
+
 model AffiliateOptinForm {
-  id               String    @id @default(cuid())
+  id               String       @id @default(cuid())
   affiliateId      String
   bioPageId        String?
   slug             String?
   formName         String
   headline         String
   description      String?
-  submitButtonText String    @default("Submit")
-  successMessage   String    @default("Terima kasih! Data Anda telah kami terima.")
-  redirectType     String    @default("message")
+  submitButtonText String       @default("Submit")
+  successMessage   String       @default("Terima kasih! Data Anda telah kami terima.")
+  redirectType     String       @default("message")
   redirectUrl      String?
   redirectWhatsapp String?
-  collectName      Boolean   @default(true)
-  collectEmail     Boolean   @default(true)
-  collectPhone     Boolean   @default(true)
-  isActive         Boolean   @default(true)
-  submissionCount  Int       @default(0)
+  collectName      Boolean      @default(true)
+  collectEmail     Boolean      @default(true)
+  collectPhone     Boolean      @default(true)
+  isActive         Boolean      @default(true)
+  submissionCount  Int          @default(0)
+  viewCount        Int          @default(0)
+  leadMagnetId     String?
   bannerTitle      String?
   bannerSubtitle   String?
-  bannerBadgeText  String?   @default("Event Terbatas - Daftar Sekarang!")
-  primaryColor     String?   @default("#2563eb")
-  secondaryColor   String?   @default("#4f46e5")
-  showCountdown    Boolean   @default(false)
+  bannerBadgeText  String?      @default("Event Terbatas - Daftar Sekarang!")
+  primaryColor     String?      @default("#2563eb")
+  secondaryColor   String?      @default("#4f46e5")
+  showCountdown    Boolean      @default(false)
   countdownEndDate DateTime?
-  benefits         Json?     @default("[]")
-  faqs             Json?     @default("[]")
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  benefits         Json?        @default("[]")
+  faqs             Json?        @default("[]")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  leadMagnet       LeadMagnet?  @relation(fields: [leadMagnetId], references: [id], onDelete: SetNull)
+  
+  @@index([leadMagnetId])
 }
 
 model AffiliateLead {

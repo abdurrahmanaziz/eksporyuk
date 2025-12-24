@@ -120,7 +120,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
         showCountdown: body.showCountdown,
         countdownEndDate: body.countdownEndDate ? new Date(body.countdownEndDate) : null,
         benefits: body.benefits || [],
-        faqs: body.faqs || []
+        faqs: body.faqs || [],
+        leadMagnetId: body.leadMagnetId || null
       }
     })
 

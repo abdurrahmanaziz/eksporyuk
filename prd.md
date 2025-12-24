@@ -4701,3 +4701,385 @@ Supplier yang lolos:
 ✔ Sistem rapi & scalable
 
 
+
+# 📘 PRODUCT REQUIREMENT DOCUMENT (PRD)
+
+## Affiliate Opt-in Form & Thank You Page Builder
+
+**Versi:** 1.0
+**Status:** Final – Unified PRD
+**Produk:** Affiliate Booster Suite
+**Modul:** Affiliate Growth Tools
+
+---
+
+## 1. LATAR BELAKANG & TUJUAN
+
+Affiliate membutuhkan alat untuk:
+
+* Mengumpulkan lead dari luar platform
+* Memberikan lead magnet secara otomatis
+* Mengarahkan lead ke komunitas / event / funnel
+* Meningkatkan conversion sebelum penjualan
+
+Untuk itu dibangun **Opt-in Form Builder** lengkap dengan **Thank You Page Builder** sebagai satu alur funnel.
+
+Fitur ini **terpisah dari Checkout Builder** dan **tidak menangani pembayaran**.
+
+---
+
+## 2. RUANG LINGKUP FITUR
+
+### Termasuk
+
+* Opt-in Form Builder (Drag & Drop)
+* Thank You Page (Post-Submit Page)
+* Lead Magnet Integration
+* Redirect & CTA Logic
+* Basic Analytics
+* Automation Trigger (hook only)
+
+### Tidak Termasuk
+
+* Payment
+* Pricing
+* Membership logic
+* External script embed
+* Marketplace / produk luar
+
+---
+
+## 3. ROLE & AKSES
+
+| Role      | Akses                 |
+| --------- | --------------------- |
+| Affiliate | Create, Edit, Publish |
+| Admin     | View, Lock, Disable   |
+| Visitor   | View & Submit         |
+| Member    | Tidak relevan         |
+
+---
+
+## 4. STRUKTUR FUNNEL
+
+```
+Visitor
+↓
+Opt-in Form Page
+↓
+Submit Form
+↓
+Thank You Page
+↓
+CTA (Join WA / Event / Edukasi / Checkout)
+```
+
+---
+
+## 5. OPT-IN FORM BUILDER
+
+### 5.1 Layout Builder
+
+Struktur 3 kolom:
+
+```
+[ Header Builder ]
+[ Sidebar Komponen ] [ Canvas Preview ] [ Setting Panel ]
+```
+
+---
+
+### 5.2 Header Builder
+
+**Fungsi:**
+
+* Menampilkan:
+
+  * Nama campaign
+  * Lead magnet aktif
+  * Status: Draft / Published
+* Tombol:
+
+  * Duplicate
+  * Preview
+  * Publish
+* Insight cepat:
+
+  * Estimasi conversion
+  * Total leads
+
+---
+
+### 5.3 Sidebar Komponen (Kiri)
+
+#### A. Input Fields
+
+* Text Input
+* Email Input
+* Phone / WhatsApp
+* Dropdown
+* Checkbox
+
+#### B. Content & Layout
+
+* Heading
+* Paragraph
+* Image / Cover
+* Divider
+* Countdown Timer
+
+**Aturan:**
+
+* Drag & drop
+* Tidak bisa inject HTML/JS
+* Semua komponen reusable
+
+---
+
+### 5.4 Canvas / Preview (Tengah)
+
+**Karakteristik:**
+
+* Mobile-first (375px)
+* Real-time preview
+* Scrollable
+* Simulasi perangkat mobile
+
+**Aksi per elemen:**
+
+* Select
+* Edit
+* Reorder
+* Delete
+
+---
+
+### 5.5 Form Behavior
+
+**Field Properties:**
+
+* Label
+* Placeholder
+* Helper text
+* Required toggle
+* Validation toggle
+* Icon selector
+
+**Validasi bawaan:**
+
+* Email format
+* Nomor WA numeric
+* Required field check
+
+---
+
+### 5.6 Submit Button
+
+**Karakteristik:**
+
+* Selalu berada di bawah form
+* Teks & warna bisa diatur
+* Tidak bisa dihapus
+* Trust indicator (secure / no spam)
+
+---
+
+## 6. SETTING PANEL (KANAN)
+
+### 6.1 Tab: Field Settings
+
+* Label text
+* Placeholder
+* Helper text
+* Required toggle
+* Validation toggle
+* Icon
+* CRM mapping (read-only)
+
+---
+
+### 6.2 Advanced Settings
+
+#### Existing Lead Logic
+
+Jika lead (email) sudah ada:
+
+* Show popup message
+* Redirect ke URL
+* Update data & lanjut
+
+#### Submit Action
+
+* Redirect ke Thank You Page
+* Redirect ke grup WhatsApp
+* Redirect ke halaman internal
+
+---
+
+## 7. LEAD MAGNET INTEGRATION
+
+### Jenis Lead Magnet
+
+* E-book (PDF)
+* Video
+* Zoom / Event
+* Grup WhatsApp
+
+**Aturan penting:**
+
+* Asset disediakan admin
+* Affiliate hanya memilih
+* Tidak boleh upload file sendiri
+
+---
+
+## 8. THANK YOU PAGE BUILDER
+
+### 8.1 Tujuan
+
+* Konfirmasi keberhasilan submit
+* Memberi arahan selanjutnya
+* Meningkatkan engagement
+
+---
+
+### 8.2 Struktur Thank You Page
+
+**Komponen utama:**
+
+1. Success icon / banner
+2. Headline konfirmasi
+3. Deskripsi singkat
+4. CTA utama
+5. Social proof
+6. Footer link (privacy, terms)
+
+---
+
+### 8.3 Elemen Thank You Page
+
+| Elemen       | Deskripsi                |
+| ------------ | ------------------------ |
+| Success Icon | Visual feedback berhasil |
+| Headline     | “You’re In!”             |
+| Body Text    | Info lead magnet         |
+| CTA Button   | Join grup / lanjut       |
+| Social Proof | Avatar + rating          |
+| Footer       | Legal link               |
+
+---
+
+### 8.4 CTA Logic
+
+Affiliate dapat memilih:
+
+* Join komunitas WA
+* Redirect ke edukasi
+* Redirect ke checkout (read-only link)
+* Redirect ke halaman internal lain
+
+---
+
+## 9. DATA & TRACKING
+
+### Data Lead Disimpan
+
+* Nama
+* Email
+* WhatsApp
+* Campaign ID
+* Affiliate ID
+* Lead magnet ID
+* Timestamp
+
+---
+
+### Analytics Dasar (Read-only)
+
+* Page view
+* Total submit
+* Conversion rate
+
+---
+
+## 10. AUTOMATION HOOK
+
+Setelah submit:
+
+* Trigger automation system
+* Menggunakan sistem kredit (email / WA)
+* Manual chat WA tetap gratis
+
+---
+
+## 11. SECURITY & LIMITASI
+
+* No custom JS
+* No external tracker bebas
+* Domain redirect whitelist
+* Rate limit submit
+* Input sanitization
+
+---
+
+## 12. STATE MANAGEMENT
+
+| State      | Keterangan    |
+| ---------- | ------------- |
+| Draft      | Belum aktif   |
+| Published  | Aktif         |
+| Disabled   | Admin lock    |
+| Duplicated | Copy campaign |
+
+---
+
+## 13. KETERKAITAN DENGAN MODUL LAIN
+
+### Terhubung ke:
+
+* Bio Page (CTA)
+* Automation System
+* Broadcast
+* Checkout Builder (redirect saja)
+
+### Tidak terhubung ke:
+
+* Payment
+* Membership logic
+* Pricing
+
+---
+
+## 14. NON-GOALS (PENTING)
+
+* ❌ Tidak menggantikan checkout
+* ❌ Tidak untuk jual produk luar
+* ❌ Tidak open embed script
+* ❌ Tidak open marketplace
+
+---
+
+## 15. FUTURE ENHANCEMENT (OPSIONAL)
+
+* Template opt-in preset
+* A/B testing
+* Conditional field
+* Smart CTA
+* Multi-language
+
+---
+
+## 16. KESIMPULAN
+
+Opt-in Form Builder + Thank You Page adalah:
+
+* Funnel awal affiliate
+* Aman & terkontrol
+* Conversion-focused
+* Siap diskalakan
+* Konsisten dengan Checkout Builder
+
+Arsitektur ini **sudah benar secara produk, teknis, dan bisnis**.
+
+---
+

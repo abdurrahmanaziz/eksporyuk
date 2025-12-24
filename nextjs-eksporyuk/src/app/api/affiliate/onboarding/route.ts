@@ -165,9 +165,11 @@ export async function GET() {
     })
 
   } catch (error) {
-    console.error('Error fetching onboarding data:', error)
+    console.error('[API Error] /api/affiliate/onboarding GET:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
+    console.error('Stack:', error instanceof Error ? error.stack : 'N/A')
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -262,9 +264,10 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
-    console.error('Error updating onboarding step:', error)
+    console.error('[API Error] /api/affiliate/onboarding POST:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

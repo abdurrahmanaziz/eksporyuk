@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import FeatureLock from '@/components/affiliate/FeatureLock'
@@ -22,7 +22,7 @@ import {
   ClipboardList, Plus, Edit, Trash2, Copy, ExternalLink, Eye, Smartphone, Monitor, Check, X,
   FileText, MousePointerClick, Clock, Gift, HelpCircle, Sparkles, Users, TrendingUp,
   Type, Mail, Phone, ChevronDown, CheckSquare, Image as ImageIcon, Minus, Timer, AlignLeft,
-  GripVertical, Save
+  GripVertical, Save, Download
 } from 'lucide-react'
 
 interface FormElement {
@@ -54,21 +54,30 @@ interface OptinForm {
   collectEmail: boolean
   collectPhone: boolean
   submissionCount: number
+  viewCount: number
   isActive: boolean
   bannerBadgeText: string | null
   primaryColor: string | null
   secondaryColor: string | null
   showCountdown: boolean
   countdownEndDate: string | null
+  leadMagnetId: string | null
   benefits: any
   faqs: any
-  viewCount?: number
+  _count?: {
+    leads: number
+  }
 }
 
 function SortableElement({ element, onSelect, onDelete, isSelected }: any) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: element.id })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: element.id })
   
-  const style = { transform: CSS.Transform.toString(transform), transition }
+  const style = { 
+    transform: CSS.Transform.toString(transform), 
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 999 : 1
+  }
   
   const getIcon = () => {
     switch (element.type) {
@@ -87,20 +96,37 @@ function SortableElement({ element, onSelect, onDelete, isSelected }: any) {
   }
 
   return (
-    <div ref={setNodeRef} style={style} className={`group bg-white border-2 rounded-lg p-3 mb-2 cursor-pointer transition-all ${isSelected ? 'border-blue-500 shadow-md' : 'border-gray-200 hover:border-blue-300'}`} onClick={() => onSelect(element)}>
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`group bg-white border-2 rounded-lg p-3 mb-2 transition-all ${
+        isSelected ? 'border-blue-500 shadow-md' : 'border-gray-200 hover:border-blue-300'
+      } ${isDragging ? 'shadow-2xl ring-2 ring-blue-400' : ''}`}
+    >
       <div className="flex items-center gap-2">
-        <div {...attributes} {...listeners} className="cursor-move p-1 hover:bg-gray-100 rounded">
-          <GripVertical className="h-4 w-4 text-gray-400" />
+        <div 
+          {...attributes} 
+          {...listeners} 
+          className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded touch-none"
+          title="Drag untuk pindahkan"
+        >
+          <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
         </div>
-        <div className="flex items-center gap-2 flex-1">
+        <div className="flex items-center gap-2 flex-1" onClick={() => onSelect(element)}>
           {getIcon()}
-          <div className="flex-1">
+          <div className="flex-1 cursor-pointer">
             <p className="text-sm font-medium">{element.label || element.content || element.type}</p>
             {element.placeholder && <p className="text-xs text-gray-500">{element.placeholder}</p>}
           </div>
         </div>
         {element.required && <Badge variant="destructive" className="text-xs">Required</Badge>}
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); onDelete(element.id) }}>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100" 
+          onClick={(e) => { e.stopPropagation(); onDelete(element.id) }}
+          title="Hapus element"
+        >
           <Trash2 className="h-3 w-3 text-red-500" />
         </Button>
       </div>
@@ -119,6 +145,7 @@ export default function OptinFormsPage() {
   const [formElements, setFormElements] = useState<FormElement[]>([])
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(null)
   const [builderTab, setBuilderTab] = useState<'form' | 'thankyou'>('form')
+  const [activeId, setActiveId] = useState<string | null>(null)
   
   const [formName, setFormName] = useState('')
   const [headline, setHeadline] = useState('')
@@ -140,11 +167,25 @@ export default function OptinFormsPage() {
   const [thankYouCtaText, setThankYouCtaText] = useState('Gabung Komunitas')
   const [thankYouCtaUrl, setThankYouCtaUrl] = useState('')
   const [showSocialProof, setShowSocialProof] = useState(true)
+  
+  // Lead Magnet state
+  const [leadMagnets, setLeadMagnets] = useState<any[]>([])
+  const [selectedLeadMagnet, setSelectedLeadMagnet] = useState<string>('none')
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Minimum 8px movement untuk activate drag
+      },
+    }),
+    useSensor(KeyboardSensor, { 
+      coordinateGetter: sortableKeyboardCoordinates 
+    })
+  )
 
   useEffect(() => {
     fetchForms()
+    fetchLeadMagnets()
   }, [])
 
   const fetchForms = async () => {
@@ -156,6 +197,16 @@ export default function OptinFormsPage() {
       console.error(error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchLeadMagnets = async () => {
+    try {
+      const res = await fetch('/api/affiliate/lead-magnets')
+      const data = await res.json()
+      if (res.ok) setLeadMagnets(data.leadMagnets || [])
+    } catch (error) {
+      console.error('Failed to fetch lead magnets:', error)
     }
   }
 
@@ -177,6 +228,7 @@ export default function OptinFormsPage() {
       setRedirectUrl(form.redirectUrl || '')
       setRedirectWhatsapp(form.redirectWhatsapp || '')
       setSuccessMessage(form.successMessage)
+      setSelectedLeadMagnet(form.leadMagnetId || 'none')
       
       const elements: FormElement[] = []
       if (form.collectName) elements.push({ id: 'name', type: 'text', label: 'Nama', placeholder: 'Masukkan nama Anda', required: true })
@@ -211,6 +263,7 @@ export default function OptinFormsPage() {
     setThankYouCtaText('Gabung Komunitas')
     setThankYouCtaUrl('')
     setShowSocialProof(true)
+    setSelectedLeadMagnet('none')
     setFormElements([])
     setSelectedElement(null)
   }
@@ -233,8 +286,13 @@ export default function OptinFormsPage() {
     setSelectedElement(newElement)
   }
 
+  const handleDragStart = (event: any) => {
+    setActiveId(event.active.id)
+  }
+
   const handleDragEnd = (event: any) => {
     const { active, over } = event
+    
     if (over && active.id !== over.id) {
       setFormElements((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id)
@@ -242,6 +300,12 @@ export default function OptinFormsPage() {
         return arrayMove(items, oldIndex, newIndex)
       })
     }
+    
+    setActiveId(null)
+  }
+
+  const handleDragCancel = () => {
+    setActiveId(null)
   }
 
   const updateSelectedElement = (updates: Partial<FormElement>) => {
@@ -273,6 +337,7 @@ export default function OptinFormsPage() {
         countdownEndDate: showCountdown ? countdownEndDate : null,
         benefits, faqs, redirectType, redirectUrl, redirectWhatsapp, successMessage,
         collectName, collectEmail, collectPhone,
+        leadMagnetId: selectedLeadMagnet === 'none' ? null : selectedLeadMagnet,
       }
 
       const url = editingForm ? `/api/affiliate/optin-forms/${editingForm.id}` : '/api/affiliate/optin-forms'
@@ -319,8 +384,38 @@ export default function OptinFormsPage() {
     toast.success('Link form berhasil disalin!')
   }
 
+  const exportLeads = async (formId: string, formName: string) => {
+    try {
+      toast.info('Mengunduh data leads...')
+      const response = await fetch(`/api/affiliate/optin-forms/${formId}/export`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to export')
+      }
+      
+      // Get blob from response
+      const blob = await response.blob()
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `leads-${formName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      toast.success('Data leads berhasil diunduh!')
+    } catch (error) {
+      console.error('Export error:', error)
+      toast.error('Gagal mengunduh data leads')
+    }
+  }
+
   const calculateConversionRate = (form: OptinForm) => {
-    const views = form.viewCount || form.submissionCount * 3 || 1
+    // Use real viewCount, fallback to estimation if viewCount is 0
+    const views = form.viewCount > 0 ? form.viewCount : (form.submissionCount * 3 || 1)
     return ((form.submissionCount / views) * 100).toFixed(1)
   }
 
@@ -493,7 +588,13 @@ export default function OptinFormsPage() {
                     </div>
 
                     <div className="p-6">
-                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                      <DndContext 
+                        sensors={sensors} 
+                        collisionDetection={closestCenter} 
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onDragCancel={handleDragCancel}
+                      >
                         <SortableContext items={formElements.map(el => el.id)} strategy={verticalListSortingStrategy}>
                           {formElements.length === 0 ? (
                             <div className="text-center py-12 border-2 border-dashed rounded-lg">
@@ -506,6 +607,19 @@ export default function OptinFormsPage() {
                             ))
                           )}
                         </SortableContext>
+                        
+                        <DragOverlay>
+                          {activeId ? (
+                            <div className="bg-white border-2 border-blue-500 rounded-lg p-3 shadow-2xl opacity-90">
+                              <div className="flex items-center gap-2">
+                                <GripVertical className="h-4 w-4 text-blue-500" />
+                                <span className="text-sm font-medium">
+                                  {formElements.find(el => el.id === activeId)?.label || 'Element'}
+                                </span>
+                              </div>
+                            </div>
+                          ) : null}
+                        </DragOverlay>
                       </DndContext>
 
                       <Button className="w-full mt-4 h-11" style={{ backgroundColor: primaryColor }} disabled>{submitButtonText}</Button>
@@ -676,6 +790,35 @@ export default function OptinFormsPage() {
                         </div>
                       </div>
                       <div className="border-t pt-4 space-y-3">
+                        <Label className="text-xs font-semibold">Lead Magnet (Opsional)</Label>
+                        <Select value={selectedLeadMagnet} onValueChange={setSelectedLeadMagnet}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Pilih lead magnet (opsional)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Tidak ada lead magnet</SelectItem>
+                            {leadMagnets.map((lm) => (
+                              <SelectItem key={lm.id} value={lm.id}>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                                    {lm.type}
+                                  </span>
+                                  <span>{lm.title}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {selectedLeadMagnet && selectedLeadMagnet !== 'none' && leadMagnets.find(lm => lm.id === selectedLeadMagnet)?.description && (
+                          <p className="text-xs text-gray-500">
+                            {leadMagnets.find(lm => lm.id === selectedLeadMagnet)?.description}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400">
+                          Lead magnet akan dikirim otomatis setelah form disubmit
+                        </p>
+                      </div>
+                      <div className="border-t pt-4 space-y-3">
                         <Label className="text-xs font-semibold">After Submit Action</Label>
                         <Select value={redirectType} onValueChange={setRedirectType}>
                           <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
@@ -762,13 +905,22 @@ export default function OptinFormsPage() {
           </div>
 
           {forms.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
               <Card className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded"><FileText className="h-5 w-5 text-blue-600" /></div>
                   <div>
                     <p className="text-xs text-gray-500">Total Forms</p>
                     <p className="text-xl font-bold">{forms.length}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded"><Eye className="h-5 w-5 text-purple-600" /></div>
+                  <div>
+                    <p className="text-xs text-gray-500">Total Views</p>
+                    <p className="text-xl font-bold">{forms.reduce((acc, f) => acc + (f.viewCount || 0), 0)}</p>
                   </div>
                 </div>
               </Card>
@@ -783,7 +935,7 @@ export default function OptinFormsPage() {
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded"><Check className="h-5 w-5 text-purple-600" /></div>
+                  <div className="p-2 bg-indigo-100 rounded"><Check className="h-5 w-5 text-indigo-600" /></div>
                   <div>
                     <p className="text-xs text-gray-500">Aktif</p>
                     <p className="text-xl font-bold">{forms.filter(f => f.isActive).length}</p>
@@ -837,7 +989,11 @@ export default function OptinFormsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-4 gap-2">
+                        <div className="bg-purple-50 rounded p-2 text-center">
+                          <p className="text-xs text-gray-500">Views</p>
+                          <p className="text-lg font-bold text-purple-600">{form.viewCount || 0}</p>
+                        </div>
                         <div className="bg-blue-50 rounded p-2 text-center">
                           <p className="text-xs text-gray-500">Leads</p>
                           <p className="text-lg font-bold text-blue-600">{form.submissionCount}</p>
@@ -846,9 +1002,9 @@ export default function OptinFormsPage() {
                           <p className="text-xs text-gray-500">Convert</p>
                           <p className="text-lg font-bold text-green-600">{calculateConversionRate(form)}%</p>
                         </div>
-                        <div className="bg-purple-50 rounded p-2 text-center">
+                        <div className="bg-amber-50 rounded p-2 text-center">
                           <p className="text-xs text-gray-500">Fields</p>
-                          <p className="text-lg font-bold text-purple-600">
+                          <p className="text-lg font-bold text-amber-600">
                             {[form.collectName, form.collectEmail, form.collectPhone].filter(Boolean).length}
                           </p>
                         </div>
@@ -863,13 +1019,16 @@ export default function OptinFormsPage() {
                           </Button>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
+                          <Button variant="outline" size="sm" onClick={() => exportLeads(form.id, form.formName)} disabled={form.submissionCount === 0}>
+                            <Download className="h-4 w-4 mr-1" />Export ({form.submissionCount})
+                          </Button>
                           <Button size="sm" onClick={() => handleOpenBuilder(form)}>
                             <Edit className="h-4 w-4 mr-1" />Edit
                           </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => setDeletingForm(form.id)}>
-                            <Trash2 className="h-4 w-4 mr-1" />Hapus
-                          </Button>
                         </div>
+                        <Button variant="outline" size="sm" className="w-full text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => setDeletingForm(form.id)}>
+                          <Trash2 className="h-4 w-4 mr-1" />Hapus Form
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

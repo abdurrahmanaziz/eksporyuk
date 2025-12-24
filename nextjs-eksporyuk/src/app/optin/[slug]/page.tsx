@@ -48,7 +48,8 @@ export default function PublicOptinFormPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: ''
+    phone: '',
+    website: '' // Honeypot field - hidden from user
   })
 
   useEffect(() => {
@@ -81,7 +82,9 @@ export default function PublicOptinFormPage() {
     setSubmitting(true)
 
     try {
-      const submitData: any = {}
+      const submitData: any = {
+        website: formData.website // Include honeypot field for backend check
+      }
       
       if (form?.collectName) submitData.name = formData.name
       if (form?.collectEmail) submitData.email = formData.email
@@ -280,6 +283,19 @@ export default function PublicOptinFormPage() {
               </CardHeader>
               <CardContent className="p-4 sm:p-5 md:p-6">
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+            
+            {/* Honeypot field - hidden from users, trap for bots */}
+            <input
+              type="text"
+              name="website"
+              value={formData.website}
+              onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+              style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px' }}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
+            
             {form.collectName && (
               <div>
                 <Label htmlFor="name" className="text-sm mb-2 block">Nama *</Label>

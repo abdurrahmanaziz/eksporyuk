@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
 /**
  * GET /api/public/optin-forms/[id]
  * Get optin form by ID or slug (public - no auth required)
+ * Auto-increment viewCount for analytics
  */
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
@@ -59,6 +60,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         { status: 404 }
       )
     }
+
+    // Increment view count (non-blocking, fire and forget)
+    prisma.affiliateOptinForm.update({
+      where: { id: optinForm.id },
+      data: { viewCount: { increment: 1 } }
+    }).catch(err => console.error('[VIEW COUNT] Failed to increment:', err))
 
     return NextResponse.json({ optinForm })
   } catch (error) {

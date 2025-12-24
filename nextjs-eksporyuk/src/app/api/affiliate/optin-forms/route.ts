@@ -44,9 +44,10 @@ export async function GET(req: NextRequest) {
       optinForms: user.affiliateProfile.optinForms
     })
   } catch (error) {
-    console.error('Error fetching optin forms:', error)
+    console.error('[API Error] /api/affiliate/optin-forms GET:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Failed to fetch optin forms' },
+      { error: 'Failed to fetch optin forms', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -85,7 +86,8 @@ export async function POST(req: NextRequest) {
       showCountdown,
       countdownEndDate,
       benefits,
-      faqs
+      faqs,
+      leadMagnetId
     } = body
 
     // Validate required fields
@@ -161,7 +163,8 @@ export async function POST(req: NextRequest) {
         showCountdown,
         countdownEndDate: countdownEndDate ? new Date(countdownEndDate) : null,
         benefits: benefits || [],
-        faqs: faqs || []
+        faqs: faqs || [],
+        leadMagnetId: leadMagnetId || null
       }
     })
 
@@ -170,9 +173,10 @@ export async function POST(req: NextRequest) {
       optinForm
     })
   } catch (error) {
-    console.error('Error creating optin form:', error)
+    console.error('[API Error] /api/affiliate/optin-forms POST:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Failed to create optin form' },
+      { error: 'Failed to create optin form', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

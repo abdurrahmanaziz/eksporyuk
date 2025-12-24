@@ -13,16 +13,30 @@ export const dynamic = 'force-dynamic';
 /**
  * POST /api/affiliate/optin-forms/[id]/submit
  * Submit optin form (public endpoint)
+ * Features: Validation, Spam Protection, Duplicate Detection
  */
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
     const body = await req.json()
-    const { name, email, phone, whatsapp } = body
+    const { name, email, phone, whatsapp, website } = body
+
+    // SPAM PROTECTION 1: Honeypot field check
+    // If 'website' field is filled (hidden field), it's likely a bot
+    if (website && website.trim() !== '') {
+      console.warn('[SPAM] Honeypot field filled:', { email, website })
+      // Return success to avoid alerting bot
+      return NextResponse.json({ 
+        message: 'Terima kasih! Data Anda telah kami terima.' 
+      })
+    }
 
     // Get optin form
-    const optinForm = await prisma.affiliateOptinForm.findUnique({
-      where: { id, isActive: true },
+    const optinForm = await prisma.affiliateOptinForm.findFirst({
+      where: { 
+        id, 
+        isActive: true 
+      },
       include: {
         affiliate: {
           include: {
@@ -58,17 +72,60 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
     }
 
+    // SPAM PROTECTION 2: Duplicate email detection (24 jam terakhir)
+    if (email) {
+      const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const existingLead = await prisma.affiliateLead.findFirst({
+        where: {
+          optinFormId: optinForm.id,
+          email: email.toLowerCase().trim(),
+          createdAt: {
+            gte: last24Hours
+          }
+        }
+      })
+
+      if (existingLead) {
+        console.warn('[SPAM] Duplicate submission within 24h:', { email, formId: optinForm.id })
+        // Return gentle message
+        return NextResponse.json({ 
+          error: 'Email ini sudah terdaftar. Silakan cek email Anda atau gunakan email lain.',
+        }, { status: 400 })
+      }
+    }
+
+    // SPAM PROTECTION 3: Check for suspicious patterns in name/email
+    const suspiciousPatterns = [
+      /test/i,
+      /asdf/i,
+      /qwerty/i,
+      /admin/i,
+      /dummy/i,
+      /sample/i,
+      /example/i
+    ]
+    
+    const isSuspicious = suspiciousPatterns.some(pattern => 
+      pattern.test(name || '') || pattern.test(email || '')
+    )
+    
+    if (isSuspicious) {
+      console.warn('[SPAM] Suspicious pattern detected:', { name, email })
+      // Still allow but mark for review
+    }
+
     // Create lead
     const lead = await prisma.affiliateLead.create({
       data: {
         affiliateId: optinForm.affiliateId,
         optinFormId: optinForm.id,
         name: name || '',
-        email: email || null,
+        email: email ? email.toLowerCase().trim() : null,
         phone: phone || null,
         whatsapp: whatsapp || phone || null,
         source: 'optin',
-        status: 'new'
+        status: 'new',
+        notes: isSuspicious ? '⚠️ Flagged: Suspicious pattern detected' : null
       }
     })
 
