@@ -48,79 +48,104 @@ export async function GET() {
         isActive: true,
         status: 'ACTIVE',
         endDate: { gt: new Date() }
-      },
-      include: {
-        membership: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            price: true,
-            features: true,
-          }
-        }
       }
     })
 
+    // Fetch membership separately
+    let membership = null
+    if (userMembership) {
+      membership = await prisma.membership.findUnique({
+        where: { id: userMembership.membershipId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          price: true,
+          features: true,
+        }
+      })
+    }
+
     // If user has membership, fetch junction table data separately
     let membershipWithRelations = null
-    if (userMembership) {
-      const membershipId = userMembership.membership.id
+    if (userMembership && membership) {
+      const membershipId = membership.id
       
       // Fetch courses
       const membershipCourses = await prisma.membershipCourse.findMany({
-        where: { membershipId },
-        include: {
-          course: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              thumbnail: true,
-              level: true,
-            }
-          }
-        }
+        where: { membershipId }
       })
+      
+      // Fetch course details
+      const courseIds = membershipCourses.map(mc => mc.courseId)
+      const courses = courseIds.length > 0 ? await prisma.course.findMany({
+        where: { id: { in: courseIds } },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          thumbnail: true,
+          level: true,
+        }
+      }) : []
+      const courseMap = new Map(courses.map(c => [c.id, c]))
+      const membershipCoursesWithData = membershipCourses.map(mc => ({
+        ...mc,
+        course: courseMap.get(mc.courseId)
+      }))
 
       // Fetch groups
       const membershipGroups = await prisma.membershipGroup.findMany({
-        where: { membershipId },
-        include: {
-          group: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              avatar: true,
-              type: true,
-              description: true,
-            }
-          }
-        }
+        where: { membershipId }
       })
+      
+      // Fetch group details
+      const groupIds = membershipGroups.map(mg => mg.groupId)
+      const groups = groupIds.length > 0 ? await prisma.group.findMany({
+        where: { id: { in: groupIds } },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          avatar: true,
+          type: true,
+          description: true,
+        }
+      }) : []
+      const groupMap = new Map(groups.map(g => [g.id, g]))
+      const membershipGroupsWithData = membershipGroups.map(mg => ({
+        ...mg,
+        group: groupMap.get(mg.groupId)
+      }))
 
       // Fetch products
       const membershipProducts = await prisma.membershipProduct.findMany({
-        where: { membershipId },
-        include: {
-          product: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              thumbnail: true,
-              price: true,
-            }
-          }
-        }
+        where: { membershipId }
       })
+      
+      // Fetch product details
+      const productIds = membershipProducts.map(mp => mp.productId)
+      const products = productIds.length > 0 ? await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          thumbnail: true,
+          price: true,
+        }
+      }) : []
+      const productMap = new Map(products.map(p => [p.id, p]))
+      const membershipProductsWithData = membershipProducts.map(mp => ({
+        ...mp,
+        product: productMap.get(mp.productId)
+      }))
 
       membershipWithRelations = {
-        ...userMembership.membership,
-        membershipCourses,
-        membershipGroups,
-        membershipProducts
+        ...membership,
+        membershipCourses: membershipCoursesWithData,
+        membershipGroups: membershipGroupsWithData,
+        membershipProducts: membershipProductsWithData
       }
     }
 

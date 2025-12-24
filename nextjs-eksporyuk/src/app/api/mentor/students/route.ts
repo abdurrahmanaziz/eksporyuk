@@ -26,31 +26,37 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get mentor's courses
+    const mentorCourses = await prisma.course.findMany({
+      where: { mentorId: session.user.id },
+      select: { id: true, title: true }
+    })
+    
+    const mentorCourseIds = mentorCourses.map(c => c.id)
+    const courseMap = new Map(mentorCourses.map(c => [c.id, c]))
+
     // Get all students enrolled in mentor's courses
     const students = await prisma.userCourseProgress.findMany({
       where: {
-        course: {
-          mentorId: session.user.id
-        }
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        course: {
-          select: {
-            title: true
-          }
-        }
+        courseId: { in: mentorCourseIds }
       },
       orderBy: {
         lastAccessedAt: 'desc'
       }
     })
+
+    // Fetch user data separately
+    const userIds = [...new Set(students.map(s => s.userId))]
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true
+      }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
 
     // Get quiz attempts count for each student
     const studentsWithStats = await Promise.all(
@@ -83,6 +89,8 @@ export async function GET(request: NextRequest) {
 
         return {
           ...student,
+          user: userMap.get(student.userId),
+          course: courseMap.get(student.courseId),
           quizAttempts,
           assignmentSubmissions
         }
