@@ -22,65 +22,102 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const search = searchParams.get('search')
 
-    // Build where condition
-    let where: any = {}
+    // Build base where condition for status
+    let baseWhere: any = {}
     
     if (status && status !== 'ALL') {
-      where.status = status
+      baseWhere.status = status
     }
+
+    // For search, we need to find matching users and memberships first
+    let userIds: string[] | undefined
+    let membershipIds: string[] | undefined
 
     if (search) {
-      where.OR = [
-        {
-          user: {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } }
-            ]
-          }
+      // Find matching users
+      const matchingUsers = await prisma.user.findMany({
+        where: {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } }
+          ]
         },
-        {
-          membership: {
-            name: { contains: search, mode: 'insensitive' }
-          }
-        }
-      ]
+        select: { id: true }
+      })
+      userIds = matchingUsers.map(u => u.id)
+
+      // Find matching memberships
+      const matchingMemberships = await prisma.membership.findMany({
+        where: {
+          name: { contains: search, mode: 'insensitive' }
+        },
+        select: { id: true }
+      })
+      membershipIds = matchingMemberships.map(m => m.id)
     }
 
-    // Fetch user memberships with pagination
-    const userMemberships = await prisma.userMembership.findMany({
+    // Build final where with search results
+    let where: any = { ...baseWhere }
+    if (search && (userIds?.length || membershipIds?.length)) {
+      where.OR = []
+      if (userIds?.length) {
+        where.OR.push({ userId: { in: userIds } })
+      }
+      if (membershipIds?.length) {
+        where.OR.push({ membershipId: { in: membershipIds } })
+      }
+    } else if (search) {
+      // No matches found for search, return empty
+      where.id = 'no-match'
+    }
+
+    // Fetch user memberships with pagination (without relations)
+    const rawUserMemberships = await prisma.userMembership.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        membership: {
-          select: {
-            id: true,
-            name: true,
-            duration: true,
-            price: true
-          }
-        },
-        transaction: {
-          select: {
-            id: true,
-            amount: true,
-            status: true
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       },
       skip: (page - 1) * limit,
       take: limit
     })
+
+    // Collect unique IDs for batch lookup
+    const allUserIds = [...new Set(rawUserMemberships.map(um => um.userId))]
+    const allMembershipIds = [...new Set(rawUserMemberships.map(um => um.membershipId))]
+    const allTransactionIds = rawUserMemberships
+      .filter(um => um.transactionId)
+      .map(um => um.transactionId as string)
+
+    // Batch fetch users, memberships, and transactions
+    const [users, memberships, transactions] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: allUserIds } },
+        select: { id: true, name: true, email: true, avatar: true }
+      }),
+      prisma.membership.findMany({
+        where: { id: { in: allMembershipIds } },
+        select: { id: true, name: true, duration: true, price: true }
+      }),
+      allTransactionIds.length > 0 
+        ? prisma.transaction.findMany({
+            where: { id: { in: allTransactionIds } },
+            select: { id: true, amount: true, status: true }
+          })
+        : Promise.resolve([])
+    ])
+
+    // Create lookup maps
+    const userMap = new Map(users.map(u => [u.id, u]))
+    const membershipMap = new Map(memberships.map(m => [m.id, m]))
+    const transactionMap = new Map(transactions.map(t => [t.id, t]))
+
+    // Combine data
+    const userMemberships = rawUserMemberships.map(um => ({
+      ...um,
+      user: userMap.get(um.userId) || null,
+      membership: membershipMap.get(um.membershipId) || null,
+      transaction: um.transactionId ? (transactionMap.get(um.transactionId) || null) : null
+    }))
 
     // Get stats
     const [totalCount, activeCount, expiredCount, pendingCount, totalRevenue] = await Promise.all([
@@ -219,26 +256,25 @@ export async function POST(request: NextRequest) {
         activatedAt: new Date(),
         price: price || membership.price,
         autoRenew
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        membership: {
-          select: {
-            id: true,
-            name: true,
-            duration: true,
-            price: true
-          }
-        }
       }
     })
+
+    // Fetch user data manually for response
+    const userData = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, email: true, avatar: true }
+    })
+
+    const membershipData = await prisma.membership.findUnique({
+      where: { id: membershipId },
+      select: { id: true, name: true, duration: true, price: true }
+    })
+
+    const responseData = {
+      ...newUserMembership,
+      user: userData,
+      membership: membershipData
+    }
 
     // Auto-assign membership features
     try {
@@ -251,7 +287,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'User membership created successfully',
-      userMembership: newUserMembership
+      userMembership: responseData
     })
 
   } catch (error) {

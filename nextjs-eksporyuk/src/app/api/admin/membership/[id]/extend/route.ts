@@ -31,11 +31,7 @@ export async function POST(
 
     // Check if membership exists
     const existingMembership = await prisma.userMembership.findUnique({
-      where: { id },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        membership: { select: { id: true, name: true, duration: true } }
-      }
+      where: { id }
     })
 
     if (!existingMembership) {
@@ -44,6 +40,18 @@ export async function POST(
         { status: 404 }
       )
     }
+
+    // Fetch related data manually
+    const [existingUser, existingMembershipPlan] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: existingMembership.userId },
+        select: { id: true, name: true, email: true }
+      }),
+      prisma.membership.findUnique({
+        where: { id: existingMembership.membershipId },
+        select: { id: true, name: true, duration: true }
+      })
+    ])
 
     // Calculate new end date
     const currentEndDate = new Date(existingMembership.endDate)
@@ -55,31 +63,19 @@ export async function POST(
       data: {
         endDate: newEndDate,
         updatedAt: new Date()
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        membership: {
-          select: {
-            id: true,
-            name: true,
-            duration: true
-          }
-        }
       }
     })
 
     // Log the extension (optional - you can add an activity log model later)
-    console.log(`Membership extended by ${days} days for user ${existingMembership.user.name} by admin ${session.user.name}`)
+    console.log(`Membership extended by ${days} days for user ${existingUser?.name || 'Unknown'} by admin ${session.user.name}`)
 
     return NextResponse.json({
       message: `Membership extended by ${days} days successfully`,
-      userMembership: updatedMembership,
+      userMembership: {
+        ...updatedMembership,
+        user: existingUser,
+        membership: existingMembershipPlan
+      },
       extension: {
         days,
         oldEndDate: currentEndDate,

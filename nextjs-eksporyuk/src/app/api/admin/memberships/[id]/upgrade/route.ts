@@ -48,11 +48,7 @@ export async function POST(
     
     // Get current user membership
     const userMembership = await prisma.userMembership.findUnique({
-      where: { id: membershipId },
-      include: {
-        user: true,
-        membership: true
-      }
+      where: { id: membershipId }
     })
     
     if (!userMembership) {
@@ -61,6 +57,12 @@ export async function POST(
         { status: 404 }
       )
     }
+
+    // Fetch related data manually
+    const [userMembershipUser, userMembershipPlan] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userMembership.userId } }),
+      prisma.membership.findUnique({ where: { id: userMembership.membershipId } })
+    ])
     
     let updatedMembership
     
@@ -97,15 +99,17 @@ export async function POST(
           endDate: newEndDate,
           status: 'ACTIVE',
           isActive: true
-        },
-        include: {
-          membership: true,
-          user: true
         }
       })
+
+      // Fetch updated related data
+      const [updatedUser, updatedMembershipPlan] = await Promise.all([
+        prisma.user.findUnique({ where: { id: updatedMembership.userId } }),
+        prisma.membership.findUnique({ where: { id: updatedMembership.membershipId } })
+      ])
       
       // Update user role to premium if not already
-      if (userMembership.user.role !== 'MEMBER_PREMIUM') {
+      if (userMembershipUser && userMembershipUser.role !== 'MEMBER_PREMIUM') {
         await prisma.user.update({
           where: { id: userMembership.userId },
           data: { role: 'MEMBER_PREMIUM' }
@@ -116,7 +120,7 @@ export async function POST(
       await prisma.activityLog.create({
         data: {
           userId: session.user.id,
-          action: `Upgraded user ${userMembership.user.email} from ${userMembership.membership.name} to ${newMembership.name}`,
+          action: `Upgraded user ${userMembershipUser?.email || 'Unknown'} from ${userMembershipPlan?.name || 'Unknown'} to ${newMembership.name}`,
           entity: 'UserMembership',
           entityId: membershipId,
           metadata: {
@@ -127,6 +131,13 @@ export async function POST(
           }
         }
       })
+
+      // Add related data to response
+      updatedMembership = {
+        ...updatedMembership,
+        user: updatedUser,
+        membership: updatedMembershipPlan
+      }
     }
     
     // Case 2: Extend current membership
@@ -140,18 +151,20 @@ export async function POST(
           endDate: newEndDate,
           status: 'ACTIVE',
           isActive: true
-        },
-        include: {
-          membership: true,
-          user: true
         }
       })
+
+      // Fetch updated related data
+      const [extendedUser, extendedMembershipPlan] = await Promise.all([
+        prisma.user.findUnique({ where: { id: updatedMembership.userId } }),
+        prisma.membership.findUnique({ where: { id: updatedMembership.membershipId } })
+      ])
       
       // Log activity
       await prisma.activityLog.create({
         data: {
           userId: session.user.id,
-          action: `Extended membership for ${userMembership.user.email} by ${extendDays} days`,
+          action: `Extended membership for ${userMembershipUser?.email || 'Unknown'} by ${extendDays} days`,
           entity: 'UserMembership',
           entityId: membershipId,
           metadata: {
@@ -162,6 +175,13 @@ export async function POST(
           }
         }
       })
+
+      // Add related data to response
+      updatedMembership = {
+        ...updatedMembership,
+        user: extendedUser,
+        membership: extendedMembershipPlan
+      }
     }
     
     return NextResponse.json({

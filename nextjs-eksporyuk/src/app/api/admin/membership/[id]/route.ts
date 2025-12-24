@@ -68,28 +68,28 @@ export async function PATCH(
 
     const updatedMembership = await prisma.userMembership.update({
       where: { id },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        membership: {
-          select: {
-            id: true,
-            name: true,
-            duration: true
-          }
-        }
-      }
+      data: updateData
     })
+
+    // Fetch related data manually
+    const [user, membership] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: updatedMembership.userId },
+        select: { id: true, name: true, email: true }
+      }),
+      prisma.membership.findUnique({
+        where: { id: updatedMembership.membershipId },
+        select: { id: true, name: true, duration: true }
+      })
+    ])
 
     return NextResponse.json({
       message: 'Membership updated successfully',
-      userMembership: updatedMembership
+      userMembership: {
+        ...updatedMembership,
+        user,
+        membership
+      }
     })
 
   } catch (error) {
@@ -116,11 +116,7 @@ export async function DELETE(
 
     // Check if membership exists
     const existingMembership = await prisma.userMembership.findUnique({
-      where: { id },
-      include: {
-        user: { select: { name: true, email: true } },
-        membership: { select: { name: true } }
-      }
+      where: { id }
     })
 
     if (!existingMembership) {
@@ -129,6 +125,18 @@ export async function DELETE(
         { status: 404 }
       )
     }
+
+    // Fetch related data manually before delete
+    const [user, membership] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: existingMembership.userId },
+        select: { name: true, email: true }
+      }),
+      prisma.membership.findUnique({
+        where: { id: existingMembership.membershipId },
+        select: { name: true }
+      })
+    ])
 
     // Delete membership
     await prisma.userMembership.delete({
@@ -139,9 +147,9 @@ export async function DELETE(
       message: 'Membership deleted successfully',
       deletedMembership: {
         id,
-        userName: existingMembership.user.name,
-        userEmail: existingMembership.user.email,
-        membershipName: existingMembership.membership.name
+        userName: user?.name || 'Unknown',
+        userEmail: user?.email || 'Unknown',
+        membershipName: membership?.name || 'Unknown'
       }
     })
 

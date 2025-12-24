@@ -21,42 +21,9 @@ export async function GET(
 
     const membershipId = params.id
 
-    // Get membership with assigned courses
+    // Get membership
     const membership = await prisma.membership.findUnique({
-      where: { id: membershipId },
-      include: {
-        membershipCourses: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                title: true,
-                thumbnail: true,
-                price: true,
-                isPublished: true,
-                status: true,
-                mentor: {
-                  select: {
-                    user: {
-                      select: {
-                        name: true,
-                      },
-                    },
-                  },
-                },
-                _count: {
-                  select: {
-                    enrollments: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-      },
+      where: { id: membershipId }
     })
 
     if (!membership) {
@@ -66,23 +33,85 @@ export async function GET(
       )
     }
 
+    // Get membership courses
+    const membershipCourses = await prisma.membershipCourse.findMany({
+      where: { membershipId },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    // Batch fetch courses
+    const courseIds = membershipCourses.map(mc => mc.courseId)
+    const courses = courseIds.length > 0 
+      ? await prisma.course.findMany({
+          where: { id: { in: courseIds } },
+          select: {
+            id: true,
+            title: true,
+            thumbnail: true,
+            price: true,
+            isPublished: true,
+            status: true,
+            mentorId: true
+          }
+        })
+      : []
+
+    // Batch fetch mentors
+    const mentorIds = [...new Set(courses.filter(c => c.mentorId).map(c => c.mentorId as string))]
+    const mentorProfiles = mentorIds.length > 0
+      ? await prisma.mentorProfile.findMany({
+          where: { id: { in: mentorIds } },
+          select: { id: true, userId: true }
+        })
+      : []
+
+    // Batch fetch users for mentors
+    const mentorUserIds = mentorProfiles.map(mp => mp.userId)
+    const mentorUsers = mentorUserIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: mentorUserIds } },
+          select: { id: true, name: true }
+        })
+      : []
+
+    // Batch fetch enrollment counts
+    const enrollmentCounts = courseIds.length > 0
+      ? await prisma.enrollment.groupBy({
+          by: ['courseId'],
+          where: { courseId: { in: courseIds } },
+          _count: true
+        })
+      : []
+
+    // Create lookup maps
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+    const mentorProfileMap = new Map(mentorProfiles.map(mp => [mp.id, mp]))
+    const mentorUserMap = new Map(mentorUsers.map(u => [u.id, u]))
+    const enrollmentCountMap = new Map(enrollmentCounts.map(ec => [ec.courseId, ec._count]))
+
     return NextResponse.json({
       membership: {
         id: membership.id,
         name: membership.name,
         slug: membership.slug,
       },
-      courses: membership.membershipCourses.map((mc) => ({
-        id: mc.course.id,
-        title: mc.course.title,
-        thumbnail: mc.course.thumbnail,
-        price: mc.course.price,
-        isPublished: mc.course.isPublished,
-        status: mc.course.status,
-        mentorName: mc.course.mentor?.user?.name,
-        enrollmentCount: mc.course._count.enrollments,
-        assignedAt: mc.createdAt,
-      })),
+      courses: membershipCourses.map((mc) => {
+        const course = courseMap.get(mc.courseId)
+        const mentorProfile = course?.mentorId ? mentorProfileMap.get(course.mentorId) : null
+        const mentorUser = mentorProfile ? mentorUserMap.get(mentorProfile.userId) : null
+        
+        return {
+          id: course?.id,
+          title: course?.title,
+          thumbnail: course?.thumbnail,
+          price: course?.price,
+          isPublished: course?.isPublished,
+          status: course?.status,
+          mentorName: mentorUser?.name || null,
+          enrollmentCount: enrollmentCountMap.get(mc.courseId) || 0,
+          assignedAt: mc.createdAt,
+        }
+      }).filter(c => c.id), // Filter out courses that weren't found
     })
   } catch (error) {
     console.error('Get membership courses error:', error)
