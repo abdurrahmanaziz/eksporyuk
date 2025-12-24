@@ -64,6 +64,7 @@ model User {
   // Relations
   transactions           Transaction[]
   affiliateProfile       AffiliateProfile?
+  mentorProfile          MentorProfile?
   supplierMemberships    SupplierMembership[]
   supplierProfile        SupplierProfile?
   supplierReviewsAssigned SupplierProfile[] @relation("MentorSupplierReviews")
@@ -336,6 +337,9 @@ model MentorProfile {
   verifiedAt     DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  // Relations
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
