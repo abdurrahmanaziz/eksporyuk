@@ -18,30 +18,37 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Get top 10 affiliates by total earnings (ALL affiliates - regardless of status)
+    // Get top 10 affiliates by total earnings (no relations - use manual lookup)
     const topAffiliates = await prisma.affiliateProfile.findMany({
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      },
       orderBy: {
         totalEarnings: 'desc'
       },
       take: 10
     })
 
+    // Get user data for affiliates manually
+    const userIds = topAffiliates.map(a => a.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true
+      }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
+
     // Format the data
-    const formattedAffiliates = topAffiliates.map((affiliate, index) => ({
-      rank: index + 1,
-      affiliateId: affiliate.id,
-      name: affiliate.user?.name || affiliate.user?.email || 'Unknown',
-      sales: affiliate.totalConversions || 0,
-      commission: affiliate.totalEarnings || 0
-    }))
+    const formattedAffiliates = topAffiliates.map((affiliate, index) => {
+      const user = userMap.get(affiliate.userId)
+      return {
+        rank: index + 1,
+        affiliateId: affiliate.id,
+        name: user?.name || user?.email || 'Unknown',
+        sales: affiliate.totalConversions || 0,
+        commission: affiliate.totalEarnings || 0
+      }
+    })
 
     // Get current month name in Indonesian
     const now = new Date()

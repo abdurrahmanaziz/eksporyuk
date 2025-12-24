@@ -14,28 +14,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user with affiliate profile - use explicit select to avoid type issues
+    // Get user first (no relations - schema doesn't have them)
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
         id: true,
         role: true,
-        affiliateProfile: {
-          select: {
-            id: true,
-            affiliateCode: true,
-            tier: true,
-            applicationStatus: true,
-            totalEarnings: true,
-            totalClicks: true,
-            totalConversions: true,
-            welcomeShown: true,
-            onboardingCompleted: true,
-            trainingCompleted: true,
-            firstLinkCreated: true,
-            profileCompleted: true,
-          }
-        }
       }
     });
 
@@ -43,11 +27,29 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Get affiliate profile separately (manual lookup)
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        affiliateCode: true,
+        tier: true,
+        applicationStatus: true,
+        totalEarnings: true,
+        totalClicks: true,
+        totalConversions: true,
+        welcomeShown: true,
+        onboardingCompleted: true,
+        trainingCompleted: true,
+        firstLinkCreated: true,
+        profileCompleted: true,
+      }
+    });
+
     // Check if user is affiliate (has profile or has AFFILIATE role)
-    const isAffiliate = user.role === 'AFFILIATE' || !!user.affiliateProfile;
+    const isAffiliate = user.role === 'AFFILIATE' || !!affiliateProfile;
     
     // Get application status from profile
-    const affiliateProfile = user.affiliateProfile;
     const applicationStatus = affiliateProfile?.applicationStatus || null;
 
     // Determine if affiliate menu should be enabled

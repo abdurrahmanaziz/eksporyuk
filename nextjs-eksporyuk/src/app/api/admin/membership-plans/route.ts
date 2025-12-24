@@ -67,50 +67,22 @@ export async function GET(request: NextRequest) {
         showInGeneralCheckout: true,
         createdAt: true,
         updatedAt: true,
-        userMemberships: {
-          take: 1,
-          orderBy: {
-            createdAt: 'desc'
-          },
-          select: {
-            id: true,
-            createdAt: true,
-            transaction: {
-              select: {
-                createdAt: true
-              }
-            }
-          }
-        },
-        _count: {
-          select: {
-            userMemberships: true,
-            membershipGroups: true,
-            membershipCourses: true,
-            membershipProducts: true
-          }
-        }
+        // Note: Removed userMemberships and _count - relations not available in production schema
       },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
-    // Sort plans by latest transaction date
+    // Get member counts manually for each membership
+    const memberCounts = await prisma.userMembership.groupBy({
+      by: ['membershipId'],
+      _count: true
+    })
+    const countMap = new Map(memberCounts.map(c => [c.membershipId, c._count]))
+
+    // Sort plans by creation date (latest first)
     const sortedPlans = plans.sort((a, b) => {
-      const aLatestTx = a.userMemberships[0]?.transaction?.createdAt
-      const bLatestTx = b.userMemberships[0]?.transaction?.createdAt
-      
-      // If both have transactions, sort by latest transaction date
-      if (aLatestTx && bLatestTx) {
-        return new Date(bLatestTx).getTime() - new Date(aLatestTx).getTime()
-      }
-      
-      // Plans with transactions come first
-      if (aLatestTx && !bLatestTx) return -1
-      if (!aLatestTx && bLatestTx) return 1
-      
-      // If neither has transactions, sort by creation date
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
 
