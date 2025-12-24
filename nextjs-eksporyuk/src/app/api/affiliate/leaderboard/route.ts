@@ -77,17 +77,11 @@ export async function GET(req: NextRequest) {
     })
     const txMap = new Map(transactions.map(t => [t.id, t]))
     
-    // Get affiliate IDs and fetch affiliates separately
-    const affiliateIds = [...new Set(conversions.map(c => c.affiliateId))]
-    const affiliates = await prisma.affiliateProfile.findMany({
-      where: { id: { in: affiliateIds } }
-    })
-    const affMap = new Map(affiliates.map(a => [a.id, a]))
-    
-    // Get user IDs and fetch users separately
-    const userIds = affiliates.map(a => a.userId)
+    // NOTE: In migration data, affiliateId = userId (not affiliateProfile.id)
+    // Get users directly using affiliateId as userId
+    const affiliateUserIds = [...new Set(conversions.map(c => c.affiliateId))]
     const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
+      where: { id: { in: affiliateUserIds } },
       select: {
         id: true,
         name: true,
@@ -97,8 +91,14 @@ export async function GET(req: NextRequest) {
       }
     })
     const userMap = new Map(users.map(u => [u.id, u]))
+    
+    // Get affiliate profiles by userId for additional data
+    const affiliates = await prisma.affiliateProfile.findMany({
+      where: { userId: { in: affiliateUserIds } }
+    })
+    const affMapByUserId = new Map(affiliates.map(a => [a.userId, a]))
 
-    // Aggregate by affiliateId using manual lookup
+    // Aggregate by affiliateId (which is userId in migration data)
     const aggregationMap = new Map<string, {
       affiliateId: string
       userId: string
@@ -112,16 +112,17 @@ export async function GET(req: NextRequest) {
     }>()
 
     for (const conv of conversions) {
-      const affiliate = affMap.get(conv.affiliateId)
-      if (!affiliate) continue
+      // In migration data, affiliateId = userId
+      const userId = conv.affiliateId
+      const user = userMap.get(userId)
+      if (!user) continue
       
       const tx = txMap.get(conv.transactionId)
       if (!tx) continue // Only count if transaction is SUCCESS
       
-      const user = userMap.get(affiliate.userId)
-      if (!user) continue
+      const affiliate = affMapByUserId.get(userId)
       
-      const existing = aggregationMap.get(conv.affiliateId)
+      const existing = aggregationMap.get(userId)
       const saleAmount = Number(tx.amount || 0)
       const commission = Number(conv.commissionAmount || 0)
       
@@ -130,9 +131,9 @@ export async function GET(req: NextRequest) {
         existing.totalConversions += 1
         existing.totalCommission += commission
       } else {
-        aggregationMap.set(conv.affiliateId, {
-          affiliateId: conv.affiliateId,
-          userId: affiliate.userId,
+        aggregationMap.set(userId, {
+          affiliateId: affiliate?.id || userId,
+          userId: userId,
           name: user.name || 'Unknown',
           email: user.email,
           avatar: user.avatar,
