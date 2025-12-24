@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -135,6 +136,7 @@ function SortableElement({ element, onSelect, onDelete, isSelected }: any) {
 }
 
 export default function OptinFormsPage() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [forms, setForms] = useState<OptinForm[]>([])
   const [showBuilder, setShowBuilder] = useState(false)
@@ -211,23 +213,13 @@ export default function OptinFormsPage() {
   }
 
   const handleOpenBuilder = (form?: OptinForm) => {
+    // Redirect to builder page
     if (form) {
-      setEditingForm(form)
-      setFormName(form.formName)
-      setHeadline(form.headline)
-      setDescription(form.description || '')
-      setBadgeText(form.bannerBadgeText || 'Event Terbatas - Daftar Sekarang!')
-      setSubmitButtonText(form.submitButtonText)
-      setPrimaryColor(form.primaryColor || '#2563eb')
-      setSecondaryColor(form.secondaryColor || '#4f46e5')
-      setShowCountdown(form.showCountdown || false)
-      setCountdownEndDate(form.countdownEndDate ? form.countdownEndDate.split('T')[0] + 'T' + (form.countdownEndDate.split('T')[1]?.substring(0, 5) || '00:00') : '')
-      setBenefits(Array.isArray(form.benefits) ? form.benefits : [])
-      setFaqs(Array.isArray(form.faqs) ? form.faqs : [])
-      setRedirectType(form.redirectType)
-      setRedirectUrl(form.redirectUrl || '')
-      setRedirectWhatsapp(form.redirectWhatsapp || '')
-      setSuccessMessage(form.successMessage)
+      router.push(`/affiliate/optin-forms/builder?id=${form.id}`)
+    } else {
+      router.push('/affiliate/optin-forms/builder')
+    }
+  }
       setSelectedLeadMagnet(form.leadMagnetId || 'none')
       
       const elements: FormElement[] = []
