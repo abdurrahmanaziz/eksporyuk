@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       where.role = role;
     }
 
-    // Get users with explicit select to avoid Prisma schema cache issues
+    // Get users with explicit select - no relations (schema doesn't have them)
     const users = await prisma.user.findMany({
       where,
       skip,
@@ -83,40 +83,82 @@ export async function GET(request: NextRequest) {
         role: true,
         createdAt: true,
         emailVerified: true,
-        userMemberships: {
-          where: {
-            status: 'ACTIVE',
-          },
-          select: {
-            startDate: true,
-            endDate: true,
-            membership: {
-              select: {
-                name: true,
-                duration: true,
-              },
-            },
-          },
-          orderBy: { startDate: 'desc' },
-          take: 1,
-        },
-        wallet: {
-          select: { balance: true },
-        },
-        _count: {
-          select: {
-            transactions: true,
-          },
-        },
       },
     });
 
+    // Get user IDs for manual lookups
+    const userIds = users.map(u => u.id);
+
+    // Get active memberships manually
+    const userMemberships = await prisma.userMembership.findMany({
+      where: {
+        userId: { in: userIds },
+        status: 'ACTIVE',
+      },
+      select: {
+        userId: true,
+        membershipId: true,
+        startDate: true,
+        endDate: true,
+      },
+      orderBy: { startDate: 'desc' },
+    });
+    
+    // Get membership details
+    const membershipIds = [...new Set(userMemberships.map(um => um.membershipId))];
+    const memberships = await prisma.membership.findMany({
+      where: { id: { in: membershipIds } },
+      select: { id: true, name: true, duration: true },
+    });
+    const membershipMap = new Map(memberships.map(m => [m.id, m]));
+
+    // Get wallets manually
+    const wallets = await prisma.wallet.findMany({
+      where: { userId: { in: userIds } },
+      select: { userId: true, balance: true },
+    });
+    const walletMap = new Map(wallets.map(w => [w.userId, w]));
+
+    // Get transaction counts manually
+    const txCounts = await prisma.transaction.groupBy({
+      by: ['userId'],
+      where: { userId: { in: userIds } },
+      _count: true,
+    });
+    const txCountMap = new Map(txCounts.map(t => [t.userId, t._count]));
+
+    // Group memberships by user
+    const userMembershipMap = new Map<string, typeof userMemberships[0]>();
+    for (const um of userMemberships) {
+      // Only keep the first (most recent) membership per user
+      if (!userMembershipMap.has(um.userId)) {
+        userMembershipMap.set(um.userId, um);
+      }
+    }
+
+    // Combine data
+    const usersWithDetails = users.map(user => {
+      const userMembership = userMembershipMap.get(user.id);
+      const wallet = walletMap.get(user.id);
+      const txCount = txCountMap.get(user.id) || 0;
+      
+      return {
+        ...user,
+        userMemberships: userMembership ? [{
+          ...userMembership,
+          membership: membershipMap.get(userMembership.membershipId) || null
+        }] : [],
+        wallet: wallet || null,
+        _count: { transactions: txCount }
+      };
+    });
+
     // Filter by membership status
-    let filteredUsers: any = users;
+    let filteredUsers: any = usersWithDetails;
     if (membershipStatus === 'ACTIVE') {
-      filteredUsers = users.filter((user: any) => user.userMemberships.length > 0);
+      filteredUsers = usersWithDetails.filter((user: any) => user.userMemberships.length > 0);
     } else if (membershipStatus === 'NONE') {
-      filteredUsers = users.filter((user: any) => user.userMemberships.length === 0);
+      filteredUsers = usersWithDetails.filter((user: any) => user.userMemberships.length === 0);
     }
 
     // Get total count

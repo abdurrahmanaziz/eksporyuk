@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
     const groupId = searchParams.get('groupId') // Filter by group membership
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    // Build query
+    // Build query - no relations in schema
     const whereClause: any = {
       isOnline: true,
       id: { not: session.user.id } // Exclude self
@@ -124,11 +124,15 @@ export async function GET(req: NextRequest) {
       whereClause.role = role
     }
 
+    // If groupId filter, get user IDs from group memberships first
     if (groupId) {
-      whereClause.groupMemberships = {
-        some: {
-          groupId: groupId
-        }
+      const groupMembers = await prisma.groupMember.findMany({
+        where: { groupId },
+        select: { userId: true }
+      })
+      whereClause.id = { 
+        in: groupMembers.map(gm => gm.userId),
+        not: session.user.id 
       }
     }
 
@@ -143,26 +147,31 @@ export async function GET(req: NextRequest) {
         role: true,
         isOnline: true,
         lastActiveAt: true,
-        mentorProfile: {
-          select: {
-            expertise: true,
-            bio: true
-          }
-        },
-        _count: {
-          select: {
-            followers: true,
-            following: true
-          }
-        }
       }
     })
+
+    // Get follow counts manually
+    const userIds = onlineUsers.map(u => u.id)
+    
+    const followerCounts = await prisma.follow.groupBy({
+      by: ['followingId'],
+      where: { followingId: { in: userIds } },
+      _count: true
+    })
+    const followerMap = new Map(followerCounts.map(f => [f.followingId, f._count]))
+
+    const followingCounts = await prisma.follow.groupBy({
+      by: ['followerId'],
+      where: { followerId: { in: userIds } },
+      _count: true
+    })
+    const followingMap = new Map(followingCounts.map(f => [f.followerId, f._count]))
 
     // Check if current user follows these users
     const followingIds = await prisma.follow.findMany({
       where: {
         followerId: session.user.id,
-        followingId: { in: onlineUsers.map(u => u.id) }
+        followingId: { in: userIds }
       },
       select: { followingId: true }
     })
@@ -171,6 +180,10 @@ export async function GET(req: NextRequest) {
 
     const usersWithFollowStatus = onlineUsers.map(user => ({
       ...user,
+      _count: {
+        followers: followerMap.get(user.id) || 0,
+        following: followingMap.get(user.id) || 0
+      },
       isFollowing: followingSet.has(user.id)
     }))
 
