@@ -33,12 +33,10 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     // Check if consent already exists
-    const existingConsent = await prisma.courseConsent.findUnique({
+    const existingConsent = await prisma.courseConsent.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId
-        }
+        userId: session.user.id,
+        courseId
       }
     })
 
@@ -113,12 +111,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const consent = await prisma.courseConsent.findUnique({
+    const consent = await prisma.courseConsent.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId
-        }
+        userId: session.user.id,
+        courseId
       }
     })
 

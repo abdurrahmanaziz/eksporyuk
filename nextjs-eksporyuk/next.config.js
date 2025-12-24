@@ -18,15 +18,9 @@ const nextConfig = {
     ],
   },
   
-  // Next.js 14 compatible config
+  // Next.js 16 compatible config
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
-    // optimizeCss: true,
-    // cssChunking: 'loose',
-    // Disable turbo for development
-    // turbo: {
-    //   root: __dirname,
-    // },
   },
   
   typescript: {
