@@ -22,18 +22,7 @@ export async function GET(request: NextRequest) {
         userId,
         status: { in: ['ACTIVE', 'EXPIRED'] },
       },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        membership: {
-          include: {
-            membershipCourses: {
-              include: {
-                course: true,
-              },
-            },
-          },
-        },
-      },
+      orderBy: { createdAt: 'desc' }
     })
 
     if (!userMembership) {
@@ -43,13 +32,42 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Fetch membership separately
+    const membership = await prisma.membership.findUnique({
+      where: { id: userMembership.membershipId }
+    })
+
+    if (!membership) {
+      return NextResponse.json({
+        membership: null,
+        courses: [],
+      })
+    }
+
+    // Fetch membershipCourses separately
+    const membershipCourses = await prisma.membershipCourse.findMany({
+      where: { membershipId: membership.id }
+    })
+
+    // Fetch courses for membershipCourses
+    const membershipCourseIds = membershipCourses.map(mc => mc.courseId)
+    const coursesForMembership = membershipCourseIds.length > 0
+      ? await prisma.course.findMany({
+          where: { id: { in: membershipCourseIds } }
+        })
+      : []
+
+    // Create a map of courses
+    const courseMapForMembership = new Map(coursesForMembership.map(c => [c.id, c]))
+
     // Get all course IDs from membership
-    const courseIds = userMembership.membership.membershipCourses.map(mc => mc.courseId)
+    const courseIds = membershipCourses.map(mc => mc.courseId)
 
     // Fetch additional data for each course
     const coursesWithDetails = await Promise.all(
-      userMembership.membership.membershipCourses.map(async (mc) => {
-        const course = mc.course
+      membershipCourses.map(async (mc) => {
+        const course = courseMapForMembership.get(mc.courseId)
+        if (!course) return null
 
         // Get modules
         const modules = await prisma.courseModule.findMany({
@@ -149,6 +167,9 @@ export async function GET(request: NextRequest) {
         }
       })
     )
+
+    // Filter out null values
+    const validCoursesWithDetails = coursesWithDetails.filter(c => c !== null)
 
     // Get membershipIncluded courses
     const membershipIncludedCourses = await prisma.course.findMany({
@@ -257,7 +278,7 @@ export async function GET(request: NextRequest) {
     )
 
     // Combine all courses
-    const courses = [...coursesWithDetails, ...includedCoursesWithDetails]
+    const courses = [...validCoursesWithDetails, ...includedCoursesWithDetails]
 
     // Check if membership is active
     const now = new Date()
@@ -266,8 +287,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       membership: {
-        id: userMembership.membership.id,
-        name: userMembership.membership.name,
+        id: membership.id,
+        name: membership.name,
         isActive,
         endDate: userMembership.endDate?.toISOString() || null,
       },
