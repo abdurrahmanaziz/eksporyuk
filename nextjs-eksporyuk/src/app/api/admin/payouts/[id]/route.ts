@@ -33,15 +33,19 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
-    // Get payout request
+    // Get payout request (no relations in schema)
     const payout = await prisma.payout.findUnique({
       where: { id: params.id },
-      include: { wallet: true },
     })
 
     if (!payout) {
       return NextResponse.json({ error: 'Payout not found' }, { status: 404 })
     }
+
+    // Get wallet separately (manual lookup)
+    const wallet = await prisma.wallet.findUnique({
+      where: { id: payout.walletId },
+    })
 
     if (payout.status !== 'PENDING') {
       return NextResponse.json(

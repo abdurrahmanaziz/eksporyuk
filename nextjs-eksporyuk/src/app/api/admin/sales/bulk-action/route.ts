@@ -116,56 +116,73 @@ export async function POST(request: NextRequest) {
 
       // If status is SUCCESS, activate access for each transaction
       if (action === 'SUCCESS' || action === 'payment_confirmed') {
+        // Get transactions (no relations in schema)
         const transactions = await prisma.transaction.findMany({
           where: { id: { in: transactionIds } },
-          include: {
-            user: true,
-            membership: { include: { membership: true } },
-            product: true,
-            course: true
-          }
         })
+        
+        // Get membership transactions for all
+        const membershipTxs = await prisma.membershipTransaction.findMany({
+          where: { transactionId: { in: transactionIds } },
+        })
+        const membershipIds = [...new Set(membershipTxs.map(mt => mt.membershipId))]
+        const memberships = await prisma.membership.findMany({
+          where: { id: { in: membershipIds } },
+        })
+        const membershipMap = new Map(memberships.map(m => [m.id, m]))
+        const membershipTxMap = new Map(membershipTxs.map(mt => [mt.transactionId, mt]))
+        
+        // Get products and courses
+        const productIds = [...new Set(transactions.filter(t => t.productId).map(t => t.productId!))]
+        const courseIds = [...new Set(transactions.filter(t => t.courseId).map(t => t.courseId!))]
+        const products = productIds.length > 0 ? await prisma.product.findMany({ where: { id: { in: productIds } } }) : []
+        const courses = courseIds.length > 0 ? await prisma.course.findMany({ where: { id: { in: courseIds } } }) : []
+        const productMap = new Map(products.map(p => [p.id, p]))
+        const courseMap = new Map(courses.map(c => [c.id, c]))
 
         for (const tx of transactions) {
           try {
             // 1. Activate Membership Access
-            if (tx.type === 'MEMBERSHIP' && tx.membership) {
-              const membership = tx.membership.membership
-              const durationMap: Record<string, number> = {
-                'ONE_MONTH': 30,
-                'THREE_MONTHS': 90,
-                'SIX_MONTHS': 180,
-                'TWELVE_MONTHS': 365,
-                'LIFETIME': 36500
-              }
-              
-              const days = durationMap[membership.duration] || 30
-              const startDate = new Date()
-              const endDate = new Date()
-              endDate.setDate(endDate.getDate() + days)
-
-              await prisma.userMembership.upsert({
-                where: {
-                  userId_membershipId: {
-                    userId: tx.userId,
-                    membershipId: membership.id
-                  }
-                },
-                create: {
-                  userId: tx.userId,
-                  membershipId: membership.id,
-                  startDate,
-                  endDate,
-                  isActive: true
-                },
-                update: {
-                  startDate,
-                  endDate,
-                  isActive: true
+            const membershipTx = membershipTxMap.get(tx.id)
+            if (tx.type === 'MEMBERSHIP' && membershipTx) {
+              const membership = membershipMap.get(membershipTx.membershipId)
+              if (membership) {
+                const durationMap: Record<string, number> = {
+                  'ONE_MONTH': 30,
+                  'THREE_MONTHS': 90,
+                  'SIX_MONTHS': 180,
+                  'TWELVE_MONTHS': 365,
+                  'LIFETIME': 36500
                 }
-              })
+                
+                const days = durationMap[membership.duration] || 30
+                const startDate = new Date()
+                const endDate = new Date()
+                endDate.setDate(endDate.getDate() + days)
 
-              console.log(`✓ Activated membership ${membership.name} for user ${tx.userId}`)
+                await prisma.userMembership.upsert({
+                  where: {
+                    userId_membershipId: {
+                      userId: tx.userId,
+                      membershipId: membership.id
+                    }
+                  },
+                  create: {
+                    userId: tx.userId,
+                    membershipId: membership.id,
+                    startDate,
+                    endDate,
+                    isActive: true
+                  },
+                  update: {
+                    startDate,
+                    endDate,
+                    isActive: true
+                  }
+                })
+
+                console.log(`✓ Activated membership ${membership.name} for user ${tx.userId}`)
+              }
             }
 
             // 2. Enroll in Course
@@ -216,18 +233,20 @@ export async function POST(request: NextRequest) {
                 }
               })
 
-              console.log(`✓ Granted product access ${tx.product?.name} for user ${tx.userId}`)
+              console.log(`✓ Granted product access ${productMap.get(tx.productId)?.name} for user ${tx.userId}`)
             }
 
             // 4. Send In-App Notification
+            const membershipTxNotif = membershipTxMap.get(tx.id)
+            const membershipNotif = membershipTxNotif ? membershipMap.get(membershipTxNotif.membershipId) : null
             await notificationService.send({
               userId: tx.userId,
               type: 'TRANSACTION',
               title: 'Pembayaran Dikonfirmasi',
               message: `Pembayaran untuk ${
-                tx.membership?.membership.name || 
-                tx.product?.name || 
-                tx.course?.title || 
+                membershipNotif?.name || 
+                productMap.get(tx.productId || '')?.name || 
+                courseMap.get(tx.courseId || '')?.title || 
                 'transaksi'
               } telah dikonfirmasi. Akses Anda sudah aktif!`,
               link: tx.type === 'COURSE' ? `/courses/${tx.courseId}` : '/dashboard'
@@ -242,20 +261,37 @@ export async function POST(request: NextRequest) {
 
     // Send comprehensive notifications if needed
     if (shouldSendNotification) {
-      const transactions = await prisma.transaction.findMany({
+      // Get transactions (no relations in schema)
+      const notifTransactions = await prisma.transaction.findMany({
         where: { id: { in: transactionIds } },
-        include: {
-          user: true,
-          membership: { include: { membership: true } },
-          product: true,
-          course: true
-        }
       })
+      
+      // Get related data with manual lookups
+      const notifUserIds = [...new Set(notifTransactions.map(t => t.userId))]
+      const notifUsers = await prisma.user.findMany({ where: { id: { in: notifUserIds } } })
+      const notifUserMap = new Map(notifUsers.map(u => [u.id, u]))
+      
+      const notifMembershipTxs = await prisma.membershipTransaction.findMany({
+        where: { transactionId: { in: transactionIds } },
+      })
+      const notifMembershipIds = [...new Set(notifMembershipTxs.map(mt => mt.membershipId))]
+      const notifMemberships = notifMembershipIds.length > 0 ? await prisma.membership.findMany({
+        where: { id: { in: notifMembershipIds } },
+      }) : []
+      const notifMembershipMap = new Map(notifMemberships.map(m => [m.id, m]))
+      const notifMembershipTxMap = new Map(notifMembershipTxs.map(mt => [mt.transactionId, mt]))
+      
+      const notifProductIds = [...new Set(notifTransactions.filter(t => t.productId).map(t => t.productId!))]
+      const notifCourseIds = [...new Set(notifTransactions.filter(t => t.courseId).map(t => t.courseId!))]
+      const notifProducts = notifProductIds.length > 0 ? await prisma.product.findMany({ where: { id: { in: notifProductIds } } }) : []
+      const notifCourses = notifCourseIds.length > 0 ? await prisma.course.findMany({ where: { id: { in: notifCourseIds } } }) : []
+      const notifProductMap = new Map(notifProducts.map(p => [p.id, p]))
+      const notifCourseMap = new Map(notifCourses.map(c => [c.id, c]))
 
       let successCount = 0
       let failedCount = 0
 
-      for (const transaction of transactions) {
+      for (const transaction of notifTransactions) {
         try {
           // Determine transaction status and type
           const currentStatus = transaction.status
@@ -274,24 +310,30 @@ export async function POST(request: NextRequest) {
           let transactionType = ''
           let accessMessage = ''
           
-          if (transaction.membership?.membership) {
-            itemName = transaction.membership.membership.name
+          const membershipTxN = notifMembershipTxMap.get(transaction.id)
+          const membershipN = membershipTxN ? notifMembershipMap.get(membershipTxN.membershipId) : null
+          const productN = transaction.productId ? notifProductMap.get(transaction.productId) : null
+          const courseN = transaction.courseId ? notifCourseMap.get(transaction.courseId) : null
+          const userN = notifUserMap.get(transaction.userId)
+          
+          if (membershipN) {
+            itemName = membershipN.name
             transactionType = 'Membership'
             accessMessage = 'Akses membership Anda sudah aktif! Silakan login ke dashboard untuk mulai belajar.'
-          } else if (transaction.product) {
-            itemName = transaction.product.name
+          } else if (productN) {
+            itemName = productN.name
             transactionType = 'Product'
             accessMessage = 'Product Anda sudah tersedia di dashboard!'
-          } else if (transaction.course) {
-            itemName = transaction.course.title
+          } else if (courseN) {
+            itemName = courseN.title
             transactionType = 'Course'
             accessMessage = 'Anda sudah terdaftar di course ini. Selamat belajar!'
           }
 
           const formattedAmount = `Rp ${Number(transaction.amount).toLocaleString('id-ID')}`
-          const userName = transaction.user?.name || 'Member'
-          const userEmail = transaction.user?.email || ''
-          const userPhone = transaction.user?.whatsapp || transaction.user?.phone || ''
+          const userName = userN?.name || 'Member'
+          const userEmail = userN?.email || ''
+          const userPhone = userN?.whatsapp || userN?.phone || ''
 
           // === 1. EMAIL NOTIFICATION (Using BrandedTemplate) ===
           try {

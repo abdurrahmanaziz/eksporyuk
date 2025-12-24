@@ -19,24 +19,19 @@ export async function POST(
 
     const transactionId = params.id
 
-    // Get transaction
+    // Get transaction (no relations in schema)
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
-      include: {
-        user: true,
-        membership: {
-          include: {
-            membership: true
-          }
-        },
-        product: true,
-        course: true,
-      }
     })
 
     if (!transaction) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
     }
+
+    // Get related data with manual lookups
+    const user = await prisma.user.findUnique({ where: { id: transaction.userId } })
+    const product = transaction.productId ? await prisma.product.findUnique({ where: { id: transaction.productId } }) : null
+    const course = transaction.courseId ? await prisma.course.findUnique({ where: { id: transaction.courseId } }) : null
 
     if (transaction.status === 'SUCCESS') {
       return NextResponse.json({ error: 'Transaction already confirmed' }, { status: 400 })
@@ -55,11 +50,15 @@ export async function POST(
     if (transaction.membershipId) {
       const membershipTransaction = await prisma.membershipTransaction.findFirst({
         where: { transactionId: transaction.id },
-        include: { membership: true }
       })
+      
+      // Get membership data manually
+      const membership = membershipTransaction 
+        ? await prisma.membership.findUnique({ where: { id: membershipTransaction.membershipId } })
+        : null
 
-      if (membershipTransaction) {
-        const duration = membershipTransaction.membership.duration
+      if (membershipTransaction && membership) {
+        const duration = membership.duration
         const expiresAt = duration === 'LIFETIME' 
           ? null 
           : new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
