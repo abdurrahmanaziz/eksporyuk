@@ -148,8 +148,9 @@ const navigationByRole = {
       title: 'AFFILIATE',
       items: [
         { name: 'Dashboard Affiliate', href: '/admin/affiliates', icon: Share2 },
+        { name: 'Leaderboard', href: '/admin/leaderboard', icon: Trophy },
         { name: 'Template Email', href: '/admin/affiliate/templates', icon: BookOpen },
-        { name: 'Tantangan', href: '/admin/affiliates/challenges', icon: Trophy },
+        { name: 'Tantangan', href: '/admin/affiliates/challenges', icon: Target },
         { name: 'Payout', href: '/admin/affiliates/payouts', icon: DollarSign },
       ]
     },

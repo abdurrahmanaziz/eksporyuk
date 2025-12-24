@@ -44,11 +44,7 @@ export async function GET(request: NextRequest) {
         formLogo: true,
         formBanner: true,
         formDescription: true,
-        _count: {
-          select: {
-            userMemberships: true
-          }
-        }
+        // Note: _count removed - not available in production schema
       },
     })
 
@@ -91,7 +87,7 @@ export async function GET(request: NextRequest) {
       formLogo: membership.formLogo,
       formBanner: membership.formBanner,
       formDescription: membership.formDescription,
-      _count: membership._count, // Include count statistics
+      // Note: _count removed - not available in production schema
     }))
 
     return NextResponse.json({
