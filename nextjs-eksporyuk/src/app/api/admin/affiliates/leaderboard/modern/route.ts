@@ -34,37 +34,42 @@ export async function GET() {
     // Current month (1st of current month to today)
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
 
-    // Function to aggregate conversions by period
+    // Function to aggregate conversions by period (no relations, use manual lookup)
     async function getLeaderboardForPeriod(startDate?: Date) {
-      const whereClause: any = {
-        transaction: { status: 'SUCCESS' }
-      }
+      const whereClause: any = {}
       
       if (startDate) {
         whereClause.createdAt = { gte: startDate }
       }
       
+      // Get conversions without relations
       const conversions = await prisma.affiliateConversion.findMany({
-        where: whereClause,
-        select: {
-          affiliateId: true,
-          commissionAmount: true,
-          affiliate: {
-            select: {
-              userId: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true
-                }
-              }
-            }
-          }
-        }
+        where: whereClause
       })
       
-      // Aggregate by affiliate
+      // Get transaction IDs and check which are SUCCESS
+      const txIds = conversions.map(c => c.transactionId).filter(Boolean)
+      const successTx = await prisma.transaction.findMany({
+        where: {
+          id: { in: txIds },
+          status: 'SUCCESS'
+        },
+        select: { id: true }
+      })
+      const successTxIds = new Set(successTx.map(t => t.id))
+      
+      // Filter conversions to only those with SUCCESS transactions
+      const validConversions = conversions.filter(c => successTxIds.has(c.transactionId))
+      
+      // NOTE: In migration data, affiliateId = userId (not affiliateProfile.id)
+      const affiliateUserIds = [...new Set(validConversions.map(c => c.affiliateId))]
+      const users = await prisma.user.findMany({
+        where: { id: { in: affiliateUserIds } },
+        select: { id: true, name: true, avatar: true }
+      })
+      const userMap = new Map(users.map(u => [u.id, u]))
+      
+      // Aggregate by affiliateId (which is userId in migration data)
       const aggregateMap = new Map<string, {
         affiliateId: string
         userId: string
@@ -74,21 +79,23 @@ export async function GET() {
         conversions: number
       }>()
       
-      for (const conv of conversions) {
-        if (!conv.affiliate) continue
+      for (const conv of validConversions) {
+        const userId = conv.affiliateId
+        const user = userMap.get(userId)
+        if (!user) continue
         
-        const existing = aggregateMap.get(conv.affiliateId)
+        const existing = aggregateMap.get(userId)
         const commission = Number(conv.commissionAmount)
         
         if (existing) {
           existing.totalCommission += commission
           existing.conversions += 1
         } else {
-          aggregateMap.set(conv.affiliateId, {
-            affiliateId: conv.affiliateId,
-            userId: conv.affiliate.userId,
-            name: conv.affiliate.user?.name || 'Unknown',
-            avatar: conv.affiliate.user?.avatar || null,
+          aggregateMap.set(userId, {
+            affiliateId: userId,
+            userId: userId,
+            name: user?.name || 'Unknown',
+            avatar: user?.avatar || null,
             totalCommission: commission,
             conversions: 1
           })

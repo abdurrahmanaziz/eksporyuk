@@ -59,30 +59,33 @@ export async function GET(request: NextRequest) {
     }
     // If status is 'ALL', don't add any filter
 
-    // Search filter
+    // Search filter - for user fields, we need to pre-filter by userId
+    let userIdFilter: string[] | undefined
     if (search) {
+      // First find matching users
+      const matchingUsers = await prisma.user.findMany({
+        where: {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+          ]
+        },
+        select: { id: true }
+      })
+      userIdFilter = matchingUsers.map(u => u.id)
+      
+      // Combine user ID filter with affiliate code filter
       where.OR = [
-        { user: { name: { contains: search, mode: 'insensitive' } } },
-        { user: { email: { contains: search, mode: 'insensitive' } } },
         { affiliateCode: { contains: search, mode: 'insensitive' } },
         { shortLinkUsername: { contains: search, mode: 'insensitive' } },
+        ...(userIdFilter.length > 0 ? [{ userId: { in: userIdFilter } }] : [])
       ]
     }
 
-    // 4. Get affiliates with pagination
-    const [affiliates, total] = await Promise.all([
+    // 4. Get affiliates with pagination (no relations, use manual lookup)
+    const [rawAffiliates, total] = await Promise.all([
       prisma.affiliateProfile.findMany({
         where,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-            },
-          },
-        },
         orderBy: [
           { totalEarnings: 'desc' }, // Highest earners first
           { createdAt: 'desc' },
@@ -92,6 +95,25 @@ export async function GET(request: NextRequest) {
       }),
       prisma.affiliateProfile.count({ where }),
     ])
+    
+    // Get users for affiliates manually
+    const userIds = rawAffiliates.map(a => a.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+      }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
+    
+    // Combine affiliates with user data
+    const affiliates = rawAffiliates.map(aff => ({
+      ...aff,
+      user: userMap.get(aff.userId) || null
+    }))
     
     console.log('[ADMIN_AFFILIATES_API] Query result:', {
       affiliatesFound: affiliates.length,
@@ -151,6 +173,12 @@ export async function GET(request: NextRequest) {
  * Calculate affiliate statistics
  */
 async function calculateAffiliateStats() {
+  // Get all affiliate userIds first
+  const affiliateUserIds = await prisma.affiliateProfile.findMany({
+    select: { userId: true }
+  })
+  const userIds = affiliateUserIds.map(a => a.userId)
+  
   const [
     totalAffiliates,
     activeAffiliates,
@@ -184,18 +212,14 @@ async function calculateAffiliateStats() {
       },
     }),
     
-    // Pending payouts (sum of pending wallet balances)
+    // Pending payouts (sum of pending wallet balances for affiliates)
     prisma.wallet.aggregate({
       _sum: {
         balance: true,
       },
       where: {
         balance: { gt: 0 },
-        user: {
-          affiliateProfile: {
-            isNot: null,
-          },
-        },
+        userId: { in: userIds }
       },
     }),
     

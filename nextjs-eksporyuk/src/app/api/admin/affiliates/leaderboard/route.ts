@@ -51,27 +51,8 @@ export async function GET(request: NextRequest) {
         break
     }
 
-    // Get affiliate profiles with their stats
-    const affiliates = await prisma.affiliateProfile.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            whatsapp: true,
-            avatar: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        _count: {
-          select: {
-            links: true,
-            conversions: true,
-          },
-        },
-      },
+    // Get affiliate profiles with their stats (no relations, use manual lookup)
+    const rawAffiliates = await prisma.affiliateProfile.findMany({
       orderBy: sortBy === 'createdAt' ? { createdAt: 'desc' } : [
         { totalEarnings: 'desc' },
         { totalConversions: 'desc' },
@@ -79,6 +60,29 @@ export async function GET(request: NextRequest) {
       ],
       take: limit,
     })
+    
+    // Get users for affiliates manually
+    const userIds = rawAffiliates.map(a => a.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        whatsapp: true,
+        avatar: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
+    
+    // Combine affiliates with user data
+    const affiliates = rawAffiliates.map(aff => ({
+      ...aff,
+      user: userMap.get(aff.userId) || null,
+      _count: { links: 0, conversions: aff.totalConversions }
+    }))
 
     // Calculate totals for overview
     const totalAffiliates = await prisma.affiliateProfile.count()

@@ -32,21 +32,30 @@ export async function GET(request: NextRequest) {
     startOfWeek.setDate(now.getDate() - now.getDay()) // Start of week (Sunday)
     startOfWeek.setHours(0, 0, 0, 0)
 
-    // Fetch all affiliate profiles with user data
-    const allAffiliates = await prisma.affiliateProfile.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
+    // Fetch all affiliate profiles (no relations, use manual lookup)
+    const rawAffiliates = await prisma.affiliateProfile.findMany({
       orderBy: {
         totalEarnings: 'desc',
       },
     })
+    
+    // Get users for affiliates manually
+    const userIds = rawAffiliates.map(a => a.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+      }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
+    
+    // Combine affiliates with user data
+    const allAffiliates = rawAffiliates.map(aff => ({
+      ...aff,
+      user: userMap.get(aff.userId) || null
+    }))
 
     // All Time Leaderboard - Top 10 by total earnings
     const allTime = allAffiliates.slice(0, 10).map((aff, index) => ({
@@ -71,45 +80,43 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Aggregate monthly earnings by affiliate
+    // Aggregate monthly earnings by affiliate (affiliateId = userId in migration data)
     const monthlyEarningsMap = new Map<string, number>()
     monthlyConversions.forEach(conv => {
+      // conv.affiliateId is actually the userId in migration data
       const current = monthlyEarningsMap.get(conv.affiliateId) || 0
       monthlyEarningsMap.set(conv.affiliateId, current + Number(conv.commissionAmount))
     })
 
-    // Sort and get top 10 for monthly
-    const monthlyAffiliateIds = Array.from(monthlyEarningsMap.entries())
+    // Sort and get top 10 for monthly (by userId)
+    const monthlyUserIds = Array.from(monthlyEarningsMap.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([id]) => id)
 
-    // Get affiliate details for monthly leaderboard
-    const monthlyAffiliates = await prisma.affiliateProfile.findMany({
+    // Get user details for monthly leaderboard (affiliateId = userId)
+    const monthlyUsers = await prisma.user.findMany({
       where: {
         id: {
-          in: monthlyAffiliateIds,
+          in: monthlyUserIds,
         },
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+      }
     })
+    const monthlyUserMap = new Map(monthlyUsers.map(u => [u.id, u]))
 
-    const thisMonth = monthlyAffiliateIds.map((affId, index) => {
-      const affiliate = monthlyAffiliates.find(a => a.id === affId)
+    const thisMonth = monthlyUserIds.map((userId, index) => {
+      const user = monthlyUserMap.get(userId)
       return {
         rank: index + 1,
-        userId: affiliate?.userId || '',
-        name: affiliate?.user?.name || 'Unknown',
-        avatar: affiliate?.user?.avatar || '',
-        totalEarnings: monthlyEarningsMap.get(affId) || 0,
+        userId: userId,
+        name: user?.name || 'Unknown',
+        avatar: user?.avatar || '',
+        totalEarnings: monthlyEarningsMap.get(userId) || 0,
       }
     })
 
@@ -126,45 +133,42 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Aggregate weekly earnings by affiliate
+    // Aggregate weekly earnings by affiliate (affiliateId = userId in migration data)
     const weeklyEarningsMap = new Map<string, number>()
     weeklyConversions.forEach(conv => {
       const current = weeklyEarningsMap.get(conv.affiliateId) || 0
       weeklyEarningsMap.set(conv.affiliateId, current + Number(conv.commissionAmount))
     })
 
-    // Sort and get top 10 for weekly
-    const weeklyAffiliateIds = Array.from(weeklyEarningsMap.entries())
+    // Sort and get top 10 for weekly (by userId)
+    const weeklyUserIds = Array.from(weeklyEarningsMap.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([id]) => id)
 
-    // Get affiliate details for weekly leaderboard
-    const weeklyAffiliates = await prisma.affiliateProfile.findMany({
+    // Get user details for weekly leaderboard (affiliateId = userId)
+    const weeklyUsers = await prisma.user.findMany({
       where: {
         id: {
-          in: weeklyAffiliateIds,
+          in: weeklyUserIds,
         },
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+      }
     })
+    const weeklyUserMap = new Map(weeklyUsers.map(u => [u.id, u]))
 
-    const thisWeek = weeklyAffiliateIds.map((affId, index) => {
-      const affiliate = weeklyAffiliates.find(a => a.id === affId)
+    const thisWeek = weeklyUserIds.map((userId, index) => {
+      const user = weeklyUserMap.get(userId)
       return {
         rank: index + 1,
-        userId: affiliate?.userId || '',
-        name: affiliate?.user?.name || 'Unknown',
-        avatar: affiliate?.user?.avatar || '',
-        totalEarnings: weeklyEarningsMap.get(affId) || 0,
+        userId: userId,
+        name: user?.name || 'Unknown',
+        avatar: user?.avatar || '',
+        totalEarnings: weeklyEarningsMap.get(userId) || 0,
       }
     })
 
