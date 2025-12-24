@@ -44,15 +44,7 @@ export async function GET(request: NextRequest) {
 
     // Step 2: Get Basic Membership
     const membership = await prisma.membership.findFirst({
-      where: { slug: 'basic' },
-      include: {
-        membershipGroups: {
-          include: { group: true }
-        },
-        membershipCourses: {
-          include: { course: true }
-        }
-      }
+      where: { slug: 'basic' }
     })
 
     if (!membership) {
@@ -61,10 +53,47 @@ export async function GET(request: NextRequest) {
       }, { status: 404 })
     }
 
+    // Fetch related data separately
+    const [membershipGroups, membershipCourses] = await Promise.all([
+      prisma.membershipGroup.findMany({
+        where: { membershipId: membership.id }
+      }),
+      prisma.membershipCourse.findMany({
+        where: { membershipId: membership.id }
+      })
+    ])
+
+    // Fetch groups and courses details
+    const groupIds = membershipGroups.map(mg => mg.groupId)
+    const courseIds = membershipCourses.map(mc => mc.courseId)
+
+    const [groups, courses] = await Promise.all([
+      groupIds.length > 0 ? prisma.group.findMany({
+        where: { id: { in: groupIds } }
+      }) : [],
+      courseIds.length > 0 ? prisma.course.findMany({
+        where: { id: { in: courseIds } }
+      }) : []
+    ])
+
+    // Create maps for lookups
+    const groupMap = new Map(groups.map(g => [g.id, g]))
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+
+    // Enrich membership data
+    const membershipGroupsWithData = membershipGroups.map(mg => ({
+      ...mg,
+      group: groupMap.get(mg.groupId)
+    }))
+    const membershipCoursesWithData = membershipCourses.map(mc => ({
+      ...mc,
+      course: courseMap.get(mc.courseId)
+    }))
+
     results.membership = {
       name: membership.name,
-      expectedGroups: membership.membershipGroups.length,
-      expectedCourses: membership.membershipCourses.length,
+      expectedGroups: membershipGroupsWithData.length,
+      expectedCourses: membershipCoursesWithData.length,
     }
 
     // Step 3: Clear existing active memberships
@@ -107,40 +136,58 @@ export async function GET(request: NextRequest) {
 
     // Step 6: Check Group Memberships
     const groupMemberships = await prisma.groupMember.findMany({
-      where: { userId: testUser.id },
-      include: { group: true }
+      where: { userId: testUser.id }
     })
 
+    // Fetch group details for memberships
+    const gmGroupIds = groupMemberships.map(gm => gm.groupId)
+    const gmGroups = gmGroupIds.length > 0 ? await prisma.group.findMany({
+      where: { id: { in: gmGroupIds } }
+    }) : []
+    const gmGroupMap = new Map(gmGroups.map(g => [g.id, g]))
+
     results.verification.groups = {
-      expected: membership.membershipGroups.length,
+      expected: membershipGroupsWithData.length,
       actual: groupMemberships.length,
-      list: groupMemberships.map(gm => ({
-        name: gm.group.name,
-        type: gm.group.type,
-        role: gm.role
-      }))
+      list: groupMemberships.map(gm => {
+        const group = gmGroupMap.get(gm.groupId)
+        return {
+          name: group?.name,
+          type: group?.type,
+          role: gm.role
+        }
+      })
     }
 
     // Step 7: Check Course Access
     const courseAccess = await prisma.userCourseProgress.findMany({
-      where: { userId: testUser.id },
-      include: { course: true }
+      where: { userId: testUser.id }
     })
 
+    // Fetch course details for access records
+    const caCourseIds = courseAccess.map(ca => ca.courseId)
+    const caCourses = caCourseIds.length > 0 ? await prisma.course.findMany({
+      where: { id: { in: caCourseIds } }
+    }) : []
+    const caCourseMap = new Map(caCourses.map(c => [c.id, c]))
+
     results.verification.courses = {
-      expected: membership.membershipCourses.length,
+      expected: membershipCoursesWithData.length,
       actual: courseAccess.length,
-      list: courseAccess.map(ca => ({
-        title: ca.course.title,
-        hasAccess: ca.hasAccess,
-        accessExpiresAt: ca.accessExpiresAt,
-        progress: ca.progress
-      }))
+      list: courseAccess.map(ca => {
+        const course = caCourseMap.get(ca.courseId)
+        return {
+          title: course?.title,
+          hasAccess: ca.hasAccess,
+          accessExpiresAt: ca.accessExpiresAt,
+          progress: ca.progress
+        }
+      })
     }
 
     // Final Summary
-    const groupsMatch = groupMemberships.length === membership.membershipGroups.length
-    const coursesMatch = courseAccess.length === membership.membershipCourses.length
+    const groupsMatch = groupMemberships.length === membershipGroupsWithData.length
+    const coursesMatch = courseAccess.length === membershipCoursesWithData.length
     const membershipActive = !!userMembership
 
     results.summary = {

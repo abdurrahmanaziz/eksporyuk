@@ -73,14 +73,26 @@ export async function POST(request: NextRequest) {
     })
     const userByEmail = new Map(existingUsers.map(u => [u.email.toLowerCase(), u]))
     
-    const existingAffiliates = await prisma.affiliateProfile.findMany({
-      include: { user: true }
-    })
-    const affiliateByWpId = new Map<number, typeof existingAffiliates[0]>()
-    const affiliateByName = new Map<string, typeof existingAffiliates[0]>()
+    const existingAffiliates = await prisma.affiliateProfile.findMany()
+    
+    // Fetch users for affiliates
+    const affiliateUserIds = existingAffiliates.map(a => a.userId)
+    const affiliateUsersData = affiliateUserIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: affiliateUserIds } }
+    }) : []
+    const affiliateUserMap = new Map(affiliateUsersData.map(u => [u.id, u]))
+    
+    // Add user data to affiliates for lookup
+    const existingAffiliatesWithUser = existingAffiliates.map(aff => ({
+      ...aff,
+      user: affiliateUserMap.get(aff.userId) || null
+    }))
+    
+    const affiliateByWpId = new Map<number, typeof existingAffiliatesWithUser[0]>()
+    const affiliateByName = new Map<string, typeof existingAffiliatesWithUser[0]>()
     
     // Build affiliate lookup maps
-    existingAffiliates.forEach(aff => {
+    existingAffiliatesWithUser.forEach(aff => {
       if (aff.user?.name) {
         affiliateByName.set(aff.user.name.toLowerCase(), aff)
       }

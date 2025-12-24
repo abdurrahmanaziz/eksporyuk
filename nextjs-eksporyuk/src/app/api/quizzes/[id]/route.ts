@@ -21,28 +21,34 @@ export async function GET(
     const { id } = await params
 
     const quiz = await prisma.quiz.findUnique({
-      where: { id },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true
-          }
-        },
-        lesson: {
-          select: {
-            id: true,
-            title: true
-          }
-        },
-        questions: {
-          orderBy: { order: 'asc' }
-        }
-      }
+      where: { id }
     })
 
     if (!quiz) {
       return NextResponse.json({ message: 'Quiz not found' }, { status: 404 })
+    }
+
+    // Fetch related data manually
+    const [course, lesson, questions] = await Promise.all([
+      quiz.courseId ? prisma.course.findUnique({
+        where: { id: quiz.courseId },
+        select: { id: true, title: true }
+      }) : null,
+      quiz.lessonId ? prisma.courseLesson.findUnique({
+        where: { id: quiz.lessonId },
+        select: { id: true, title: true }
+      }) : null,
+      prisma.quizQuestion.findMany({
+        where: { quizId: id },
+        orderBy: { order: 'asc' }
+      })
+    ])
+
+    const quizWithRelations = {
+      ...quiz,
+      course,
+      lesson,
+      questions
     }
 
     // Check if user has previous attempts
@@ -59,7 +65,7 @@ export async function GET(
 
     // Add attempt count for frontend
     const quizWithCount = {
-      ...quiz,
+      ...quizWithRelations,
       _count: {
         attempts: attempts.length
       }
@@ -92,16 +98,20 @@ export async function PUT(
     // Verify ownership for mentors
     if (session.user.role === 'MENTOR') {
       const quiz = await prisma.quiz.findUnique({
-        where: { id },
-        include: { course: true }
+        where: { id }
       })
 
-      if (quiz) {
-        const mentorProfile = await prisma.mentorProfile.findUnique({
-          where: { userId: session.user.id }
-        })
+      if (quiz && quiz.courseId) {
+        const [course, mentorProfile] = await Promise.all([
+          prisma.course.findUnique({
+            where: { id: quiz.courseId }
+          }),
+          prisma.mentorProfile.findUnique({
+            where: { userId: session.user.id }
+          })
+        ])
 
-        if (!mentorProfile || quiz.course.mentorId !== mentorProfile.id) {
+        if (!mentorProfile || course?.mentorId !== mentorProfile.id) {
           return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
         }
       }
@@ -119,13 +129,15 @@ export async function PUT(
         shuffleAnswers: body.shuffleAnswers,
         showResults: body.showResults,
         isActive: body.isActive
-      },
-      include: {
-        questions: true
       }
     })
 
-    return NextResponse.json({ quiz: updated })
+    // Fetch questions separately
+    const questions = await prisma.quizQuestion.findMany({
+      where: { quizId: id }
+    })
+
+    return NextResponse.json({ quiz: { ...updated, questions } })
   } catch (error) {
     console.error('Error:', error)
     return NextResponse.json(

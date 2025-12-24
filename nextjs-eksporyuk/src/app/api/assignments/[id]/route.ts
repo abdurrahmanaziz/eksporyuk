@@ -28,37 +28,41 @@ export async function GET(
     }
 
     const assignment = await prisma.assignment.findUnique({
-      where: { id: params.id },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
-        lesson: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
-        submissions: {
-          where: {
-            userId: user.id,
-          },
-          orderBy: {
-            submittedAt: 'desc',
-          },
-          take: 1,
-        },
-      },
+      where: { id: params.id }
     });
 
     if (!assignment) {
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ assignment });
+    // Fetch related data manually
+    const [course, lesson, submissions] = await Promise.all([
+      assignment.courseId ? prisma.course.findUnique({
+        where: { id: assignment.courseId },
+        select: { id: true, title: true }
+      }) : null,
+      assignment.lessonId ? prisma.courseLesson.findUnique({
+        where: { id: assignment.lessonId },
+        select: { id: true, title: true }
+      }) : null,
+      prisma.assignmentSubmission.findMany({
+        where: {
+          assignmentId: params.id,
+          userId: user.id
+        },
+        orderBy: { submittedAt: 'desc' },
+        take: 1
+      })
+    ]);
+
+    const assignmentWithRelations = {
+      ...assignment,
+      course,
+      lesson,
+      submissions
+    };
+
+    return NextResponse.json({ assignment: assignmentWithRelations });
   } catch (error: any) {
     console.error('Error fetching assignment:', error);
     return NextResponse.json(
@@ -89,16 +93,23 @@ export async function PUT(
     }
 
     const assignment = await prisma.assignment.findUnique({
-      where: { id: params.id },
-      include: { course: true },
+      where: { id: params.id }
     });
 
     if (!assignment) {
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
     }
 
+    // Fetch course for ownership check
+    let course = null;
+    if (assignment.courseId) {
+      course = await prisma.course.findUnique({
+        where: { id: assignment.courseId }
+      });
+    }
+
     // For mentors, verify ownership
-    if (user.role === 'MENTOR' && assignment.course.mentorId !== user.id) {
+    if (user.role === 'MENTOR' && course?.mentorId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -125,14 +136,26 @@ export async function PUT(
         allowedFileTypes: allowedFileTypes !== undefined ? allowedFileTypes : assignment.allowedFileTypes,
         maxFileSize: maxFileSize || assignment.maxFileSize,
         isActive: isActive !== undefined ? isActive : assignment.isActive,
-      },
-      include: {
-        course: true,
-        lesson: true,
-      },
+      }
     });
 
-    return NextResponse.json({ assignment: updated });
+    // Fetch course and lesson for response
+    const [updatedCourse, updatedLesson] = await Promise.all([
+      updated.courseId ? prisma.course.findUnique({
+        where: { id: updated.courseId }
+      }) : null,
+      updated.lessonId ? prisma.courseLesson.findUnique({
+        where: { id: updated.lessonId }
+      }) : null
+    ]);
+
+    return NextResponse.json({ 
+      assignment: {
+        ...updated,
+        course: updatedCourse,
+        lesson: updatedLesson
+      }
+    });
   } catch (error: any) {
     console.error('Error updating assignment:', error);
     return NextResponse.json(

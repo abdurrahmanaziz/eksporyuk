@@ -32,13 +32,17 @@ export async function POST(
 
     // Get payout
     const payout = await prisma.payout.findUnique({
-      where: { id },
-      include: { user: true }
+      where: { id }
     })
 
     if (!payout) {
       return NextResponse.json({ error: 'Payout not found' }, { status: 404 })
     }
+
+    // Fetch user separately
+    const payoutUser = await prisma.user.findUnique({
+      where: { id: payout.userId }
+    })
 
     if (payout.status !== 'PENDING') {
       return NextResponse.json(
@@ -62,8 +66,8 @@ export async function POST(
           bankCode: getBankCode(payout.bankName),
           accountHolderName: payout.accountName,
           accountNumber: payout.accountNumber,
-          description: `Payout untuk ${payout.user.name || payout.user.email}`,
-          emailTo: [payout.user.email],
+          description: `Payout untuk ${payoutUser?.name || payoutUser?.email}`,
+          emailTo: payoutUser?.email ? [payoutUser.email] : [],
         })
 
         if (result.success) {
@@ -81,7 +85,7 @@ export async function POST(
             amount: Number(payout.amount),
             phoneNumber: payout.accountNumber, // Phone number for e-wallet
             channelCode,
-            description: `Payout untuk ${payout.user.name || payout.user.email}`,
+            description: `Payout untuk ${payoutUser?.name || payoutUser?.email}`,
           })
 
           if (result.success) {
@@ -128,7 +132,7 @@ export async function POST(
     })
 
     // TODO: Send notification to user (email/WhatsApp)
-    console.log(`✅ Payout approved: ${payout.id} for user ${payout.user.email}`)
+    console.log(`✅ Payout approved: ${payout.id} for user ${payoutUser?.email}`)
     if (autoDisbursement && disbursementResult) {
       console.log(`   💰 Auto disbursement created: ${disbursementResult.id}`)
     }
@@ -154,11 +158,11 @@ export async function POST(
     })
 
     // Send WhatsApp notification to user
-    const userWhatsapp = (payout.user as any).whatsapp || (payout.user as any).phone
+    const userWhatsapp = (payoutUser as any)?.whatsapp || (payoutUser as any)?.phone
     if (userWhatsapp && starsenderService.isConfigured()) {
       await starsenderService.sendWhatsApp({
         to: userWhatsapp,
-        message: `🎉 *Penarikan Disetujui!*\n\nHalo ${payout.user.name}!\n\nPermintaan penarikan Anda telah *DISETUJUI*:\n\n💰 *Jumlah:* Rp ${amount.toLocaleString()}\n🏦 *Metode:* ${payout.method}${payout.bankName ? ` (${payout.bankName})` : ''}\n📊 *Status:* ${autoDisbursement && !disbursementError ? 'Sedang Diproses' : 'Akan Ditransfer'}\n\nDana akan segera masuk ke rekening Anda.\n\nTerima kasih! 🙏`
+        message: `🎉 *Penarikan Disetujui!*\n\nHalo ${payoutUser?.name}!\n\nPermintaan penarikan Anda telah *DISETUJUI*:\n\n💰 *Jumlah:* Rp ${amount.toLocaleString()}\n🏦 *Metode:* ${payout.method}${payout.bankName ? ` (${payout.bankName})` : ''}\n📊 *Status:* ${autoDisbursement && !disbursementError ? 'Sedang Diproses' : 'Akan Ditransfer'}\n\nDana akan segera masuk ke rekening Anda.\n\nTerima kasih! 🙏`
       })
     }
 

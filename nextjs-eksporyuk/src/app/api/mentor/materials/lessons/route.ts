@@ -39,11 +39,18 @@ export async function GET(request: NextRequest) {
       })
 
       const module = await prisma.courseModule.findUnique({
-        where: { id: moduleId },
-        include: { course: true }
+        where: { id: moduleId }
       })
 
-      if (!module || module.course.mentorId !== mentorProfile?.id) {
+      if (!module) {
+        return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+      }
+
+      const course = await prisma.course.findUnique({
+        where: { id: module.courseId }
+      })
+
+      if (!course || course.mentorId !== mentorProfile?.id) {
         return NextResponse.json({ error: 'Access denied' }, { status: 403 })
       }
     }
@@ -122,11 +129,18 @@ export async function POST(request: NextRequest) {
       })
 
       const module = await prisma.courseModule.findUnique({
-        where: { id: moduleId },
-        include: { course: true }
+        where: { id: moduleId }
       })
 
-      if (!module || module.course.mentorId !== mentorProfile?.id) {
+      if (!module) {
+        return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+      }
+
+      const course = await prisma.course.findUnique({
+        where: { id: module.courseId }
+      })
+
+      if (!course || course.mentorId !== mentorProfile?.id) {
         return NextResponse.json({ error: 'Access denied' }, { status: 403 })
       }
     }

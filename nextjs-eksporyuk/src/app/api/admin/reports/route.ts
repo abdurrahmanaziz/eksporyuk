@@ -196,15 +196,26 @@ export async function GET(request: Request) {
 
     const affiliateIds = affiliateCommissions.map(a => a.affiliateId)
     const affiliates = affiliateIds.length > 0 ? await prisma.affiliateProfile.findMany({
-      where: { id: { in: affiliateIds } },
-      include: { user: { select: { name: true } } },
+      where: { id: { in: affiliateIds } }
     }) : []
 
-    const affiliateCommissionsFormatted = affiliateCommissions.map(a => ({
-      name: affiliates.find(aff => aff.id === a.affiliateId)?.user?.name || 'Unknown',
-      totalCommission: Number(a._sum.commissionAmount) || 0,
-      sales: a._count,
-    }))
+    // Fetch users for affiliates
+    const affiliateUserIds = affiliates.map(a => a.userId)
+    const affiliateUsers = affiliateUserIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: affiliateUserIds } },
+      select: { id: true, name: true }
+    }) : []
+    const affiliateUserMap = new Map(affiliateUsers.map(u => [u.id, u]))
+
+    const affiliateCommissionsFormatted = affiliateCommissions.map(a => {
+      const affiliate = affiliates.find(aff => aff.id === a.affiliateId)
+      const user = affiliate ? affiliateUserMap.get(affiliate.userId) : null
+      return {
+        name: user?.name || 'Unknown',
+        totalCommission: Number(a._sum.commissionAmount) || 0,
+        sales: a._count,
+      }
+    })
 
     // Payout summary
     const [pendingPayouts, approvedPayouts, paidPayouts] = await Promise.all([

@@ -35,13 +35,17 @@ export async function POST(
 
     // Get payout
     const payout = await prisma.payout.findUnique({
-      where: { id },
-      include: { user: true }
+      where: { id }
     })
 
     if (!payout) {
       return NextResponse.json({ error: 'Payout not found' }, { status: 404 })
     }
+
+    // Fetch user separately
+    const payoutUser = await prisma.user.findUnique({
+      where: { id: payout.userId }
+    })
 
     if (payout.status !== 'PENDING') {
       return NextResponse.json(
@@ -70,7 +74,7 @@ export async function POST(
     })
 
     // TODO: Send notification to user (email/WhatsApp)
-    console.log(`❌ Payout rejected: ${payout.id} for user ${payout.user.email}`)
+    console.log(`❌ Payout rejected: ${payout.id} for user ${payoutUser?.email}`)
     console.log(`   Amount ${payout.amount} refunded to wallet`)
 
     // Send notification to user - MULTI CHANNEL
@@ -91,11 +95,11 @@ export async function POST(
     })
 
     // Send WhatsApp notification to user
-    const userWhatsapp = (payout.user as any).whatsapp || (payout.user as any).phone
+    const userWhatsapp = (payoutUser as any)?.whatsapp || (payoutUser as any)?.phone
     if (userWhatsapp && starsenderService.isConfigured()) {
       await starsenderService.sendWhatsApp({
         to: userWhatsapp,
-        message: `Halo ${payout.user.name},\n\nMohon maaf, permintaan penarikan Anda tidak dapat diproses.\n\n💰 *Jumlah:* Rp ${amount.toLocaleString()}\n📝 *Alasan:* ${reason}\n✅ *Saldo:* Dikembalikan ke wallet\n\nSilakan cek kembali data rekening Anda dan ajukan ulang.\n\nTerima kasih! 🙏`
+        message: `Halo ${payoutUser?.name},\n\nMohon maaf, permintaan penarikan Anda tidak dapat diproses.\n\n💰 *Jumlah:* Rp ${amount.toLocaleString()}\n📝 *Alasan:* ${reason}\n✅ *Saldo:* Dikembalikan ke wallet\n\nSilakan cek kembali data rekening Anda dan ajukan ulang.\n\nTerima kasih! 🙏`
       })
     }
 

@@ -248,21 +248,42 @@ async function handleInvoicePaid(data: any) {
         if (!existingUserMembership) {
           // Get membership details to calculate end date
           const membership = await prisma.membership.findUnique({
-            where: { id: membershipId },
-            include: {
-              membershipGroups: {
-                include: { group: { select: { id: true, name: true } } }
-              },
-              membershipCourses: {
-                include: { course: { select: { id: true, title: true } } }
-              },
-              membershipProducts: {
-                include: { product: { select: { id: true, name: true } } }
-              }
-            }
+            where: { id: membershipId }
           })
 
           if (membership) {
+            // Fetch related data separately
+            const [membershipGroups, membershipCourses, membershipProducts] = await Promise.all([
+              prisma.membershipGroup.findMany({
+                where: { membershipId }
+              }),
+              prisma.membershipCourse.findMany({
+                where: { membershipId }
+              }),
+              prisma.membershipProduct.findMany({
+                where: { membershipId }
+              })
+            ])
+
+            // Fetch groups, courses, products details
+            const groupIds = membershipGroups.map(mg => mg.groupId)
+            const courseIds = membershipCourses.map(mc => mc.courseId)
+            const productIds = membershipProducts.map(mp => mp.productId)
+
+            const [groups, courses, products] = await Promise.all([
+              groupIds.length > 0 ? prisma.group.findMany({
+                where: { id: { in: groupIds } },
+                select: { id: true, name: true }
+              }) : [],
+              courseIds.length > 0 ? prisma.course.findMany({
+                where: { id: { in: courseIds } },
+                select: { id: true, title: true }
+              }) : [],
+              productIds.length > 0 ? prisma.product.findMany({
+                where: { id: { in: productIds } },
+                select: { id: true, name: true }
+              }) : []
+            ])
             // Calculate end date based on duration
             const now = new Date()
             let endDate = new Date(now)
@@ -950,21 +971,42 @@ async function handleVAPaymentComplete(data: any) {
 
         if (!existingUserMembership) {
           const membership = await prisma.membership.findUnique({
-            where: { id: membershipId },
-            include: {
-              membershipGroups: {
-                include: { group: { select: { id: true, name: true } } }
-              },
-              membershipCourses: {
-                include: { course: { select: { id: true, title: true } } }
-              },
-              membershipProducts: {
-                include: { product: { select: { id: true, name: true } } }
-              }
-            }
+            where: { id: membershipId }
           })
 
           if (membership) {
+            // Fetch related data separately  
+            const [membershipGroupsVA, membershipCoursesVA, membershipProductsVA] = await Promise.all([
+              prisma.membershipGroup.findMany({
+                where: { membershipId }
+              }),
+              prisma.membershipCourse.findMany({
+                where: { membershipId }
+              }),
+              prisma.membershipProduct.findMany({
+                where: { membershipId }
+              })
+            ])
+
+            // Fetch groups, courses, products details
+            const groupIdsVA = membershipGroupsVA.map(mg => mg.groupId)
+            const courseIdsVA = membershipCoursesVA.map(mc => mc.courseId)
+            const productIdsVA = membershipProductsVA.map(mp => mp.productId)
+
+            const [groupsVA, coursesVA, productsVA] = await Promise.all([
+              groupIdsVA.length > 0 ? prisma.group.findMany({
+                where: { id: { in: groupIdsVA } },
+                select: { id: true, name: true }
+              }) : [],
+              courseIdsVA.length > 0 ? prisma.course.findMany({
+                where: { id: { in: courseIdsVA } },
+                select: { id: true, title: true }
+              }) : [],
+              productIdsVA.length > 0 ? prisma.product.findMany({
+                where: { id: { in: productIdsVA } },
+                select: { id: true, name: true }
+              }) : []
+            ])
             const now = new Date()
             let endDate = new Date(now)
 
