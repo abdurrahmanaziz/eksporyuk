@@ -34,10 +34,18 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
@@ -45,7 +53,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const lead = await prisma.affiliateLead.findFirst({
       where: {
         id,
-        affiliateId: user.affiliateProfile.id
+        affiliateId: affiliateProfile.id
       }
     })
 
@@ -102,10 +110,18 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
@@ -113,7 +129,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     const lead = await prisma.affiliateLead.findFirst({
       where: {
         id: leadId,
-        affiliateId: user.affiliateProfile.id
+        affiliateId: affiliateProfile.id
       }
     })
 

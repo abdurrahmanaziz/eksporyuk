@@ -28,22 +28,25 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
     const optinForm = await prisma.affiliateOptinForm.findFirst({
       where: {
         id,
-        affiliateId: user.affiliateProfile.id
-      },
-      include: {
-        _count: {
-          select: { leads: true }
-        }
+        affiliateId: affiliateProfile.id
       }
     })
 
@@ -51,7 +54,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Optin form not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ optinForm })
+    // Manually count leads
+    const leadsCount = await prisma.affiliateLead.count({
+      where: { optinFormId: optinForm.id }
+    })
+
+    return NextResponse.json({ optinForm: { ...optinForm, _count: { leads: leadsCount } } })
   } catch (error) {
     console.error('Error fetching optin form:', error)
     return NextResponse.json(
@@ -77,10 +85,18 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
@@ -88,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     const existing = await prisma.affiliateOptinForm.findFirst({
       where: {
         id,
-        affiliateId: user.affiliateProfile.id
+        affiliateId: affiliateProfile.id
       }
     })
 
@@ -120,8 +136,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
         showCountdown: body.showCountdown,
         countdownEndDate: body.countdownEndDate ? new Date(body.countdownEndDate) : null,
         benefits: body.benefits || [],
-        faqs: body.faqs || [],
-        leadMagnetId: body.leadMagnetId || null
+        faqs: body.faqs || []
       }
     })
 
@@ -153,10 +168,18 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
@@ -164,7 +187,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     const existing = await prisma.affiliateOptinForm.findFirst({
       where: {
         id,
-        affiliateId: user.affiliateProfile.id
+        affiliateId: affiliateProfile.id
       }
     })
 

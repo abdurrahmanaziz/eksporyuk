@@ -27,17 +27,29 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Get affiliate profile
+    // Get affiliate profile (manual lookups)
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        affiliateProfile: {
-          include: { bioPage: true }
-        }
-      }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile?.bioPage) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
+      return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
+    }
+
+    const bioPage = await prisma.affiliateBioPage.findFirst({
+      where: { affiliateId: affiliateProfile.id }
+    })
+
+    if (!bioPage) {
       return NextResponse.json({ error: 'Bio page not found' }, { status: 404 })
     }
 
@@ -46,7 +58,7 @@ export async function POST(req: NextRequest) {
       prisma.affiliateBioCTA.updateMany({
         where: {
           id: buttonId,
-          bioPageId: user.affiliateProfile!.bioPage!.id
+          bioPageId: bioPage.id
         },
         data: {
           displayOrder: index + 1

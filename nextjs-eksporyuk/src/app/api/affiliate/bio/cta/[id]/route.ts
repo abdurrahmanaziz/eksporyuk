@@ -29,29 +29,36 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 
     console.log('Updating CTA button:', { id, body })
 
-    // Check ownership
+    // Check ownership (manual lookups)
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        affiliateProfile: {
-          include: {
-            bioPage: {
-              include: {
-                ctaButtons: {
-                  where: { id }
-                }
-              }
-            }
-          }
-        }
-      }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile?.bioPage) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
+      return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
+    }
+
+    const bioPage = await prisma.affiliateBioPage.findFirst({
+      where: { affiliateId: affiliateProfile.id }
+    })
+
+    if (!bioPage) {
       return NextResponse.json({ error: 'Bio page not found' }, { status: 404 })
     }
 
-    const ctaButton = user.affiliateProfile.bioPage.ctaButtons.find(cta => cta.id === id)
+    const ctaButton = await prisma.affiliateBioCTA.findFirst({
+      where: { id, bioPageId: bioPage.id }
+    })
+
     if (!ctaButton) {
       return NextResponse.json({ error: 'CTA button not found' }, { status: 404 })
     }
@@ -123,29 +130,36 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     const { id } = await params
 
-    // Check ownership
+    // Check ownership (manual lookups)
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        affiliateProfile: {
-          include: {
-            bioPage: {
-              include: {
-                ctaButtons: {
-                  where: { id }
-                }
-              }
-            }
-          }
-        }
-      }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile?.bioPage) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
+      return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
+    }
+
+    const bioPage = await prisma.affiliateBioPage.findFirst({
+      where: { affiliateId: affiliateProfile.id }
+    })
+
+    if (!bioPage) {
       return NextResponse.json({ error: 'Bio page not found' }, { status: 404 })
     }
 
-    const ctaButton = user.affiliateProfile.bioPage.ctaButtons.find(cta => cta.id === id)
+    const ctaButton = await prisma.affiliateBioCTA.findFirst({
+      where: { id, bioPageId: bioPage.id }
+    })
+
     if (!ctaButton) {
       return NextResponse.json({ error: 'CTA button not found' }, { status: 404 })
     }

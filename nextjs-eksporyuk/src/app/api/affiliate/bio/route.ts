@@ -18,41 +18,52 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user and affiliate profile
+    // Get user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        affiliateProfile: {
-          include: {
-            bioPage: {
-              include: {
-                ctaButtons: {
-                  where: { isActive: true },
-                  orderBy: { displayOrder: 'asc' }
-                }
-              }
-            }
-          }
-        }
-      }
-    }) as any
+      select: { id: true, email: true }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get affiliate profile manually
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
 
     console.log('GET /api/affiliate/bio - User:', {
       email: session.user.email,
       userId: user?.id,
-      hasAffiliateProfile: !!user?.affiliateProfile,
-      affiliateId: user?.affiliateProfile?.id,
-      hasBioPage: !!user?.affiliateProfile?.bioPage
+      hasAffiliateProfile: !!affiliateProfile,
+      affiliateId: affiliateProfile?.id
     })
 
-    if (!user?.affiliateProfile) {
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
+    // Get bio page manually
+    const bioPage = await (prisma as any).affiliateBioPage.findUnique({
+      where: { affiliateId: affiliateProfile.id }
+    })
+
+    // Get CTA buttons if bio page exists
+    let ctaButtons: any[] = []
+    if (bioPage) {
+      ctaButtons = await (prisma as any).bioPageCtaButton.findMany({
+        where: { bioPageId: bioPage.id, isActive: true },
+        orderBy: { displayOrder: 'asc' }
+      })
+    }
+
+    console.log('GET /api/affiliate/bio - hasBioPage:', !!bioPage)
+
     return NextResponse.json({
-      bioPage: user.affiliateProfile.bioPage,
-      username: user.affiliateProfile.shortLinkUsername,
-      affiliateCode: user.affiliateProfile.affiliateCode
+      bioPage: bioPage ? { ...bioPage, ctaButtons } : null,
+      username: affiliateProfile.shortLinkUsername,
+      affiliateCode: affiliateProfile.affiliateCode
     })
   } catch (error) {
     console.error('Error fetching bio page:', error)
@@ -105,20 +116,29 @@ export async function POST(req: NextRequest) {
       coverLength: coverImage?.length
     })
 
-    // Get affiliate profile
+    // Get user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
-    }) as any
+      select: { id: true, email: true }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get affiliate profile manually
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
 
     console.log('POST /api/affiliate/bio - User:', {
       email: session.user.email,
       userId: user?.id,
-      hasAffiliateProfile: !!user?.affiliateProfile,
-      affiliateId: user?.affiliateProfile?.id
+      hasAffiliateProfile: !!affiliateProfile,
+      affiliateId: affiliateProfile?.id
     })
 
-    if (!user?.affiliateProfile) {
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
@@ -142,9 +162,9 @@ export async function POST(req: NextRequest) {
     console.log('  coverImage === "":', coverImage === '')
     
     const bioPage = await (prisma as any).affiliateBioPage.upsert({
-      where: { affiliateId: user.affiliateProfile.id },
+      where: { affiliateId: affiliateProfile.id },
       create: {
-        affiliateId: user.affiliateProfile.id,
+        affiliateId: affiliateProfile.id,
         template: template || 'modern',
         buttonLayout: buttonLayout || 'stack',
         displayName,

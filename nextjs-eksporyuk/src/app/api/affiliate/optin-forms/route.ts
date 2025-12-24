@@ -20,28 +20,43 @@ export async function GET(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        affiliateProfile: {
-          include: {
-            optinForms: {
-              orderBy: { createdAt: 'desc' },
-              include: {
-                _count: {
-                  select: { leads: true }
-                }
-              }
-            }
-          }
-        }
-      }
+      select: { id: true, email: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get affiliate profile manually
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
+    // Get optin forms manually
+    const optinForms = await prisma.affiliateOptinForm.findMany({
+      where: { affiliateId: affiliateProfile.id },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    // Get lead counts for each form
+    const optinFormsWithCounts = await Promise.all(
+      optinForms.map(async (form: any) => {
+        const leadsCount = await prisma.affiliateLead.count({
+          where: { optinFormId: form.id }
+        })
+        return {
+          ...form,
+          _count: { leads: leadsCount }
+        }
+      })
+    )
+
     return NextResponse.json({
-      optinForms: user.affiliateProfile.optinForms
+      optinForms: optinFormsWithCounts
     })
   } catch (error) {
     console.error('[API Error] /api/affiliate/optin-forms GET:', error)
@@ -98,13 +113,22 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Get affiliate profile
+    // Get user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
+      select: { id: true, email: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get affiliate profile manually
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
@@ -114,7 +138,7 @@ export async function POST(req: NextRequest) {
         where: { id: bioPageId }
       })
 
-      if (!bioPage || bioPage.affiliateId !== user.affiliateProfile.id) {
+      if (!bioPage || bioPage.affiliateId !== affiliateProfile.id) {
         return NextResponse.json(
           { error: 'Invalid bio page' },
           { status: 400 }
@@ -141,7 +165,7 @@ export async function POST(req: NextRequest) {
     // Create optin form
     const optinForm = await prisma.affiliateOptinForm.create({
       data: {
-        affiliateId: user.affiliateProfile.id,
+        affiliateId: affiliateProfile.id,
         bioPageId,
         slug,
         formName,

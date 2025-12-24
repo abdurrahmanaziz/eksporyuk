@@ -31,16 +31,25 @@ export async function GET(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
+      select: { id: true, email: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get affiliate profile manually
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
     // Build where clause
     const where: any = {
-      affiliateId: user.affiliateProfile.id
+      affiliateId: affiliateProfile.id
     }
 
     if (status) {
@@ -82,30 +91,44 @@ export async function GET(req: NextRequest) {
     const total = await prisma.affiliateLead.count({ where })
 
     // Get leads
-    const leads = await prisma.affiliateLead.findMany({
+    const leadsRaw = await prisma.affiliateLead.findMany({
       where,
-      include: {
-        optinForm: {
-          select: {
-            formName: true
-          }
-        },
-        tags: {
-          select: {
-            id: true,
-            tag: true
-          }
-        }
-      },
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit
     })
 
+    // Manually fetch optinForm names and tags for each lead
+    const leads = await Promise.all(
+      leadsRaw.map(async (lead: any) => {
+        // Get optinForm name if exists
+        let optinForm = null
+        if (lead.optinFormId) {
+          const form = await prisma.affiliateOptinForm.findUnique({
+            where: { id: lead.optinFormId },
+            select: { formName: true }
+          })
+          optinForm = form
+        }
+
+        // Get tags
+        const tags = await (prisma as any).affiliateLeadTag.findMany({
+          where: { leadId: lead.id },
+          select: { id: true, tag: true }
+        })
+
+        return {
+          ...lead,
+          optinForm,
+          tags
+        }
+      })
+    )
+
     // Get stats
     const stats = await prisma.affiliateLead.groupBy({
       by: ['status'],
-      where: { affiliateId: user.affiliateProfile.id },
+      where: { affiliateId: affiliateProfile.id },
       _count: true
     })
 
@@ -186,16 +209,25 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { affiliateProfile: true }
+      select: { id: true, email: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get affiliate profile manually
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
     const lead = await prisma.affiliateLead.create({
       data: {
-        affiliateId: user.affiliateProfile.id,
+        affiliateId: affiliateProfile.id,
         name,
         email,
         phone,

@@ -53,21 +53,29 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Get affiliate profile and bio page
+    // Get affiliate profile and bio page (manual lookups)
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        affiliateProfile: {
-          include: { bioPage: true }
-        }
-      }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Not an affiliate' }, { status: 403 })
     }
 
-    if (!user.affiliateProfile.bioPage) {
+    const bioPage = await prisma.affiliateBioPage.findFirst({
+      where: { affiliateId: affiliateProfile.id }
+    })
+
+    if (!bioPage) {
       return NextResponse.json(
         { error: 'Bio page not found. Create a bio page first.' },
         { status: 404 }
@@ -76,14 +84,14 @@ export async function POST(req: NextRequest) {
 
     // Get current max display order
     const maxOrder = await prisma.affiliateBioCTA.findFirst({
-      where: { bioPageId: user.affiliateProfile.bioPage.id },
+      where: { bioPageId: bioPage.id },
       orderBy: { displayOrder: 'desc' },
       select: { displayOrder: true }
     })
 
     // Prepare data object, only include IDs if they are provided
     const ctaData: any = {
-      bioPageId: user.affiliateProfile.bioPage.id,
+      bioPageId: bioPage.id,
       buttonText,
       buttonType,
       buttonStyle: buttonStyle || 'button',
@@ -145,33 +153,50 @@ export async function GET(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        affiliateProfile: {
-          include: {
-            bioPage: {
-              include: {
-                ctaButtons: {
-                  orderBy: { displayOrder: 'asc' },
-                  include: {
-                    membership: true,
-                    product: true,
-                    course: true,
-                    optinForm: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      select: { id: true }
     })
 
-    if (!user?.affiliateProfile?.bioPage) {
+    if (!user) {
       return NextResponse.json({ ctaButtons: [] })
     }
 
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: user.id }
+    })
+
+    if (!affiliateProfile) {
+      return NextResponse.json({ ctaButtons: [] })
+    }
+
+    const bioPage = await prisma.affiliateBioPage.findFirst({
+      where: { affiliateId: affiliateProfile.id }
+    })
+
+    if (!bioPage) {
+      return NextResponse.json({ ctaButtons: [] })
+    }
+
+    // Fetch CTA buttons with related data
+    const ctaButtons = await prisma.affiliateBioCTA.findMany({
+      where: { bioPageId: bioPage.id },
+      orderBy: { displayOrder: 'asc' }
+    })
+
+    // Manually fetch related data for each CTA
+    const ctaButtonsWithRelations = await Promise.all(
+      ctaButtons.map(async (cta) => {
+        const [membership, product, course, optinForm] = await Promise.all([
+          cta.membershipId ? prisma.membership.findUnique({ where: { id: cta.membershipId } }) : null,
+          cta.productId ? prisma.product.findUnique({ where: { id: cta.productId } }) : null,
+          cta.courseId ? prisma.course.findUnique({ where: { id: cta.courseId } }) : null,
+          cta.optinFormId ? prisma.affiliateOptinForm.findUnique({ where: { id: cta.optinFormId } }) : null
+        ])
+        return { ...cta, membership, product, course, optinForm }
+      })
+    )
+
     return NextResponse.json({
-      ctaButtons: user.affiliateProfile.bioPage.ctaButtons
+      ctaButtons: ctaButtonsWithRelations
     })
   } catch (error) {
     console.error('Error fetching CTA buttons:', error)
