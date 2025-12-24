@@ -44,53 +44,61 @@ export async function GET(req: NextRequest) {
       startDate.setDate(startDate.getDate() - 7)
     }
 
-    // Get affiliate conversions with transaction data
-    const whereClause: any = {
-      transaction: {
-        status: 'SUCCESS'
-      }
-    }
+    // Build where clause for conversions (no relations available)
+    const convWhereClause: any = {}
     
     // Add date filters
     if (startDate || endDate) {
-      whereClause.createdAt = {}
+      convWhereClause.createdAt = {}
       if (startDate) {
-        whereClause.createdAt.gte = startDate
+        convWhereClause.createdAt.gte = startDate
       }
       if (endDate) {
-        whereClause.createdAt.lt = endDate
+        convWhereClause.createdAt.lt = endDate
       }
     }
     
+    // Get all conversions (no relations in schema, use manual lookup)
     const conversions = await prisma.affiliateConversion.findMany({
-      where: whereClause,
+      where: convWhereClause
+    })
+    
+    // Get transaction IDs and fetch transactions separately
+    const txIds = conversions.map(c => c.transactionId).filter(Boolean)
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        id: { in: txIds },
+        status: 'SUCCESS'
+      },
       select: {
-        affiliateId: true,
-        commissionAmount: true,
-        transaction: {
-          select: {
-            amount: true
-          }
-        },
-        affiliate: {
-          select: {
-            id: true,
-            userId: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-                username: true
-              }
-            }
-          }
-        }
+        id: true,
+        amount: true
       }
     })
+    const txMap = new Map(transactions.map(t => [t.id, t]))
+    
+    // Get affiliate IDs and fetch affiliates separately
+    const affiliateIds = [...new Set(conversions.map(c => c.affiliateId))]
+    const affiliates = await prisma.affiliateProfile.findMany({
+      where: { id: { in: affiliateIds } }
+    })
+    const affMap = new Map(affiliates.map(a => [a.id, a]))
+    
+    // Get user IDs and fetch users separately
+    const userIds = affiliates.map(a => a.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        username: true
+      }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
 
-    // Aggregate by affiliateId
+    // Aggregate by affiliateId using manual lookup
     const aggregationMap = new Map<string, {
       affiliateId: string
       userId: string
@@ -104,10 +112,17 @@ export async function GET(req: NextRequest) {
     }>()
 
     for (const conv of conversions) {
-      if (!conv.affiliate) continue
+      const affiliate = affMap.get(conv.affiliateId)
+      if (!affiliate) continue
+      
+      const tx = txMap.get(conv.transactionId)
+      if (!tx) continue // Only count if transaction is SUCCESS
+      
+      const user = userMap.get(affiliate.userId)
+      if (!user) continue
       
       const existing = aggregationMap.get(conv.affiliateId)
-      const saleAmount = Number(conv.transaction?.amount || 0)
+      const saleAmount = Number(tx.amount || 0)
       const commission = Number(conv.commissionAmount || 0)
       
       if (existing) {
@@ -117,11 +132,11 @@ export async function GET(req: NextRequest) {
       } else {
         aggregationMap.set(conv.affiliateId, {
           affiliateId: conv.affiliateId,
-          userId: conv.affiliate.userId,
-          name: conv.affiliate.user.name || 'Unknown',
-          email: conv.affiliate.user.email,
-          avatar: conv.affiliate.user.avatar,
-          username: conv.affiliate.user.username,
+          userId: affiliate.userId,
+          name: user.name || 'Unknown',
+          email: user.email,
+          avatar: user.avatar,
+          username: user.username,
           totalSales: saleAmount,
           totalConversions: 1,
           totalCommission: commission

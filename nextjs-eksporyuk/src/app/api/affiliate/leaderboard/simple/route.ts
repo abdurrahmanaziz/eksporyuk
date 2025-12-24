@@ -27,30 +27,36 @@ export async function GET(req: NextRequest) {
     startOfWeek.setDate(now.getDate() - now.getDay()) // Start of week (Sunday)
     startOfWeek.setHours(0, 0, 0, 0)
 
-    // Fetch all affiliate profiles with user data for All Time
+    // Fetch all affiliate profiles (no relations in schema, use manual lookup)
     const allAffiliates = await prisma.affiliateProfile.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
       orderBy: {
         totalEarnings: 'desc',
       },
     })
+    
+    // Get all user IDs and fetch users separately
+    const userIds = allAffiliates.map(a => a.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+      }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
 
     // All Time Leaderboard - Top 10 by total earnings
-    const allTime = allAffiliates.slice(0, 10).map((aff, index) => ({
-      rank: index + 1,
-      oduserId: aff.userId,
-      name: aff.user?.name || 'Unknown',
-      avatar: aff.user?.avatar || '',
-      totalEarnings: Number(aff.totalEarnings),
-    }))
+    const allTime = allAffiliates.slice(0, 10).map((aff, index) => {
+      const user = userMap.get(aff.userId)
+      return {
+        rank: index + 1,
+        oduserId: aff.userId,
+        name: user?.name || 'Unknown',
+        avatar: user?.avatar || '',
+        totalEarnings: Number(aff.totalEarnings),
+      }
+    })
 
     // For period-specific leaderboards, we need to aggregate from conversions
     // This Month - Get earnings from conversions this month
@@ -79,31 +85,31 @@ export async function GET(req: NextRequest) {
       .slice(0, 10)
       .map(([id]) => id)
 
-    // Get affiliate details for monthly leaderboard
+    // Get affiliate details for monthly leaderboard (manual lookup)
     const monthlyAffiliates = await prisma.affiliateProfile.findMany({
       where: {
         id: {
           in: monthlyAffiliateIds,
         },
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
     })
+    
+    // Get users for monthly affiliates
+    const monthlyUserIds = monthlyAffiliates.map(a => a.userId)
+    const monthlyUsers = await prisma.user.findMany({
+      where: { id: { in: monthlyUserIds } },
+      select: { id: true, name: true, avatar: true }
+    })
+    const monthlyUserMap = new Map(monthlyUsers.map(u => [u.id, u]))
 
     const thisMonth = monthlyAffiliateIds.map((affId, index) => {
       const affiliate = monthlyAffiliates.find(a => a.id === affId)
+      const user = affiliate ? monthlyUserMap.get(affiliate.userId) : null
       return {
         rank: index + 1,
         oduserId: affiliate?.userId || '',
-        name: affiliate?.user?.name || 'Unknown',
-        avatar: affiliate?.user?.avatar || '',
+        name: user?.name || 'Unknown',
+        avatar: user?.avatar || '',
         totalEarnings: monthlyEarningsMap.get(affId) || 0,
       }
     })
@@ -134,31 +140,31 @@ export async function GET(req: NextRequest) {
       .slice(0, 10)
       .map(([id]) => id)
 
-    // Get affiliate details for weekly leaderboard
+    // Get affiliate details for weekly leaderboard (manual lookup)
     const weeklyAffiliates = await prisma.affiliateProfile.findMany({
       where: {
         id: {
           in: weeklyAffiliateIds,
         },
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
     })
+    
+    // Get users for weekly affiliates
+    const weeklyUserIds = weeklyAffiliates.map(a => a.userId)
+    const weeklyUsers = await prisma.user.findMany({
+      where: { id: { in: weeklyUserIds } },
+      select: { id: true, name: true, avatar: true }
+    })
+    const weeklyUserMap = new Map(weeklyUsers.map(u => [u.id, u]))
 
     const thisWeek = weeklyAffiliateIds.map((affId, index) => {
       const affiliate = weeklyAffiliates.find(a => a.id === affId)
+      const user = affiliate ? weeklyUserMap.get(affiliate.userId) : null
       return {
         rank: index + 1,
         userId: affiliate?.userId || '',
-        name: affiliate?.user?.name || 'Unknown',
-        avatar: affiliate?.user?.avatar || '',
+        name: user?.name || 'Unknown',
+        avatar: user?.avatar || '',
         totalEarnings: weeklyEarningsMap.get(affId) || 0,
       }
     })
@@ -169,6 +175,7 @@ export async function GET(req: NextRequest) {
       const userAffiliate = allAffiliates.find(a => a.userId === session.user.id)
       if (userAffiliate) {
         const allTimeRank = allAffiliates.findIndex(a => a.userId === session.user.id) + 1
+        const user = userMap.get(session.user.id)
         
         // Monthly rank
         const monthlyRankData = Array.from(monthlyEarningsMap.entries())
@@ -190,8 +197,8 @@ export async function GET(req: NextRequest) {
           allTime: allTimeRank,
           monthly: monthlyRank,
           weekly: weeklyRank,
-          name: userAffiliate.user?.name || 'Unknown',
-          avatar: userAffiliate.user?.avatar || '',
+          name: user?.name || 'Unknown',
+          avatar: user?.avatar || '',
           totalEarnings: Number(userAffiliate.totalEarnings),
         }
       }

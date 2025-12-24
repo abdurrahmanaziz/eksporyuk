@@ -83,34 +83,54 @@ export async function GET(request: NextRequest) {
       where: whereClause,
     })
 
-    // Get conversions with pagination
-    const conversions = await prisma.affiliateConversion.findMany({
+    // Get conversions with pagination (no relations in schema, use manual lookup)
+    const rawConversions = await prisma.affiliateConversion.findMany({
       where: whereClause,
-      include: {
-        transaction: {
-          include: {
-            product: {
-              select: {
-                name: true,
-              },
-            },
-            userProduct: {
-              include: {
-                product: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
       orderBy: {
         createdAt: 'desc',
       },
       skip,
       take: limit,
+    })
+    
+    // Get transaction IDs and fetch transactions separately
+    const txIds = rawConversions.map(c => c.transactionId).filter(Boolean)
+    const transactions = await prisma.transaction.findMany({
+      where: { id: { in: txIds } },
+      select: {
+        id: true,
+        amount: true,
+        customerName: true,
+        customerEmail: true,
+        status: true,
+        productId: true,
+        createdAt: true
+      }
+    })
+    const txMap = new Map(transactions.map(t => [t.id, t]))
+    
+    // Get product IDs and fetch products separately
+    const productIds = transactions.map(t => t.productId).filter(Boolean) as string[]
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: {
+        id: true,
+        name: true
+      }
+    })
+    const productMap = new Map(products.map(p => [p.id, p]))
+    
+    // Map conversions with transaction and product data
+    const conversions = rawConversions.map(conv => {
+      const tx = txMap.get(conv.transactionId)
+      const product = tx?.productId ? productMap.get(tx.productId) : null
+      return {
+        ...conv,
+        transaction: tx ? {
+          ...tx,
+          product: product ? { name: product.name } : null
+        } : null
+      }
     })
 
     // Calculate summary stats

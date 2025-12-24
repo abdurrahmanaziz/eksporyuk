@@ -30,37 +30,49 @@ export async function GET() {
     // Current month (1st of current month to today)
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
 
-    // Function to aggregate conversions by period
+    // Function to aggregate conversions by period (no relations, use manual lookup)
     async function getLeaderboardForPeriod(startDate?: Date) {
-      const whereClause: any = {
-        transaction: { status: 'SUCCESS' }
-      }
+      const whereClause: any = {}
       
       if (startDate) {
         whereClause.createdAt = { gte: startDate }
       }
       
+      // Get conversions without relations
       const conversions = await prisma.affiliateConversion.findMany({
-        where: whereClause,
-        select: {
-          affiliateId: true,
-          commissionAmount: true,
-          affiliate: {
-            select: {
-              userId: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true
-                }
-              }
-            }
-          }
-        }
+        where: whereClause
       })
       
-      // Aggregate by affiliate
+      // Get transaction IDs and check which are SUCCESS
+      const txIds = conversions.map(c => c.transactionId).filter(Boolean)
+      const successTx = await prisma.transaction.findMany({
+        where: {
+          id: { in: txIds },
+          status: 'SUCCESS'
+        },
+        select: { id: true }
+      })
+      const successTxIds = new Set(successTx.map(t => t.id))
+      
+      // Filter conversions to only those with SUCCESS transactions
+      const validConversions = conversions.filter(c => successTxIds.has(c.transactionId))
+      
+      // Get affiliate IDs and fetch affiliates
+      const affiliateIds = [...new Set(validConversions.map(c => c.affiliateId))]
+      const affiliates = await prisma.affiliateProfile.findMany({
+        where: { id: { in: affiliateIds } }
+      })
+      const affMap = new Map(affiliates.map(a => [a.id, a]))
+      
+      // Get user IDs and fetch users
+      const userIds = affiliates.map(a => a.userId)
+      const users = await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, name: true, avatar: true }
+      })
+      const userMap = new Map(users.map(u => [u.id, u]))
+      
+      // Aggregate by affiliate using manual lookup
       const aggregateMap = new Map<string, {
         affiliateId: string
         userId: string
@@ -70,9 +82,11 @@ export async function GET() {
         conversions: number
       }>()
       
-      for (const conv of conversions) {
-        if (!conv.affiliate) continue
+      for (const conv of validConversions) {
+        const affiliate = affMap.get(conv.affiliateId)
+        if (!affiliate) continue
         
+        const user = userMap.get(affiliate.userId)
         const existing = aggregateMap.get(conv.affiliateId)
         const commission = Number(conv.commissionAmount)
         
@@ -82,9 +96,9 @@ export async function GET() {
         } else {
           aggregateMap.set(conv.affiliateId, {
             affiliateId: conv.affiliateId,
-            userId: conv.affiliate.userId,
-            name: conv.affiliate.user?.name || 'Unknown',
-            avatar: conv.affiliate.user?.avatar || null,
+            userId: affiliate.userId,
+            name: user?.name || 'Unknown',
+            avatar: user?.avatar || null,
             totalCommission: commission,
             conversions: 1
           })
