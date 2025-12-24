@@ -33,18 +33,24 @@ export async function POST(
 
     // Find course
     const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        mentor: {
-          include: {
-            user: true
-          }
-        }
-      }
+      where: { id: courseId }
     })
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+    }
+
+    // Fetch mentor data separately if needed for notification
+    let mentorUser = null
+    if (course.mentorId) {
+      const mentor = await prisma.mentorProfile.findUnique({
+        where: { id: course.mentorId }
+      })
+      if (mentor) {
+        mentorUser = await prisma.user.findUnique({
+          where: { id: mentor.userId }
+        })
+      }
     }
 
     // Update course status to REJECTED

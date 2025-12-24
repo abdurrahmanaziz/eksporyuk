@@ -27,17 +27,29 @@ export async function GET(
 
     const assignments = await prisma.assignment.findMany({
       where: { courseId },
-      include: {
-        _count: {
-          select: {
-            submissions: true
-          }
-        }
-      },
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json({ assignments })
+    // Count submissions for each assignment
+    const assignmentIds = assignments.map(a => a.id)
+    const submissionCounts = assignmentIds.length > 0
+      ? await prisma.assignmentSubmission.groupBy({
+          by: ['assignmentId'],
+          where: { assignmentId: { in: assignmentIds } },
+          _count: true
+        })
+      : []
+
+    const submissionCountMap = new Map(submissionCounts.map(sc => [sc.assignmentId, sc._count]))
+
+    const assignmentsWithCount = assignments.map(a => ({
+      ...a,
+      _count: {
+        submissions: submissionCountMap.get(a.id) || 0
+      }
+    }))
+
+    return NextResponse.json({ assignments: assignmentsWithCount })
   } catch (error) {
     console.error('Get assignments error:', error)
     return NextResponse.json(

@@ -27,20 +27,48 @@ export async function GET(
 
     const quizzes = await prisma.quiz.findMany({
       where: { courseId },
-      include: {
-        questions: {
-          orderBy: { order: 'asc' }
-        },
-        _count: {
-          select: {
-            attempts: true
-          }
-        }
-      },
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json({ quizzes })
+    // Fetch questions for all quizzes
+    const quizIds = quizzes.map(q => q.id)
+    const questions = quizIds.length > 0
+      ? await prisma.quizQuestion.findMany({
+          where: { quizId: { in: quizIds } },
+          orderBy: { order: 'asc' }
+        })
+      : []
+
+    // Fetch attempt counts for all quizzes
+    const attemptCounts = quizIds.length > 0
+      ? await prisma.quizAttempt.groupBy({
+          by: ['quizId'],
+          where: { quizId: { in: quizIds } },
+          _count: true
+        })
+      : []
+
+    // Group questions by quizId
+    const questionsByQuiz = new Map<string, typeof questions>()
+    for (const q of questions) {
+      const existing = questionsByQuiz.get(q.quizId) || []
+      existing.push(q)
+      questionsByQuiz.set(q.quizId, existing)
+    }
+
+    // Map attempt counts
+    const attemptCountMap = new Map(attemptCounts.map(ac => [ac.quizId, ac._count]))
+
+    // Add questions and count to quizzes
+    const quizzesWithData = quizzes.map(quiz => ({
+      ...quiz,
+      questions: questionsByQuiz.get(quiz.id) || [],
+      _count: {
+        attempts: attemptCountMap.get(quiz.id) || 0
+      }
+    }))
+
+    return NextResponse.json({ quizzes: quizzesWithData })
   } catch (error) {
     console.error('Get quizzes error:', error)
     return NextResponse.json(

@@ -23,29 +23,43 @@ export async function POST(
 
     // Find course
     const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        modules: {
-          include: {
-            lessons: true
-          }
-        }
-      }
+      where: { id: courseId }
     })
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
+    // Fetch modules and lessons separately
+    const modules = await prisma.courseModule.findMany({
+      where: { courseId: courseId }
+    })
+
+    // Fetch lessons for all modules
+    const moduleIds = modules.map(m => m.id)
+    const lessons = moduleIds.length > 0 
+      ? await prisma.courseLesson.findMany({
+          where: { moduleId: { in: moduleIds } }
+        })
+      : []
+
+    // Group lessons by moduleId
+    const lessonsByModule = new Map<string, typeof lessons>()
+    for (const lesson of lessons) {
+      const existing = lessonsByModule.get(lesson.moduleId) || []
+      existing.push(lesson)
+      lessonsByModule.set(lesson.moduleId, existing)
+    }
+
     // Validation: Course must have at least 1 module with 1 lesson
-    if (course.modules.length === 0) {
+    if (modules.length === 0) {
       return NextResponse.json(
         { error: 'Course must have at least 1 module before publishing' },
         { status: 400 }
       )
     }
 
-    const hasLessons = course.modules.some(m => m.lessons.length > 0)
+    const hasLessons = modules.some(m => (lessonsByModule.get(m.id)?.length || 0) > 0)
     if (!hasLessons) {
       return NextResponse.json(
         { error: 'Course must have at least 1 lesson before publishing' },

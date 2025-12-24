@@ -27,20 +27,36 @@ export async function GET(
 
     const modules = await prisma.courseModule.findMany({
       where: { courseId },
-      orderBy: { order: 'asc' },
-      include: {
-        lessons: {
-          orderBy: { order: 'asc' }
-        },
-        _count: {
-          select: {
-            lessons: true
-          }
-        }
-      }
+      orderBy: { order: 'asc' }
     })
 
-    return NextResponse.json({ modules })
+    // Fetch lessons for all modules
+    const moduleIds = modules.map(m => m.id)
+    const lessons = moduleIds.length > 0
+      ? await prisma.courseLesson.findMany({
+          where: { moduleId: { in: moduleIds } },
+          orderBy: { order: 'asc' }
+        })
+      : []
+
+    // Group lessons by moduleId and count
+    const lessonsByModule = new Map<string, typeof lessons>()
+    for (const lesson of lessons) {
+      const existing = lessonsByModule.get(lesson.moduleId) || []
+      existing.push(lesson)
+      lessonsByModule.set(lesson.moduleId, existing)
+    }
+
+    // Add lessons and count to modules
+    const modulesWithLessons = modules.map(m => ({
+      ...m,
+      lessons: lessonsByModule.get(m.id) || [],
+      _count: {
+        lessons: (lessonsByModule.get(m.id) || []).length
+      }
+    }))
+
+    return NextResponse.json({ modules: modulesWithLessons })
   } catch (error) {
     console.error('Get modules error:', error)
     return NextResponse.json(

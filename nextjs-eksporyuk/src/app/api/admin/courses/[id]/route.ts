@@ -23,24 +23,39 @@ export async function GET(
 
     // Fetch course without non-existent relations
     const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        transactions: {
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-          include: {
-            user: {
-              select: { name: true, email: true, avatar: true }
-            }
-          }
-        },
-        membershipCourses: true,
-      }
+      where: { id: courseId }
     })
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
+
+    // Fetch transactions separately
+    const transactions = await prisma.transaction.findMany({
+      where: { courseId: courseId },
+      take: 10,
+      orderBy: { createdAt: 'desc' }
+    })
+
+    // Fetch users for transactions
+    const txUserIds = [...new Set(transactions.map(tx => tx.userId))]
+    const txUsers = txUserIds.length > 0 
+      ? await prisma.user.findMany({
+          where: { id: { in: txUserIds } },
+          select: { id: true, name: true, email: true, avatar: true }
+        })
+      : []
+    const txUserMap = new Map(txUsers.map(u => [u.id, u]))
+
+    const transactionsWithUser = transactions.map(tx => ({
+      ...tx,
+      user: txUserMap.get(tx.userId) || null
+    }))
+
+    // Fetch membershipCourses separately
+    const membershipCourses = await prisma.membershipCourse.findMany({
+      where: { courseId: courseId }
+    })
 
     // Fetch modules separately (no relation in schema)
     const modules = await prisma.courseModule.findMany({
@@ -90,12 +105,14 @@ export async function GET(
       success: true,
       course: {
         ...course,
+        transactions: transactionsWithUser,
+        membershipCourses,
         modules: modulesWithLessons,
         group,
         mentor: mentorData,
         _count: {
           modules: modules.length,
-          transactions: course.transactions?.length || 0
+          transactions: transactionsWithUser.length
         }
       }
     })

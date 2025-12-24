@@ -26,27 +26,40 @@ export async function GET(
     const { id: courseId, assignmentId } = await params
 
     const assignment = await prisma.assignment.findUnique({
-      where: { id: assignmentId },
-      include: {
-        submissions: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true
-              }
-            }
-          }
-        }
-      }
+      where: { id: assignmentId }
     })
 
     if (!assignment || assignment.courseId !== courseId) {
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ assignment })
+    // Fetch submissions separately
+    const submissions = await prisma.assignmentSubmission.findMany({
+      where: { assignmentId }
+    })
+
+    // Fetch users for submissions
+    const userIds = [...new Set(submissions.map(s => s.userId))]
+    const users = userIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, name: true, email: true }
+        })
+      : []
+
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    const submissionsWithUser = submissions.map(s => ({
+      ...s,
+      user: userMap.get(s.userId) || null
+    }))
+
+    return NextResponse.json({ 
+      assignment: {
+        ...assignment,
+        submissions: submissionsWithUser
+      }
+    })
   } catch (error) {
     console.error('Get assignment error:', error)
     return NextResponse.json(

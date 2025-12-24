@@ -26,22 +26,24 @@ export async function POST(
 
     // Check if user is admin or mentor of this course
     const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        mentor: {
-          include: {
-            user: true
-          }
-        }
-      }
+      where: { id: courseId }
     })
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
+    // Fetch mentor data separately
+    let mentorUserId: string | null = null
+    if (course.mentorId) {
+      const mentor = await prisma.mentorProfile.findUnique({
+        where: { id: course.mentorId }
+      })
+      mentorUserId = mentor?.userId || null
+    }
+
     const isAdmin = session.user.role === 'ADMIN'
-    const isMentor = course.mentor.userId === session.user.id
+    const isMentor = mentorUserId === session.user.id
 
     if (!isAdmin && !isMentor) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -143,22 +145,24 @@ export async function DELETE(
 
     // Check if user is admin or mentor of this course
     const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        mentor: {
-          include: {
-            user: true
-          }
-        }
-      }
+      where: { id: courseId }
     })
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
+    // Fetch mentor data separately
+    let deleteMentorUserId: string | null = null
+    if (course.mentorId) {
+      const mentor = await prisma.mentorProfile.findUnique({
+        where: { id: course.mentorId }
+      })
+      deleteMentorUserId = mentor?.userId || null
+    }
+
     const isAdmin = session.user.role === 'ADMIN'
-    const isMentor = course.mentor.userId === session.user.id
+    const isMentor = deleteMentorUserId === session.user.id
 
     if (!isAdmin && !isMentor) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

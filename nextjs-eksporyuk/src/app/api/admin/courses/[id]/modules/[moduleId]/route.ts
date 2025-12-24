@@ -26,19 +26,25 @@ export async function GET(
     const { id: courseId, moduleId } = await params
 
     const module = await prisma.courseModule.findUnique({
-      where: { id: moduleId },
-      include: {
-        lessons: {
-          orderBy: { order: 'asc' }
-        }
-      }
+      where: { id: moduleId }
     })
 
     if (!module || module.courseId !== courseId) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ module })
+    // Fetch lessons separately
+    const lessons = await prisma.courseLesson.findMany({
+      where: { moduleId },
+      orderBy: { order: 'asc' }
+    })
+
+    return NextResponse.json({ 
+      module: {
+        ...module,
+        lessons
+      }
+    })
   } catch (error) {
     console.error('Get module error:', error)
     return NextResponse.json(

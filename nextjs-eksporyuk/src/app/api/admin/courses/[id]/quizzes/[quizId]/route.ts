@@ -26,19 +26,25 @@ export async function GET(
     const { id: courseId, quizId } = await params
 
     const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
-      include: {
-        questions: {
-          orderBy: { order: 'asc' }
-        }
-      }
+      where: { id: quizId }
     })
 
     if (!quiz || quiz.courseId !== courseId) {
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ quiz })
+    // Fetch questions separately
+    const questions = await prisma.quizQuestion.findMany({
+      where: { quizId },
+      orderBy: { order: 'asc' }
+    })
+
+    return NextResponse.json({ 
+      quiz: {
+        ...quiz,
+        questions
+      }
+    })
   } catch (error) {
     console.error('Get quiz error:', error)
     return NextResponse.json(

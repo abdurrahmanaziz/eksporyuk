@@ -211,24 +211,30 @@ export async function POST(request: NextRequest) {
         affiliateOnly: affiliateOnly ?? false,
         isAffiliateTraining: isAffiliateTraining ?? false,
         isAffiliateMaterial: isAffiliateMaterial ?? false
-      },
-      include: {
-        mentor: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true
-              }
-            }
-          }
-        }
       }
     })
 
+    // Fetch mentor data separately for response
+    let mentorData = null
+    if (course.mentorId) {
+      const mentor = await prisma.mentorProfile.findUnique({
+        where: { id: course.mentorId }
+      })
+      if (mentor) {
+        const user = await prisma.user.findUnique({
+          where: { id: mentor.userId },
+          select: { name: true, email: true }
+        })
+        mentorData = { ...mentor, user }
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      course
+      course: {
+        ...course,
+        mentor: mentorData
+      }
     })
   } catch (error) {
     console.error('POST /api/admin/courses error:', error)
