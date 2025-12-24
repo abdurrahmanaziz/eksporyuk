@@ -220,19 +220,6 @@ export default function OptinFormsPage() {
       router.push('/affiliate/optin-forms/builder')
     }
   }
-      setSelectedLeadMagnet(form.leadMagnetId || 'none')
-      
-      const elements: FormElement[] = []
-      if (form.collectName) elements.push({ id: 'name', type: 'text', label: 'Nama', placeholder: 'Masukkan nama Anda', required: true })
-      if (form.collectEmail) elements.push({ id: 'email', type: 'email', label: 'Email', placeholder: 'email@example.com', required: true })
-      if (form.collectPhone) elements.push({ id: 'phone', type: 'phone', label: 'WhatsApp', placeholder: '628123456789', required: true })
-      setFormElements(elements)
-    } else {
-      setEditingForm(null)
-      resetForm()
-    }
-    setShowBuilder(true)
-  }
 
   const resetForm = () => {
     setFormName('')
