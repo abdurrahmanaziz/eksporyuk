@@ -13,6 +13,7 @@ export async function GET(
     const currentUser = await requireAuth()
     const { id } = await params
 
+    // Get user (no relations in schema)
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -29,16 +30,6 @@ export async function GET(
         emailVerified: true,
         isActive: true,
         createdAt: true,
-        wallet: true,
-        affiliateProfile: true,
-        mentorProfile: true,
-        _count: {
-          select: {
-            followers: true,
-            following: true,
-            posts: true,
-          },
-        },
       },
     })
 
@@ -46,13 +37,42 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // Manual lookups (schema has no relations)
+    const wallet = await prisma.wallet.findUnique({
+      where: { userId: id },
+    })
+
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: id },
+    })
+
+    const mentorProfile = await prisma.mentorProfile.findUnique({
+      where: { userId: id },
+    })
+
+    const followerCount = await prisma.follow.count({ where: { followingId: id } })
+    const followingCount = await prisma.follow.count({ where: { followerId: id } })
+    const postCount = await prisma.post.count({ where: { authorId: id } })
+
+    const userWithDetails = {
+      ...user,
+      wallet,
+      affiliateProfile,
+      mentorProfile,
+      _count: {
+        followers: followerCount,
+        following: followingCount,
+        posts: postCount,
+      },
+    }
+
     // Hide sensitive data for non-admin users
     if (currentUser.id !== id && !['ADMIN', 'FOUNDER', 'CO_FOUNDER'].includes(currentUser.role)) {
-      const { wallet, ...publicUser } = user
+      const { wallet: _, ...publicUser } = userWithDetails
       return NextResponse.json(publicUser)
     }
 
-    return NextResponse.json(user)
+    return NextResponse.json(userWithDetails)
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Internal server error' },

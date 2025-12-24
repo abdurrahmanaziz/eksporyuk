@@ -29,6 +29,7 @@ export async function GET(
 
     const { id } = await params
 
+    // Get user data (no relations in schema)
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -52,31 +53,6 @@ export async function GET(
         affiliateMenuEnabled: true,
         createdAt: true,
         updatedAt: true,
-        affiliateProfile: {
-          select: {
-            id: true,
-            affiliateCode: true,
-            tier: true,
-            commissionRate: true,
-            isActive: true,
-            applicationStatus: true,
-            totalEarnings: true,
-            totalConversions: true,
-          },
-        },
-        wallet: {
-          select: {
-            balance: true,
-            totalEarnings: true,
-            totalPayout: true,
-          },
-        },
-        _count: {
-          select: {
-            transactions: true,
-            userMemberships: true,
-          },
-        },
       },
     })
 
@@ -84,7 +60,44 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ user })
+    // Manual lookups (schema has no relations)
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId: id },
+      select: {
+        id: true,
+        affiliateCode: true,
+        tier: true,
+        commissionRate: true,
+        isActive: true,
+        applicationStatus: true,
+        totalEarnings: true,
+        totalConversions: true,
+      },
+    })
+
+    const wallet = await prisma.wallet.findUnique({
+      where: { userId: id },
+      select: {
+        balance: true,
+        totalEarnings: true,
+        totalPayout: true,
+      },
+    })
+
+    const transactionCount = await prisma.transaction.count({ where: { userId: id } })
+    const membershipCount = await prisma.userMembership.count({ where: { userId: id } })
+
+    const userWithDetails = {
+      ...user,
+      affiliateProfile,
+      wallet,
+      _count: {
+        transactions: transactionCount,
+        userMemberships: membershipCount,
+      },
+    }
+
+    return NextResponse.json({ user: userWithDetails })
   } catch (error) {
     console.error('Error fetching user:', error)
     return NextResponse.json(

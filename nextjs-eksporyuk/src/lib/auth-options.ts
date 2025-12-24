@@ -41,14 +41,17 @@ const providers: any[] = [
             suspendReason: true,
             isActive: true,
             affiliateMenuEnabled: true,
-            affiliateProfile: {
-              select: {
-                id: true,
-                isActive: true,
-              }
-            }
           }
         })
+        
+        // Manual lookup for affiliateProfile (schema has no relations)
+        let affiliateProfile = null
+        if (user) {
+          affiliateProfile = await prisma.affiliateProfile.findUnique({
+            where: { userId: user.id },
+            select: { id: true, isActive: true }
+          })
+        }
 
         console.log('[AUTH] Database query result:', {
           found: !!user,
@@ -103,7 +106,7 @@ const providers: any[] = [
           whatsapp: user.whatsapp,
           emailVerified: user.emailVerified,
           affiliateMenuEnabled: user.affiliateMenuEnabled,
-          hasAffiliateProfile: !!user.affiliateProfile && user.affiliateProfile.isActive,
+          hasAffiliateProfile: !!affiliateProfile && affiliateProfile.isActive,
         }
       } catch (error: any) {
         console.error('[AUTH] Authorization error:', error.message)
@@ -397,14 +400,17 @@ export const authOptions: NextAuthOptions = {
               memberCode: true,
               // isAuthorizedSupplierReviewer: true,  // Field not in current DB schema
               affiliateMenuEnabled: true,
-              affiliateProfile: {
-                select: {
-                  id: true,
-                  isActive: true,
-                }
-              }
             }
           })
+          
+          // Manual lookup for affiliateProfile (schema has no relations)
+          let dbAffiliateProfile = null
+          if (dbUser) {
+            dbAffiliateProfile = await prisma.affiliateProfile.findUnique({
+              where: { userId: dbUser.id },
+              select: { id: true, isActive: true }
+            })
+          }
           
           if (dbUser) {
             console.log(`[AUTH ${timestamp}] JWT - Found user in database:`, {
@@ -413,7 +419,7 @@ export const authOptions: NextAuthOptions = {
               role: dbUser.role,
               memberCode: dbUser.memberCode,
               affiliateMenuEnabled: dbUser.affiliateMenuEnabled,
-              hasAffiliateProfile: !!dbUser.affiliateProfile
+              hasAffiliateProfile: !!dbAffiliateProfile
             })
             
             token.id = dbUser.id
@@ -425,7 +431,7 @@ export const authOptions: NextAuthOptions = {
             token.isGoogleAuth = true
             // token.isAuthorizedSupplierReviewer = dbUser.isAuthorizedSupplierReviewer  // Field not in current DB schema
             token.affiliateMenuEnabled = dbUser.affiliateMenuEnabled
-            token.hasAffiliateProfile = !!dbUser.affiliateProfile && dbUser.affiliateProfile.isActive
+            token.hasAffiliateProfile = !!dbAffiliateProfile && dbAffiliateProfile.isActive
           } else {
             console.error(`[AUTH ${timestamp}] JWT - User not found in database for email:`, token.email)
           }
