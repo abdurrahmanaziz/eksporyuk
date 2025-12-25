@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx prisma generate --schema=./prisma/schema.prisma && next build",
+  "buildCommand": "rm -rf .next node_modules/.cache && npx prisma generate --schema=./prisma/schema.prisma && next build",
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
@@ -7,7 +7,8 @@
   "regions": ["sin1"],
   "build": {
     "env": {
-      "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true"
+      "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true",
+      "FORCE_REBUILD": "v5-20250625"
     }
   },
   "functions": {

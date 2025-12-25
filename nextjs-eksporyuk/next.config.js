@@ -1,13 +1,15 @@
 /** @type {import('next').NextConfig} */
 const path = require('path')
 
-// FORCE_REBUILD_CSS_v3: This comment forces Vercel to detect config change
-const BUILD_VERSION = '5.2.3-css-layer-fix'
+// FORCE_REBUILD_CSS_v5: Build timestamp to force complete Vercel cache invalidation
+const BUILD_VERSION = '5.3.0-full-css-rebuild'
+const BUILD_TIMESTAMP = new Date().toISOString()
 
 const nextConfig = {
-  // Build version for cache busting
+  // Build version for cache busting - using timestamp
   generateBuildId: async () => {
-    return BUILD_VERSION + '-' + Date.now()
+    // Force unique build ID every deployment
+    return `build-${Date.now()}`
   },
   // Skip type checking and linting during build for faster deployment
   typescript: {
