@@ -7,8 +7,7 @@
   "regions": ["sin1"],
   "build": {
     "env": {
-      "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true",
-      "DATABASE_URL": "@database_url"
+      "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true"
     }
   },
   "functions": {
