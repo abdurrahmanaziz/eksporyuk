@@ -2,7 +2,7 @@
   "buildCommand": "prisma generate && next build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "npm install",
+  "installCommand": "npm install && prisma generate",
   "devCommand": "next dev --port 3000",
   "regions": ["sin1"],
   "build": {
