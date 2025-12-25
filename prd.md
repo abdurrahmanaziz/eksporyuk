@@ -5083,3 +5083,317 @@ Arsitektur ini **sudah benar secara produk, teknis, dan bisnis**.
 
 ---
 
+Siap. Ini **PRD FINAL – TRANSAKSI & KOMISI AFFILIATE (VERSI PALING LENGKAP & TERKUNCI)**.
+Saya **lengkapi khusus bagian KOMISI AFFILIATE** sampai level **tidak bisa disalahgunakan, tidak bisa dihitung ulang, dan valid 100%**.
+
+Tidak ada ringkasan, tidak ada asumsi. Ini **dokumen pegangan dev & QA**.
+
+---
+
+# 📘 PRODUCT REQUIREMENT DOCUMENT (PRD)
+
+## **SISTEM TRANSAKSI, PRODUK & KOMISI AFFILIATE – EKSPORYUK**
+
+**Versi:** FINAL (LOCKED)
+**Status:** WAJIB DIIKUTI
+**Scope:**
+
+* Produk
+* Transaksi
+* Komisi Affiliate (FLAT)
+* Membership
+* Kelas
+* Grup
+* Validasi & Audit
+
+---
+
+## 0. NOTE WAJIB (ABSOLUT)
+
+> **TRANSAKSI & KOMISI BISA BERUBAH.**
+>
+> Developer **WAJIB** mengambil **DATA REAL** dari:
+>
+> * **Database SEJOLI**, atau
+> * **REST API RESMI SEJOLI**
+>
+> ❌ DILARANG:
+>
+> * Hardcode angka
+> * Menghitung ulang komisi
+> * Menggunakan persentase
+> * Asumsi harga / komisi
+> * Generate transaksi / komisi
+>
+> **Dashboard = refleksi DB,
+> bukan sebaliknya.**
+
+---
+
+## 1. ENTITAS PRODUK (WAJIB & MENGIKAT)
+
+Produk adalah **sumber kebenaran** untuk:
+
+* Harga transaksi
+* Komisi affiliate
+* Membership
+* Akses kelas
+* Akses grup
+
+Tanpa produk valid → **transaksi tidak sah**.
+
+### 1.1 Struktur Data Produk (WAJIB)
+
+```json
+{
+  "product_id": "sejoli_8683",
+  "product_name": "Kelas Ekspor 899K",
+  "product_category": "membership_12_bulan",
+  "price": 899000,
+  "commission_flat": 300000,
+  "membership_type": "12_bulan",
+  "class_access": ["kelas_ekspor"],
+  "group_access": ["grup_support_ekspor"],
+  "source": "sejoli"
+}
+```
+
+---
+
+## 2. KLASIFIKASI PRODUK (RESMI – 54 PRODUK)
+
+| Kategori            | Jumlah | Dampak                |
+| ------------------- | -----: | --------------------- |
+| Lifetime Membership |     15 | Membership Lifetime   |
+| Membership 12 Bulan |      2 | Membership 12 Bulan   |
+| Membership 6 Bulan  |      2 | Membership 6 Bulan    |
+| Event / Webinar     |     19 | User Free             |
+| Renewal             |      3 | Extend Membership     |
+| Jasa                |      6 | Tidak ubah membership |
+| Tools / Aplikasi    |      4 | Tidak ubah membership |
+| Gratis              |      1 | User Free             |
+| Lainnya             |      1 | Manual                |
+| Paket Umroh         |      1 | Manual                |
+
+---
+
+## 3. PRODUK → TRANSAKSI
+
+### 3.1 Aturan Mutlak
+
+* 1 transaksi = **1 produk**
+* Produk **tidak boleh NULL**
+* Harga transaksi = `product.price`
+* Status transaksi **harus `completed`** untuk diproses
+
+---
+
+## 4. PRODUK → KOMISI AFFILIATE (INTI PRD INI)
+
+### 4.1 Prinsip Utama (TIDAK BOLEH DILANGGAR)
+
+* ✅ **KOMISI FLAT**
+* ❌ **BUKAN PERSENTASE**
+* ❌ **TIDAK DIHITUNG ULANG**
+* ❌ **TIDAK BOLEH OVERRIDE**
+* ❌ **TIDAK BOLEH DIKALIKAN**
+
+---
+
+### 4.2 SOURCE OF TRUTH KOMISI
+
+Komisi **HANYA** diambil dari:
+
+```
+affiliateConversion.commissionAmount
+```
+
+❗ Bukan dari:
+
+* harga produk
+* diskon
+* persen
+* logic baru
+
+---
+
+### 4.3 Struktur Data Komisi (WAJIB)
+
+```json
+{
+  "affiliate_id": "aff_123",
+  "transaction_id": "sejoli_987654",
+  "product_id": "sejoli_8683",
+  "commission_amount": 300000,
+  "commission_type": "flat",
+  "source": "sejoli",
+  "status": "locked"
+}
+```
+
+---
+
+### 4.4 Status Komisi
+
+| Status   | Arti                     |
+| -------- | ------------------------ |
+| locked   | Final, tidak bisa diubah |
+| paid     | Sudah dibayar            |
+| reversed | Refund / cancel          |
+
+---
+
+## 5. CONTOH KOMISI VALID (REAL DATA)
+
+| Product ID |     Komisi |
+| ---------- | ---------: |
+| 13401      | Rp 325.000 |
+| 3840       | Rp 300.000 |
+| 8683       | Rp 300.000 |
+| 8684       | Rp 250.000 |
+| 179        | Rp 250.000 |
+
+### Webinar 35K
+
+* 19042 → 50.000
+* 21476 → 50.000
+* 18528 → 20.000
+* 20130 → 50.000
+
+### Kelas 899K
+
+* 8683 → 300.000
+* 17920 → 250.000 (Lifetime promo)
+* 13399 → 250.000
+* 20852 → 280.000
+
+---
+
+## 6. TRANSAKSI → MEMBERSHIP
+
+| Produk              | Membership |
+| ------------------- | ---------- |
+| Membership 6 Bulan  | 6 Bulan    |
+| Membership 12 Bulan | 12 Bulan   |
+| Lifetime            | Lifetime   |
+| Event / Webinar     | Tidak ada  |
+
+Role:
+
+* Membership aktif → **Member Premium**
+* Event/Webinar → **User Free**
+
+---
+
+## 7. MEMBERSHIP → KELAS & GRUP (WAJIB)
+
+| Membership | Kelas                      | Grup           |
+| ---------- | -------------------------- | -------------- |
+| 6 Bulan    | 1 Kelas Ekspor             | 1 Grup Support |
+| 12 Bulan   | 1 Kelas Ekspor             | 1 Grup Support |
+| Lifetime   | 2 Kelas (Ekspor + Website) | 2 Grup         |
+
+Assignment:
+
+* Otomatis
+* Tidak manual
+* Tidak bayar ulang
+
+---
+
+## 8. FLOW END-TO-END (FINAL)
+
+```
+Produk (Sejoli)
+     ↓
+Transaksi Completed
+     ↓
+Ambil Komisi FLAT (LOCKED)
+     ↓
+Simpan AffiliateConversion
+     ↓
+Aktifkan Membership
+     ↓
+Assign Role
+     ↓
+Enroll Kelas
+     ↓
+Join Grup
+```
+
+---
+
+## 9. VALIDASI POST-MIGRATION (WAJIB LULUS)
+
+### Angka TARGET (Dashboard)
+
+#### Hari Ini
+
+* Lead: 3
+* Sales: 2
+* Omset: Rp 1.698.000
+* Komisi: Rp 525.000
+
+#### Bulan Ini
+
+* Lead: 197
+* Sales: 155
+* Omset: Rp 138.402.000
+* Komisi: Rp 42.800.000
+
+#### Semua Data
+
+* Lead: 19.396
+* Sales: 12.894
+* Omset: Rp 4.172.579.962
+* Komisi: Rp 1.260.896.000
+
+❌ **1 angka beda = MIGRASI GAGAL**
+
+---
+
+## 10. LOG & AUDIT (WAJIB ADA)
+
+* `product_mapping_logs`
+* `transaction_logs`
+* `affiliate_commission_logs`
+* `membership_logs`
+* `class_enrollment_logs`
+* `group_membership_logs`
+
+Semua **traceable ke Sejoli ID**.
+
+---
+
+## 11. LARANGAN KERAS 🚫
+
+* Hitung ulang komisi
+* Pakai %
+* Hardcode
+* Override manual
+* Generate komisi
+* Edit histori
+
+---
+
+## 12. STATUS DOKUMEN
+
+✅ FINAL
+✅ TERKUNCI
+✅ VALID UNTUK DEV & QA
+
+---
+
+### Penutup jujur:
+
+Sekarang **tidak ada yang kelewat**:
+
+* Produk ✅
+* Transaksi ✅
+* Komisi Affiliate (FLAT & VALID) ✅
+* Membership ✅
+* Kelas ✅
+* Grup ✅
+* Audit & Validasi ✅
+
+
