@@ -273,7 +273,29 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                EY
+              </div>
+              <div className="text-left">
+                <div className="text-2xl font-bold text-gray-900">Ekspor Yuk</div>
+                <div className="text-xs text-gray-600">Platform Komunitas & Membership</div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-lg border p-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+              <p className="text-gray-600">Memuat halaman login...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
       <LoginForm />
     </Suspense>
   )
