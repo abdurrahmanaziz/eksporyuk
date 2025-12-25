@@ -182,6 +182,48 @@ export async function POST(request: NextRequest) {
       console.log('✅ Google OAuth configuration validated successfully')
     }
 
+    // Validate Facebook OAuth config
+    if (service === 'facebook_oauth' || service === 'facebook') {
+      const { FACEBOOK_CLIENT_ID, FACEBOOK_CLIENT_SECRET, FACEBOOK_CALLBACK_URL, FACEBOOK_DATA_DELETION_URL } = config
+
+      if (!FACEBOOK_CLIENT_ID || !FACEBOOK_CLIENT_SECRET) {
+        return NextResponse.json(
+          { error: 'App ID dan App Secret harus diisi' },
+          { status: 400 }
+        )
+      }
+
+      // Validate App ID format (should be numeric)
+      if (!/^\d+$/.test(FACEBOOK_CLIENT_ID)) {
+        return NextResponse.json(
+          { error: 'App ID tidak valid. Format harus berupa angka.' },
+          { status: 400 }
+        )
+      }
+
+      // Validate Callback URL format if provided
+      if (FACEBOOK_CALLBACK_URL) {
+        if (!FACEBOOK_CALLBACK_URL.includes('/api/auth/callback/facebook')) {
+          return NextResponse.json(
+            { error: 'Callback URL harus berakhir dengan /api/auth/callback/facebook' },
+            { status: 400 }
+          )
+        }
+      }
+
+      // Validate Data Deletion URL format if provided
+      if (FACEBOOK_DATA_DELETION_URL) {
+        if (!FACEBOOK_DATA_DELETION_URL.includes('/api/auth/facebook/data-deletion')) {
+          return NextResponse.json(
+            { error: 'Data Deletion URL harus berakhir dengan /api/auth/facebook/data-deletion' },
+            { status: 400 }
+          )
+        }
+      }
+
+      console.log('✅ Facebook OAuth configuration validated successfully')
+    }
+
     // Save to environment file (for development)
     console.log('[INTEGRATION_SAVE] Updating environment file...')
     const envPath = path.join(process.cwd(), '.env.local')
@@ -210,6 +252,8 @@ export async function POST(request: NextRequest) {
       pusher: ['PUSHER_APP_ID', 'PUSHER_KEY', 'PUSHER_SECRET', 'PUSHER_CLUSTER'],
       google: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_CALLBACK_URL'],
       google_oauth: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_CALLBACK_URL'],
+      facebook: ['FACEBOOK_CLIENT_ID', 'FACEBOOK_CLIENT_SECRET', 'FACEBOOK_CALLBACK_URL', 'FACEBOOK_DATA_DELETION_URL'],
+      facebook_oauth: ['FACEBOOK_CLIENT_ID', 'FACEBOOK_CLIENT_SECRET', 'FACEBOOK_CALLBACK_URL', 'FACEBOOK_DATA_DELETION_URL'],
     }
 
     const envVars = serviceEnvMap[service] || []

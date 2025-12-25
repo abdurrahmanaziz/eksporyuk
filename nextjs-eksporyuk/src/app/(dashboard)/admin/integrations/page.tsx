@@ -22,6 +22,7 @@ import {
   Bell,
   Loader2,
   Chrome,
+  Facebook,
 } from 'lucide-react'
 
 interface IntegrationConfig {
@@ -214,6 +215,26 @@ const integrations: Record<string, IntegrationConfig> = {
         label: 'Callback URL (Authorized Redirect URIs)',
         required: true,
         masked: false,
+      },
+    ],
+  },
+  facebook: {
+    name: 'Facebook OAuth',
+    description: 'Facebook Login Integration untuk User Authentication',
+    icon: <Facebook className="h-6 w-6" />,
+    website: 'https://developers.facebook.com',
+    env_vars: [
+      {
+        key: 'FACEBOOK_CLIENT_ID',
+        label: 'App ID',
+        required: true,
+        masked: false,
+      },
+      {
+        key: 'FACEBOOK_CLIENT_SECRET',
+        label: 'App Secret',
+        required: true,
+        masked: true,
       },
     ],
   },
