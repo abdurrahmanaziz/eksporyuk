@@ -111,6 +111,111 @@ export const authOptions: NextAuthOptions = {
     })()),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      const timestamp = new Date().toISOString()
+      console.log(`[AUTH ${timestamp}] ====== signIn callback START ======`)
+      console.log(`[AUTH ${timestamp}] Provider: ${account?.provider}`)
+      console.log(`[AUTH ${timestamp}] User email: ${user?.email}`)
+      
+      // Handle Google/Facebook OAuth sign in
+      if (account?.provider === 'google' || account?.provider === 'facebook') {
+        try {
+          const email = user?.email
+          if (!email) {
+            console.error(`[AUTH ${timestamp}] OAuth login failed: No email provided`)
+            return false
+          }
+
+          // Check if user already exists
+          let existingUser = await prisma.user.findUnique({
+            where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+              avatar: true,
+              username: true,
+              isActive: true,
+              isSuspended: true,
+            }
+          })
+
+          if (existingUser) {
+            // Check if user is suspended or inactive
+            if (existingUser.isSuspended) {
+              console.error(`[AUTH ${timestamp}] User is suspended: ${email}`)
+              return false
+            }
+            if (!existingUser.isActive) {
+              console.error(`[AUTH ${timestamp}] User is inactive: ${email}`)
+              return false
+            }
+
+            console.log(`[AUTH ${timestamp}] ✅ Existing user found: ${email}`)
+            
+            // Update user info if needed
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: {
+                isOnline: true,
+                lastSeenAt: new Date(),
+                avatar: user.image || existingUser.avatar,
+                name: user.name || existingUser.name,
+              }
+            })
+            
+            // Set user ID for JWT callback
+            user.id = existingUser.id
+            user.role = existingUser.role
+            user.username = existingUser.username || undefined
+            
+          } else {
+            // Create new user
+            console.log(`[AUTH ${timestamp}] Creating new user: ${email}`)
+            
+            const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000)
+            
+            const newUser = await prisma.user.create({
+              data: {
+                email,
+                name: user.name || 'User',
+                role: 'MEMBER_FREE',
+                avatar: user.image,
+                username,
+                emailVerified: true,
+                isActive: true,
+                isOnline: true,
+                lastSeenAt: new Date(),
+                wallet: {
+                  create: {
+                    balance: 0,
+                    balancePending: 0,
+                  },
+                },
+              },
+            })
+            
+            console.log(`[AUTH ${timestamp}] ✅ New user created: ${newUser.id}`)
+            
+            // Set user info for JWT callback
+            user.id = newUser.id
+            user.role = newUser.role
+            user.username = newUser.username || undefined
+          }
+
+          console.log(`[AUTH ${timestamp}] ====== signIn callback END - Success ======`)
+          return true
+        } catch (error) {
+          console.error(`[AUTH ${timestamp}] ❌ Error in ${account?.provider} signIn:`, error)
+          return false
+        }
+      }
+
+      // For credentials provider, just return true (auth is handled in authorize)
+      console.log(`[AUTH ${timestamp}] ====== signIn callback END - Credentials ======`)
+      return true
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
