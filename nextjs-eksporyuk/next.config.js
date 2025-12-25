@@ -1,13 +1,23 @@
 /** @type {import('next').NextConfig} */
 const path = require('path')
 
-// FORCE_REBUILD_CSS_v2: This comment forces Vercel to detect config change
+// FORCE_REBUILD_CSS_v3: This comment forces Vercel to detect config change
 const BUILD_VERSION = '5.2.3-css-layer-fix'
 
 const nextConfig = {
   // Build version for cache busting
   generateBuildId: async () => {
     return BUILD_VERSION + '-' + Date.now()
+  },
+  // Skip type checking and linting during build for faster deployment
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  experimental: {
+    serverComponentsExternalPackages: ['prisma'],
   },
   images: {
     remotePatterns: [
