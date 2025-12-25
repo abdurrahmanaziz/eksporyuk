@@ -41,6 +41,20 @@ const config = {
     // FAQ
     'faq', 'faq-container', 'faq-header', 'faq-title', 'faq-item',
     'faq-question', 'faq-answer',
+    // Critical Tailwind utilities for forms & UI
+    { pattern: /^(flex|grid|block|inline|hidden)$/ },
+    { pattern: /^(min-h|max-h|h)-/ },
+    { pattern: /^(min-w|max-w|w)-/ },
+    { pattern: /^(p|px|py|pt|pb|pl|pr)-/ },
+    { pattern: /^(m|mx|my|mt|mb|ml|mr)-/ },
+    { pattern: /^(gap|space)-/ },
+    { pattern: /^(items|justify|content|self)-/ },
+    { pattern: /^(text|font)-/ },
+    { pattern: /^(bg|border|rounded)-/ },
+    { pattern: /^(shadow|ring)-/ },
+    { pattern: /^(hover|focus|active):/ },
+    { pattern: /^transition/ },
+    { pattern: /^(opacity|translate|scale|rotate)-/ },
   ],
   prefix: "",
   theme: {
