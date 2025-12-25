@@ -42,24 +42,23 @@ export async function GET(
     })
 
     // Get all transactions for this membership
-    // First get UserMembership IDs for this membership
-    const userMembershipIds = await prisma.userMembership.findMany({
+    // First get UserMembership with their transactionIds for this membership
+    const userMemberships = await prisma.userMembership.findMany({
       where: { membershipId: id },
-      select: { id: true }
+      select: { id: true, transactionId: true }
     })
     
-    const membershipIdList = userMembershipIds.map(um => um.id)
+    // Get transaction IDs (filter out null values)
+    const transactionIds = userMemberships
+      .map(um => um.transactionId)
+      .filter((id): id is string => id !== null)
     
-    // Then get transactions using the membership relation
+    // Then get transactions by their IDs
     const transactions = await prisma.transaction.findMany({
       where: {
+        id: { in: transactionIds },
         type: 'MEMBERSHIP',
-        status: 'SUCCESS',
-        membership: {
-          id: {
-            in: membershipIdList
-          }
-        }
+        status: 'SUCCESS'
       },
       select: {
         amount: true,
@@ -106,12 +105,15 @@ export async function GET(
     const churnRate = totalMembers > 0 ? (expiredMembers / totalMembers) * 100 : 0
 
     // Conversion rate (successful purchases / total attempts)
+    // Get all transaction IDs for this membership (including non-success)
+    const allMembershipTransactionIds = userMemberships
+      .map(um => um.transactionId)
+      .filter((id): id is string => id !== null)
+    
     const totalAttempts = await prisma.transaction.count({
       where: {
-        type: 'MEMBERSHIP',
-        membership: {
-          id: { in: membershipIdList }
-        }
+        id: { in: allMembershipTransactionIds },
+        type: 'MEMBERSHIP'
       }
     })
     const successfulPurchases = transactions.length

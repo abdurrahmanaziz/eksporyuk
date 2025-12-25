@@ -60,13 +60,13 @@ export async function GET(
         autoRemoveOnExpire: true,
         showInGeneralCheckout: true,
         createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            userMemberships: true
-          }
-        }
+        updatedAt: true
       }
+    })
+    
+    // Count user memberships separately (no direct relation in schema)
+    const userMembershipsCount = await prisma.userMembership.count({
+      where: { membershipId: id }
     })
 
     if (!plan) {
