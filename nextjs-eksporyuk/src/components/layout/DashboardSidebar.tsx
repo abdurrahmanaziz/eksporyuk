@@ -122,9 +122,11 @@ const navigationByRole = {
     {
       title: 'KOMUNITAS',
       items: [
-        { name: 'Grup', href: '/admin/groups', icon: UsersRound },
+        { name: 'Feed Komunitas', href: '/community/feed', icon: MessageSquare },
+        { name: 'Grup Komunitas', href: '/community/groups', icon: UsersRound },
+        { name: 'Feed (Admin)', href: '/admin/feed', icon: MessageSquare },
+        { name: 'Grup (Admin)', href: '/admin/groups', icon: UsersRound },
         { name: 'Acara', href: '/admin/events', icon: Calendar },
-        { name: 'Feed', href: '/admin/feed', icon: MessageSquare },
       ]
     },
     {
@@ -200,6 +202,7 @@ const navigationByRole = {
     {
       title: 'KOMUNITAS',
       items: [
+        { name: 'Feed', href: '/community/feed', icon: MessageSquare },
         { name: 'Grup', href: '/community/groups', icon: UsersRound },
         { name: 'Acara', href: '/events', icon: Calendar },
         { name: 'Directory', href: '/member-directory', icon: MapPin },
@@ -306,6 +309,7 @@ const navigationByRole = {
     {
       title: 'KOMUNITAS',
       items: [
+        { name: 'Feed', href: '/community/feed', icon: MessageSquare },
         { name: 'Grup', href: '/community/groups', icon: UsersRound },
         { name: 'Acara', href: '/community/events', icon: Calendar },
         { name: 'Directory', href: '/member-directory', icon: MapPin },
@@ -340,8 +344,9 @@ const navigationByRole = {
     {
       title: 'KOMUNITAS',
       items: [
-        { name: 'Grup', href: '/community/groups', icon: UsersRound },
-        { name: 'Acara', href: '/community/events', icon: Calendar },
+        { name: 'Feed', href: '/dashboard/upgrade', icon: MessageSquare, badge: '🔒', condition: () => false },
+        { name: 'Grup', href: '/dashboard/upgrade', icon: UsersRound, badge: '🔒', condition: () => false },
+        { name: 'Acara', href: '/dashboard/upgrade', icon: Calendar, badge: '🔒', condition: () => false },
       ]
     },
     {
@@ -378,13 +383,6 @@ const navigationByRole = {
       items: [
         { name: 'Profil Perusahaan', href: '/supplier/profile', icon: Building2 },
         { name: 'Upgrade Paket', href: '/pricing/supplier', icon: TrendingUp },
-      ]
-    },
-    {
-      title: 'KOMUNITAS',
-      items: [
-        { name: 'Grup', href: '/community/groups', icon: UsersRound },
-        { name: 'Acara', href: '/community/events', icon: Calendar },
       ]
     },
     {
@@ -538,6 +536,12 @@ export default function DashboardSidebar() {
   // Get base navigation by role
   let baseNavigation = navigationByRole[userRole as keyof typeof navigationByRole] || navigationByRole.MEMBER_FREE
   
+  // DEBUG: Log navigation setup
+  console.log('[SIDEBAR DEBUG] Current userRole:', userRole)
+  console.log('[SIDEBAR DEBUG] Session role:', session?.user?.role)
+  console.log('[SIDEBAR DEBUG] Available navigation keys:', Object.keys(navigationByRole))
+  console.log('[SIDEBAR DEBUG] Base navigation categories:', baseNavigation?.length || 0)
+  
   // Add affiliate menu for non-affiliate users if enabled
   if (affiliateMenuEnabled && userRole !== 'AFFILIATE') {
     if (hasAffiliateProfile && affiliateStatus === 'APPROVED') {
@@ -599,6 +603,10 @@ export default function DashboardSidebar() {
   }
   
   const categoriesWithBadges = updateCategoriesWithBadges(baseNavigation)
+  
+  // DEBUG: Log final categories
+  console.log('[SIDEBAR DEBUG] Final categories count:', categoriesWithBadges?.length || 0)
+  console.log('[SIDEBAR DEBUG] Category titles:', categoriesWithBadges?.map(c => c.title) || [])
 
   // Get logo based on role
   const getLogo = () => {

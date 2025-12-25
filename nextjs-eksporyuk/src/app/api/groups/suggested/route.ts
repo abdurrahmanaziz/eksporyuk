@@ -30,20 +30,20 @@ export async function GET(request: NextRequest) {
         startDate: { lte: new Date() },
         endDate: { gte: new Date() }
       },
-      include: {
-        membership: {
-          include: {
-            membershipGroups: {
-              select: { groupId: true }
-            }
-          }
-        }
+      select: {
+        membershipId: true
       }
     })
 
-    const accessibleGroupIds = userMemberships.flatMap(
-      um => um.membership.membershipGroups.map(mg => mg.groupId)
-    )
+    const membershipIds = userMemberships.map(um => um.membershipId)
+
+    // Get accessible group IDs from MembershipGroup
+    const accessibleGroupIds = membershipIds.length > 0
+      ? await prisma.membershipGroup.findMany({
+          where: { membershipId: { in: membershipIds } },
+          select: { groupId: true }
+        }).then(mgs => mgs.map(mg => mg.groupId))
+      : []
 
     // Find suggested groups - simplified query (no invalid relations)
     const suggestedGroups = await prisma.group.findMany({
@@ -102,10 +102,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(groupsWithDetails)
 
-  } catch (error) {
-    console.error('Error fetching suggested groups:', error)
+  } catch (error: any) {
+    console.error('[SUGGESTED GROUPS API] Error fetching:', error)
+    console.error('[SUGGESTED GROUPS API] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    })
     return NextResponse.json(
-      { error: 'Failed to fetch suggested groups' },
+      { error: error.message || 'Failed to fetch suggested groups' },
       { status: 500 }
     )
   }

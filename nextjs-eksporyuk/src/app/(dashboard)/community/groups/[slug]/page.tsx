@@ -572,10 +572,25 @@ export default function GroupDetailPage() {
       })
 
       if (res.ok) {
+        toast.success('Berhasil bergabung ke grup!')
         fetchGroupDetails()
+      } else {
+        const error = await res.json()
+        
+        // Check if membership is required
+        if (error.requiresUpgrade) {
+          toast.error(error.message || 'Grup ini memerlukan membership premium')
+          // Optionally redirect to membership page after delay
+          setTimeout(() => {
+            router.push('/membership')
+          }, 2000)
+        } else {
+          toast.error(error.error || 'Gagal bergabung ke grup')
+        }
       }
     } catch (error) {
       console.error('Error joining group:', error)
+      toast.error('Terjadi kesalahan saat bergabung')
     }
   }
 

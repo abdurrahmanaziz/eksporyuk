@@ -180,6 +180,44 @@ export async function POST(
       )
     }
 
+    // For PRIVATE groups, check if user has required membership access
+    if (group.type === 'PRIVATE') {
+      // Get user's active memberships
+      const userMemberships = await prisma.userMembership.findMany({
+        where: {
+          userId: session.user.id,
+          status: 'ACTIVE',
+        },
+        include: {
+          membership: {
+            include: {
+              membershipGroups: {
+                where: {
+                  groupId: groupId,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      // Check if any of user's memberships grant access to this group
+      const hasAccess = userMemberships.some(
+        (um) => um.membership.membershipGroups.length > 0
+      )
+
+      if (!hasAccess) {
+        return NextResponse.json(
+          { 
+            error: 'Membership required',
+            message: 'Grup ini memerlukan membership premium. Silakan upgrade untuk mengakses grup eksklusif ini.',
+            requiresUpgrade: true,
+          },
+          { status: 403 }
+        )
+      }
+    }
+
     // For private groups, should create join request (simplified - auto-approve for now)
     const member = await prisma.groupMember.create({
       data: {

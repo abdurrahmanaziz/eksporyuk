@@ -19,12 +19,15 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`👤 User: ${session.user.name} (${session.user.role})`)
+    console.log('📋 Full session user:', JSON.stringify(session.user, null, 2))
     
     // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
     const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
     if (!allowedRoles.includes(session.user.role)) {
-      console.log(`❌ Role ${session.user.role} not allowed`)
-      return NextResponse.json({ error: 'Access denied. Affiliate access required.' }, { status: 403 })
+      console.log(`❌ Role ${session.user.role} not allowed. Allowed roles:`, allowedRoles)
+      return NextResponse.json({ 
+        error: `Access denied. Current role: ${session.user.role}. Required: AFFILIATE, ADMIN, FOUNDER, or CO_FOUNDER.` 
+      }, { status: 403 })
     }
 
     const body = await request.json()

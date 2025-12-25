@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Plus, Search, Filter, MoreVertical, Copy, ExternalLink, TrendingUp, ArrowUp, Users as UsersIcon, CreditCard, Package as PackageIcon, GraduationCap, Bell, Send, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -226,6 +227,15 @@ export default function MembershipPlansPage() {
             <p className="text-sm text-gray-500 mt-1">Konfigurasi dan kelola produk membership.</p>
           </div>
           <div className="flex gap-3">
+            <Link 
+              href="/checkout/pro"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 shadow-md hover:shadow-lg flex items-center gap-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Checkout Pro
+            </Link>
             <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
               <Filter className="h-4 w-4" />
               Filter
@@ -375,13 +385,14 @@ export default function MembershipPlansPage() {
                         >
                           <Copy className="h-4 w-4" />
                         </button>
-                        <button
-                          onClick={() => window.open(`/checkout/${plan.slug}`, '_blank')}
+                        <Link
+                          href={`/checkout/${plan.slug}`}
+                          target="_blank"
                           className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-gray-100"
                           title="Buka Halaman Checkout"
                         >
                           <ExternalLink className="h-4 w-4" />
-                        </button>
+                        </Link>
                       </div>
                     </td>
                     <td className="px-4 py-4 align-top">

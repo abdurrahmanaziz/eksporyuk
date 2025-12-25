@@ -12,10 +12,20 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
+    if (!session?.user) {
+      console.log('[GET /api/affiliate/coupons] No session found')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    console.log('[GET /api/affiliate/coupons] User:', session.user.name, 'Role:', session.user.role)
+    
     // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
     const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
-    if (!session || !allowedRoles.includes(session.user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!session.user.role || !allowedRoles.includes(session.user.role)) {
+      console.log('[GET /api/affiliate/coupons] Access denied. Role:', session.user.role, 'Allowed:', allowedRoles)
+      return NextResponse.json({ 
+        error: 'Unauthorized - Role ' + (session.user.role || 'undefined') + ' tidak memiliki akses. Hanya AFFILIATE, ADMIN, FOUNDER, atau CO_FOUNDER yang dapat mengakses fitur ini.' 
+      }, { status: 401 })
     }
 
     const coupons = await prisma.coupon.findMany({
@@ -40,10 +50,20 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
+    if (!session?.user) {
+      console.log('[POST /api/affiliate/coupons] No session found')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    console.log('[POST /api/affiliate/coupons] User:', session.user.name, 'Role:', session.user.role)
+    
     // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
     const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
-    if (!session || !allowedRoles.includes(session.user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!session.user.role || !allowedRoles.includes(session.user.role)) {
+      console.log('[POST /api/affiliate/coupons] Access denied. Role:', session.user.role)
+      return NextResponse.json({ 
+        error: 'Unauthorized - Role ' + (session.user.role || 'undefined') + ' tidak memiliki akses.' 
+      }, { status: 401 })
     }
 
     const body = await request.json()

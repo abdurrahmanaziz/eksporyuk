@@ -55,10 +55,15 @@ export default function MyCoursesPage() {
       const res = await fetch('/api/enrollments/my-courses')
       if (res.ok) {
         const data = await res.json()
+        console.log('📚 Fetched courses:', data.enrollments?.length || 0)
         setCourses(data.enrollments || [])
+      } else {
+        console.error('Failed to fetch courses:', res.status)
+        setCourses([])
       }
     } catch (error) {
       console.error('Error fetching courses:', error)
+      setCourses([])
     } finally {
       setLoading(false)
     }

@@ -79,7 +79,11 @@ export default function SavedPostsPage() {
       const response = await fetch('/api/users/me/saved-posts')
       
       if (!response.ok) {
-        throw new Error('Failed to fetch saved posts')
+        // Don't throw error for 404/401, just show empty state
+        console.error('Failed to fetch saved posts:', response.status)
+        setSavedPosts([])
+        setFilteredPosts([])
+        return
       }
 
       const data = await response.json()
@@ -87,7 +91,9 @@ export default function SavedPostsPage() {
       setFilteredPosts(data.savedPosts || [])
     } catch (error) {
       console.error('Error fetching saved posts:', error)
-      toast.error('Gagal memuat postingan tersimpan')
+      // Silent fail - show empty state
+      setSavedPosts([])
+      setFilteredPosts([])
     } finally {
       setLoading(false)
     }

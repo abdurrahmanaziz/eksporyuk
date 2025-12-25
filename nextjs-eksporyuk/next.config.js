@@ -21,6 +21,8 @@ const nextConfig = {
   // Next.js 16 compatible config
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
+    // Disable turbopack for now
+    turbo: false,
   },
   
   typescript: {

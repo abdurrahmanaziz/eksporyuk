@@ -100,6 +100,17 @@ export default function CheckoutProPage() {
     email: session?.user?.email || '',
     whatsapp: ''
   })
+
+  // Registration form for non-logged-in users
+  const [registerData, setRegisterData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    whatsapp: '',
+    password: ''
+  })
+
+  const [isRegistering, setIsRegistering] = useState(false)
   
   // Payment settings
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<{
@@ -114,8 +125,8 @@ export default function CheckoutProPage() {
     enableXendit: true
   })
   
-  // Payment method selection - include 'retail' for minimarket payments
-  const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'ewallet' | 'qris' | 'retail' | 'manual'>('bank_transfer')
+  // Payment method selection - include 'retail' for minimarket payments and 'cardless_credit' for buy now pay later
+  const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'ewallet' | 'qris' | 'retail' | 'cardless_credit' | 'manual'>('bank_transfer')
   const [paymentChannel, setPaymentChannel] = useState<string>('BCA')
   
   // Collapsible sections state
@@ -270,6 +281,14 @@ export default function CheckoutProPage() {
       { code: 'BNI', name: 'Bank Negara Indonesia (BNI)', type: 'bank_transfer', icon: '🏦', isActive: true },
       { code: 'BRI', name: 'Bank Rakyat Indonesia (BRI)', type: 'bank_transfer', icon: '🏦', isActive: true },
       { code: 'BSI', name: 'Bank Syariah Indonesia (BSI)', type: 'bank_transfer', icon: '🏦', isActive: true },
+      { code: 'OVO', name: 'OVO', type: 'ewallet', icon: '💳', isActive: true },
+      { code: 'DANA', name: 'DANA', type: 'ewallet', icon: '💳', isActive: true },
+      { code: 'GOPAY', name: 'GoPay', type: 'ewallet', icon: '💳', isActive: true },
+      { code: 'QRIS', name: 'QRIS (Scan QR)', type: 'qris', icon: '📱', isActive: true },
+      { code: 'ALFAMART', name: 'Alfamart', type: 'retail', icon: '🏪', isActive: true },
+      { code: 'INDOMARET', name: 'Indomaret', type: 'retail', icon: '🏪', isActive: true },
+      { code: 'KREDIVO', name: 'Kredivo', type: 'cardless_credit', icon: '💳', isActive: true },
+      { code: 'AKULAKU', name: 'Akulaku', type: 'cardless_credit', icon: '💳', isActive: true },
     ]
   }
 
@@ -285,6 +304,57 @@ export default function CheckoutProPage() {
       }
     } catch (err) {
       console.error('Error validating coupon:', err)
+    }
+  }
+
+  // Register and checkout function
+  const handleRegisterAndCheckout = async () => {
+    if (!selectedPackage) return
+    
+    setIsRegistering(true)
+    
+    try {
+      // 1. Register user
+      const registerRes = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: registerData.name,
+          email: registerData.email,
+          password: registerData.password,
+          phone: registerData.phone || registerData.whatsapp,
+          whatsapp: registerData.whatsapp
+        })
+      })
+
+      const registerResult = await registerRes.json()
+
+      if (!registerRes.ok) {
+        throw new Error(registerResult.error || 'Gagal mendaftar')
+      }
+
+      // 2. Auto login
+      const loginResult = await signIn('credentials', {
+        email: registerData.email,
+        password: registerData.password,
+        redirect: false
+      })
+
+      if (loginResult?.error) {
+        throw new Error('Registrasi berhasil tapi gagal login. Silakan login manual.')
+      }
+
+      // 3. Wait for session to update
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // 4. Proceed to checkout (will be handled by the form since session is now active)
+      window.location.reload() // Reload to update session state
+      
+    } catch (error: any) {
+      console.error('Error during registration:', error)
+      alert(error.message || 'Terjadi kesalahan saat mendaftar')
+    } finally {
+      setIsRegistering(false)
     }
   }
 
@@ -318,6 +388,8 @@ export default function CheckoutProPage() {
         channel = 'QRIS'
       } else if (paymentMethod === 'retail') {
         channel = paymentChannel // ALFAMART, INDOMARET
+      } else if (paymentMethod === 'cardless_credit') {
+        channel = paymentChannel // KREDIVO, AKULAKU
       } else if (paymentMethod === 'bank_transfer') {
         channel = paymentChannel // BCA, MANDIRI, BNI, BRI, etc
       }
@@ -407,13 +479,40 @@ export default function CheckoutProPage() {
               </p>
               
               <div className="space-y-3">
+                {/* Google Sign In Button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 border-2 hover:bg-gray-50 font-semibold"
+                  onClick={() => signIn('google', { callbackUrl: window.location.href })}
+                >
+                  <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Daftar dengan Google
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-200" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-blue-50 px-3 text-gray-500 font-medium">
+                      Atau daftar dengan email
+                    </span>
+                  </div>
+                </div>
+
                 <div>
                   <Label htmlFor="name">Nama</Label>
                   <Input
                     id="name"
-                    value={userData.name}
-                    onChange={(e) => setUserData({...userData, name: e.target.value})}
-                    placeholder="Nama Administrator"
+                    value={registerData.name}
+                    onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
+                    placeholder="Nama lengkap"
                     required
                   />
                 </div>
@@ -422,26 +521,56 @@ export default function CheckoutProPage() {
                   <Input
                     id="email"
                     type="email"
-                    value={userData.email}
-                    onChange={(e) => setUserData({...userData, email: e.target.value})}
-                    placeholder="admin@eksporyuk.com"
+                    value={registerData.email}
+                    onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                    placeholder="contoh@gmail.com"
                     required
                   />
+                  <p className="text-xs text-orange-600 font-semibold mt-1">
+                    ⚠️ Wajib menggunakan email Gmail (@gmail.com)
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="whatsapp">Nomor WhatsApp</Label>
                   <Input
                     id="whatsapp"
-                    value={userData.whatsapp}
-                    onChange={(e) => setUserData({...userData, whatsapp: e.target.value})}
+                    value={registerData.whatsapp}
+                    onChange={(e) => setRegisterData({...registerData, whatsapp: e.target.value, phone: e.target.value})}
                     placeholder="08xxxxxxxxxx"
                     required
                   />
                 </div>
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={registerData.password}
+                    onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                    placeholder="Minimal 6 karakter"
+                    required
+                  />
+                </div>
+
+                {/* Register Button */}
+                <Button 
+                  onClick={handleRegisterAndCheckout}
+                  disabled={isRegistering || !registerData.name || !registerData.email || !registerData.whatsapp || !registerData.password}
+                  className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold text-base mt-4"
+                >
+                  {isRegistering ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Mendaftar...
+                    </>
+                  ) : (
+                    'Daftar & Lanjutkan'
+                  )}
+                </Button>
               </div>
 
               <div className="mt-4 pt-4 border-t border-blue-200">
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-blue-700 text-center">
                   Sudah punya akun?{' '}
                   <button
                     onClick={() => signIn()}
@@ -1002,6 +1131,72 @@ export default function CheckoutProPage() {
                                   />
                                 </div>
                                 <p className="text-xs text-center text-gray-500 mt-1">Bayar di Kasir</p>
+                                {paymentChannel === channel.code && (
+                                  <div 
+                                    className="absolute top-2 right-2 rounded-full p-1"
+                                    style={{ backgroundColor: computed.primary }}
+                                  >
+                                    <Check className="h-3 w-3 text-white" />
+                                  </div>
+                                )}
+                              </button>
+                            ))
+                          }
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* PayLater Section */}
+                {availablePaymentMethods.enableXendit && 
+                 availablePaymentMethods.xenditChannels.some((ch: PaymentChannel) => ch.type === 'cardless_credit' && ch.isActive) && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (expandedSection === 'cardless_credit') {
+                          setExpandedSection('')
+                        } else {
+                          setExpandedSection('cardless_credit')
+                          setPaymentMethod('cardless_credit')
+                          const firstPaylater = availablePaymentMethods.xenditChannels.find((ch: PaymentChannel) => ch.type === 'cardless_credit' && ch.isActive)
+                          if (firstPaylater) setPaymentChannel(firstPaylater.code)
+                        }
+                      }}
+                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <span className="font-semibold text-gray-900 dark:text-white">PayLater</span>
+                      <ChevronDown className={`h-5 w-5 text-gray-500 transition-transform ${expandedSection === 'cardless_credit' ? 'rotate-180' : ''}`} />
+                    </button>
+                    {expandedSection === 'cardless_credit' && (
+                      <div className="p-4 border-t bg-gray-50 dark:bg-gray-900/50">
+                        <div className="grid grid-cols-2 gap-3">
+                          {availablePaymentMethods.xenditChannels
+                            .filter((ch: PaymentChannel) => ch.type === 'cardless_credit' && ch.isActive)
+                            .map((channel: PaymentChannel) => (
+                              <button
+                                key={channel.code}
+                                type="button"
+                                onClick={() => setPaymentChannel(channel.code)}
+                                className="relative p-4 rounded-lg border-2 transition-all hover:shadow-md bg-white dark:bg-gray-800"
+                                style={{
+                                  borderColor: paymentChannel === channel.code ? computed.primary : '#e5e7eb',
+                                  backgroundColor: paymentChannel === channel.code ? computed.primaryBg : undefined,
+                                }}
+                              >
+                                <div className="h-12 flex items-center justify-center mb-2 p-2">
+                                  <img 
+                                    src={getLogoUrl(channel.code, channel.customLogoUrl)}
+                                    alt={channel.name}
+                                    className="max-h-full max-w-full object-contain"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.style.display = 'none'
+                                    }}
+                                  />
+                                </div>
+                                <p className="text-xs text-center text-gray-500 mt-1">Bayar Nanti</p>
                                 {paymentChannel === channel.code && (
                                   <div 
                                     className="absolute top-2 right-2 rounded-full p-1"

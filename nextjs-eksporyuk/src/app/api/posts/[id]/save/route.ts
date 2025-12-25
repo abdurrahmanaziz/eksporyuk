@@ -75,10 +75,15 @@ export async function POST(
     }
 
     return NextResponse.json({ isSaved })
-  } catch (error) {
-    console.error('Error toggling save:', error)
+  } catch (error: any) {
+    console.error('[SAVE POST API] Error toggling save:', error)
+    console.error('[SAVE POST API] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    })
     return NextResponse.json(
-      { error: 'Failed to toggle save' },
+      { error: error.message || 'Failed to toggle save' },
       { status: 500 }
     )
   }

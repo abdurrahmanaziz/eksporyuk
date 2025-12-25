@@ -28,72 +28,33 @@ export async function GET(
       return NextResponse.json({ error: 'Buyer not found' }, { status: 404 });
     }
 
-    // Admin gets unlimited access without quota check
-    let quota = 5; // FREE default
-    let viewsThisMonth = 0;
-
-    if (session.user.role === 'ADMIN') {
-      // Admin has unlimited quota, no tracking needed
-      quota = 999999;
-      viewsThisMonth = 0;
-    } else {
-      // Check quota for non-admin users
-      const userMembership = await prisma.userMembership.findFirst({
-        where: {
-          userId: session.user.id,
-          status: 'ACTIVE',
-          isActive: true
-        },
-        include: {
-          membership: true
-        }
-      });
-
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      viewsThisMonth = await prisma.buyerView.count({
-        where: {
-          userId: session.user.id,
-          viewedAt: { gte: startOfMonth }
-        }
-      });
-
-      if (userMembership?.membership) {
-        const duration = userMembership.membership.duration;
-        if (duration === 'LIFETIME' || duration === 'TWELVE_MONTHS') quota = 999999;
-        else if (duration === 'SIX_MONTHS') quota = 100;
-        else if (duration === 'THREE_MONTHS') quota = 50;
-        else if (duration === 'ONE_MONTH') quota = 20;
+    // No quota restrictions - all users have unlimited access
+    // Track view for analytics only (not for quota limiting)
+    await prisma.buyerView.create({
+      data: {
+        userId: session.user.id,
+        buyerId: id
       }
+    }).catch(() => {
+      // Silently fail if view tracking fails
+      console.log('View tracking failed for buyer', id)
+    });
 
-      // Check if quota exceeded
-      if (viewsThisMonth >= quota) {
-        return NextResponse.json({
-          error: 'Quota exceeded',
-          message: 'You have reached your monthly view limit. Upgrade your membership for more access.',
-          quota: {
-            used: viewsThisMonth,
-            total: quota,
-            remaining: 0
-          }
-        }, { status: 403 });
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const viewsThisMonth = await prisma.buyerView.count({
+      where: {
+        userId: session.user.id,
+        viewedAt: { gte: startOfMonth }
       }
-
-      // Track view for non-admin only
-      await prisma.buyerView.create({
-        data: {
-          userId: session.user.id,
-          buyerId: id
-        }
-      });
-    }
+    });
 
     return NextResponse.json({
       buyer,
       quota: {
-        used: viewsThisMonth + 1,
-        total: quota,
-        remaining: quota - viewsThisMonth - 1
+        used: viewsThisMonth,
+        total: 999999, // Unlimited
+        remaining: 999999
       }
     });
   } catch (error) {

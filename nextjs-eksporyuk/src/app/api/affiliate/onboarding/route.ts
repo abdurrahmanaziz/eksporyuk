@@ -49,10 +49,23 @@ export async function GET() {
     })
 
     if (!affiliate) {
-      return NextResponse.json(
-        { success: false, error: 'Affiliate profile not found' },
-        { status: 404 }
-      )
+      // User doesn't have affiliate profile yet - return empty state
+      return NextResponse.json({
+        success: true,
+        data: {
+          needsWelcome: false,
+          isProfileComplete: false,
+          hasAffiliateCode: false,
+          hasShortLink: false,
+          hasConversion: false,
+          hasBankInfo: false,
+          isEmailVerified: !!session.user.emailVerified,
+          applicationStatus: null,
+          completedSteps: 0,
+          totalSteps: 6,
+          completionPercentage: 0,
+        }
+      })
     }
 
     // Check bank info from wallet/payout records (where we store bank data)

@@ -55,6 +55,17 @@ model User {
   withdrawalPin          String?
   withdrawalPinSetAt     DateTime?
   coverImage             String?
+  
+  // Relations
+  createdProducts    Product[]         @relation("ProductCreator")
+  userProducts       UserProduct[]     @relation("UserProductUser")
+  posts              Post[]            @relation("UserPosts")
+  comments           PostComment[]     @relation("UserComments")
+  postReactions      PostReaction[]    @relation("UserPostReactions")
+  commentReactions   CommentReaction[] @relation("UserCommentReactions")
+  savedPosts         SavedPost[]       @relation("UserSavedPosts")
+  followers          Follow[]          @relation("UserFollowers")
+  following          Follow[]          @relation("UserFollowing")
 
   @@index([email])
   @@index([username])
@@ -784,6 +795,11 @@ model Product {
   clickCount              Int             @default(0)
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
+  
+  // Relations
+  creator                 User            @relation("ProductCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  group                   Group?          @relation(fields: [groupId], references: [id])
+  userProducts            UserProduct[]   @relation("ProductUserProducts")
 }
 
 model UserProduct {
@@ -797,6 +813,10 @@ model UserProduct {
   transactionId String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  user          User      @relation("UserProductUser", fields: [userId], references: [id], onDelete: Cascade)
+  product       Product   @relation("ProductUserProducts", fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model EventMembership {
@@ -963,6 +983,9 @@ model Group {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   slug            String?
+  
+  // Relations
+  products        Product[]
 }
 
 model GroupMember {
@@ -1002,6 +1025,16 @@ model Post {
   expiresAt        DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+
+  // Relations
+  author    User           @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  comments  PostComment[]  @relation("PostComments")
+  reactions PostReaction[]
+  savedBy   SavedPost[]
+
+  @@index([authorId])
+  @@index([groupId])
+  @@index([createdAt])
 }
 
 model PostLike {
@@ -1023,6 +1056,17 @@ model PostComment {
   images           Json?
   mentionedUsers   Json?
   reactionsCount   Json?
+
+  // Relations
+  post      Post              @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
+  user      User              @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade)
+  parent    PostComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   PostComment[]     @relation("CommentReplies")
+  reactions CommentReaction[]
+
+  @@index([postId])
+  @@index([userId])
+  @@index([parentId])
 }
 
 model PostReaction {
@@ -1031,6 +1075,13 @@ model PostReaction {
   userId    String
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation("UserPostReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model CommentReaction {
@@ -1039,6 +1090,13 @@ model CommentReaction {
   userId    String
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
+
+  comment PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User        @relation("UserCommentReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
 }
 
 model SavedPost {
@@ -1046,6 +1104,13 @@ model SavedPost {
   postId    String
   userId    String
   createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation("UserSavedPosts", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model Event {
@@ -1125,7 +1190,7 @@ model Transaction {
 
 model Coupon {
   id                      String    @id @default(cuid())
-  code                    String
+  code                    String    @unique
   description             String?
   discountType            String
   discountValue           Decimal
@@ -1144,9 +1209,19 @@ model Coupon {
   maxGeneratePerAffiliate Int?
   maxUsagePerCoupon       Int?
   basedOnCouponId         String?
+  parentCoupon            Coupon?   @relation("CouponHierarchy", fields: [basedOnCouponId], references: [id], onDelete: Cascade)
+  childCoupons            Coupon[]  @relation("CouponHierarchy")
+  affiliateId             String?
+  generatedBy             String?
   createdBy               String?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
+
+  @@index([code])
+  @@index([basedOnCouponId])
+  @@index([affiliateId])
+  @@index([isActive])
+  @@index([isAffiliateEnabled])
 }
 
 model Follow {
@@ -1154,6 +1229,13 @@ model Follow {
   followerId  String
   followingId String
   createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model ChatRoom {

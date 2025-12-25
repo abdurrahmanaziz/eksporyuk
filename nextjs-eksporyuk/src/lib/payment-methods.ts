@@ -141,6 +141,8 @@ function getDefaultActiveChannels(): PaymentMethod[] {
     { code: 'QRIS', name: 'QRIS (Scan QR)', type: 'qris', icon: '📱', isActive: true },
     { code: 'ALFAMART', name: 'Alfamart', type: 'retail', icon: '🏪', isActive: true },
     { code: 'INDOMARET', name: 'Indomaret', type: 'retail', icon: '🏪', isActive: true },
+    { code: 'KREDIVO', name: 'Kredivo', type: 'cardless_credit', icon: '💳', isActive: true },
+    { code: 'AKULAKU', name: 'Akulaku', type: 'cardless_credit', icon: '💳', isActive: true },
   ]
 }
 

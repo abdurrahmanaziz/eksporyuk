@@ -112,11 +112,19 @@ export default function AffiliateCouponsPage() {
       if (templatesRes.ok) {
         const data = await templatesRes.json()
         setTemplates(data.templates || [])
+      } else if (templatesRes.status === 401) {
+        const error = await templatesRes.json()
+        console.error('Templates access denied:', error)
+        toast.error(error.error || 'Akses ditolak - Anda harus memiliki role AFFILIATE')
       }
 
       if (myCouponsRes.ok) {
         const data = await myCouponsRes.json()
         setMyCoupons(data.coupons || [])
+      } else if (myCouponsRes.status === 401) {
+        const error = await myCouponsRes.json()
+        console.error('Coupons access denied:', error)
+        toast.error(error.error || 'Akses ditolak - Anda harus memiliki role AFFILIATE')
       }
     } catch (error) {
       console.error('Error fetching coupons:', error)
@@ -161,7 +169,9 @@ export default function AffiliateCouponsPage() {
         setSelectedTemplate(null)
         fetchData()
       } else {
-        toast.error(data.error || 'Gagal membuat kupon')
+        const errorData = await response.json()
+        console.error('Generate coupon error:', errorData)
+        toast.error(errorData.error || 'Gagal membuat kupon')
       }
     } catch (error) {
       console.error('Error generating coupon:', error)
@@ -261,6 +271,39 @@ export default function AffiliateCouponsPage() {
           <p className="text-gray-600">Memuat data kupon...</p>
         </div>
       </div>
+    )
+  }
+
+  // Check if user has affiliate role
+  const isAffiliate = session?.user?.role === 'AFFILIATE' || 
+                      session?.user?.role === 'ADMIN' || 
+                      session?.user?.role === 'FOUNDER' || 
+                      session?.user?.role === 'CO_FOUNDER'
+
+  if (!isAffiliate) {
+    return (
+      <ResponsivePageWrapper>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="max-w-md border-2 border-red-200">
+            <CardHeader>
+              <CardTitle className="text-red-600">Akses Ditolak</CardTitle>
+              <CardDescription>
+                Halaman ini hanya dapat diakses oleh user dengan role AFFILIATE, ADMIN, FOUNDER, atau CO_FOUNDER.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  Role Anda saat ini: <Badge variant="outline">{session?.user?.role || 'Tidak diketahui'}</Badge>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Silakan hubungi administrator jika Anda merasa ini adalah kesalahan.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </ResponsivePageWrapper>
     )
   }
 

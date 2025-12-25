@@ -20,23 +20,34 @@ export async function GET(
         id: true,
         name: true,
         slug: true,
+        checkoutSlug: true,
+        checkoutTemplate: true,
         description: true,
         formLogo: true,
         formBanner: true,
-        features: true, // Can be prices array OR benefits array
-        price: true, // Base price
-        marketingPrice: true, // Marketing price (crossed out display price)
-        duration: true, // Duration enum
+        formDescription: true,
+        features: true,
+        price: true,
+        originalPrice: true,
+        discount: true,
+        duration: true,
         salesPageUrl: true,
+        alternativeUrl: true,
         affiliateCommissionRate: true,
+        commissionType: true,
+        isBestSeller: true,
+        isPopular: true,
+        isMostPopular: true,
         isActive: true,
-        status: true, // DRAFT, PUBLISHED, ARCHIVED
-        reminders: true, // Contains followUpMessages
-        _count: {
-          select: {
-            userMemberships: true
-          }
-        }
+        status: true,
+        reminders: true,
+        showInGeneralCheckout: true,
+        mailketingListId: true,
+        mailketingListName: true,
+        autoAddToList: true,
+        autoRemoveOnExpire: true,
+        createdAt: true,
+        updatedAt: true,
       }
     })
 

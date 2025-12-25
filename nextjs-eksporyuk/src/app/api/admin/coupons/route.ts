@@ -17,37 +17,64 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') // 'admin' or 'affiliate'
+    const type = searchParams.get('type') // 'parent', 'child', or null for all
+    const parentId = searchParams.get('parentId')
 
     let coupons
 
-    if (type === 'affiliate') {
-      // Get affiliate coupons with user info
+    if (type === 'child' && parentId) {
+      // Get child coupons for specific parent
       coupons = await prisma.coupon.findMany({
         where: {
-          createdBy: { not: null }, // Has creator (affiliate)
+          basedOnCouponId: parentId,
         },
         include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            }
-          },
-          basedOnCoupon: {
+          parentCoupon: {
             select: {
               code: true,
+              discountType: true,
+              discountValue: true,
+            }
+          },
+          _count: {
+            select: {
+              childCoupons: true,
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+    } else if (type === 'parent') {
+      // Get only parent coupons (no basedOnCouponId)
+      coupons = await prisma.coupon.findMany({
+        where: {
+          basedOnCouponId: null,
+        },
+        include: {
+          _count: {
+            select: {
+              childCoupons: true,
             }
           }
         },
         orderBy: { createdAt: 'desc' },
       })
     } else {
-      // Get admin coupons (no creator)
+      // Get all coupons with relations
       coupons = await prisma.coupon.findMany({
-        where: {
-          createdBy: null,
+        include: {
+          parentCoupon: {
+            select: {
+              code: true,
+              discountType: true,
+              discountValue: true,
+            }
+          },
+          _count: {
+            select: {
+              childCoupons: true,
+            }
+          }
         },
         orderBy: { createdAt: 'desc' },
       })
