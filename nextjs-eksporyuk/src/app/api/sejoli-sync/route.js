@@ -208,7 +208,7 @@ async function triggerSync(options) {
     }
     
     // Import and run safe sync
-    const { SafeSejoliSync } = require('../../../safe-sejoli-sync.js');
+    // const { SafeSejoliSync } = require('../../../safe-sejoli-sync.js'); // Disabled - file not found
     const safeSync = new SafeSejoliSync();
     
     // Run sync in background
