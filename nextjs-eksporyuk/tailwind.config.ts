@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss"
 
+// Eksporyuk Tailwind Configuration - Updated 25 Dec 2025
 const config = {
   // darkMode: ["class"], // dark mode disabled
   content: [
