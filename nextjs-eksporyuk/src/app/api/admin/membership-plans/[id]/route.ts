@@ -341,14 +341,7 @@ export async function PATCH(
     // Update membership plan
     const updatedPlan = await prisma.membership.update({
       where: { id: id },
-      data: updateData,
-      include: {
-        _count: {
-          select: {
-            userMemberships: true
-          }
-        }
-      }
+      data: updateData
     })
 
     // Track relationship updates
