@@ -25,22 +25,28 @@ export async function GET(req: NextRequest) {
 
     const templates = await prisma.certificateTemplate.findMany({
       where,
-      include: {
-        _count: {
-          select: {
-            courses: true
-          }
-        }
-      },
       orderBy: [
         { isDefault: 'desc' },
         { createdAt: 'desc' }
       ]
     })
 
+    // Get course count for each template
+    const templatesWithCount = await Promise.all(
+      templates.map(async (template) => {
+        const coursesCount = await prisma.course.count({
+          where: { certificateTemplateId: template.id }
+        })
+        return {
+          ...template,
+          _count: { courses: coursesCount }
+        }
+      })
+    )
+
     return NextResponse.json({ 
-      templates,
-      total: templates.length 
+      templates: templatesWithCount,
+      total: templatesWithCount.length 
     })
   } catch (error) {
     console.error('Error fetching templates:', error)

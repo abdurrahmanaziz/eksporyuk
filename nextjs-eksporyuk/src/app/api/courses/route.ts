@@ -89,30 +89,62 @@ export async function GET(req: NextRequest) {
         level: true,
         duration: true,
         createdAt: true,
-        _count: {
-          select: {
-            enrollments: true,
-            modules: true
-          }
-        },
-        ...(session?.user?.id && {
-          enrollments: {
-            where: {
-              userId: session.user.id
-            },
-            select: {
-              id: true
-            }
-          }
-        })
       },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
+    // Get enrollments and modules count separately
+    const coursesWithCounts = await Promise.all(courses.map(async (course) => {
+      const [enrollmentCount, moduleCount, userEnrollment] = await Promise.all([
+        prisma.courseEnrollment.count({ where: { courseId: course.id } }),
+        prisma.courseModule.count({ where: { courseId: course.id } }),
+        session?.user?.id ? prisma.courseEnrollment.findFirst({
+          where: {
+            courseId: course.id,
+            userId: session.user.id
+          },
+          select: { id: true }
+        }) : Promise.resolve(null)
+      ])
+
+      return {
+        ...course,
+        _count: {
+          enrollments: enrollmentCount,
+          modules: moduleCount
+        },
+        enrollments: userEnrollment ? [userEnrollment] : []
+      }
+    }))
+
+    // Get enrollments and modules count separately
+    const coursesWithCounts = await Promise.all(courses.map(async (course) => {
+      const [enrollmentCount, moduleCount, userEnrollment] = await Promise.all([
+        prisma.courseEnrollment.count({ where: { courseId: course.id } }),
+        prisma.courseModule.count({ where: { courseId: course.id } }),
+        session?.user?.id ? prisma.courseEnrollment.findFirst({
+          where: {
+            courseId: course.id,
+            userId: session.user.id
+          },
+          select: { id: true }
+        }) : Promise.resolve(null)
+      ])
+
+      return {
+        ...course,
+        _count: {
+          enrollments: enrollmentCount,
+          modules: moduleCount
+        },
+        enrollments: userEnrollment ? [userEnrollment] : []
+      }
+    }))
+
     // Add access info for each course
-    const coursesWithAccess = await Promise.all(courses.map(async (course) => {
+    const coursesWithAccess = await Promise.all(coursesWithCounts.map(async (course) => {
       let accessStatus = 'preview' // Default: can preview
       let isFreeForUser = false
 

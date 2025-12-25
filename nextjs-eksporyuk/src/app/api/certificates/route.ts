@@ -41,41 +41,68 @@ export async function GET(req: NextRequest) {
 
     const certificates = await prisma.certificate.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          }
-        },
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            thumbnail: true,
-            mentor: {
-              select: {
-                user: {
-                  select: {
-                    name: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       orderBy: {
         issuedAt: 'desc'
       }
     })
 
+    // Get user and course data separately
+    const userIds = [...new Set(certificates.map(c => c.userId))]
+    const courseIds = [...new Set(certificates.map(c => c.courseId))]
+
+    const [users, courses] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+        }
+      }),
+      prisma.course.findMany({
+        where: { id: { in: courseIds } },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          thumbnail: true,
+          mentorId: true
+        }
+      })
+    ])
+
+    // Get mentor data
+    const mentorIds = courses.map(c => c.mentorId).filter(Boolean)
+    const mentors = await prisma.user.findMany({
+      where: { id: { in: mentorIds } },
+      select: {
+        id: true,
+        name: true
+      }
+    })
+
+    const userMap = new Map(users.map(u => [u.id, u]))
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+    const mentorMap = new Map(mentors.map(m => [m.id, m]))
+
+    const certificatesWithData = certificates.map(cert => ({
+      ...cert,
+      user: userMap.get(cert.userId) || { id: cert.userId, name: 'Unknown', email: '', avatar: null },
+      course: (() => {
+        const course = courseMap.get(cert.courseId)
+        if (!course) return { id: cert.courseId, title: 'Unknown Course', slug: null, thumbnail: null, mentor: null }
+        const mentor = mentorMap.get(course.mentorId)
+        return {
+          ...course,
+          mentor: mentor ? { user: { name: mentor.name } } : null
+        }
+      })()
+    }))
+
     return NextResponse.json({ 
-      certificates,
-      total: certificates.length 
+      certificates: certificatesWithData,
+      total: certificatesWithData.length 
     })
   } catch (error) {
     console.error('Error:', error)
@@ -119,19 +146,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify course completion via enrollment
-    const enrollment = await prisma.courseEnrollment.findUnique({
+    const enrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId
-        }
-      },
-      include: {
-        course: {
-          include: {
-            certificateTemplate: true
-          }
-        }
+        userId: session.user.id,
+        courseId
       }
     })
 
@@ -149,6 +167,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Get course info
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: {
+        id: true,
+        title: true,
+        certificateTemplateId: true
+      }
+    })
+
+    if (!course) {
+      return NextResponse.json({ message: 'Course not found' }, { status: 404 })
+    }
+
     // Get user info
     const user = await prisma.user.findUnique({
       where: { id: session.user.id }
@@ -162,7 +194,13 @@ export async function POST(req: NextRequest) {
     const certificateNum = generateCertificateNumber()
 
     // Get template from course or use default
-    let template = enrollment.course.certificateTemplate
+    let template = null
+    if (course.certificateTemplateId) {
+      template = await prisma.certificateTemplate.findUnique({
+        where: { id: course.certificateTemplateId }
+      })
+    }
+    
     if (!template) {
       template = await prisma.certificateTemplate.findFirst({
         where: { isDefault: true, isActive: true }
@@ -176,11 +214,11 @@ export async function POST(req: NextRequest) {
     const certificateData = {
       certificateNumber: certificateNum,
       studentName: user.name || 'Student',
-      courseName: enrollment.course.title,
+      courseName: course.title,
       completionDate: enrollment.completedAt || new Date(),
       verificationUrl,
       instructor: 'EksporYuk', // TODO: Get from course mentor
-      duration: enrollment.course.duration
+      duration: course.duration || 0
     }
 
     // Generate PDF
@@ -196,23 +234,12 @@ export async function POST(req: NextRequest) {
         courseId,
         certificateNumber: certificateNum,
         studentName: user.name || 'Student',
-        courseName: enrollment.course.title,
+        courseName: course.title,
         completedAt: enrollment.completedAt || new Date(),
         completionDate: enrollment.completedAt || new Date(),
         certificateTemplateId: template?.id,
         verificationUrl,
         pdfUrl
-      },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            thumbnail: true
-          }
-        },
-        certificateTemplate: true
       }
     })
 

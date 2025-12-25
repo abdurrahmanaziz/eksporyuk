@@ -47,48 +47,17 @@ export async function GET(req: NextRequest) {
     }
 
     if (search) {
-      where.OR = [
-        { review: { contains: search } },
-        {
-          user: {
-            OR: [
-              { name: { contains: search } },
-              { email: { contains: search } }
-            ]
-          }
-        },
-        {
-          course: {
-            title: { contains: search }
-          }
-        }
-      ]
+      // Search in review text only for now since we don't have relations
+      where.review = { contains: search, mode: 'insensitive' }
     }
 
     // Get reviews
-    const [reviews, total, stats] = await Promise.all([
+    const [reviewsData, total, stats] = await Promise.all([
       prisma.courseReview.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
-        take: limit,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true
-            }
-          },
-          course: {
-            select: {
-              id: true,
-              title: true,
-              slug: true
-            }
-          }
-        }
+        take: limit
       }),
       prisma.courseReview.count({ where }),
       prisma.courseReview.groupBy({
@@ -98,6 +67,39 @@ export async function GET(req: NextRequest) {
         }
       })
     ])
+
+    // Get user and course data separately
+    const userIds = [...new Set(reviewsData.map(r => r.userId))]
+    const courseIds = [...new Set(reviewsData.map(r => r.courseId))]
+
+    const [users, courses] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true
+        }
+      }),
+      prisma.course.findMany({
+        where: { id: { in: courseIds } },
+        select: {
+          id: true,
+          title: true,
+          slug: true
+        }
+      })
+    ])
+
+    const userMap = new Map(users.map(u => [u.id, u]))
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+
+    const reviews = reviewsData.map(review => ({
+      ...review,
+      user: userMap.get(review.userId) || { id: review.userId, name: 'Unknown', email: '', avatar: null },
+      course: courseMap.get(review.courseId) || { id: review.courseId, title: 'Unknown Course', slug: null }
+    }))
 
     // Get statistics
     const statsObj = {
