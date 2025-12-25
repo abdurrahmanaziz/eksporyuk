@@ -1910,7 +1910,7 @@ model Settings {
 
 model IntegrationConfig {
   id           String    @id @default(cuid())
-  service      String
+  service      String    @unique
   config       Json
   isActive     Boolean   @default(false)
   lastTestedAt DateTime?

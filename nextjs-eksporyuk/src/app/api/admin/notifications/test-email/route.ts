@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get Mailketing config
-    const config = await prisma.integrationConfig.findUnique({
+    const config = await prisma.integrationConfig.findFirst({
       where: { service: 'mailketing' },
     })
 

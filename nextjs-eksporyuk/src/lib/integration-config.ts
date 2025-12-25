@@ -51,7 +51,7 @@ export interface GoogleOAuthConfig {
 export async function getXenditConfig(): Promise<XenditConfig | null> {
   try {
     // Try to get from database first
-    const integrationConfig = await prisma.integrationConfig.findUnique({
+    const integrationConfig = await prisma.integrationConfig.findFirst({
       where: { service: 'xendit' }
     })
 
@@ -105,7 +105,7 @@ export async function getXenditConfig(): Promise<XenditConfig | null> {
  */
 export async function getMailketingConfig(): Promise<MailketingConfig | null> {
   try {
-    const integrationConfig = await prisma.integrationConfig.findUnique({
+    const integrationConfig = await prisma.integrationConfig.findFirst({
       where: { service: 'mailketing' }
     })
 
@@ -146,7 +146,7 @@ export async function getMailketingConfig(): Promise<MailketingConfig | null> {
  */
 export async function getStarSenderConfig(): Promise<StarSenderConfig | null> {
   try {
-    const integrationConfig = await prisma.integrationConfig.findUnique({
+    const integrationConfig = await prisma.integrationConfig.findFirst({
       where: { service: 'starsender' }
     })
 
@@ -181,7 +181,7 @@ export async function getStarSenderConfig(): Promise<StarSenderConfig | null> {
  */
 export async function getOneSignalConfig(): Promise<OneSignalConfig | null> {
   try {
-    const integrationConfig = await prisma.integrationConfig.findUnique({
+    const integrationConfig = await prisma.integrationConfig.findFirst({
       where: { service: 'onesignal' }
     })
 
@@ -216,7 +216,7 @@ export async function getOneSignalConfig(): Promise<OneSignalConfig | null> {
  */
 export async function getPusherConfig(): Promise<PusherConfig | null> {
   try {
-    const integrationConfig = await prisma.integrationConfig.findUnique({
+    const integrationConfig = await prisma.integrationConfig.findFirst({
       where: { service: 'pusher' }
     })
 
@@ -255,8 +255,8 @@ export async function getPusherConfig(): Promise<PusherConfig | null> {
  */
 export async function getGoogleOAuthConfig(): Promise<GoogleOAuthConfig | null> {
   try {
-    const integrationConfig = await prisma.integrationConfig.findUnique({
-      where: { service: 'google_oauth' }
+    const integrationConfig = await prisma.integrationConfig.findFirst({
+      where: { service: 'google' }
     })
 
     if (integrationConfig && integrationConfig.isActive) {
@@ -303,9 +303,9 @@ export async function getGoogleOAuthConfig(): Promise<GoogleOAuthConfig | null> 
 /**
  * Check if a service is configured and active
  */
-export async function isServiceConfigured(service: string): Promise<boolean> {
+export async function getIntegrationStatus(service: string): Promise<boolean> {
   try {
-    const config = await prisma.integrationConfig.findUnique({
+    const config = await prisma.integrationConfig.findFirst({
       where: { service }
     })
     

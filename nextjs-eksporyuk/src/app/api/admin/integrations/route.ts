@@ -240,22 +240,35 @@ export async function POST(request: NextRequest) {
     // Save configuration to database
     console.log('[INTEGRATION_SAVE] Saving to database...', { service, configKeys: Object.keys(config) })
     
-    const savedConfig = await prisma.integrationConfig.upsert({
-      where: { service },
-      create: {
-        service,
-        config,
-        isActive: true,
-        testStatus: 'success',
-        lastTestedAt: new Date(),
-      },
-      update: {
-        config,
-        isActive: true,
-        testStatus: 'success',
-        lastTestedAt: new Date(),
-      },
+    // Find existing config first
+    const existingConfig = await prisma.integrationConfig.findFirst({
+      where: { service }
     })
+    
+    let savedConfig
+    if (existingConfig) {
+      // Update existing
+      savedConfig = await prisma.integrationConfig.update({
+        where: { id: existingConfig.id },
+        data: {
+          config,
+          isActive: true,
+          testStatus: 'success',
+          lastTestedAt: new Date(),
+        }
+      })
+    } else {
+      // Create new
+      savedConfig = await prisma.integrationConfig.create({
+        data: {
+          service,
+          config,
+          isActive: true,
+          testStatus: 'success',
+          lastTestedAt: new Date(),
+        }
+      })
+    }
     
     console.log('[INTEGRATION_SAVE] Database saved:', savedConfig.id)
     console.log('[INTEGRATION_SAVE] Environment file updated:', envPath)
@@ -296,7 +309,7 @@ export async function GET(request: NextRequest) {
       console.log(`[CONFIG_GET] Getting configuration for service: ${service}`)
       
       // Always read directly from database for admin panel
-      const dbConfig = await prisma.integrationConfig.findUnique({
+      const dbConfig = await prisma.integrationConfig.findFirst({
         where: { service }
       })
       

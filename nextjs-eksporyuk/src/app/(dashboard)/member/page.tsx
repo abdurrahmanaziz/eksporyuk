@@ -6,23 +6,30 @@ import MemberDashboard from '@/components/dashboard/MemberDashboard';
 
 async function getDashboardData(userId: string) {
   try {
-    // Get user with membership
+    // Get user
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        userMemberships: {
-          where: {
-            isActive: true,
-            endDate: { gte: new Date() }
-          },
-          include: {
-            membership: true
-          },
-          orderBy: { endDate: 'desc' },
-          take: 1
-        }
-      }
+      where: { id: userId }
     });
+
+    // Get active membership separately (no nested relation)
+    const userMemberships = await prisma.userMembership.findMany({
+      where: {
+        userId: userId,
+        isActive: true,
+        endDate: { gte: new Date() }
+      },
+      orderBy: { endDate: 'desc' },
+      take: 1
+    });
+    
+    // Get membership details if exists
+    let activeMembership = null;
+    if (userMemberships.length > 0) {
+      const membership = await prisma.membership.findUnique({
+        where: { id: userMemberships[0].membershipId }
+      });
+      activeMembership = { ...userMemberships[0], membership };
+    }
 
     // Get course enrollments with progress (limit to 2 for "In Progress")
     const courseEnrollments = await prisma.$queryRaw`
@@ -124,7 +131,7 @@ async function getDashboardData(userId: string) {
     });
 
     // Get active banners (if Banner model exists)
-    let banners = [];
+    let banners: any[] = [];
     try {
       if (prisma.banner) {
         banners = await prisma.banner.findMany({
@@ -136,7 +143,7 @@ async function getDashboardData(userId: string) {
               { endDate: { gte: new Date() } }
             ]
           },
-          orderBy: { displayOrder: 'asc' },
+          orderBy: { priority: 'desc' },
           take: 3
         });
       }
@@ -147,7 +154,7 @@ async function getDashboardData(userId: string) {
 
     return {
       user,
-      activeMembership: user?.userMemberships[0] || null,
+      activeMembership,
       courses: courseEnrollments.map(c => ({
         id: c.id,
         title: c.title,

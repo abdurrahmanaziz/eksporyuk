@@ -26,41 +26,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email dan password wajib diisi')
         }
 
-        // Demo users for testing (password123)
-        const demoUsers = [
-          { id: 'admin-001', email: 'admin@eksporyuk.com', name: 'Budi Administrator', role: 'ADMIN', password: '$2a$10$rQ9xVZm5X4kP8jQXZZ9YH.O6Y7Gk5dLjqvqJ0dX3PzZqHYxKjTBZu' },
-          { id: 'mentor-001', email: 'mentor@eksporyuk.com', name: 'Dinda Mentor', role: 'MENTOR', isFounder: true, revenueShare: 60, password: '$2a$10$rQ9xVZm5X4kP8jQXZZ9YH.O6Y7Gk5dLjqvqJ0dX3PzZqHYxKjTBZu' },
-          { id: 'mentor-002', email: 'cofounder@eksporyuk.com', name: 'Andi Mentor', role: 'MENTOR', isCoFounder: true, revenueShare: 40, password: '$2a$10$rQ9xVZm5X4kP8jQXZZ9YH.O6Y7Gk5dLjqvqJ0dX3PzZqHYxKjTBZu' },
-          { id: 'affiliate-001', email: 'affiliate@eksporyuk.com', name: 'Rina Affiliate', role: 'AFFILIATE', password: '$2a$10$rQ9xVZm5X4kP8jQXZZ9YH.O6Y7Gk5dLjqvqJ0dX3PzZqHYxKjTBZu' },
-          { id: 'premium-001', email: 'premium@eksporyuk.com', name: 'Dodi Premium Member', role: 'MEMBER_PREMIUM', password: '$2a$10$rQ9xVZm5X4kP8jQXZZ9YH.O6Y7Gk5dLjqvqJ0dX3PzZqHYxKjTBZu' },
-          { id: 'free-001', email: 'free@eksporyuk.com', name: 'Andi Free Member', role: 'MEMBER_FREE', password: '$2a$10$rQ9xVZm5X4kP8jQXZZ9YH.O6Y7Gk5dLjqvqJ0dX3PzZqHYxKjTBZu' },
-        ]
-
-        const demoUser = demoUsers.find(u => u.email === credentials.email)
-        
-        if (demoUser && credentials.password === 'password123') {
-          return {
-            id: demoUser.id,
-            email: demoUser.email,
-            name: demoUser.name,
-            role: demoUser.role,
-            avatar: null,
-            username: demoUser.email.split('@')[0],
-            isFounder: (demoUser as any).isFounder || false,
-            isCoFounder: (demoUser as any).isCoFounder || false,
-            revenueShare: (demoUser as any).revenueShare || null,
-          }
-        }
-
+        // Always try database first
         try {
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email,
-            },
-            include: {
-              wallet: true,
-              affiliateProfile: true,
-              mentorProfile: true,
             },
           })
 
@@ -103,18 +73,7 @@ export const authOptions: NextAuthOptions = {
             username: user.username,
           }
         } catch (error) {
-          // If database error, fallback to demo users
-          console.error('Database error, using demo user:', error)
-          if (demoUser) {
-            return {
-              id: demoUser.id,
-              email: demoUser.email,
-              name: demoUser.name,
-              role: demoUser.role,
-              avatar: null,
-              username: demoUser.email.split('@')[0],
-            }
-          }
+          console.error('Database error:', error)
           throw new Error('Email atau password salah')
         }
       },

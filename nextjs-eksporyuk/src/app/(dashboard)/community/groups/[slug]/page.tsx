@@ -1006,6 +1006,43 @@ export default function GroupDetailPage() {
     return formatDate(date)
   }
 
+  // Share function
+  const handleSharePost = async (post: Post) => {
+    const shareUrl = `${window.location.origin}/posts/${post.id}`
+    const shareText = `${post.author.name}: ${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}`
+    
+    // Try native share first (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Postingan dari Eksporyuk',
+          text: shareText,
+          url: shareUrl,
+        })
+        toast.success('Berhasil dibagikan!')
+      } catch (error) {
+        // User cancelled or error
+        if ((error as Error).name !== 'AbortError') {
+          // Fallback to clipboard
+          copyToClipboard(shareUrl)
+        }
+      }
+    } else {
+      // Fallback for desktop
+      copyToClipboard(shareUrl)
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success('Link disalin ke clipboard!', {
+        description: 'Anda dapat menempelkan link ini di mana saja'
+      })
+    }).catch(() => {
+      toast.error('Gagal menyalin link')
+    })
+  }
+
   const handleToggleEventAttendance = async (postId: string) => {
     try {
       await fetch(`/api/posts/${postId}/event/attend`, {
@@ -1762,6 +1799,12 @@ export default function GroupDetailPage() {
                             <MessageCircle className="h-5 w-5" />
                             <span className="font-medium text-sm">{post._count.comments || 0}</span>
                             {!post.commentsEnabled && <Lock className="h-3 w-3 ml-1" />}
+                          </button>
+                          <button
+                            onClick={() => handleSharePost(post)}
+                            className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors"
+                          >
+                            <Share2 className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => handleSavePost(post.id)}

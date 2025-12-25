@@ -74,11 +74,13 @@ export async function POST(request: NextRequest) {
             role: 'MEMBER_FREE',
             emailVerified: true,
             avatar: (session.user as any).image || null,
-            wallet: {
-              create: {
-                balance: 0,
-              },
-            },
+          },
+        })
+        // Create wallet separately (no nested relation)
+        await prisma.wallet.create({
+          data: {
+            userId: dbUser.id,
+            balance: 0,
           },
         })
         console.log(`[Simple Checkout] User auto-created: ${dbUser.id}`)

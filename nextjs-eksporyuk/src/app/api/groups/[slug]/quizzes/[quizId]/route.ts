@@ -21,7 +21,7 @@ export async function GET(
     const { slug, quizId } = await params
 
     // Find group
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug },
       select: { id: true }
     })
@@ -31,12 +31,10 @@ export async function GET(
     }
 
     // Check membership
-    const membership = await prisma.groupMember.findUnique({
+    const membership = await prisma.groupMember.findFirst({
       where: {
-        groupId_userId: {
-          groupId: group.id,
-          userId: session.user.id
-        }
+        groupId: group.id,
+        userId: session.user.id
       }
     })
 
@@ -45,21 +43,22 @@ export async function GET(
     }
 
     const quiz = await prisma.groupQuiz.findUnique({
-      where: { id: quizId },
-      include: {
-        questions: {
-          orderBy: { order: 'asc' },
-          select: {
-            id: true,
-            question: true,
-            questionType: true,
-            options: true,
-            points: true,
-            order: true,
-            imageUrl: true
-            // Note: explanation is not included until after answering
-          }
-        },
+      where: { id: quizId }
+    })
+
+    // Fetch questions separately since no relation exists
+    const questions = await prisma.groupQuizQuestion.findMany({
+      where: { quizId: quizId },
+      orderBy: { order: 'asc' },
+      select: {
+        id: true,
+        question: true,
+        questionType: true,
+        options: true,
+        points: true,
+        order: true,
+        imageUrl: true
+        // Note: explanation is not included until after answering
       }
     })
 
@@ -90,14 +89,14 @@ export async function GET(
     }
 
     // Shuffle questions if enabled
-    let questions = quiz.questions
+    let shuffledQuestions = questions
     if (quiz.shuffleQuestions) {
-      questions = [...questions].sort(() => Math.random() - 0.5)
+      shuffledQuestions = [...questions].sort(() => Math.random() - 0.5)
     }
 
     // Shuffle options if enabled
     if (quiz.shuffleOptions) {
-      questions = questions.map(q => {
+      shuffledQuestions = shuffledQuestions.map(q => {
         const options = Array.isArray(q.options) ? q.options : []
         return {
           ...q,
@@ -107,7 +106,7 @@ export async function GET(
     }
 
     // Remove correct answers from options for security
-    questions = questions.map(q => {
+    shuffledQuestions = shuffledQuestions.map(q => {
       const options = Array.isArray(q.options) ? q.options : []
       return {
         ...q,
@@ -122,7 +121,7 @@ export async function GET(
     return NextResponse.json({
       quiz: {
         ...quiz,
-        questions,
+        questions: shuffledQuestions,
         userAttempts,
         canAttempt: !quiz.maxAttempts || userAttempts < quiz.maxAttempts
       }
@@ -150,7 +149,7 @@ export async function PUT(
     const { slug, quizId } = await params
     const body = await req.json()
 
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug },
       select: { id: true }
     })
@@ -168,12 +167,10 @@ export async function PUT(
     }
 
     // Check permissions
-    const membership = await prisma.groupMember.findUnique({
+    const membership = await prisma.groupMember.findFirst({
       where: {
-        groupId_userId: {
-          groupId: group.id,
-          userId: session.user.id
-        }
+        groupId: group.id,
+        userId: session.user.id
       }
     })
 
@@ -221,10 +218,13 @@ export async function PUT(
         rewardPoints,
         rewardBadgeId,
         isActive
-      },
-      include: {
-        questions: true
       }
+    })
+
+    // Fetch questions separately
+    let updatedQuestions = await prisma.groupQuizQuestion.findMany({
+      where: { quizId: quizId },
+      orderBy: { order: 'asc' }
     })
 
     // If questions are provided, update them
@@ -247,9 +247,15 @@ export async function PUT(
           imageUrl: q.imageUrl
         }))
       })
+
+      // Refetch updated questions
+      updatedQuestions = await prisma.groupQuizQuestion.findMany({
+        where: { quizId: quizId },
+        orderBy: { order: 'asc' }
+      })
     }
 
-    return NextResponse.json({ quiz: updatedQuiz })
+    return NextResponse.json({ quiz: { ...updatedQuiz, questions: updatedQuestions } })
   } catch (error) {
     console.error('Update quiz error:', error)
     return NextResponse.json(
@@ -272,7 +278,7 @@ export async function DELETE(
 
     const { slug, quizId } = await params
 
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug },
       select: { id: true }
     })
@@ -290,12 +296,10 @@ export async function DELETE(
     }
 
     // Check permissions
-    const membership = await prisma.groupMember.findUnique({
+    const membership = await prisma.groupMember.findFirst({
       where: {
-        groupId_userId: {
-          groupId: group.id,
-          userId: session.user.id
-        }
+        groupId: group.id,
+        userId: session.user.id
       }
     })
 

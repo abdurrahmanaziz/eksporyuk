@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     let slug = baseSlug
     let counter = 1
     
-    while (await prisma.brandedTemplate.findUnique({ where: { slug } })) {
+    while (await prisma.brandedTemplate.findFirst({ where: { slug } })) {
       slug = `${baseSlug}-${counter}`
       counter++
     }

@@ -2,6 +2,136 @@ import { prisma } from './prisma'
 import { mailketing } from './integrations/mailketing'
 
 /**
+ * Replace variables dalam string
+ */
+function replaceVariables(text: string, variables: Record<string, string>): string {
+  let result = text
+  for (const [key, value] of Object.entries(variables)) {
+    const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
+    result = result.replace(regex, value || '')
+  }
+  return result
+}
+
+/**
+ * Wrap email content dengan HTML template (logo, header, footer)
+ */
+function wrapEmailContent(
+  content: string,
+  options: {
+    logoUrl: string
+    companyName: string
+    ctaText?: string
+    ctaLink?: string
+    footerText: string
+    copyrightText: string
+    socialMedia?: {
+      instagram?: string
+      facebook?: string
+      linkedin?: string
+    }
+  }
+): string {
+  // Convert plain text content ke paragraphs
+  const paragraphs = content
+    .split('\n\n')
+    .map(p => p.trim())
+    .filter(p => p.length > 0)
+    .map(p => {
+      // Check if it's a list item
+      if (p.startsWith('•') || p.startsWith('✓') || p.startsWith('✅') || p.startsWith('❌')) {
+        const items = p.split('\n').map(item => item.trim()).filter(item => item.length > 0)
+        return `<ul style="margin: 16px 0; padding-left: 20px; color: #374151;">${items.map(item => `<li style="margin: 8px 0;">${item}</li>`).join('')}</ul>`
+      }
+      // Regular paragraph
+      return `<p style="margin: 16px 0; line-height: 1.6; color: #374151;">${p.replace(/\n/g, '<br>')}</p>`
+    })
+    .join('')
+
+  return `
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>${options.companyName}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f3f4f6; padding: 40px 0;">
+    <tr>
+      <td align="center">
+        <!-- Main Container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 32px 40px; text-align: center;">
+              <img src="${options.logoUrl}" alt="${options.companyName}" style="max-width: 200px; height: auto; display: block; margin: 0 auto;" />
+              <div style="margin-top: 16px; color: #ffffff; font-size: 14px; opacity: 0.9;">
+                ${options.companyName}
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              ${paragraphs}
+              
+              ${options.ctaText && options.ctaLink ? `
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${options.ctaLink}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">
+                      ${options.ctaText}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 32px 40px; border-top: 1px solid #e5e7eb;">
+              <!-- Social Media -->
+              ${options.socialMedia && (options.socialMedia.instagram || options.socialMedia.facebook || options.socialMedia.linkedin) ? `
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center">
+                    ${options.socialMedia.instagram ? `<a href="${options.socialMedia.instagram}" style="display: inline-block; margin: 0 8px;"><img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" width="28" height="28" style="border-radius: 4px;"></a>` : ''}
+                    ${options.socialMedia.facebook ? `<a href="${options.socialMedia.facebook}" style="display: inline-block; margin: 0 8px;"><img src="https://cdn-icons-png.flaticon.com/512/174/174848.png" alt="Facebook" width="28" height="28" style="border-radius: 4px;"></a>` : ''}
+                    ${options.socialMedia.linkedin ? `<a href="${options.socialMedia.linkedin}" style="display: inline-block; margin: 0 8px;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" width="28" height="28" style="border-radius: 4px;"></a>` : ''}
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+              
+              <!-- Footer Text -->
+              <p style="margin: 0 0 16px 0; text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                ${options.footerText}
+              </p>
+              
+              <!-- Copyright -->
+              <p style="margin: 0; text-align: center; color: #9ca3af; font-size: 12px;">
+                ${options.copyrightText}
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim()
+}
+
+/**
  * Send email menggunakan BrandedTemplate system
  * 
  * @param to - Email recipient
@@ -22,9 +152,10 @@ export async function sendBrandedEmail(
 ) {
   try {
     // Fetch template dari database
-    const template = await prisma.brandedTemplate.findUnique({
+    const template = await prisma.brandedTemplate.findFirst({
       where: { 
-        slug: templateSlug
+        slug: templateSlug,
+        isActive: true
       }
     })
     
@@ -67,6 +198,21 @@ export async function sendBrandedEmail(
       content = content.replace(regex, value || '')
     }
     
+    // Wrap content dengan HTML email wrapper (logo + header + content + footer)
+    const htmlContent = wrapEmailContent(content, {
+      logoUrl,
+      companyName: enhancedVariables.footerCompany,
+      ctaText: template.ctaText,
+      ctaLink: template.ctaLink ? replaceVariables(template.ctaLink, enhancedVariables) : undefined,
+      footerText: enhancedVariables.footerText,
+      copyrightText: enhancedVariables.footerCopyright,
+      socialMedia: {
+        instagram: enhancedVariables.footerInstagram,
+        facebook: enhancedVariables.footerFacebook,
+        linkedin: enhancedVariables.footerLinkedin,
+      }
+    })
+    
     // Log template usage (skip if emailLog model not available)
     console.log('[EMAIL] Sending template:', { templateSlug, to, subject })
     
@@ -74,7 +220,7 @@ export async function sendBrandedEmail(
     const result = await mailketing.sendEmail({
       to,
       subject,
-      html: content,
+      html: htmlContent,
       cc: options?.cc ? [options.cc] : undefined,
       bcc: options?.bcc ? [options.bcc] : undefined,
       reply_to: options?.replyTo
@@ -156,7 +302,7 @@ export async function previewTemplate(
   templateSlug: string,
   variables: Record<string, string>
 ) {
-  const template = await prisma.brandedTemplate.findUnique({
+  const template = await prisma.brandedTemplate.findFirst({
     where: { slug: templateSlug }
   })
   

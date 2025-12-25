@@ -60,6 +60,7 @@ import MemberLocationBadge from '@/components/member/MemberLocationBadge'
 import FeedBanner from '@/components/banners/FeedBanner'
 import SidebarBanner from '@/components/banners/SidebarBanner'
 import UserHoverCard from '@/components/community/UserHoverCard'
+import CommentSection from '@/components/ui/CommentSection'
 
 interface Post {
   id: string
@@ -152,6 +153,11 @@ export default function CommunityFeedPage() {
   const [editContent, setEditContent] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [deletingPost, setDeletingPost] = useState<string | null>(null)
+
+  // Comment states
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
+  const [postComments, setPostComments] = useState<Record<string, any[]>>({})
+  const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (session) {
@@ -531,6 +537,79 @@ export default function CommunityFeedPage() {
     }
   }
 
+  // Comment functions
+  const toggleComments = async (postId: string) => {
+    const isExpanded = expandedComments[postId]
+    
+    if (!isExpanded && !postComments[postId]) {
+      setLoadingComments(prev => ({ ...prev, [postId]: true }))
+      
+      try {
+        const response = await fetch(`/api/posts/${postId}/comments`)
+        if (response.ok) {
+          const data = await response.json()
+          setPostComments(prev => ({ ...prev, [postId]: data.comments || [] }))
+        }
+      } catch (error) {
+        console.error('Error loading comments:', error)
+        toast.error('Gagal memuat komentar')
+      } finally {
+        setLoadingComments(prev => ({ ...prev, [postId]: false }))
+      }
+    }
+    
+    setExpandedComments(prev => ({ ...prev, [postId]: !isExpanded }))
+  }
+
+  const refreshComments = async (postId: string) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments`)
+      if (response.ok) {
+        const data = await response.json()
+        setPostComments(prev => ({ ...prev, [postId]: data.comments || [] }))
+      }
+    } catch (error) {
+      console.error('Error refreshing comments:', error)
+    }
+  }
+
+  // Share function
+  const handleSharePost = async (post: Post) => {
+    const shareUrl = `${window.location.origin}/posts/${post.id}`
+    const shareText = `${post.author.name}: ${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}`
+    
+    // Try native share first (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Postingan dari Eksporyuk',
+          text: shareText,
+          url: shareUrl,
+        })
+        toast.success('Berhasil dibagikan!')
+      } catch (error) {
+        // User cancelled or error
+        if ((error as Error).name !== 'AbortError') {
+          // Fallback to clipboard
+          copyToClipboard(shareUrl)
+        }
+      }
+    } else {
+      // Fallback for desktop
+      copyToClipboard(shareUrl)
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success('Link disalin ke clipboard!', {
+        description: 'Anda dapat menempelkan link ini di mana saja'
+      })
+    }).catch(() => {
+      toast.error('Gagal menyalin link')
+    })
+  }
+
   const handleReactToPost = async (postId: string, type: string) => {
     try {
       await fetch(`/api/posts/${postId}/reactions`, {
@@ -838,14 +917,20 @@ export default function CommunityFeedPage() {
                               currentUserReaction={postReactions[post.id]?.currentReaction || null}
                             />
                             
-                            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
+                            <button 
+                              onClick={() => toggleComments(post.id)}
+                              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+                            >
                               <MessageCircle className="w-5 h-5" />
                               <span className="text-sm font-medium">
                                 {post._count.comments}
                               </span>
                             </button>
                             
-                            <button className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">
+                            <button 
+                              onClick={() => handleSharePost(post)}
+                              className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors"
+                            >
                               <Share2 className="w-5 h-5" />
                             </button>
                             
@@ -865,6 +950,23 @@ export default function CommunityFeedPage() {
                               )}
                             </button>
                           </div>
+
+                          {/* Comment Section */}
+                          {expandedComments[post.id] && (
+                            <div className="pt-4 border-t border-gray-100">
+                              {loadingComments[post.id] ? (
+                                <div className="flex justify-center py-8">
+                                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                </div>
+                              ) : (
+                                <CommentSection
+                                  postId={post.id}
+                                  comments={postComments[post.id] || []}
+                                  onRefresh={() => refreshComments(post.id)}
+                                />
+                              )}
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

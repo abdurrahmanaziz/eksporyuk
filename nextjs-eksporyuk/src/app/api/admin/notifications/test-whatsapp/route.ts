@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get StarSender config
-    const config = await prisma.integrationConfig.findUnique({
+    const config = await prisma.integrationConfig.findFirst({
       where: { service: 'starsender' },
     })
 

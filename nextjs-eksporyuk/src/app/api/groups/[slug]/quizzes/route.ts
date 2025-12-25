@@ -23,7 +23,7 @@ export async function GET(
     const status = searchParams.get('status') // active, upcoming, ended
 
     // Find group by slug
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug },
       select: { id: true }
     })
@@ -33,12 +33,10 @@ export async function GET(
     }
 
     // Check if user is member
-    const membership = await prisma.groupMember.findUnique({
+    const membership = await prisma.groupMember.findFirst({
       where: {
-        groupId_userId: {
-          groupId: group.id,
-          userId: session.user.id
-        }
+        groupId: group.id,
+        userId: session.user.id
       }
     })
 
@@ -131,7 +129,7 @@ export async function POST(
     const body = await req.json()
 
     // Find group
-    const group = await prisma.group.findUnique({
+    const group = await prisma.group.findFirst({
       where: { slug },
       select: { id: true, ownerId: true }
     })
@@ -141,12 +139,10 @@ export async function POST(
     }
 
     // Check if user is admin/moderator
-    const membership = await prisma.groupMember.findUnique({
+    const membership = await prisma.groupMember.findFirst({
       where: {
-        groupId_userId: {
-          groupId: group.id,
-          userId: session.user.id
-        }
+        groupId: group.id,
+        userId: session.user.id
       }
     })
 
@@ -182,7 +178,7 @@ export async function POST(
       return NextResponse.json({ error: 'At least one question is required' }, { status: 400 })
     }
 
-    // Create quiz with questions
+    // Create quiz first
     const quiz = await prisma.groupQuiz.create({
       data: {
         groupId: group.id,
@@ -199,9 +195,16 @@ export async function POST(
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         rewardPoints,
-        rewardBadgeId,
-        questions: {
-          create: questions.map((q: any, index: number) => ({
+        rewardBadgeId
+      }
+    })
+
+    // Create questions separately
+    const createdQuestions = await Promise.all(
+      questions.map((q: any, index: number) =>
+        prisma.groupQuizQuestion.create({
+          data: {
+            quizId: quiz.id,
             question: q.question,
             questionType: q.questionType || 'MULTIPLE_CHOICE',
             options: q.options,
@@ -209,15 +212,17 @@ export async function POST(
             points: q.points || 1,
             order: index,
             imageUrl: q.imageUrl
-          }))
-        }
-      },
-      include: {
-        questions: true
-      }
-    })
+          }
+        })
+      )
+    )
 
-    return NextResponse.json({ quiz }, { status: 201 })
+    const quizWithQuestions = {
+      ...quiz,
+      questions: createdQuestions
+    }
+
+    return NextResponse.json({ quiz: quizWithQuestions }, { status: 201 })
   } catch (error) {
     console.error('Create quiz error:', error)
     return NextResponse.json(

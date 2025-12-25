@@ -134,7 +134,7 @@ export async function PATCH(
     }
 
     const group = await prisma.group.update({
-      where: { slug },
+      where: { id: existingGroup.id },
       data: {
         name: name || existingGroup.name,
         description: description || existingGroup.description,
@@ -212,7 +212,7 @@ export async function DELETE(
 
     // Delete group
     await prisma.group.delete({
-      where: { slug }
+      where: { id: existingGroup.id }
     })
 
     return NextResponse.json({ 

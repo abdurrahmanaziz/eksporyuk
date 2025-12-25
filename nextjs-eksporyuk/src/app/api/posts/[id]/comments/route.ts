@@ -16,6 +16,48 @@ export async function GET(
   try {
     const { id } = await params
 
+    // Recursive include for nested replies (up to 3 levels)
+    const replyInclude = {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          username: true,
+        },
+      },
+      replies: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              username: true,
+            },
+          },
+          replies: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true,
+                  username: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'asc' as const,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'asc' as const,
+        },
+      },
+    }
+
     const comments = await prisma.postComment.findMany({
       where: {
         postId: id,
@@ -31,16 +73,7 @@ export async function GET(
           },
         },
         replies: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-                username: true,
-              },
-            },
-          },
+          include: replyInclude,
           orderBy: {
             createdAt: 'asc',
           },

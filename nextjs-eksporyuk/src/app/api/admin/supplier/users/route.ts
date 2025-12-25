@@ -36,51 +36,79 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { companyName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
-        { user: { name: { contains: search, mode: 'insensitive' } } },
       ]
     }
 
     const suppliers = await prisma.supplierProfile.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          }
-        },
-        _count: {
-          select: {
-            products: true,
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
+    // Get user data separately
+    const userIds = suppliers.map(s => s.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+      }
+    })
+
+    // Get product counts separately
+    const productCounts = await Promise.all(
+      suppliers.map(async (s) => {
+        const count = await prisma.supplierProduct.count({
+          where: { supplierId: s.id }
+        })
+        return { supplierId: s.id, count }
+      })
+    )
+
+    // Map user data to suppliers
+    const suppliersWithUser = suppliers.map(s => {
+      const user = users.find(u => u.id === s.userId)
+      const productCount = productCounts.find(p => p.supplierId === s.id)?.count || 0
+      return {
+        ...s,
+        user,
+        _count: {
+          products: productCount
+        }
+      }
+    })
+
     // Get memberships separately
-    const supplierIds = suppliers.map(s => s.userId)
+    const supplierIds = suppliersWithUser.map(s => s.user?.id).filter(Boolean) as string[]
     const memberships = await prisma.supplierMembership.findMany({
       where: {
         userId: {
           in: supplierIds
         }
-      },
-      include: {
-        package: {
-          select: {
-            name: true,
-            type: true
-          }
-        }
       }
     })
 
-    // Get transactions with affiliate data for each supplier
+    // Get package details separately
+    const packageIds = [...new Set(memberships.map(m => m.packageId))]
+    const packages = await prisma.supplierPackage.findMany({
+      where: { id: { in: packageIds } },
+      select: {
+        id: true,
+        name: true,
+        type: true
+      }
+    })
+
+    // Map packages to memberships
+    const membershipsWithPackage = memberships.map(m => ({
+      ...m,
+      package: packages.find(p => p.id === m.packageId) || null
+    }))
+
+    // Get transactions for each supplier (without nested includes)
     const transactions = await prisma.transaction.findMany({
       where: {
         userId: {
@@ -89,43 +117,49 @@ export async function GET(request: NextRequest) {
         type: 'SUPPLIER_MEMBERSHIP',
         status: 'SUCCESS'
       },
-      include: {
-        affiliateConversion: {
-          include: {
-            affiliate: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    whatsapp: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
+    // Get affiliate conversions separately
+    const transactionIds = transactions.map(t => t.id)
+    const conversions = await prisma.affiliateConversion.findMany({
+      where: {
+        transactionId: { in: transactionIds }
+      }
+    })
+
+    // Get affiliate profile info separately
+    const affiliateIds = [...new Set(conversions.map(c => c.affiliateId))]
+    const affiliateProfiles = await prisma.affiliateProfile.findMany({
+      where: { id: { in: affiliateIds } }
+    })
+    const affiliateUserIds = affiliateProfiles.map(a => a.userId)
+    const affiliateUsers = await prisma.user.findMany({
+      where: { id: { in: affiliateUserIds } },
+      select: { id: true, name: true, email: true, whatsapp: true }
+    })
+
     // Map memberships and affiliate data to suppliers
-    const suppliersWithMembership = suppliers.map(s => {
-      const membership = memberships.find(m => m.userId === s.userId) || null
-      const transaction = transactions.find(t => t.userId === s.userId)
+    const suppliersWithMembership = suppliersWithUser.map(s => {
+      const membership = membershipsWithPackage.find(m => m.userId === s.user?.id) || null
+      const transaction = transactions.find(t => t.userId === s.user?.id)
+      const conversion = transaction ? conversions.find(c => c.transactionId === transaction.id) : null
       
       // Get affiliate info from conversion or metadata
       let affiliateSource = null
-      if (transaction?.affiliateConversion) {
-        affiliateSource = {
-          affiliateName: transaction.affiliateConversion.affiliate.user.name,
-          affiliateEmail: transaction.affiliateConversion.affiliate.user.email,
-          affiliateWhatsapp: transaction.affiliateConversion.affiliate.user.whatsapp,
-          commissionAmount: transaction.affiliateConversion.commissionAmount,
-          paidOut: transaction.affiliateConversion.paidOut
+      if (conversion) {
+        const affiliateProfile = affiliateProfiles.find(a => a.id === conversion.affiliateId)
+        const affiliateUser = affiliateProfile ? affiliateUsers.find(u => u.id === affiliateProfile.userId) : null
+        if (affiliateUser) {
+          affiliateSource = {
+            affiliateName: affiliateUser.name,
+            affiliateEmail: affiliateUser.email,
+            affiliateWhatsapp: affiliateUser.whatsapp,
+            commissionAmount: conversion.commissionAmount,
+            paidOut: conversion.paidOut
+          }
         }
       } else if (transaction?.metadata && typeof transaction.metadata === 'object') {
         const metadata = transaction.metadata as any
@@ -149,7 +183,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate stats
     const stats = {
-      total: suppliers.length,
+      total: suppliersWithMembership.length,
       active: suppliersWithMembership.filter(s => !s.isSuspended && s.supplierMembership?.isActive).length,
       inactive: suppliersWithMembership.filter(s => !s.isSuspended && !s.supplierMembership?.isActive).length,
       suspended: suppliers.filter(s => s.isSuspended).length,

@@ -93,6 +93,7 @@ const navigationByRole = {
         { name: 'Fitur Membership', href: '/admin/features', icon: Zap },
         { name: 'Paket Membership', href: '/admin/membership-plans', icon: Package },
         { name: 'Kelola Member', href: '/admin/membership', icon: Users },
+        { name: 'Dokumen Membership', href: '/admin/membership-documents', icon: FileText },
       ]
     },
     {
@@ -100,6 +101,7 @@ const navigationByRole = {
       items: [
         { name: 'Semua Pengguna', href: '/admin/users', icon: Users },
         { name: 'Direktori Member', href: '/admin/member-directory', icon: MapPin },
+        { name: 'Wallet Pengguna', href: '/admin/wallets', icon: Wallet },
       ]
     },
     {
@@ -107,6 +109,7 @@ const navigationByRole = {
       items: [
         { name: 'Produk Digital', href: '/admin/products', icon: ShoppingBag },
         { name: 'Kupon & Diskon', href: '/admin/coupons', icon: Tag },
+        { name: 'Sales Page', href: '/admin/salespage', icon: Layout },
       ]
     },
     {
@@ -115,6 +118,8 @@ const navigationByRole = {
         { name: 'Semua Kursus', href: '/admin/courses', icon: BookOpen },
         { name: 'Pendaftaran', href: '/admin/enrollments', icon: Users },
         { name: 'Review Kursus', href: '/admin/course-reviews', icon: Star },
+        { name: 'Course Consents', href: '/admin/course-consents', icon: ShieldCheck },
+        { name: 'Quiz', href: '/admin/quiz', icon: ClipboardList },
         { name: 'Sertifikat', href: '/admin/certificates', icon: Award },
         { name: 'Template Sertifikat', href: '/admin/certificate-templates', icon: FileCheck },
       ]
@@ -136,6 +141,7 @@ const navigationByRole = {
         { name: 'Data Supplier', href: '/admin/databases/suppliers', icon: Database },
         { name: 'Data Forwarder', href: '/admin/databases/forwarders', icon: Truck },
         { name: 'Dokumen', href: '/admin/documents', icon: FileText },
+        { name: 'Import Data', href: '/admin/import', icon: Database },
       ]
     },
     {
@@ -150,6 +156,7 @@ const navigationByRole = {
       title: 'AFFILIATE',
       items: [
         { name: 'Dashboard Affiliate', href: '/admin/affiliates', icon: Share2 },
+        { name: 'Short Links', href: '/admin/short-links', icon: Zap },
         { name: 'Leaderboard', href: '/admin/leaderboard', icon: Trophy },
         { name: 'Template Email', href: '/admin/affiliate/templates', icon: BookOpen },
         { name: 'Tantangan', href: '/admin/affiliates/challenges', icon: Target },
@@ -157,9 +164,21 @@ const navigationByRole = {
       ]
     },
     {
+      title: 'MARKETING',
+      items: [
+        { name: 'Broadcast', href: '/admin/broadcast', icon: Send },
+        { name: 'Campaigns', href: '/admin/campaigns', icon: Target },
+        { name: 'Template Notifikasi', href: '/admin/templates', icon: Mail },
+        { name: 'Branded Templates', href: '/admin/branded-templates', icon: FileCheck },
+        { name: 'Marketing Kit', href: '/admin/marketing-kit', icon: Package },
+        { name: 'Banner', href: '/admin/banners', icon: Layout },
+      ]
+    },
+    {
       title: 'KEUANGAN',
       items: [
         { name: 'Penjualan', href: '/admin/sales', icon: ShoppingBag },
+        { name: 'Konfirmasi Bayar', href: '/admin/payment-confirmation', icon: CreditCard },
         { name: 'Pending Revenue', href: '/admin/pending-revenue', icon: Clock },
         { name: 'Penarikan', href: '/admin/payouts', icon: DollarSign },
         { name: 'Laporan', href: '/admin/reports', icon: FileText },
@@ -170,6 +189,10 @@ const navigationByRole = {
       items: [
         { name: 'Pengaturan', href: '/admin/settings', icon: Settings },
         { name: 'Integrasi', href: '/admin/integrations', icon: Plug },
+        { name: 'Mailketing', href: '/admin/mailketing', icon: Mail },
+        { name: 'OneSignal', href: '/admin/onesignal', icon: Bell },
+        { name: 'Support', href: '/admin/support', icon: MessageSquare },
+        { name: 'Dokumentasi', href: '/admin/documentation', icon: Book },
       ]
     },
   ],

@@ -14,11 +14,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Get affiliate profile
-    const affiliate = await prisma.affiliate.findUnique({
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
       where: { userId: session.user.id },
     })
 
-    if (!affiliate) {
+    if (!affiliateProfile) {
       return NextResponse.json({ error: 'Affiliate profile not found' }, { status: 404 })
     }
 
@@ -27,10 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Build where clause for conversions
     const where: any = {
-      affiliateId: affiliate.id,
-      transaction: {
-        type: 'SUPPLIER_MEMBERSHIP',
-      },
+      affiliateId: affiliateProfile.id,
     }
 
     if (status === 'paid') {
@@ -39,11 +36,19 @@ export async function GET(request: NextRequest) {
       where.paidOut = false
     }
 
-    // Get supplier conversions
+    // Get supplier conversions (without transaction include since no relation exists)
     const conversions = await prisma.affiliateConversion.findMany({
       where,
-      include: {
-        transaction: {
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    // Get transaction details separately
+    const conversionsWithTransactions = await Promise.all(
+      conversions.map(async (conversion) => {
+        const transaction = await prisma.transaction.findUnique({
+          where: { id: conversion.transactionId },
           select: {
             id: true,
             amount: true,
@@ -53,37 +58,38 @@ export async function GET(request: NextRequest) {
             paidAt: true,
             metadata: true,
           },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+        })
+        return { ...conversion, transaction }
+      })
+    )
+
+    // Filter to only supplier memberships
+    const supplierConversions = conversionsWithTransactions.filter(
+      c => c.transaction?.metadata && typeof c.transaction.metadata === 'object' && 
+           (c.transaction.metadata as any).type === 'SUPPLIER_MEMBERSHIP'
+    )
 
     // Calculate stats
     const allConversions = await prisma.affiliateConversion.findMany({
       where: {
-        affiliateId: affiliate.id,
-        transaction: {
-          type: 'SUPPLIER_MEMBERSHIP',
-        },
+        affiliateId: affiliateProfile.id,
       },
     })
 
     const stats = {
-      totalSuppliers: allConversions.length,
-      activeSuppliers: allConversions.filter(c => c.transaction?.status === 'SUCCESS').length,
-      totalCommission: allConversions.reduce((sum, c) => sum + Number(c.commissionAmount), 0),
-      paidCommission: allConversions
+      totalSuppliers: supplierConversions.length,
+      activeSuppliers: supplierConversions.filter(c => c.transaction?.status === 'SUCCESS').length,
+      totalCommission: supplierConversions.reduce((sum, c) => sum + Number(c.commissionAmount), 0),
+      paidCommission: supplierConversions
         .filter(c => c.paidOut)
         .reduce((sum, c) => sum + Number(c.commissionAmount), 0),
-      pendingCommission: allConversions
+      pendingCommission: supplierConversions
         .filter(c => !c.paidOut)
         .reduce((sum, c) => sum + Number(c.commissionAmount), 0),
     }
 
     return NextResponse.json({
-      conversions,
+      conversions: supplierConversions,
       stats,
     })
   } catch (error) {

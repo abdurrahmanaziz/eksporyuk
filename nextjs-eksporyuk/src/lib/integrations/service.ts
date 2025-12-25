@@ -78,7 +78,7 @@ export class IntegrationService {
    */
   private static async getDbConfig(service: string): Promise<any> {
     try {
-      const integrationConfig = await prisma.integrationConfig.findUnique({
+      const integrationConfig = await prisma.integrationConfig.findFirst({
         where: { service },
       })
 
