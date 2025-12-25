@@ -125,13 +125,11 @@ export async function POST(
     if (isPassed && attempt.quiz.lessonId) {
       try {
         // Get enrollment
-        const enrollment = await prisma.courseEnrollment.findUnique({
-          where: {
-            userId_courseId: {
-              userId: attempt.userId,
-              courseId: attempt.quiz.courseId
-            }
-          }
+        const enrollment = await prisma.courseEnrollment.findFirst({
+      where: {
+        userId: attempt.userId,
+        courseId: attempt.quiz.courseId
+      }
         })
 
         if (enrollment) {
@@ -157,12 +155,10 @@ export async function POST(
             const progressPercent = totalLessons > 0 ? Math.round((completedLessons.length / totalLessons) * 100) : 0
 
             // Update enrollment progress
-            await prisma.courseEnrollment.update({
+            await prisma.courseEnrollment.updateMany({
               where: {
-                userId_courseId: {
-                  userId: attempt.userId,
-                  courseId: attempt.quiz.courseId
-                }
+                userId: attempt.userId,
+                courseId: attempt.quiz.courseId
               },
               data: {
                 completedLessons,

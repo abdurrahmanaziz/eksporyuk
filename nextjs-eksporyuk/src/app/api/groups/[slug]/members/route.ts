@@ -143,16 +143,17 @@ export async function POST(
         }))
 
         for (const enrollment of enrollmentsToCreate) {
-          await prisma.courseEnrollment.upsert({
+          const existing = await prisma.courseEnrollment.findFirst({
             where: {
-              userId_courseId: {
-                userId: enrollment.userId,
-                courseId: enrollment.courseId,
-              },
+              userId: enrollment.userId,
+              courseId: enrollment.courseId,
             },
-            update: {},
-            create: enrollment,
           })
+          if (!existing) {
+            await prisma.courseEnrollment.create({
+              data: enrollment,
+            })
+          }
         }
       }
 
@@ -251,16 +252,17 @@ export async function POST(
       }))
 
       for (const enrollment of enrollmentsToCreate) {
-        await prisma.courseEnrollment.upsert({
+        const existing = await prisma.courseEnrollment.findFirst({
           where: {
-            userId_courseId: {
-              userId: enrollment.userId,
-              courseId: enrollment.courseId,
-            },
+            userId: enrollment.userId,
+            courseId: enrollment.courseId,
           },
-          update: {},
-          create: enrollment,
         })
+        if (!existing) {
+          await prisma.courseEnrollment.create({
+            data: enrollment,
+          })
+        }
       }
     }
 

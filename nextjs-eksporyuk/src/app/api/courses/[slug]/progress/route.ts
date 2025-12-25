@@ -47,12 +47,10 @@ export async function POST(
     }
 
     // Check enrollment
-    const enrollment = await prisma.courseEnrollment.findUnique({
+    const enrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: course.id
-        }
+        userId: session.user.id,
+        courseId: course.id
       }
     })
 
@@ -64,12 +62,10 @@ export async function POST(
     }
 
     // Get or create user progress
-    let userProgress = await prisma.userCourseProgress.findUnique({
+    let userProgress = await prisma.userCourseProgress.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: course.id
-        }
+        userId: session.user.id,
+        courseId: course.id
       }
     })
 
@@ -110,12 +106,7 @@ export async function POST(
 
     // Update progress
     userProgress = await prisma.userCourseProgress.update({
-      where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: course.id
-        }
-      },
+      where: { id: userProgress.id },
       data: {
         completedLessons: JSON.stringify(completedLessons),
         progress: progressPercentage,
@@ -126,12 +117,10 @@ export async function POST(
     })
 
     // Update enrollment
-    await prisma.courseEnrollment.update({
+    await prisma.courseEnrollment.updateMany({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: course.id
-        }
+        userId: session.user.id,
+        courseId: course.id
       },
       data: {
         progress: progressPercentage,

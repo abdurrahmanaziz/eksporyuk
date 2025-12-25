@@ -47,26 +47,28 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ products: [] })
       }
 
-      // Get courses for this product
+      // Get courses for this product - ProductCourse has no relations defined
       const productCourses = await prisma.productCourse.findMany({
         where: { productId: product.id },
-        include: {
-          course: {
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              level: true,
-              isPublished: true,
-            },
-          },
-        },
       })
+      
+      // Get course details separately
+      const courseIds = productCourses.map(pc => pc.courseId)
+      const courses = courseIds.length > 0 ? await prisma.course.findMany({
+        where: { id: { in: courseIds } },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          level: true,
+          isPublished: true,
+        },
+      }) : []
 
       return NextResponse.json({
         products: [{
           ...product,
-          courses: productCourses.map((pc) => pc.course),
+          courses,
         }],
       })
     }
@@ -101,27 +103,29 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Get courses for each product
+    // Get courses for each product - ProductCourse has no relations defined
     const productsWithCourses = await Promise.all(
       products.map(async (product) => {
         const productCourses = await prisma.productCourse.findMany({
           where: { productId: product.id },
-          include: {
-            course: {
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                level: true,
-                isPublished: true,
-              },
-            },
-          },
         })
+        
+        // Get course details separately
+        const courseIds = productCourses.map(pc => pc.courseId)
+        const courses = courseIds.length > 0 ? await prisma.course.findMany({
+          where: { id: { in: courseIds } },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            level: true,
+            isPublished: true,
+          },
+        }) : []
 
         return {
           ...product,
-          courses: productCourses.map(pc => pc.course),
+          courses,
         }
       })
     )

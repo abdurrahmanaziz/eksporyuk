@@ -163,12 +163,10 @@ export async function POST(
     }
 
     // Check if user is enrolled
-    const enrollment = await prisma.courseEnrollment.findUnique({
+    const enrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: courseId
-        }
+        userId: session.user.id,
+        courseId: courseId
       }
     })
 
@@ -180,12 +178,10 @@ export async function POST(
     }
 
     // Check if review already exists
-    const existingReview = await prisma.courseReview.findUnique({
+    const existingReview = await prisma.courseReview.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: courseId
-        }
+        userId: session.user.id,
+        courseId: courseId
       }
     })
 

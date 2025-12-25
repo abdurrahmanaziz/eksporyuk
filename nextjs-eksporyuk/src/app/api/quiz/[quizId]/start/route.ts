@@ -48,12 +48,10 @@ export async function GET(
     }
 
     // Check if user has access to course
-    const enrollment = await prisma.courseEnrollment.findUnique({
+    const enrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: quiz.courseId
-        }
+        userId: session.user.id,
+        courseId: quiz.courseId
       }
     })
 

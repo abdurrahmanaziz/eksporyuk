@@ -54,12 +54,10 @@ export async function POST(
     }
 
     // Get or create user progress
-    let userProgress = await prisma.userCourseProgress.findUnique({
+    let userProgress = await prisma.userCourseProgress.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: course.id
-        }
+        userId: session.user.id,
+        courseId: course.id
       }
     })
 
@@ -79,12 +77,7 @@ export async function POST(
         completedLessons.push(lessonId)
         
         userProgress = await prisma.userCourseProgress.update({
-          where: {
-            userId_courseId: {
-              userId: session.user.id,
-              courseId: course.id
-            }
-          },
+          where: { id: userProgress.id },
           data: {
             completedLessons: completedLessons,
             lastAccessedAt: new Date()
@@ -115,12 +108,10 @@ export async function POST(
     let certificate = null
     if (progressPercent >= 100) {
       // Check if certificate already exists
-      const existingCert = await prisma.certificate.findUnique({
+      const existingCert = await prisma.certificate.findFirst({
         where: {
-          userId_courseId: {
-            userId: session.user.id,
-            courseId: course.id
-          }
+          userId: session.user.id,
+          courseId: course.id
         }
       })
 

@@ -45,13 +45,11 @@ export async function POST(req: NextRequest) {
       if (membership) {
         for (const mc of membership.membershipCourses) {
           // Check if already enrolled
-          const existing = await prisma.courseEnrollment.findUnique({
-            where: {
-              userId_courseId: {
-                userId,
-                courseId: mc.courseId
-              }
-            }
+          const existing = await prisma.courseEnrollment.findFirst({
+      where: {
+        userId,
+        courseId: mc.courseId
+      }
           })
 
           if (!existing) {
@@ -157,22 +155,18 @@ export async function GET(req: NextRequest) {
     }
 
     // Check enrollment
-    const enrollment = await prisma.courseEnrollment.findUnique({
+    const enrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId
-        }
+        userId: session.user.id,
+        courseId
       }
     })
 
     // Check progress (has access)
-    const progress = await prisma.userCourseProgress.findUnique({
+    const progress = await prisma.userCourseProgress.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId
-        }
+        userId: session.user.id,
+        courseId
       }
     })
 

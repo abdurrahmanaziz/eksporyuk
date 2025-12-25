@@ -36,11 +36,7 @@ export async function POST(request: NextRequest) {
       select: { 
         id: true, 
         name: true, 
-        email: true,
-        userMemberships: {
-          where: { status: 'ACTIVE' },
-          select: { id: true, membershipId: true }
-        }
+        email: true
       }
     })
 
@@ -48,8 +44,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Check if user already has active membership
-    if (user.userMemberships.length > 0) {
+    // Check if user already has active membership - query separately
+    const existingMembership = await prisma.userMembership.findFirst({
+      where: { userId: user.id, status: 'ACTIVE' },
+      select: { id: true, membershipId: true }
+    })
+
+    if (existingMembership) {
       return NextResponse.json(
         { 
           error: 'You already have an active membership. Please upgrade instead.',

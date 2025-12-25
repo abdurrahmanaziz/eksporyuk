@@ -35,12 +35,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if certificate already exists
-    const existing = await prisma.certificate.findUnique({
+    const existing = await prisma.certificate.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId
-        }
+        userId,
+        courseId
       }
     })
 
@@ -79,12 +77,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check or create enrollment
-    let enrollment = await prisma.courseEnrollment.findUnique({
+    let enrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId
-        }
+        userId,
+        courseId
       }
     })
 
@@ -101,12 +97,10 @@ export async function POST(request: NextRequest) {
       })
     } else if (!enrollment.completed) {
       // Update enrollment to completed
-      enrollment = await prisma.courseEnrollment.update({
+      await prisma.courseEnrollment.updateMany({
         where: {
-          userId_courseId: {
-            userId,
-            courseId
-          }
+          userId,
+          courseId
         },
         data: {
           progress: 100,

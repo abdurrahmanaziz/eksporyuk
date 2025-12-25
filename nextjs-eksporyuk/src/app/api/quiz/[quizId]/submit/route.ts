@@ -195,12 +195,10 @@ async function updateLessonProgress(
 ) {
   try {
     // Get user progress
-    let progress = await prisma.userCourseProgress.findUnique({
+    let progress = await prisma.userCourseProgress.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId
-        }
+        userId,
+        courseId
       }
     })
 

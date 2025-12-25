@@ -18,25 +18,13 @@ export async function GET(request: NextRequest) {
       }, { status: 401 })
     }
 
-    // Get user's membership
+    // Get user - no relations available for userMemberships, transactions
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        userMemberships: {
-          where: { status: 'ACTIVE' },
-          orderBy: { createdAt: 'desc' },
-          take: 1
-        },
-        transactions: {
-          where: { 
-            status: 'SUCCESS',
-            type: 'MEMBERSHIP' 
-          },
-          orderBy: { createdAt: 'desc' },
-          include: {
-            membership: true
-          }
-        }
+      select: {
+        id: true,
+        name: true,
+        email: true
       }
     })
 
@@ -47,7 +35,11 @@ export async function GET(request: NextRequest) {
       }, { status: 404 })
     }
 
-    const activeMembership = user.userMemberships[0]
+    // Get active membership separately
+    const activeMembership = await prisma.userMembership.findFirst({
+      where: { userId: user.id, status: 'ACTIVE' },
+      orderBy: { createdAt: 'desc' }
+    })
     
     if (!activeMembership) {
       return NextResponse.json({ 
@@ -55,6 +47,17 @@ export async function GET(request: NextRequest) {
         error: 'No active membership' 
       }, { status: 404 })
     }
+
+    // Get recent transactions separately
+    const transactions = await prisma.transaction.findMany({
+      where: { 
+        userId: user.id,
+        status: 'SUCCESS',
+        type: 'MEMBERSHIP' 
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    })
 
     // Get learning progress (simulated for now)
     const progressData = {
@@ -79,7 +82,7 @@ export async function GET(request: NextRequest) {
         }
       },
       progress: progressData,
-      recentTransactions: user.transactions.slice(0, 5).map(t => ({
+      recentTransactions: transactions.map(t => ({
         id: t.id,
         amount: t.amount,
         status: t.status,

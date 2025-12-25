@@ -195,12 +195,10 @@ export async function POST(
     const isMentor = course.mentorId === session.user.id
     
     if (!isAdmin && !isMentor) {
-      const enrollment = await prisma.courseEnrollment.findUnique({
+      const enrollment = await prisma.courseEnrollment.findFirst({
         where: {
-          userId_courseId: {
-            userId: session.user.id,
-            courseId: course.id
-          }
+          userId: session.user.id,
+          courseId: course.id
         }
       })
 

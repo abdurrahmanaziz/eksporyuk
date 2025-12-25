@@ -15,19 +15,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check jika user adalah member
+    // Check jika user adalah member - query separately since User has no userMemberships relation
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { 
-        id: true, 
-        userMemberships: { 
-          where: { membership: { isActive: true } }
-        } 
-      }
+      select: { id: true }
     })
 
+    // Check active membership separately
+    const activeMembership = user ? await prisma.userMembership.findFirst({
+      where: { 
+        userId: user.id,
+        isActive: true,
+        status: 'ACTIVE'
+      }
+    }) : null
+
     // Jika bukan member dan tidak ada active membership, tolak
-    const isMember = user?.userMemberships && user.userMemberships.length > 0
+    const isMember = !!activeMembership
     if (!isMember && session.user.role === 'MEMBER_FREE') {
       return NextResponse.json({
         error: 'Member-only feature',

@@ -51,12 +51,10 @@ export async function POST(
     }
 
     // Get or create progress record
-    let userProgress = await prisma.userCourseProgress.findUnique({
+    let userProgress = await prisma.userCourseProgress.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId: course.id
-        }
+        userId,
+        courseId: course.id
       }
     })
 
@@ -88,12 +86,10 @@ export async function POST(
       const isCompleted = newProgress === 100
 
       // Update progress
-      await prisma.userCourseProgress.update({
+      await prisma.userCourseProgress.updateMany({
         where: {
-          userId_courseId: {
-            userId,
-            courseId: course.id
-          }
+          userId,
+          courseId: course.id
         },
         data: {
           completedLessons: JSON.stringify(completedLessonIds),
@@ -106,12 +102,10 @@ export async function POST(
 
       // If course is completed, generate certificate
       if (isCompleted) {
-        const existingCertificate = await prisma.certificate.findUnique({
+        const existingCertificate = await prisma.certificate.findFirst({
           where: {
-            userId_courseId: {
-              userId,
-              courseId: course.id
-            }
+            userId,
+            courseId: course.id
           }
         })
 

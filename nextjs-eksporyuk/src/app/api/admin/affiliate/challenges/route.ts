@@ -50,29 +50,47 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // AffiliateChallenge model has no relations - fetch challenges first, then related data separately
     const [challenges, total] = await Promise.all([
       prisma.affiliateChallenge.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
-        include: {
-          _count: {
-            select: { progress: true }
-          },
-          membership: {
-            select: { id: true, name: true, slug: true }
-          },
-          product: {
-            select: { id: true, name: true, slug: true }
-          },
-          course: {
-            select: { id: true, title: true, slug: true }
-          }
-        }
       }),
       prisma.affiliateChallenge.count({ where })
     ])
+
+    // Get related data separately
+    const membershipIds = [...new Set(challenges.filter(c => c.membershipId).map(c => c.membershipId!))]
+    const productIds = [...new Set(challenges.filter(c => c.productId).map(c => c.productId!))]
+    const courseIds = [...new Set(challenges.filter(c => c.courseId).map(c => c.courseId!))]
+    const challengeIds = challenges.map(c => c.id)
+    
+    const [memberships, products, courses, progressCounts] = await Promise.all([
+      membershipIds.length > 0 ? prisma.membership.findMany({
+        where: { id: { in: membershipIds } },
+        select: { id: true, name: true, slug: true }
+      }) : Promise.resolve([]),
+      productIds.length > 0 ? prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true, name: true, slug: true }
+      }) : Promise.resolve([]),
+      courseIds.length > 0 ? prisma.course.findMany({
+        where: { id: { in: courseIds } },
+        select: { id: true, title: true, slug: true }
+      }) : Promise.resolve([]),
+      challengeIds.length > 0 ? prisma.affiliateChallengeProgress.groupBy({
+        by: ['challengeId'],
+        where: { challengeId: { in: challengeIds } },
+        _count: true
+      }) : Promise.resolve([])
+    ])
+    
+    const membershipMap = new Map(memberships.map(m => [m.id, m]))
+    const productMap = new Map(products.map(p => [p.id, p]))
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+    const progressCountMap = new Map(progressCounts.map(p => [p.challengeId, p._count]))
 
     // Get completion stats for each challenge
     const challengesWithStats = await Promise.all(
@@ -97,19 +115,25 @@ export async function GET(req: NextRequest) {
         
         const isUpcoming = challenge.startDate > now
         const hasEnded = challenge.endDate < now
+        
+        const participantsCount = progressCountMap.get(challenge.id) || 0
 
         return {
           ...challenge,
           targetValue: Number(challenge.targetValue),
           rewardValue: Number(challenge.rewardValue),
-          participantsCount: challenge._count.progress,
+          membership: challenge.membershipId ? membershipMap.get(challenge.membershipId) || null : null,
+          product: challenge.productId ? productMap.get(challenge.productId) || null : null,
+          course: challenge.courseId ? courseMap.get(challenge.courseId) || null : null,
+          _count: { progress: participantsCount },
+          participantsCount,
           completedCount,
           claimedCount,
           averageProgress: Number(totalProgress._avg.currentValue || 0),
           totalProgressSum: Number(totalProgress._sum.currentValue || 0),
           status: isOngoing ? 'active' : isUpcoming ? 'upcoming' : 'ended',
-          completionRate: challenge._count.progress > 0 
-            ? ((completedCount / challenge._count.progress) * 100).toFixed(1)
+          completionRate: participantsCount > 0 
+            ? ((completedCount / participantsCount) * 100).toFixed(1)
             : '0.0'
         }
       })

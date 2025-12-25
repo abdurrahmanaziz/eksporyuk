@@ -38,12 +38,10 @@ export async function GET(
     }
 
     // Find user's consent for this course
-    const consent = await prisma.courseConsent.findUnique({
+    const consent = await prisma.courseConsent.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: course.id
-        }
+        userId: session.user.id,
+        courseId: course.id
       }
     })
 

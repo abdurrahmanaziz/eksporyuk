@@ -26,12 +26,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Get enrollment
-    const enrollment = await prisma.courseEnrollment.findUnique({
+    const enrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId
-        }
+        userId: session.user.id,
+        courseId
       },
       include: {
         course: {
@@ -86,12 +84,10 @@ export async function POST(req: NextRequest) {
     let certificate = null
     if (newProgress >= 100) {
       // Check if certificate already exists
-      const existingCert = await prisma.certificate.findUnique({
+      const existingCert = await prisma.certificate.findFirst({
         where: {
-          userId_courseId: {
-            userId: session.user.id,
-            courseId
-          }
+          userId: session.user.id,
+          courseId
         }
       })
 

@@ -22,12 +22,10 @@ export async function GET(
     const userId = session.user.id
 
     // Find certificate
-    const certificate = await prisma.certificate.findUnique({
+    const certificate = await prisma.certificate.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId
-        }
+        userId,
+        courseId
       },
       include: {
         course: {

@@ -24,29 +24,28 @@ export async function GET() {
         { displayOrder: 'asc' },
         { createdAt: 'asc' },
       ],
-      include: {
-        _count: {
-          select: {
-            memberships: true,
-          },
-        },
-      },
     })
 
-    // Count active subscriptions
+    // Count memberships for each package manually
     const packagesWithStats = await Promise.all(
       packages.map(async (pkg) => {
-        const activeSubscriptions = await prisma.supplierMembership.count({
-          where: {
-            packageId: pkg.id,
-            isActive: true,
-          },
-        })
+        const [totalSubscriptions, activeSubscriptions] = await Promise.all([
+          prisma.supplierMembership.count({
+            where: { packageId: pkg.id },
+          }),
+          prisma.supplierMembership.count({
+            where: {
+              packageId: pkg.id,
+              isActive: true,
+            },
+          }),
+        ])
 
         return {
           ...pkg,
           activeSubscriptions,
-          totalSubscriptions: pkg._count.memberships,
+          totalSubscriptions,
+          _count: { memberships: totalSubscriptions },
         }
       })
     )

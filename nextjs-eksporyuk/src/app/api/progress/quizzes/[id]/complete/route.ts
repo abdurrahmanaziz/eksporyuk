@@ -36,12 +36,10 @@ export async function POST(
     }
 
     // Get enrollment
-    const enrollment = await prisma.courseEnrollment.findUnique({
+    const enrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: user.id,
-          courseId
-        }
+        userId: user.id,
+        courseId
       }
     })
 
@@ -95,12 +93,10 @@ export async function POST(
       const progressPercent = totalLessons > 0 ? Math.round((completedLessons.length / totalLessons) * 100) : 0
 
       // Update enrollment
-      const updated = await prisma.courseEnrollment.update({
+      const updated = await prisma.courseEnrollment.updateMany({
         where: {
-          userId_courseId: {
-            userId: user.id,
-            courseId
-          }
+          userId: user.id,
+          courseId
         },
         data: {
           completedLessons,

@@ -132,12 +132,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if certificate already exists
-    const existing = await prisma.certificate.findUnique({
+    const existing = await prisma.certificate.findFirst({
       where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId
-        }
+        userId: session.user.id,
+        courseId
       }
     })
 

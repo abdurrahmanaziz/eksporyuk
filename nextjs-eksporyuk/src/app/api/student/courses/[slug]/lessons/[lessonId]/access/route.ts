@@ -52,24 +52,29 @@ export async function POST(
     }
 
     // Update or create progress record
-    const userProgress = await prisma.userCourseProgress.upsert({
+    let userProgress = await prisma.userCourseProgress.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId: course.id
-        }
-      },
-      update: {
-        lastAccessedAt: new Date()
-      },
-      create: {
         userId,
-        courseId: course.id,
-        progress: 0,
-        hasAccess: true,
-        lastAccessedAt: new Date()
+        courseId: course.id
       }
     })
+
+    if (userProgress) {
+      userProgress = await prisma.userCourseProgress.update({
+        where: { id: userProgress.id },
+        data: { lastAccessedAt: new Date() }
+      })
+    } else {
+      userProgress = await prisma.userCourseProgress.create({
+        data: {
+          userId,
+          courseId: course.id,
+          progress: 0,
+          hasAccess: true,
+          lastAccessedAt: new Date()
+        }
+      })
+    }
 
     return NextResponse.json({ success: true })
 

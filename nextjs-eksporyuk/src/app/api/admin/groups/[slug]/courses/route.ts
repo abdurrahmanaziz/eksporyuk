@@ -147,12 +147,10 @@ export async function POST(
       for (const courseId of courseIds) {
         for (const member of groupMembers) {
           // Check if enrollment already exists
-          const existingEnrollment = await prisma.courseEnrollment.findUnique({
+          const existingEnrollment = await prisma.courseEnrollment.findFirst({
             where: {
-              userId_courseId: {
-                userId: member.userId,
-                courseId: courseId,
-              },
+              userId: member.userId,
+              courseId: courseId,
             },
           })
 

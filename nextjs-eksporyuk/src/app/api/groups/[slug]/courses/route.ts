@@ -70,13 +70,11 @@ export async function GET(
     // Get user's progress for each course
     const coursesWithProgress = await Promise.all(
       enrollments.map(async (enrollment) => {
-        const progress = await prisma.userCourseProgress.findUnique({
-          where: {
-            userId_courseId: {
-              userId: session.user.id,
-              courseId: enrollment.course.id
-            }
-          }
+        const progress = await prisma.userCourseProgress.findFirst({
+      where: {
+        userId: session.user.id,
+        courseId: enrollment.course.id
+      }
         })
 
         return {

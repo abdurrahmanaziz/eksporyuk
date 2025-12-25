@@ -63,12 +63,10 @@ export async function GET(
     }
 
     // Get user's progress for this course
-    let userProgress = await prisma.userCourseProgress.findUnique({
+    let userProgress = await prisma.userCourseProgress.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId: course.id
-        }
+        userId,
+        courseId: course.id
       }
     })
 
@@ -89,12 +87,10 @@ export async function GET(
       : []
 
     // Check if user has certificate
-    const certificate = await prisma.certificate.findUnique({
+    const certificate = await prisma.certificate.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId: course.id
-        }
+        userId,
+        courseId: course.id
       }
     })
 

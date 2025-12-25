@@ -227,12 +227,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if already enrolled
-    const existingEnrollment = await prisma.courseEnrollment.findUnique({
+    const existingEnrollment = await prisma.courseEnrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId,
-          courseId
-        }
+        userId,
+        courseId
       }
     })
 

@@ -145,23 +145,28 @@ export async function GET(req: NextRequest) {
           }
         }
 
-        // Check if course is in user's membership package
-        const membershipCourse = await prisma.membershipCourse.findFirst({
+        // Check if course is in user's membership package - MembershipCourse has no relations
+        // First get user's active membership IDs
+        const userMemberships = await prisma.userMembership.findMany({
           where: {
-            courseId: course.id,
-            membership: {
-              userMemberships: {
-                some: {
-                  userId: session.user.id,
-                  status: 'ACTIVE'
-                }
-              }
-            }
-          }
+            userId: session.user.id,
+            status: 'ACTIVE'
+          },
+          select: { membershipId: true }
         })
-        if (membershipCourse) {
-          accessStatus = 'membership'
-          isFreeForUser = true
+        
+        if (userMemberships.length > 0) {
+          const membershipIds = userMemberships.map(m => m.membershipId)
+          const membershipCourse = await prisma.membershipCourse.findFirst({
+            where: {
+              courseId: course.id,
+              membershipId: { in: membershipIds }
+            }
+          })
+          if (membershipCourse) {
+            accessStatus = 'membership'
+            isFreeForUser = true
+          }
         }
       }
 

@@ -134,20 +134,22 @@ export const authOptions: NextAuthOptions = {
             select: {
               createdAt: true,
               role: true,
-              userMemberships: {
-                where: {
-                  isActive: true,
-                  status: 'ACTIVE',
-                },
-                select: { id: true },
-                take: 1,
-              }
             }
           })
           
           if (dbUser) {
+            // Check membership separately - UserMembership has no relation defined
+            const activeMembership = await prisma.userMembership.findFirst({
+              where: {
+                userId: user.id,
+                isActive: true,
+                status: 'ACTIVE',
+              },
+              select: { id: true },
+            })
+            
             token.createdAt = dbUser.createdAt.toISOString()
-            token.hasMembership = dbUser.userMemberships.length > 0
+            token.hasMembership = !!activeMembership
             
             // Calculate trial end date (3 days from registration)
             const trialEnd = new Date(dbUser.createdAt)

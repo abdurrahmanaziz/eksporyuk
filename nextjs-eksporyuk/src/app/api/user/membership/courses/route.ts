@@ -101,22 +101,18 @@ export async function GET(request: NextRequest) {
         })
 
         // Get enrollment
-        const enrollment = await prisma.courseEnrollment.findUnique({
+        const enrollment = await prisma.courseEnrollment.findFirst({
           where: {
-            userId_courseId: {
-              userId,
-              courseId: course.id,
-            },
+            userId,
+            courseId: course.id,
           },
         })
 
         // Get user progress
-        const userProgress = await prisma.userCourseProgress.findUnique({
+        const userProgress = await prisma.userCourseProgress.findFirst({
           where: {
-            userId_courseId: {
-              userId,
-              courseId: course.id,
-            },
+            userId,
+            courseId: course.id,
           },
         })
 
@@ -214,21 +210,17 @@ export async function GET(request: NextRequest) {
           },
         })
 
-        const enrollment = await prisma.courseEnrollment.findUnique({
+        const enrollment = await prisma.courseEnrollment.findFirst({
           where: {
-            userId_courseId: {
-              userId,
-              courseId: course.id,
-            },
+            userId,
+            courseId: course.id,
           },
         })
 
-        const userProgress = await prisma.userCourseProgress.findUnique({
+        const userProgress = await prisma.userCourseProgress.findFirst({
           where: {
-            userId_courseId: {
-              userId,
-              courseId: course.id,
-            },
+            userId,
+            courseId: course.id,
           },
         })
 

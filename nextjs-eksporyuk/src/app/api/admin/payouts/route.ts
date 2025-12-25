@@ -24,23 +24,48 @@ export async function GET(request: NextRequest) {
       where.status = status
     }
 
+    // Payout model has no relations - only walletId
     const payouts = await prisma.payout.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        }
-      },
       orderBy: {
-        requestedAt: 'desc'
+        createdAt: 'desc'
       }
     })
 
-    return NextResponse.json({ payouts })
+    // Fetch wallets to get user IDs
+    const walletIds = [...new Set(payouts.map(p => p.walletId))]
+    const wallets = await prisma.wallet.findMany({
+      where: { id: { in: walletIds } },
+      select: { id: true, userId: true }
+    })
+
+    // Fetch users
+    const userIds = [...new Set(wallets.map(w => w.userId))]
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      }
+    })
+
+    // Create lookup maps
+    const walletMap = new Map(wallets.map(w => [w.id, w]))
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    // Enrich payouts with user data
+    const enrichedPayouts = payouts.map(payout => {
+      const wallet = walletMap.get(payout.walletId)
+      const user = wallet ? userMap.get(wallet.userId) : null
+      return {
+        ...payout,
+        amount: parseFloat(payout.amount.toString()),
+        user: user || null,
+      }
+    })
+
+    return NextResponse.json({ payouts: enrichedPayouts })
   } catch (error) {
     console.error('Error fetching payouts:', error)
     return NextResponse.json(

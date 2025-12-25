@@ -21,50 +21,36 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
 
-    // Build where clause based on new status workflow
+    // Build where clause based on boolean flags (actual schema fields)
     const where: any = {}
 
     if (statusFilter === 'pending') {
-      // Show WAITING_REVIEW (waiting for mentor) - info only for admin
-      where.status = 'WAITING_REVIEW'
+      // Not verified and not suspended
+      where.isVerified = false
+      where.isSuspended = false
     } else if (statusFilter === 'recommended') {
-      // Show RECOMMENDED_BY_MENTOR (ready for admin approval)
-      where.status = 'RECOMMENDED_BY_MENTOR'
+      // Not verified and not suspended (ready for verification)
+      where.isVerified = false
+      where.isSuspended = false
     } else if (statusFilter === 'verified') {
-      // Show VERIFIED suppliers
-      where.status = 'VERIFIED'
+      // Show verified suppliers
+      where.isVerified = true
+    } else if (statusFilter === 'suspended') {
+      // Show suspended suppliers
+      where.isSuspended = true
     } else if (statusFilter === 'all') {
-      // Show all except DRAFT and ONBOARDING
-      where.status = {
-        in: ['WAITING_REVIEW', 'RECOMMENDED_BY_MENTOR', 'VERIFIED', 'LIMITED', 'SUSPENDED']
-      }
+      // No filter - show all
     } else {
-      // Default: show only RECOMMENDED_BY_MENTOR (what admin needs to act on)
-      where.status = 'RECOMMENDED_BY_MENTOR'
+      // Default: show non-verified, non-suspended (pending verification)
+      where.isVerified = false
+      where.isSuspended = false
     }
 
     const [suppliers, total] = await Promise.all([
       prisma.supplierProfile.findMany({
         where,
-        include: {
-          assessments: {
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-            include: {
-              answers: {
-                include: {
-                  question: true,
-                },
-              },
-            },
-          },
-          auditLogs: {
-            orderBy: { createdAt: 'desc' },
-            take: 5,
-          },
-        },
         orderBy: {
-          mentorReviewedAt: 'asc' // Oldest mentor review first (FIFO)
+          updatedAt: 'asc' // Oldest updated first (FIFO)
         },
         skip,
         take: limit,
@@ -84,44 +70,48 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Get memberships
+    // Get memberships - model has no relations, fetch package data separately
     const memberships = await prisma.supplierMembership.findMany({
       where: {
         userId: { in: userIds }
       },
-      include: {
-        package: {
-          select: {
-            name: true,
-            type: true
-          }
-        }
-      },
       orderBy: { createdAt: 'desc' },
     })
+    
+    // Get package details separately
+    const packageIds = [...new Set(memberships.map(m => m.packageId))]
+    const packages = packageIds.length > 0 ? await prisma.supplierPackage.findMany({
+      where: { id: { in: packageIds } },
+      select: { id: true, name: true, type: true }
+    }) : []
+    const packageMap = new Map(packages.map(p => [p.id, p]))
 
-    // Map data together
-    const suppliersWithDetails = suppliers.map(s => ({
-      ...s,
-      user: users.find(u => u.id === s.userId) || null,
-      supplierMembership: memberships.find(m => m.userId === s.userId) || null
-    }))
+    // Map data together - include package info from separate query
+    const suppliersWithDetails = suppliers.map(s => {
+      const membership = memberships.find(m => m.userId === s.userId) || null
+      return {
+        ...s,
+        user: users.find(u => u.id === s.userId) || null,
+        supplierMembership: membership ? {
+          ...membership,
+          package: membership.packageId ? packageMap.get(membership.packageId) || null : null
+        } : null
+      }
+    })
 
-    // Calculate stats with new status workflow
-    const [statsData] = await Promise.all([
-      prisma.supplierProfile.groupBy({
-        by: ['status'],
-        _count: true,
-      }),
+    // Calculate stats using actual boolean fields
+    const [totalCount, verifiedCount, pendingCount, suspendedCount] = await Promise.all([
+      prisma.supplierProfile.count(),
+      prisma.supplierProfile.count({ where: { isVerified: true } }),
+      prisma.supplierProfile.count({ where: { isVerified: false, isSuspended: false } }),
+      prisma.supplierProfile.count({ where: { isSuspended: true } }),
     ])
 
     const stats = {
-      total: total,
-      waitingReview: statsData.find(s => s.status === 'WAITING_REVIEW')?._count || 0,
-      recommended: statsData.find(s => s.status === 'RECOMMENDED_BY_MENTOR')?._count || 0,
-      verified: statsData.find(s => s.status === 'VERIFIED')?._count || 0,
-      limited: statsData.find(s => s.status === 'LIMITED')?._count || 0,
-      suspended: statsData.find(s => s.status === 'SUSPENDED')?._count || 0,
+      total: totalCount,
+      pending: pendingCount,
+      verified: verifiedCount,
+      suspended: suspendedCount,
     }
 
     return NextResponse.json({
@@ -153,7 +143,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { supplierId, action, reason, notes } = body
+    const { supplierId, action, reason } = body
 
     if (!supplierId || !action) {
       return NextResponse.json(
@@ -173,56 +163,22 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Admin can only approve suppliers that are RECOMMENDED_BY_MENTOR
-    if (action === 'approve' && supplier.status !== 'RECOMMENDED_BY_MENTOR') {
-      return NextResponse.json(
-        { 
-          error: 'Can only approve suppliers recommended by mentor',
-          currentStatus: supplier.status 
-        },
-        { status: 400 }
-      )
-    }
-
-    let newStatus: string
     let updateData: any = {}
 
     switch (action) {
       case 'approve':
-        // RECOMMENDED_BY_MENTOR → VERIFIED
-        newStatus = 'VERIFIED'
         updateData = {
-          status: newStatus as any,
-          isVerified: true, // Keep old field for backward compatibility
+          isVerified: true,
           verifiedAt: new Date(),
           verifiedBy: session.user.id,
-          adminApprovedBy: session.user.id,
-          adminApprovedAt: new Date(),
-          adminNotes: notes || null,
-        }
-        break
-      
-      case 'limit':
-        // Set to LIMITED status (needs improvement)
-        newStatus = 'LIMITED'
-        if (!reason) {
-          return NextResponse.json(
-            { error: 'Reason is required for LIMITED status' },
-            { status: 400 }
-          )
-        }
-        updateData = {
-          status: newStatus as any,
-          isVerified: false,
-          adminApprovedBy: session.user.id,
-          adminApprovedAt: new Date(),
-          adminNotes: notes || reason,
+          isSuspended: false,
+          suspendedAt: null,
+          suspendedBy: null,
+          suspendReason: null,
         }
         break
       
       case 'reject':
-        // Send back to ONBOARDING for revision
-        newStatus = 'ONBOARDING'
         if (!reason) {
           return NextResponse.json(
             { error: 'Rejection reason is required' },
@@ -230,19 +186,13 @@ export async function PUT(request: NextRequest) {
           )
         }
         updateData = {
-          status: newStatus as any,
           isVerified: false,
           verifiedAt: null,
           verifiedBy: null,
-          adminApprovedBy: null,
-          adminApprovedAt: null,
-          adminNotes: notes || reason,
         }
         break
       
       case 'suspend':
-        // Suspend supplier
-        newStatus = 'SUSPENDED'
         if (!reason) {
           return NextResponse.json(
             { error: 'Suspension reason is required' },
@@ -250,45 +200,33 @@ export async function PUT(request: NextRequest) {
           )
         }
         updateData = {
-          status: newStatus as any,
           isSuspended: true,
           suspendedAt: new Date(),
           suspendedBy: session.user.id,
           suspendReason: reason,
-          adminNotes: notes || reason,
+        }
+        break
+      
+      case 'unsuspend':
+        updateData = {
+          isSuspended: false,
+          suspendedAt: null,
+          suspendedBy: null,
+          suspendReason: null,
         }
         break
       
       default:
         return NextResponse.json(
-          { error: 'Invalid action. Allowed: approve, limit, reject, suspend' },
+          { error: 'Invalid action. Allowed: approve, reject, suspend, unsuspend' },
           { status: 400 }
         )
     }
 
-    // Update in transaction with audit log
-    const result = await prisma.$transaction(async (tx) => {
-      const updated = await tx.supplierProfile.update({
-        where: { id: supplierId },
-        data: updateData,
-      })
-
-      // Create audit log
-      await tx.supplierAuditLog.create({
-        data: {
-          supplierId,
-          userId: session.user.id,
-          action: `ADMIN_${action.toUpperCase()}`,
-          fieldChanged: 'status',
-          oldValue: supplier.status,
-          newValue: newStatus,
-          notes: notes || reason || `Admin ${action}: ${newStatus}`,
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-          userAgent: request.headers.get('user-agent') || 'unknown',
-        },
-      })
-
-      return updated
+    // Update supplier
+    const result = await prisma.supplierProfile.update({
+      where: { id: supplierId },
+      data: updateData,
     })
 
     // Get user info for email
@@ -296,21 +234,6 @@ export async function PUT(request: NextRequest) {
       where: { id: supplier.userId },
       select: { name: true, email: true },
     })
-
-    // Send verification email notification (async, don't block response)
-    if (user?.email) {
-      const { sendSupplierVerificationEmail } = await import('@/lib/email/supplier-email')
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      
-      sendSupplierVerificationEmail({
-        email: user.email,
-        name: user.name || supplier.companyName,
-        companyName: supplier.companyName,
-        status: action === 'approve' ? 'APPROVED' : action === 'suspend' ? 'SUSPENDED' : 'REJECTED',
-        reason: reason || notes,
-        profileUrl: `${appUrl}/supplier/profile`
-      }).catch(err => console.error('Error sending verification email:', err))
-    }
 
     return NextResponse.json({
       success: true,
