@@ -9,13 +9,13 @@ datasource db {
 }
 
 model User {
-  id                     String    @id @default(cuid())
-  memberCode             String?   @unique
-  email                  String    @unique
-  username               String?   @unique
+  id                     String            @id @default(cuid())
+  memberCode             String?           @unique
+  email                  String            @unique
+  username               String?           @unique
   name                   String
   password               String?
-  role                   Role      @default(MEMBER_FREE)
+  role                   Role              @default(MEMBER_FREE)
   avatar                 String?
   bio                    String?
   phone                  String?
@@ -27,45 +27,43 @@ model User {
   postalCode             String?
   latitude               Float?
   longitude              Float?
-  locationVerified       Boolean   @default(false)
-  profileCompleted       Boolean   @default(false)
-  isOnline               Boolean   @default(false)
+  locationVerified       Boolean           @default(false)
+  profileCompleted       Boolean           @default(false)
+  isOnline               Boolean           @default(false)
   lastSeenAt             DateTime?
   lastActiveAt           DateTime?
-  emailVerified          Boolean   @default(false)
-  isActive               Boolean   @default(true)
-  isSuspended            Boolean   @default(false)
+  emailVerified          Boolean           @default(false)
+  isActive               Boolean           @default(true)
+  isSuspended            Boolean           @default(false)
   suspendReason          String?
   suspendedAt            DateTime?
   suspendedBy            String?
-  isFounder              Boolean   @default(false)
-  isCoFounder            Boolean   @default(false)
-  affiliateMenuEnabled   Boolean   @default(false)
+  isFounder              Boolean           @default(false)
+  isCoFounder            Boolean           @default(false)
+  affiliateMenuEnabled   Boolean           @default(false)
   revenueSharePercent    Float?
-  emailNotifications     Boolean   @default(true)
-  whatsappNotifications  Boolean   @default(false)
+  emailNotifications     Boolean           @default(true)
+  whatsappNotifications  Boolean           @default(false)
   oneSignalPlayerId      String?
   oneSignalSubscribedAt  DateTime?
   oneSignalTags          Json?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
   referredById           String?
   mailketingLists        Json?
   mailketingSubscriberId String?
   withdrawalPin          String?
   withdrawalPinSetAt     DateTime?
   coverImage             String?
-  
-  // Relations
-  createdProducts    Product[]         @relation("ProductCreator")
-  userProducts       UserProduct[]     @relation("UserProductUser")
-  posts              Post[]            @relation("UserPosts")
-  comments           PostComment[]     @relation("UserComments")
-  postReactions      PostReaction[]    @relation("UserPostReactions")
-  commentReactions   CommentReaction[] @relation("UserCommentReactions")
-  savedPosts         SavedPost[]       @relation("UserSavedPosts")
-  followers          Follow[]          @relation("UserFollowers")
-  following          Follow[]          @relation("UserFollowing")
+  commentReactions       CommentReaction[] @relation("UserCommentReactions")
+  followers              Follow[]          @relation("UserFollowers")
+  following              Follow[]          @relation("UserFollowing")
+  posts                  Post[]            @relation("UserPosts")
+  comments               PostComment[]     @relation("UserComments")
+  postReactions          PostReaction[]    @relation("UserPostReactions")
+  createdProducts        Product[]         @relation("ProductCreator")
+  savedPosts             SavedPost[]       @relation("UserSavedPosts")
+  userProducts           UserProduct[]     @relation("UserProductUser")
 
   @@index([email])
   @@index([username])
@@ -795,8 +793,6 @@ model Product {
   clickCount              Int             @default(0)
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
-  
-  // Relations
   creator                 User            @relation("ProductCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   group                   Group?          @relation(fields: [groupId], references: [id])
   userProducts            UserProduct[]   @relation("ProductUserProducts")
@@ -813,10 +809,8 @@ model UserProduct {
   transactionId String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
-  // Relations
-  user          User      @relation("UserProductUser", fields: [userId], references: [id], onDelete: Cascade)
   product       Product   @relation("ProductUserProducts", fields: [productId], references: [id], onDelete: Cascade)
+  user          User      @relation("UserProductUser", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model EventMembership {
@@ -983,8 +977,6 @@ model Group {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   slug            String?
-  
-  // Relations
   products        Product[]
 }
 
@@ -1025,12 +1017,10 @@ model Post {
   expiresAt        DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-
-  // Relations
-  author    User           @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  comments  PostComment[]  @relation("PostComments")
-  reactions PostReaction[]
-  savedBy   SavedPost[]
+  author           User           @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  comments         PostComment[]  @relation("PostComments")
+  reactions        PostReaction[]
+  savedBy          SavedPost[]
 
   @@index([authorId])
   @@index([groupId])
@@ -1045,24 +1035,22 @@ model PostLike {
 }
 
 model PostComment {
-  id               String   @id @default(cuid())
+  id               String            @id @default(cuid())
   postId           String
   userId           String
   content          String
   parentId         String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   contentFormatted Json?
   images           Json?
   mentionedUsers   Json?
   reactionsCount   Json?
-
-  // Relations
-  post      Post              @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
-  user      User              @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade)
-  parent    PostComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   PostComment[]     @relation("CommentReplies")
-  reactions CommentReaction[]
+  reactions        CommentReaction[]
+  parent           PostComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies          PostComment[]     @relation("CommentReplies")
+  post             Post              @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
+  user             User              @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([userId])
@@ -1075,9 +1063,8 @@ model PostReaction {
   userId    String
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation("UserPostReactions", fields: [userId], references: [id], onDelete: Cascade)
+  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User         @relation("UserPostReactions", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@index([postId])
@@ -1090,9 +1077,8 @@ model CommentReaction {
   userId    String
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
-
-  comment PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User        @relation("UserCommentReactions", fields: [userId], references: [id], onDelete: Cascade)
+  comment   PostComment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User         @relation("UserCommentReactions", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([commentId, userId])
   @@index([commentId])
@@ -1104,9 +1090,8 @@ model SavedPost {
   postId    String
   userId    String
   createdAt DateTime @default(now())
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation("UserSavedPosts", fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserSavedPosts", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@index([postId])
@@ -1209,13 +1194,13 @@ model Coupon {
   maxGeneratePerAffiliate Int?
   maxUsagePerCoupon       Int?
   basedOnCouponId         String?
-  parentCoupon            Coupon?   @relation("CouponHierarchy", fields: [basedOnCouponId], references: [id], onDelete: Cascade)
-  childCoupons            Coupon[]  @relation("CouponHierarchy")
-  affiliateId             String?
-  generatedBy             String?
   createdBy               String?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
+  affiliateId             String?
+  generatedBy             String?
+  parentCoupon            Coupon?   @relation("CouponHierarchy", fields: [basedOnCouponId], references: [id], onDelete: Cascade)
+  childCoupons            Coupon[]  @relation("CouponHierarchy")
 
   @@index([code])
   @@index([basedOnCouponId])
@@ -1229,9 +1214,8 @@ model Follow {
   followerId  String
   followingId String
   createdAt   DateTime @default(now())
-
-  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
-  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
   @@index([followerId])
