@@ -81,8 +81,9 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     // Google OAuth Provider
-    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
-      GoogleProvider({
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? (() => {
+      console.log('[AUTH-OPTIONS] Google OAuth enabled - Client ID:', process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + '...')
+      return [GoogleProvider({
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         authorization: {
@@ -92,15 +93,22 @@ export const authOptions: NextAuthOptions = {
             response_type: 'code'
           }
         }
-      })
-    ] : []),
+      })]
+    })() : (() => {
+      console.log('[AUTH-OPTIONS] Google OAuth NOT enabled - missing credentials')
+      return []
+    })()),
     // Facebook OAuth Provider
-    ...(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET ? [
-      FacebookProvider({
+    ...(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET ? (() => {
+      console.log('[AUTH-OPTIONS] Facebook OAuth enabled - App ID:', process.env.FACEBOOK_CLIENT_ID)
+      return [FacebookProvider({
         clientId: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-      })
-    ] : []),
+      })]
+    })() : (() => {
+      console.log('[AUTH-OPTIONS] Facebook OAuth NOT enabled - FACEBOOK_CLIENT_ID:', !!process.env.FACEBOOK_CLIENT_ID, 'FACEBOOK_CLIENT_SECRET:', !!process.env.FACEBOOK_CLIENT_SECRET)
+      return []
+    })()),
   ],
   callbacks: {
     async jwt({ token, user }) {
