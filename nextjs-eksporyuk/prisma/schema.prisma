@@ -1766,7 +1766,7 @@ model Settings {
   siteFavicon                     String?
   primaryColor                    String?  @default("#0066CC")
   secondaryColor                  String?  @default("#0052CC")
-  accentColor                     String?  @default("#3399FF")
+  // accentColor                     String?  @default("#3399FF")  // Commented - not in production DB
   buttonPrimaryBg                 String?  @default("#0066CC")
   buttonPrimaryText               String?  @default("#FFFFFF")
   buttonSecondaryBg               String?  @default("#6B7280")
