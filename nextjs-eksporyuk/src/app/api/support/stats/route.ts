@@ -61,37 +61,54 @@ export async function GET(request: NextRequest) {
     })
 
     // Average response time (in hours)
-    const ticketsWithResponse = await prisma.supportTicket.findMany({
+    // Find tickets that have admin responses by querying messages first
+    const ticketsWithAdminMessages = await prisma.supportTicketMessage.findMany({
       where: {
-        messages: {
-          some: {
-            senderRole: 'ADMIN'
-          }
-        }
+        senderRole: 'ADMIN'
       },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'asc' },
-          take: 2
-        }
+      select: {
+        ticketId: true
       },
-      take: 100 // Sample last 100 tickets
+      distinct: ['ticketId'],
+      take: 100
     })
+
+    const ticketIdsWithResponse = ticketsWithAdminMessages.map(m => m.ticketId)
 
     let totalResponseTime = 0
     let responseCount = 0
 
-    ticketsWithResponse.forEach(ticket => {
-      if (ticket.messages.length >= 2) {
-        const firstMessage = ticket.messages[0]
-        const firstResponse = ticket.messages.find(m => m.senderRole === 'ADMIN')
-        if (firstResponse) {
-          const responseTime = firstResponse.createdAt.getTime() - firstMessage.createdAt.getTime()
-          totalResponseTime += responseTime / (1000 * 60 * 60) // Convert to hours
-          responseCount++
+    if (ticketIdsWithResponse.length > 0) {
+      // Get messages for these tickets
+      const allMessages = await prisma.supportTicketMessage.findMany({
+        where: {
+          ticketId: { in: ticketIdsWithResponse }
+        },
+        orderBy: { createdAt: 'asc' }
+      })
+
+      // Group messages by ticketId
+      const messagesByTicket = new Map<string, typeof allMessages>()
+      for (const msg of allMessages) {
+        if (!messagesByTicket.has(msg.ticketId)) {
+          messagesByTicket.set(msg.ticketId, [])
         }
+        messagesByTicket.get(msg.ticketId)!.push(msg)
       }
-    })
+
+      // Calculate response times
+      messagesByTicket.forEach((messages) => {
+        if (messages.length >= 2) {
+          const firstMessage = messages[0]
+          const firstResponse = messages.find(m => m.senderRole === 'ADMIN')
+          if (firstResponse) {
+            const responseTime = firstResponse.createdAt.getTime() - firstMessage.createdAt.getTime()
+            totalResponseTime += responseTime / (1000 * 60 * 60) // Convert to hours
+            responseCount++
+          }
+        }
+      })
+    }
 
     const avgResponseTimeHours = responseCount > 0
       ? (totalResponseTime / responseCount).toFixed(2)

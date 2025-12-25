@@ -26,19 +26,23 @@ export async function GET(request: NextRequest) {
         isVerified: true,
         isSuspended: false,
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
       orderBy: {
         verifiedAt: 'desc',
       },
     })
+
+    // Enrich with user data manually
+    const userIds = verifiedProfiles.map(p => p.userId)
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, email: true },
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
+    
+    const profilesWithUser = verifiedProfiles.map(p => ({
+      ...p,
+      user: userMap.get(p.userId) || null
+    }))
 
     // Get all suppliers in database
     const existingSuppliers = await prisma.supplier.findMany({
@@ -53,7 +57,7 @@ export async function GET(request: NextRequest) {
     const existingEmails = new Set(existingSuppliers.map((s) => s.email?.toLowerCase()))
     const existingCompanies = new Set(existingSuppliers.map((s) => s.companyName.toLowerCase()))
 
-    const profilesNotInDatabase = verifiedProfiles.filter((profile) => {
+    const profilesNotInDatabase = profilesWithUser.filter((profile) => {
       const emailMatch = profile.email && existingEmails.has(profile.email.toLowerCase())
       const companyMatch = existingCompanies.has(profile.companyName.toLowerCase())
       return !emailMatch && !companyMatch

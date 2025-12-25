@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     // Only admin can access
-    if (!session?.user?.role || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role)) {
+    if (!session?.user?.role || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }

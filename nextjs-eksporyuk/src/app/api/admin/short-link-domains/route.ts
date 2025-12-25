@@ -27,15 +27,25 @@ export async function GET(req: NextRequest) {
         { isDefault: 'desc' },
         { isActive: 'desc' },
         { createdAt: 'desc' }
-      ],
-      include: {
-        _count: {
-          select: { shortLinks: true }
-        }
-      }
+      ]
+    })
+
+    // Get short link counts manually since no relation exists
+    const domainIds = domains.map(d => d.id)
+    const shortLinkCounts = await prisma.affiliateShortLink.groupBy({
+      by: ['domainId'],
+      where: { domainId: { in: domainIds } },
+      _count: true
     })
     
-    return NextResponse.json({ domains })
+    const countMap = new Map(shortLinkCounts.map(s => [s.domainId, s._count]))
+    
+    const domainsWithCounts = domains.map(d => ({
+      ...d,
+      _count: { shortLinks: countMap.get(d.id) || 0 }
+    }))
+    
+    return NextResponse.json({ domains: domainsWithCounts })
   } catch (error) {
     console.error('Error fetching domains:', error)
     return NextResponse.json(

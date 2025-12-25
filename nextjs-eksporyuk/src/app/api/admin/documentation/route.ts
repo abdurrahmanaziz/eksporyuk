@@ -39,55 +39,20 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Filter by role if specified
+    // Filter by role if specified - use string contains for JSON field (PostgreSQL compatible)
+    // Note: targetRoles is stored as JSON array like ["ADMIN", "MEMBER_FREE"]
     if (role) {
+      // Use raw filter for JSON contains in PostgreSQL
       where.targetRoles = {
-        path: '$',
-        array_contains: role
+        string_contains: role
       };
     }
 
     const [docs, total] = await Promise.all([
       prisma.documentation.findMany({
         where,
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true
-            }
-          },
-          lastEditedBy: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true
-            }
-          },
-          parent: {
-            select: {
-              id: true,
-              title: true,
-              slug: true
-            }
-          },
-          children: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              status: true
-            }
-          },
-          _count: {
-            select: {
-              revisions: true
-            }
-          }
-        },
+        // Note: Relations author, lastEditedBy, parent, children are not defined in schema
+        // Query raw data and enrich manually if needed
         orderBy: [
           { order: 'asc' },
           { createdAt: 'desc' }
@@ -98,8 +63,34 @@ export async function GET(request: NextRequest) {
       prisma.documentation.count({ where })
     ]);
 
+    // Enrich docs with author info if needed
+    const enrichedDocs = await Promise.all(docs.map(async (doc) => {
+      let author = null;
+      let lastEditedBy = null;
+      
+      if (doc.authorId) {
+        author = await prisma.user.findUnique({
+          where: { id: doc.authorId },
+          select: { id: true, name: true, email: true, avatar: true }
+        });
+      }
+      
+      if (doc.lastEditedById) {
+        lastEditedBy = await prisma.user.findUnique({
+          where: { id: doc.lastEditedById },
+          select: { id: true, name: true, email: true, avatar: true }
+        });
+      }
+      
+      return {
+        ...doc,
+        author,
+        lastEditedBy
+      };
+    }));
+
     return NextResponse.json({
-      docs,
+      docs: enrichedDocs,
       pagination: {
         page,
         limit,

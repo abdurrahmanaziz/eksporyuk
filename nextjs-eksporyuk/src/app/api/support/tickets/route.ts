@@ -59,37 +59,6 @@ export async function GET(request: NextRequest) {
     const [tickets, total] = await Promise.all([
       prisma.supportTicket.findMany({
         where,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-              role: true
-            }
-          },
-          assignedTo: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          },
-          messages: {
-            take: 1,
-            orderBy: { createdAt: 'desc' },
-            select: {
-              id: true,
-              message: true,
-              createdAt: true,
-              isSystemMessage: true
-            }
-          },
-          _count: {
-            select: { messages: true }
-          }
-        },
         orderBy: [
           { status: 'asc' }, // Open tickets first
           { priority: 'desc' }, // Urgent first
@@ -101,9 +70,55 @@ export async function GET(request: NextRequest) {
       prisma.supportTicket.count({ where })
     ])
 
+    // Manually enrich with user data, assignedTo, messages, and counts
+    const userIds = tickets.map(t => t.userId).filter(Boolean)
+    const assignedIds = tickets.map(t => t.assignedToId).filter(Boolean) as string[]
+    const ticketIds = tickets.map(t => t.id)
+
+    const [users, assignedUsers, messages, messageCounts] = await Promise.all([
+      userIds.length > 0 ? prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, name: true, email: true, avatar: true, role: true }
+      }) : [],
+      assignedIds.length > 0 ? prisma.user.findMany({
+        where: { id: { in: assignedIds } },
+        select: { id: true, name: true, email: true }
+      }) : [],
+      ticketIds.length > 0 ? prisma.supportTicketMessage.findMany({
+        where: { ticketId: { in: ticketIds } },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, ticketId: true, message: true, createdAt: true, isSystemMessage: true }
+      }) : [],
+      ticketIds.length > 0 ? prisma.supportTicketMessage.groupBy({
+        by: ['ticketId'],
+        where: { ticketId: { in: ticketIds } },
+        _count: true
+      }) : []
+    ])
+
+    const userMap = new Map(users.map(u => [u.id, u]))
+    const assignedMap = new Map(assignedUsers.map(u => [u.id, u]))
+    const messageCountMap = new Map(messageCounts.map(m => [m.ticketId, m._count]))
+
+    // Get latest message per ticket
+    const latestMessages = new Map<string, typeof messages[0]>()
+    for (const msg of messages) {
+      if (!latestMessages.has(msg.ticketId)) {
+        latestMessages.set(msg.ticketId, msg)
+      }
+    }
+
+    const enrichedTickets = tickets.map(ticket => ({
+      ...ticket,
+      user: userMap.get(ticket.userId) || null,
+      assignedTo: ticket.assignedToId ? assignedMap.get(ticket.assignedToId) || null : null,
+      messages: latestMessages.has(ticket.id) ? [latestMessages.get(ticket.id)] : [],
+      _count: { messages: messageCountMap.get(ticket.id) || 0 }
+    }))
+
     return NextResponse.json({
       success: true,
-      data: tickets,
+      data: enrichedTickets,
       pagination: {
         page,
         limit,
@@ -146,7 +161,7 @@ export async function POST(request: NextRequest) {
     })
     const ticketNumber = `TICKET-${dateStr}-${String(count + 1).padStart(4, '0')}`
 
-    // Create ticket with first message
+    // Create ticket
     const ticket = await prisma.supportTicket.create({
       data: {
         ticketNumber,
@@ -159,38 +174,35 @@ export async function POST(request: NextRequest) {
         relatedOrderId: validated.relatedOrderId,
         relatedMembershipId: validated.relatedMembershipId,
         relatedCourseId: validated.relatedCourseId,
-        messages: {
-          create: {
-            senderId: session.user.id,
-            senderRole: session.user.role as any,
-            message: validated.message,
-            attachments: validated.attachments || [],
-            isSystemMessage: false
-          }
-        }
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        messages: {
-          include: {
-            sender: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true
-              }
-            }
-          }
-        }
       }
     })
+
+    // Create the first message separately
+    const firstMessage = await prisma.supportTicketMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderId: session.user.id,
+        senderRole: session.user.role as any,
+        message: validated.message,
+        attachments: validated.attachments || [],
+        isSystemMessage: false
+      }
+    })
+
+    // Get user data for response
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, email: true, avatar: true }
+    })
+
+    const enrichedTicket = {
+      ...ticket,
+      user,
+      messages: [{
+        ...firstMessage,
+        sender: user
+      }]
+    }
 
     // Send notifications (async, don't wait)
     ticketNotificationService.notifyTicketCreated(
@@ -211,7 +223,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: ticket,
+      data: enrichedTicket,
       message: 'Tiket berhasil dibuat'
     })
   } catch (error) {

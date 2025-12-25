@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic
+export const dynamic = 'force-dynamic'
+
 // GET /api/admin/settings/branding - Get branding settings
 export async function GET() {
   try {
@@ -174,4 +177,9 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+// POST /api/admin/settings/branding - Alias for PUT (to support both methods)
+export async function POST(request: NextRequest) {
+  return PUT(request)
 }

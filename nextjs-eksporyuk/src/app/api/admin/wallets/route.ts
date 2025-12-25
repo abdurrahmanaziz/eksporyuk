@@ -16,40 +16,43 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get all users with their wallet info
+    // Get all users
     const users = await prisma.user.findMany({
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        wallet: {
-          select: {
-            balance: true,
-            totalEarnings: true,
-            totalPayouts: true,
-          }
-        },
-        transactions: {
-          select: {
-            id: true,
-            createdAt: true,
-          },
-          orderBy: {
-            createdAt: 'desc'
-          },
-          take: 1
-        },
-        _count: {
-          select: {
-            transactions: true
-          }
-        }
+        createdAt: true,
       },
       orderBy: {
         createdAt: 'desc'
       }
     })
+
+    const userIds = users.map(u => u.id)
+
+    // Get wallets and transactions separately (no relations in schema)
+    const [allWallets, transactionCounts, latestTransactions] = await Promise.all([
+      prisma.wallet.findMany({
+        where: { userId: { in: userIds } }
+      }),
+      prisma.transaction.groupBy({
+        by: ['userId'],
+        where: { userId: { in: userIds } },
+        _count: true
+      }),
+      prisma.transaction.findMany({
+        where: { userId: { in: userIds } },
+        orderBy: { createdAt: 'desc' },
+        select: { userId: true, createdAt: true },
+        distinct: ['userId']
+      })
+    ])
+
+    const walletMap = new Map(allWallets.map(w => [w.userId, w]))
+    const countMap = new Map(transactionCounts.map(tc => [tc.userId, tc._count]))
+    const latestTxMap = new Map(latestTransactions.map(t => [t.userId, t.createdAt]))
 
     const wallets = users.map(user => ({
       userId: user.id,
@@ -58,11 +61,11 @@ export async function GET(request: NextRequest) {
         email: user.email,
         role: user.role,
       },
-      balance: user.wallet?.balance || 0,
-      totalEarnings: user.wallet?.totalEarnings || 0,
-      totalPayouts: user.wallet?.totalPayouts || 0,
-      transactionCount: user._count.transactions,
-      lastTransaction: user.transactions[0]?.createdAt || null,
+      balance: walletMap.get(user.id)?.balance || 0,
+      totalEarnings: walletMap.get(user.id)?.totalEarnings || 0,
+      totalPayouts: walletMap.get(user.id)?.totalPayout || 0,
+      transactionCount: countMap.get(user.id) || 0,
+      lastTransaction: latestTxMap.get(user.id) || null,
     }))
 
     return NextResponse.json({ wallets })

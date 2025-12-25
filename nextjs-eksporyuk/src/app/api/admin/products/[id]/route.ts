@@ -31,14 +31,7 @@ export async function GET(
       where: { id: params.id },
       include: {
         group: true,
-        courses: {
-          include: {
-            course: true,
-          },
-        },
-        _count: {
-          select: { userProducts: true },
-        },
+        userProducts: true,
       },
     })
 
@@ -46,7 +39,28 @@ export async function GET(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ product })
+    // Get courses for this product manually
+    const productCourses = await prisma.productCourse.findMany({
+      where: { productId: params.id }
+    })
+    const courseIds = productCourses.map(pc => pc.courseId)
+    const courses = courseIds.length > 0 
+      ? await prisma.course.findMany({ where: { id: { in: courseIds } } })
+      : []
+    
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+    const coursesWithRelation = productCourses.map(pc => ({
+      ...pc,
+      course: courseMap.get(pc.courseId) || null
+    }))
+
+    const productWithCourses = {
+      ...product,
+      courses: coursesWithRelation,
+      _count: { userProducts: product.userProducts.length }
+    }
+
+    return NextResponse.json({ product: productWithCourses })
   } catch (error) {
     console.error('Error fetching product:', error)
     return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 })
