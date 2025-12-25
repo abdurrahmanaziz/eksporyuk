@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { mailketingService } from '@/lib/mailketing'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-options'
+import { authOptions } from '@/lib/auth/auth-options'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'

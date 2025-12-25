@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { starsenderService } from '@/lib/starsender'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-options'
+import { authOptions } from '@/lib/auth/auth-options'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
