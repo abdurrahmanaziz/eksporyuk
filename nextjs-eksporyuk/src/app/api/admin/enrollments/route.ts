@@ -82,12 +82,10 @@ export async function GET(req: NextRequest) {
     // Get detailed progress for each enrollment
     const enrollmentsWithProgress = await Promise.all(
       enrollments.map(async (enrollment) => {
-        const progress = await prisma.userCourseProgress.findUnique({
+        const progress = await prisma.userCourseProgress.findFirst({
           where: {
-            userId_courseId: {
-              userId: enrollment.userId,
-              courseId: enrollment.courseId
-            }
+            userId: enrollment.userId,
+            courseId: enrollment.courseId
           }
         })
 
