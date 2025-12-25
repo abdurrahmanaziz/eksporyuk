@@ -211,7 +211,7 @@ export async function GET(request: NextRequest) {
       newMembership: {
         name: newMembership.name,
         price: Number(newMembership.price),
-        marketingPrice: newMembership.marketingPrice ? Number(newMembership.marketingPrice) : null
+        originalPrice: newMembership.originalPrice ? Number(newMembership.originalPrice) : null
       },
       calculation: {
         originalPrice: Number(newMembership.price),

@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
           description: (userMembership as any).membership.description,
           duration: (userMembership as any).membership.duration,
           price: (userMembership as any).membership.price,
-          marketingPrice: (userMembership as any).membership.marketingPrice,
+          originalPrice: (userMembership as any).membership.originalPrice,
           features,
           
           // Access to groups, courses, products

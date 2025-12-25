@@ -39,7 +39,8 @@ export async function GET(
         description: true,
         duration: true,
         price: true,
-        marketingPrice: true,
+        originalPrice: true,
+        discount: true,
         commissionType: true,
         affiliateCommissionRate: true,
         features: true,
@@ -118,13 +119,13 @@ export async function GET(
         if (Array.isArray(featuresData)) {
           benefits = featuresData
           const basePrice = parseFloat(plan.price?.toString() || '0')
-          const marketingPrice = parseFloat(plan.marketingPrice?.toString() || basePrice.toString())
+          const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
           
           prices = [{
             duration: plan.duration || 'ONE_MONTH',
             label: plan.name,
             price: basePrice,
-            marketingPrice: marketingPrice,
+            originalPrice: originalPrice,
             benefits: benefits,
             badge: '',
             isPopular: plan.isPopular || false
@@ -182,7 +183,6 @@ export async function PATCH(
       description,
       duration,
       price,
-      marketingPrice,
       originalPrice,
       discount,
       commissionType,
@@ -279,13 +279,6 @@ export async function PATCH(
       if (price !== existingPlan.price) changedFields.push('price')
     }
 
-    if (marketingPrice !== undefined) {
-      // Allow null/undefined for optional marketing price
-      updateData.marketingPrice = marketingPrice !== null && marketingPrice !== undefined 
-        ? Math.max(0, marketingPrice) 
-        : null
-      if (marketingPrice !== existingPlan.marketingPrice) changedFields.push('marketingPrice')
-    }
     if (originalPrice !== undefined) {
       updateData.originalPrice = originalPrice
       if (originalPrice !== existingPlan.originalPrice) changedFields.push('originalPrice')

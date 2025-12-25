@@ -192,13 +192,13 @@ export async function GET(
             
             // Build price from database fields
             const basePrice = parseFloat(plan.price?.toString() || '0')
-            const marketingPrice = plan.marketingPrice ? parseFloat(plan.marketingPrice.toString()) : null
+            const originalPrice = plan.originalPrice ? parseFloat(plan.originalPrice.toString()) : null
             
             prices = [{
               duration: plan.duration || 'ONE_MONTH',
               label: plan.name,
               price: basePrice,
-              marketingPrice: marketingPrice,
+              originalPrice: originalPrice,
               benefits: benefits,
               badge: '',
               isPopular: false

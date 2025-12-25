@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
         name: true,
         duration: true,
         price: true,
-        // marketingPrice: true, // Commented - column not synced with Prisma client
+        originalPrice: true,
+        discount: true,
         features: true,
         isBestSeller: true,
         isMostPopular: true,
@@ -73,7 +74,8 @@ export async function GET(request: NextRequest) {
       name: membership.name,
       duration: membership.duration,
       price: Number(membership.price),
-      marketingPrice: null, // Disabled - column not synced with Prisma client
+      originalPrice: membership.originalPrice ? Number(membership.originalPrice) : null,
+      discount: membership.discount || 0,
       features: typeof membership.features === 'string' 
         ? JSON.parse(membership.features) 
         : Array.isArray(membership.features) ? membership.features : [],
@@ -121,7 +123,8 @@ export async function POST(request: NextRequest) {
       description,
       duration,
       price,
-      marketingPrice,
+      originalPrice,
+      discount,
       features,
       isBestSeller,
       salesPageUrl,
@@ -142,11 +145,11 @@ export async function POST(request: NextRequest) {
         description,
         duration,
         price,
-        marketingPrice: marketingPrice || null,
+        originalPrice: originalPrice || null,
+        discount: discount || 0,
         features: features || [],
         isBestSeller: isBestSeller || false,
         salesPageUrl: salesPageUrl || null,
-        externalSalesUrl: externalSalesUrl || null,
         alternativeUrl: alternativeUrl || null,
         isActive: true,
         commissionType: commissionType || 'PERCENTAGE',
