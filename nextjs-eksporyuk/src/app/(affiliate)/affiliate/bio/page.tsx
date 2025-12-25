@@ -188,7 +188,7 @@ export default function AffiliateBioPage() {
   const fetchDropdownData = async () => {
     try {
       const [membershipsRes, productsRes, coursesRes, eventsRes, optinFormsRes] = await Promise.all([
-        fetch('/api/memberships'),
+        fetch('/api/memberships?forAffiliate=true'),
         fetch('/api/products'),
         fetch('/api/courses'),
         fetch('/api/events'),

@@ -12,9 +12,13 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const includeInactive = searchParams.get('includeInactive') === 'true'
+    const forAffiliate = searchParams.get('forAffiliate') === 'true'
     
-    const memberships = await prisma.membership.findMany({
-      where: includeInactive ? {} : { 
+    // Build where clause
+    let whereClause: any = {}
+    
+    if (!includeInactive) {
+      whereClause = {
         isActive: true,
         status: 'PUBLISHED', // Only show PUBLISHED memberships in public checkout
         showInGeneralCheckout: true, // Only show memberships enabled for general checkout
@@ -24,7 +28,19 @@ export async function GET(request: NextRequest) {
             { slug: 'member-free' } // Exclude "Member Free" - ini role default, bukan membership
           ]
         }
-      },
+      }
+    }
+    
+    // For affiliate link generation, also filter by affiliateEnabled
+    if (forAffiliate) {
+      whereClause = {
+        ...whereClause,
+        affiliateEnabled: true
+      }
+    }
+    
+    const memberships = await prisma.membership.findMany({
+      where: whereClause,
       select: {
         id: true,
         slug: true,
@@ -42,6 +58,7 @@ export async function GET(request: NextRequest) {
         isActive: true,
         commissionType: true,
         affiliateCommissionRate: true,
+        affiliateEnabled: true,
         formLogo: true,
         formBanner: true,
         formDescription: true,
@@ -86,6 +103,7 @@ export async function GET(request: NextRequest) {
       isActive: membership.isActive,
       commissionType: membership.commissionType || 'PERCENTAGE',
       affiliateCommissionRate: Number(membership.affiliateCommissionRate) || 30,
+      affiliateEnabled: membership.affiliateEnabled ?? true,
       formLogo: membership.formLogo,
       formBanner: membership.formBanner,
       formDescription: membership.formDescription,

@@ -145,6 +145,7 @@ export default function EditMembershipPlanPage() {
     metaKeywords: "",
     
     // Commission Settings
+    affiliateEnabled: true,
     commissionType: "PERCENTAGE" as "PERCENTAGE" | "FLAT",
     affiliateCommissionRate: 30,
     
@@ -248,6 +249,7 @@ export default function EditMembershipPlanPage() {
         metaTitle: membership.metaTitle || "",
         metaDescription: membership.metaDescription || "",
         metaKeywords: membership.metaKeywords || "",
+        affiliateEnabled: membership.affiliateEnabled ?? true,
         commissionType: membership.commissionType || "PERCENTAGE",
         affiliateCommissionRate: Number(membership.affiliateCommissionRate) || 30,
         maxMembers: membership.maxMembers || 0,
@@ -873,24 +875,46 @@ export default function EditMembershipPlanPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="commissionType">Tipe Komisi Affiliate</Label>
-                  <Select
-                    value={formData.commissionType}
-                    onValueChange={(value: "PERCENTAGE" | "FLAT") =>
-                      setFormData({ ...formData, commissionType: value })
+                {/* Enable Affiliate Toggle - NEW */}
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                  <div className="space-y-0.5">
+                    <Label className="flex items-center gap-2">
+                      <Megaphone className="h-4 w-4" />
+                      Bisa di-Affiliate-kan
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Jika aktif, membership ini akan tampil di dashboard affiliate dan bisa dipromosikan
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.affiliateEnabled}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, affiliateEnabled: checked })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
-                      <SelectItem value="FLAT">Nominal Tetap (Rp)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-muted-foreground">
-                    {formData.commissionType === 'PERCENTAGE' 
+                  />
+                </div>
+
+                {/* Commission settings - only show if affiliate enabled */}
+                {formData.affiliateEnabled && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="commissionType">Tipe Komisi Affiliate</Label>
+                      <Select
+                        value={formData.commissionType}
+                        onValueChange={(value: "PERCENTAGE" | "FLAT") =>
+                          setFormData({ ...formData, commissionType: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
+                          <SelectItem value="FLAT">Nominal Tetap (Rp)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground">
+                        {formData.commissionType === 'PERCENTAGE' 
                       ? 'Komisi dihitung berdasarkan persentase dari harga' 
                       : 'Komisi dengan nominal tetap per transaksi'}
                   </p>
@@ -942,6 +966,17 @@ export default function EditMembershipPlanPage() {
                     </div>
                   </div>
                 </div>
+                  </>
+                )}
+
+                {/* Message when affiliate is disabled */}
+                {!formData.affiliateEnabled && (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      ⚠️ Membership ini tidak akan tampil di dashboard affiliate. Aktifkan toggle di atas jika ingin membership ini bisa dipromosikan oleh affiliate.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

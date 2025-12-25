@@ -146,7 +146,8 @@ export default function AffiliateLinksPage() {
 
   const fetchMemberships = async () => {
     try {
-      const response = await fetch('/api/memberships/packages')
+      // Use forAffiliate=true to only get memberships that can be promoted by affiliates
+      const response = await fetch('/api/memberships/packages?forAffiliate=true')
       const data = await response.json()
       if (data.packages) setMemberships(data.packages)
     } catch (error) {

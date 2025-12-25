@@ -10,9 +10,18 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '100')
+    const forAffiliate = searchParams.get('forAffiliate') === 'true'
+
+    // Build where clause
+    const whereClause: any = { isActive: true }
+    
+    // For affiliate usage, also filter by affiliateEnabled
+    if (forAffiliate) {
+      whereClause.affiliateEnabled = true
+    }
 
     const memberships = await prisma.membership.findMany({
-      where: { isActive: true },
+      where: whereClause,
       orderBy: { price: 'asc' },
       take: limit,
       select: {
@@ -25,6 +34,7 @@ export async function GET(request: NextRequest) {
         features: true,
         isActive: true,
         affiliateCommissionRate: true,
+        affiliateEnabled: true,
         createdAt: true,
       }
     })

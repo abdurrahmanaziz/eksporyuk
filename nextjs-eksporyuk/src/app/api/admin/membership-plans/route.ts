@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
         price: true,
         commissionType: true,
         affiliateCommissionRate: true,
+        affiliateEnabled: true,
         features: true,
         isBestSeller: true,
         isPopular: true,

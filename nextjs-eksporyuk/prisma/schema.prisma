@@ -346,12 +346,14 @@ model Membership {
   autoAddToList           Boolean            @default(true)
   autoRemoveOnExpire      Boolean            @default(false)
   showInGeneralCheckout   Boolean            @default(true)
+  affiliateEnabled        Boolean            @default(true)
   createdAt               DateTime           @default(now())
   updatedAt               DateTime           @updatedAt
 
   @@index([duration])
   @@index([isActive])
   @@index([status])
+  @@index([affiliateEnabled])
 }
 
 model MembershipGroup {

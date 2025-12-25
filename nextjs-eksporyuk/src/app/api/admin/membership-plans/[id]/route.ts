@@ -43,6 +43,7 @@ export async function GET(
         discount: true,
         commissionType: true,
         affiliateCommissionRate: true,
+        affiliateEnabled: true,
         features: true,
         isBestSeller: true,
         isPopular: true,
@@ -336,6 +337,12 @@ export async function PATCH(
     if (showInGeneralCheckout !== undefined) {
       updateData.showInGeneralCheckout = showInGeneralCheckout
       if (showInGeneralCheckout !== existingPlan.showInGeneralCheckout) changedFields.push('showInGeneralCheckout')
+    }
+
+    // Handle affiliateEnabled
+    if (body.affiliateEnabled !== undefined) {
+      updateData.affiliateEnabled = body.affiliateEnabled
+      if (body.affiliateEnabled !== existingPlan.affiliateEnabled) changedFields.push('affiliateEnabled')
     }
 
     // Update membership plan
