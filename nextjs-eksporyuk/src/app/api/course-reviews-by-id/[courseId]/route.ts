@@ -68,7 +68,7 @@ export async function GET(
     const stats = await prisma.courseReview.groupBy({
       by: ['rating'],
       where: {
-        courseId: params.id,
+        courseId: courseId,
         isApproved: true
       },
       _count: {
