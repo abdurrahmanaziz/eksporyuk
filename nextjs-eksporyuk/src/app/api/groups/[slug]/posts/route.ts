@@ -262,23 +262,32 @@ export async function POST(
         }))
       })
     } else if (approvalStatus === 'APPROVED') {
+      // 🔔 NOTIFICATION: Notify all group members about new post
       const groupMembers = await prisma.groupMember.findMany({
-        where: { groupId: group.id, userId: { not: session.user.id } },
+        where: { 
+          groupId: group.id, 
+          userId: { not: session.user.id } 
+        },
         select: { userId: true }
       })
+      
       if (groupMembers.length > 0) {
-        await notificationService.sendToSubscribers({
-          targetType: 'GROUP',
-          targetId: group.id,
-          excludeUserId: session.user.id,
-          type: 'POST_NEW',
-          title: 'Postingan Baru di Grup',
-          message: `${session.user.name} memposting di grup`,
-          relatedId: post.id,
-          relatedType: 'POST',
-          actionUrl: `/community/groups/${slug}/posts/${post.id}`,
-          channels: ['pusher'],
-        })
+        try {
+          await notificationService.sendBulk({
+            userIds: groupMembers.map(m => m.userId),
+            type: 'GROUP_POST',
+            title: `Postingan Baru di ${group.name}`,
+            message: `${session.user.name} membuat postingan baru`,
+            postId: post.id,
+            groupId: group.id,
+            actorId: session.user.id,
+            actorName: session.user.name,
+            redirectUrl: `/community/groups/${slug}/posts/${post.id}`,
+            channels: ['pusher', 'onesignal'], // Real-time + Push notification
+          })
+        } catch (notifError) {
+          console.error('Failed to send group post notification:', notifError)
+        }
       }
     }
 

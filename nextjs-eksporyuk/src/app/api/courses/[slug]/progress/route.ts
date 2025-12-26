@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -92,6 +93,52 @@ export async function POST(
     // Update completed lessons
     if (completed && !completedLessons.includes(lessonId)) {
       completedLessons.push(lessonId)
+      
+      // 🔔 NOTIFICATION: Find and notify about next unlocked lesson
+      let nextLesson = null
+      let currentLessonTitle = ''
+      
+      for (const module of course.modules) {
+        const currentLessonIndex = module.lessons.findIndex(l => l.id === lessonId)
+        
+        if (currentLessonIndex !== -1) {
+          currentLessonTitle = module.lessons[currentLessonIndex].title
+          
+          // Check if there's a next lesson in the same module
+          if (currentLessonIndex < module.lessons.length - 1) {
+            nextLesson = module.lessons[currentLessonIndex + 1]
+            break
+          } else {
+            // Last lesson in module, check next module
+            const moduleIndex = course.modules.indexOf(module)
+            if (moduleIndex < course.modules.length - 1) {
+              const nextModule = course.modules[moduleIndex + 1]
+              if (nextModule.lessons.length > 0) {
+                nextLesson = nextModule.lessons[0]
+                break
+              }
+            }
+          }
+        }
+      }
+      
+      // Send notification if there's a next lesson
+      if (nextLesson) {
+        try {
+          await notificationService.send({
+            userId: session.user.id,
+            type: 'LESSON_UNLOCK',
+            title: '✨ Pelajaran Baru Terbuka',
+            message: `Selamat menyelesaikan "${currentLessonTitle}"! Lanjut ke: ${nextLesson.title}`,
+            courseId: course.id,
+            lessonId: nextLesson.id,
+            redirectUrl: `/learn/${course.slug}/lessons/${nextLesson.slug}`,
+            channels: ['pusher', 'onesignal'],
+          })
+        } catch (notifError) {
+          console.error('Failed to send lesson unlock notification:', notifError)
+        }
+      }
     } else if (!completed && completedLessons.includes(lessonId)) {
       completedLessons = completedLessons.filter(id => id !== lessonId)
     }
@@ -142,7 +189,7 @@ export async function POST(
       })
 
       if (!existingCertificate) {
-        await prisma.certificate.create({
+        const certificate = await prisma.certificate.create({
           data: {
             userId: session.user.id,
             courseId: course.id,
@@ -150,6 +197,22 @@ export async function POST(
             certificateNumber: `CERT-${course.slug.toUpperCase()}-${session.user.id.substring(0, 8).toUpperCase()}-${Date.now()}`
           }
         })
+
+        // 🔔 NOTIFICATION: Course completion congratulations
+        try {
+          await notificationService.send({
+            userId: session.user.id,
+            type: 'COURSE_COMPLETE',
+            title: '🎉 Selamat! Kursus Selesai',
+            message: `Anda telah menyelesaikan kursus "${course.title}". Sertifikat Anda sudah siap!`,
+            courseId: course.id,
+            certificateId: certificate.id,
+            redirectUrl: `/learn/${course.slug}/certificate`,
+            channels: ['pusher', 'onesignal', 'email'], // Multi-channel for important milestone
+          })
+        } catch (notifError) {
+          console.error('Failed to send course completion notification:', notifError)
+        }
       }
 
       // Check if this is an affiliate training course and mark training as completed

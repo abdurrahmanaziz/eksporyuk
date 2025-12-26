@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -64,6 +65,26 @@ export async function POST(
         },
       }),
     ])
+
+    // 🔔 NOTIFICATION: Notify post author (if not self-like)
+    if (post.authorId !== session.user.id) {
+      try {
+        await notificationService.send({
+          userId: post.authorId,
+          type: 'POST_LIKE',
+          title: 'Like Baru',
+          message: `${session.user.name} menyukai postingan Anda`,
+          postId: id,
+          actorId: session.user.id,
+          actorName: session.user.name,
+          redirectUrl: `/posts/${id}`,
+          channels: ['pusher'], // Real-time only, no push for likes
+        })
+      } catch (notifError) {
+        // Don't fail the request if notification fails
+        console.error('Failed to send like notification:', notifError)
+      }
+    }
 
     return NextResponse.json({ message: 'Post liked' }, { status: 201 })
   } catch (error) {

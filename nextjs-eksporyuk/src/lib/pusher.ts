@@ -28,7 +28,7 @@ class PusherService {
   }
 
   // Server-side pusher (untuk trigger events)
-  getServer(): Pusher {
+  getServer(): Pusher | null {
     if (!this.pusherServer && this.isConfigured()) {
       this.pusherServer = new Pusher({
         appId: this.config.appId,
@@ -39,17 +39,14 @@ class PusherService {
       })
     }
     
-    if (!this.pusherServer) {
-      throw new Error('Pusher not configured')
-    }
-    
     return this.pusherServer
   }
 
   // Client-side pusher (untuk subscribe events)
-  getClient(): PusherClient {
+  getClient(): PusherClient | null {
     if (typeof window === 'undefined') {
-      throw new Error('Pusher client can only be used in browser')
+      console.warn('[PUSHER] Client can only be used in browser')
+      return null
     }
 
     if (!this.pusherClient && this.isConfigured()) {
@@ -65,10 +62,6 @@ class PusherService {
       })
     }
 
-    if (!this.pusherClient) {
-      throw new Error('Pusher not configured')
-    }
-
     return this.pusherClient
   }
 
@@ -76,6 +69,15 @@ class PusherService {
   async trigger(channel: string, event: string, data: any): Promise<{ success: boolean; error?: string }> {
     try {
       const pusher = this.getServer()
+      
+      if (!pusher) {
+        console.warn('[PUSHER] Not configured - skipping trigger')
+        return {
+          success: false,
+          error: 'Pusher not configured'
+        }
+      }
+      
       await pusher.trigger(channel, event, data)
       
       return { success: true }
@@ -96,6 +98,15 @@ class PusherService {
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const pusher = this.getServer()
+      
+      if (!pusher) {
+        console.warn('[PUSHER] Not configured - skipping trigger')
+        return {
+          success: false,
+          error: 'Pusher not configured'
+        }
+      }
+      
       await pusher.trigger(channels, event, data)
       
       return { success: true }

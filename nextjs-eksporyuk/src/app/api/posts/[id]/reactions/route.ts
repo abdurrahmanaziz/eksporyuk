@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { prisma } from '@/lib/prisma';
+import { notificationService } from '@/lib/services/notificationService';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -67,15 +68,32 @@ export async function POST(
       });
 
       if (post && post.authorId !== session.user.id) {
-        await prisma.notification.create({
-          data: {
-            type: 'REACTION',
+        // 🔔 NOTIFICATION: Notify post author about reaction
+        try {
+          const reactionEmoji = {
+            'LIKE': '👍',
+            'LOVE': '❤️',
+            'CARE': '🤗',
+            'HAHA': '😂',
+            'WOW': '😮',
+            'SAD': '😢',
+            'ANGRY': '😡'
+          }[type] || '👍'
+          
+          await notificationService.send({
             userId: post.authorId,
-            actorId: session.user.id,
+            type: 'POST_LIKE',
+            title: 'Reaksi Baru',
+            message: `${session.user.name} ${reactionEmoji} mereaksi postingan Anda`,
             postId: postId,
-            message: `mereaksi postingan Anda`
-          }
-        });
+            actorId: session.user.id,
+            actorName: session.user.name,
+            redirectUrl: `/posts/${postId}`,
+            channels: ['pusher'], // Real-time only for reactions
+          })
+        } catch (notifError) {
+          console.error('Failed to send reaction notification:', notifError)
+        }
       }
     }
 

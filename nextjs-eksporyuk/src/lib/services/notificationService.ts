@@ -253,15 +253,26 @@ class NotificationService {
    */
   private async sendViaPush(data: NotificationData): Promise<{ success: boolean }> {
     try {
-      await oneSignalService.sendToUser(
-        data.userId,
-        data.title,
-        data.message,
-        data.link
-      )
+      const result = await oneSignalService.sendToUser(data.userId, {
+        headings: { en: data.title, id: data.title },
+        contents: { en: data.message, id: data.message },
+        url: data.link || data.redirectUrl,
+        data: {
+          type: data.type,
+          userId: data.userId,
+          postId: data.postId,
+          groupId: data.groupId,
+          courseId: data.courseId,
+          link: data.link || data.redirectUrl
+        }
+      })
       
-      return { success: true }
-    } catch (error) {
+      if (!result.success) {
+        console.warn(`[NotificationService] OneSignal failed: ${result.error}`)
+      }
+      
+      return { success: result.success }
+    } catch (error: any) {
       console.error('[NotificationService] OneSignal error:', error)
       return { success: false }
     }
@@ -279,14 +290,13 @@ class NotificationService {
         return { success: false }
       }
       
-      await oneSignalService.sendToUser(
-        data.userId,
-        data.title,
-        data.message,
-        data.link
-      )
+      const result = await oneSignalService.sendToUser(data.userId, {
+        headings: { en: data.title, id: data.title },
+        contents: { en: data.message, id: data.message },
+        url: data.link
+      })
       
-      return { success: true }
+      return { success: result.success }
     } catch (error) {
       console.error('[NotificationService] Push only error:', error)
       return { success: false }
@@ -309,7 +319,7 @@ class NotificationService {
       await mailketingService.sendEmail({
         to: user.email,
         subject: data.title,
-        body: `
+        html: `
           <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>${data.title}</h2>
             <p>${data.message}</p>
