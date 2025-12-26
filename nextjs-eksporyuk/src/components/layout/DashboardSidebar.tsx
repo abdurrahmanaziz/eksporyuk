@@ -62,6 +62,7 @@ import {
   LogOut,
   Sun,
   Moon,
+  Globe,
 } from 'lucide-react'
 
 type NavItem = {
@@ -188,7 +189,11 @@ const navigationByRole = {
       title: 'SISTEM',
       items: [
         { name: 'Pengaturan', href: '/admin/settings', icon: Settings },
+        { name: 'Platform Settings', href: '/admin/settings/platform', icon: Globe },
         { name: 'Affiliate Settings', href: '/admin/settings/affiliate', icon: Share2 },
+        { name: 'Course Settings', href: '/admin/settings/course', icon: BookOpen },
+        { name: 'Withdrawal Settings', href: '/admin/settings/withdrawal', icon: DollarSign },
+        { name: 'Follow-up Settings', href: '/admin/settings/followup', icon: Clock },
         { name: 'Integrasi', href: '/admin/integrations', icon: Plug },
         { name: 'Mailketing', href: '/admin/mailketing', icon: Mail },
         { name: 'OneSignal', href: '/admin/onesignal', icon: Bell },
