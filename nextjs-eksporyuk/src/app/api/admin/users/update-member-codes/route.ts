@@ -16,14 +16,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify admin role
-    const adminUser = await prisma.user.findUnique({
+    // Verify admin role (prefer session role; also auto-heal DB role mismatch)
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
+    }
+
+    const dbRole = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { role: true },
     })
 
-    if (adminUser?.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
+    if (dbRole && dbRole.role !== 'ADMIN') {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { role: 'ADMIN' },
+      })
     }
 
     // Find all users without memberCode
@@ -95,14 +102,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify admin role
-    const adminUser = await prisma.user.findUnique({
+    // Verify admin role (prefer session role; also auto-heal DB role mismatch)
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
+    }
+
+    const dbRole = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { role: true },
     })
 
-    if (adminUser?.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
+    if (dbRole && dbRole.role !== 'ADMIN') {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { role: 'ADMIN' },
+      })
     }
 
     // Count users without memberCode

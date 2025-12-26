@@ -56,14 +56,18 @@ export async function POST(req: NextRequest) {
       }
     })
 
-    // Broadcast status change via Pusher
-    await pusherService.broadcast('user-status-changed', {
-      userId: updatedUser.id,
-      isOnline: updatedUser.isOnline,
-      name: updatedUser.name,
-      avatar: updatedUser.avatar,
-      timestamp: new Date().toISOString()
-    })
+    // Broadcast status change via Pusher (best-effort)
+    try {
+      await pusherService.broadcast('user-status-changed', {
+        userId: updatedUser.id,
+        isOnline: updatedUser.isOnline,
+        name: updatedUser.name,
+        avatar: updatedUser.avatar,
+        timestamp: new Date().toISOString()
+      })
+    } catch (e) {
+      console.warn('[USER_PRESENCE] Pusher broadcast failed:', e)
+    }
 
     // Notify followers
     const followers = await prisma.follow.findMany({
@@ -73,12 +77,16 @@ export async function POST(req: NextRequest) {
 
     if (followers.length > 0) {
       const channels = followers.map(f => `user-${f.followerId}`)
-      await pusherService.triggerMultiple(channels, 'following-status-changed', {
-        userId: updatedUser.id,
-        isOnline: updatedUser.isOnline,
-        name: updatedUser.name,
-        avatar: updatedUser.avatar
-      })
+      try {
+        await pusherService.triggerMultiple(channels, 'following-status-changed', {
+          userId: updatedUser.id,
+          isOnline: updatedUser.isOnline,
+          name: updatedUser.name,
+          avatar: updatedUser.avatar
+        })
+      } catch (e) {
+        console.warn('[USER_PRESENCE] Pusher triggerMultiple failed:', e)
+      }
     }
 
     return NextResponse.json({

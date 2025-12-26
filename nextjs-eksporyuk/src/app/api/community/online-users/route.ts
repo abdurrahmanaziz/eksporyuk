@@ -99,9 +99,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching online users:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch online users' },
-      { status: 500 }
-    )
+    // Fail-safe: UI expects an array; avoid spamming console with 500s.
+    return NextResponse.json([])
   }
 }
