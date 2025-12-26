@@ -60,7 +60,7 @@ function ResetPasswordForm() {
         setSuccess(true)
         toast.success(data.message)
         setTimeout(() => {
-          router.push('/login')
+          router.push('/auth/login')
         }, 3000)
       } else {
         toast.error(data.error || 'Gagal mereset password')
@@ -91,7 +91,7 @@ function ResetPasswordForm() {
             </p>
 
             <Button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push('/auth/login')}
               className="w-full bg-green-600 hover:bg-green-700"
             >
               Login Sekarang
@@ -235,7 +235,7 @@ function ResetPasswordForm() {
 
           <div className="mt-6 pt-6 border-t border-gray-200">
             <Link
-              href="/login"
+              href="/auth/login"
               className="block text-center text-sm text-orange-600 hover:text-orange-700 font-medium"
             >
               Kembali ke Login
