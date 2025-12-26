@@ -32,38 +32,34 @@ export async function GET(request: NextRequest) {
     startOfWeek.setDate(now.getDate() - now.getDay()) // Start of week (Sunday)
     startOfWeek.setHours(0, 0, 0, 0)
 
-    // Fetch all affiliate profiles (no relations, use manual lookup)
-    const rawAffiliates = await prisma.affiliateProfile.findMany({
-      orderBy: {
-        totalEarnings: 'desc',
-      },
-    })
+    // REALTIME All Time Leaderboard - from AffiliateConversion (data from Sejoli)
+    const allTimeStats = await prisma.$queryRaw<Array<{
+      affiliateId: string
+      totalEarnings: bigint
+    }>>`
+      SELECT 
+        "affiliateId",
+        SUM("commissionAmount")::bigint as "totalEarnings"
+      FROM "AffiliateConversion"
+      GROUP BY "affiliateId"
+      ORDER BY "totalEarnings" DESC
+      LIMIT 10
+    `
     
-    // Get users for affiliates manually
-    const userIds = rawAffiliates.map(a => a.userId)
-    const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: {
-        id: true,
-        name: true,
-        avatar: true,
-      }
+    // Get users for all time leaderboard
+    const allTimeUserIds = allTimeStats.map(a => a.affiliateId)
+    const allTimeUsers = await prisma.user.findMany({
+      where: { id: { in: allTimeUserIds } },
+      select: { id: true, name: true, avatar: true }
     })
-    const userMap = new Map(users.map(u => [u.id, u]))
+    const allTimeUserMap = new Map(allTimeUsers.map(u => [u.id, u]))
     
-    // Combine affiliates with user data
-    const allAffiliates = rawAffiliates.map(aff => ({
-      ...aff,
-      user: userMap.get(aff.userId) || null
-    }))
-
-    // All Time Leaderboard - Top 10 by total earnings
-    const allTime = allAffiliates.slice(0, 10).map((aff, index) => ({
+    const allTime = allTimeStats.map((stat, index) => ({
       rank: index + 1,
-      userId: aff.userId,
-      name: aff.user?.name || 'Unknown',
-      avatar: aff.user?.avatar || '',
-      totalEarnings: Number(aff.totalEarnings),
+      userId: stat.affiliateId,
+      name: allTimeUserMap.get(stat.affiliateId)?.name || 'Unknown',
+      avatar: allTimeUserMap.get(stat.affiliateId)?.avatar || '',
+      totalEarnings: Number(stat.totalEarnings),
     }))
 
     // For period-specific leaderboards, we need to aggregate from conversions

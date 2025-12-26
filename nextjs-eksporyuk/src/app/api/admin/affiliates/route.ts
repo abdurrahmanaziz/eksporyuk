@@ -82,22 +82,33 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // 4. Get affiliates with pagination (no relations, use manual lookup)
-    const [rawAffiliates, total] = await Promise.all([
-      prisma.affiliateProfile.findMany({
-        where,
-        orderBy: [
-          { totalEarnings: 'desc' }, // Highest earners first
-          { createdAt: 'desc' },
-        ],
-        skip,
-        take: limit,
-      }),
-      prisma.affiliateProfile.count({ where }),
-    ])
+    // 4. Get affiliates REALTIME from AffiliateConversion (data from Sejoli)
+    const affiliateStats = await prisma.$queryRaw<Array<{
+      affiliateId: string
+      totalEarnings: bigint
+      totalConversions: bigint
+      firstCommission: Date
+    }>>`
+      SELECT 
+        "affiliateId",
+        SUM("commissionAmount")::bigint as "totalEarnings",
+        COUNT(*)::bigint as "totalConversions",
+        MIN("createdAt") as "firstCommission"
+      FROM "AffiliateConversion"
+      GROUP BY "affiliateId"
+      ORDER BY "totalEarnings" DESC
+      LIMIT ${limit}
+      OFFSET ${skip}
+    `
+    
+    const totalAffiliatesCount = await prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(DISTINCT "affiliateId")::bigint as count 
+      FROM "AffiliateConversion"
+    `
+    const total = Number(totalAffiliatesCount[0]?.count || 0)
     
     // Get users for affiliates manually
-    const userIds = rawAffiliates.map(a => a.userId)
+    const userIds = affiliateStats.map(a => a.affiliateId)
     const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
       select: {
@@ -109,10 +120,22 @@ export async function GET(request: NextRequest) {
     })
     const userMap = new Map(users.map(u => [u.id, u]))
     
-    // Combine affiliates with user data
-    const affiliates = rawAffiliates.map(aff => ({
-      ...aff,
-      user: userMap.get(aff.userId) || null
+    // Build affiliate data structure
+    const affiliates = affiliateStats.map(stat => ({
+      id: stat.affiliateId, // Use userId as affiliate ID
+      userId: stat.affiliateId,
+      user: userMap.get(stat.affiliateId) || null,
+      affiliateCode: '', // Not used in Sejoli import
+      shortLinkUsername: undefined,
+      tier: 1,
+      commissionRate: 0,
+      totalClicks: 0,
+      totalConversions: Number(stat.totalConversions),
+      totalEarnings: Number(stat.totalEarnings),
+      totalSales: 0, // Will be filled from transactions
+      isActive: true,
+      approvedAt: stat.firstCommission?.toISOString(),
+      createdAt: stat.firstCommission?.toISOString() || new Date().toISOString(),
     }))
     
     console.log('[ADMIN_AFFILIATES_API] Query result:', {
@@ -122,7 +145,7 @@ export async function GET(request: NextRequest) {
       limit,
     })
 
-    // 5. Get wallet data for each affiliate (use data from AffiliateProfile)
+    // 5. Get wallet data for each affiliate (REALTIME)
     const affiliatesWithWallet = await Promise.all(
       affiliates.map(async (affiliate) => {
         const wallet = await prisma.wallet.findUnique({
@@ -135,11 +158,22 @@ export async function GET(request: NextRequest) {
           },
         })
 
-        // Use data from AffiliateProfile (already synced from WordPress)
+        // Get total sales from transactions for this affiliate
+        const affiliateTxs = await prisma.affiliateConversion.findMany({
+          where: { affiliateId: affiliate.userId },
+          select: { transactionId: true }
+        })
+        const txIds = affiliateTxs.map(a => a.transactionId)
+        
+        const salesData = await prisma.transaction.aggregate({
+          where: { id: { in: txIds } },
+          _sum: { amount: true }
+        })
+
         return {
           ...affiliate,
           wallet,
-          // Keep totalEarnings and totalConversions from AffiliateProfile
+          totalSales: Number(salesData._sum.amount || 0),
         }
       })
     )
@@ -170,76 +204,74 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Calculate affiliate statistics
+ * Calculate affiliate statistics - REALTIME from AffiliateConversion
  */
 async function calculateAffiliateStats() {
-  // Get all affiliate userIds first
-  const affiliateUserIds = await prisma.affiliateProfile.findMany({
-    select: { userId: true }
-  })
-  const userIds = affiliateUserIds.map(a => a.userId)
+  // Get unique affiliate IDs from AffiliateConversion (realtime data from Sejoli)
+  const uniqueAffiliates = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT COUNT(DISTINCT "affiliateId") as count 
+    FROM "AffiliateConversion"
+  `
+  const totalAffiliates = Number(uniqueAffiliates[0]?.count || 0)
   
-  const [
-    totalAffiliates,
-    activeAffiliates,
-    pendingApproval,
-    affiliateEarningsData,
-    pendingPayoutsData,
-    totalPayoutsData,
-  ] = await Promise.all([
-    // Total affiliates
-    prisma.affiliateProfile.count(),
-    
-    // Active affiliates (approved and active)
-    prisma.affiliateProfile.count({
-      where: {
-        isActive: true,
-      },
-    }),
-    
-    // Pending approval
-    prisma.affiliateProfile.count({
-      where: {
-        isActive: false,
-      },
-    }),
-    
-    // Total earnings from AffiliateProfile (synced from WordPress)
-    prisma.affiliateProfile.aggregate({
-      _sum: {
-        totalEarnings: true,
-        totalSales: true,
-      },
-    }),
-    
-    // Pending payouts (sum of pending wallet balances for affiliates)
-    prisma.wallet.aggregate({
-      _sum: {
-        balance: true,
-      },
-      where: {
-        balance: { gt: 0 },
-        userId: { in: userIds }
-      },
-    }),
-    
-    // Total payouts (sum of all approved payouts)
-    prisma.payout.aggregate({
-      _sum: {
-        amount: true,
-      },
-      where: {
-        status: 'APPROVED',
-      },
-    }),
-  ])
+  // Get total earnings and count from AffiliateConversion (realtime)
+  const earningsData = await prisma.affiliateConversion.aggregate({
+    _sum: {
+      commissionAmount: true,
+    },
+    _count: {
+      id: true,
+    },
+  })
+  
+  // Get total sales value from transactions linked to commissions
+  const affiliateTransactions = await prisma.affiliateConversion.findMany({
+    select: { transactionId: true }
+  })
+  const txIds = affiliateTransactions.map(a => a.transactionId)
+  
+  const salesData = await prisma.transaction.aggregate({
+    where: {
+      id: { in: txIds }
+    },
+    _sum: {
+      amount: true,
+    },
+  })
+  
+  // Get affiliate user IDs
+  const affiliateUserIds = await prisma.$queryRaw<{ affiliateId: string }[]>`
+    SELECT DISTINCT "affiliateId" FROM "AffiliateConversion"
+  `
+  const userIds = affiliateUserIds.map(a => a.affiliateId)
+  
+  // Pending payouts (sum of balance for affiliate users)
+  const pendingPayoutsData = await prisma.wallet.aggregate({
+    _sum: {
+      balance: true,
+    },
+    where: {
+      balance: { gt: 0 },
+      userId: { in: userIds }
+    },
+  })
+  
+  // Total payouts (approved)
+  const totalPayoutsData = await prisma.payout.aggregate({
+    _sum: {
+      amount: true,
+    },
+    where: {
+      status: 'APPROVED',
+    },
+  })
 
   return {
     totalAffiliates,
-    activeAffiliates,
-    pendingApproval,
-    totalEarnings: Number(affiliateEarningsData._sum.totalEarnings || 0),
-    totalSales: Number(affiliateEarningsData._sum.totalSales || 0),
+    activeAffiliates: totalAffiliates, // All affiliates with commissions are active
+    pendingApproval: 0, // No pending approval in imported data
+    totalEarnings: Number(earningsData._sum.commissionAmount || 0),
+    totalSales: Number(salesData._sum.amount || 0),
     pendingPayouts: Number(pendingPayoutsData._sum.balance || 0),
     totalPayouts: Number(totalPayoutsData._sum.amount || 0),
   }

@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set timeout 600
+spawn ssh -o StrictHostKeyChecking=no aziz@103.125.181.47
+expect "password:"
+send "Bismillah.2022\r"
+expect "$ "
+send "cd /home/aziz/web/member.eksporyuk.com/public_html\r"
+expect "$ "
+send "DB_USER=\$(grep 'DB_USER' wp-config.php | cut -d \"'\" -f 4) && DB_PASS=\$(grep 'DB_PASSWORD' wp-config.php | cut -d \"'\" -f 4) && DB_NAME=\$(grep 'DB_NAME' wp-config.php | cut -d \"'\" -f 4)\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SELECT a.affiliate_id, u.display_name, u.user_email, COUNT(*) as total_orders, SUM(a.commission) as total_komisi FROM wp_sejolisa_affiliates a JOIN wp_users u ON a.affiliate_id = u.ID WHERE a.status='added' GROUP BY a.affiliate_id, u.display_name, u.user_email ORDER BY total_komisi DESC;\" 2>/dev/null > /tmp/affiliates_with_commission.tsv\r"
+expect "$ "
+send "wc -l /tmp/affiliates_with_commission.tsv\r"
+expect "$ "
+send "exit\r"
+expect eof

@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout 600
+spawn ssh -o StrictHostKeyChecking=no aziz@103.125.181.47
+expect "password:"
+send "Bismillah.2022\r"
+expect "$ "
+send "cd /home/aziz/web/member.eksporyuk.com/public_html\r"
+expect "$ "
+send "DB_USER=\$(grep 'DB_USER' wp-config.php | cut -d \"'\" -f 4) && DB_PASS=\$(grep 'DB_PASSWORD' wp-config.php | cut -d \"'\" -f 4) && DB_NAME=\$(grep 'DB_NAME' wp-config.php | cut -d \"'\" -f 4)\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SHOW TABLES LIKE '%affiliate%';\" 2>/dev/null\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"DESCRIBE wp_sejolisa_affiliate_orders;\" 2>/dev/null\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SELECT status, COUNT(*), SUM(commission) FROM wp_sejolisa_affiliate_orders GROUP BY status;\" 2>/dev/null\r"
+expect "$ "
+send "exit\r"
+expect eof

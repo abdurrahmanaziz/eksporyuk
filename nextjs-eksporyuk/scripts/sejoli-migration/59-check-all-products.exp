@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set timeout 600
+spawn ssh -o StrictHostKeyChecking=no aziz@103.125.181.47
+expect "password:"
+send "Bismillah.2022\r"
+expect "$ "
+send "cd /home/aziz/web/member.eksporyuk.com/public_html\r"
+expect "$ "
+send "DB_USER=\$(grep 'DB_USER' wp-config.php | cut -d \"'\" -f 4) && DB_PASS=\$(grep 'DB_PASSWORD' wp-config.php | cut -d \"'\" -f 4) && DB_NAME=\$(grep 'DB_NAME' wp-config.php | cut -d \"'\" -f 4)\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SELECT COUNT(DISTINCT product_id) as total_products FROM wp_sejolisa_orders WHERE status='completed';\" 2>/dev/null\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SELECT DISTINCT o.product_id, p.post_title, COUNT(*) as orders FROM wp_sejolisa_orders o LEFT JOIN wp_posts p ON o.product_id = p.ID WHERE o.status='completed' GROUP BY o.product_id, p.post_title ORDER BY orders DESC;\" 2>/dev/null\r"
+expect "$ "
+send "exit\r"
+expect eof

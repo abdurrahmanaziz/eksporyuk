@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh root@103.125.181.47
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "Bismillah.2022\r" }
+}
+expect "# "
+send "mysql -u sejoli -p'Bismillah.2022' sejoli_db -e \"SELECT ID, user_nicename, user_email, display_name, user_registered FROM wp_users ORDER BY ID\" > /tmp/users_fresh.tsv\r"
+expect "# "
+send "wc -l /tmp/users_fresh.tsv\r"
+expect "# "
+send "tail -5 /tmp/users_fresh.tsv\r"
+expect "# "
+send "exit\r"
+expect eof

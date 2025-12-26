@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout 600
+spawn ssh -o StrictHostKeyChecking=no aziz@103.125.181.47
+expect "password:"
+send "Bismillah.2022\r"
+expect "$ "
+send "cd /home/aziz/web/member.eksporyuk.com/public_html\r"
+expect "$ "
+send "DB_USER=\$(grep 'DB_USER' wp-config.php | cut -d \"'\" -f 4) && DB_PASS=\$(grep 'DB_PASSWORD' wp-config.php | cut -d \"'\" -f 4) && DB_NAME=\$(grep 'DB_NAME' wp-config.php | cut -d \"'\" -f 4)\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SELECT status, COUNT(*) as count, SUM(commission) as total FROM wp_sejolisa_affiliates GROUP BY status;\" 2>/dev/null\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SELECT SUM(commission) as total_komisi_added FROM wp_sejolisa_affiliates WHERE status='added';\" 2>/dev/null\r"
+expect "$ "
+send "mysql -u\"\$DB_USER\" -p\"\$DB_PASS\" \"\$DB_NAME\" -e \"SELECT SUM(grand_total) as total_omset FROM wp_sejolisa_orders WHERE status='completed';\" 2>/dev/null\r"
+expect "$ "
+send "exit\r"
+expect eof
