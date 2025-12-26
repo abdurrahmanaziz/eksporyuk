@@ -13,9 +13,22 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { 
   ArrowLeft, Plus, Edit, Trash2, Save, Clock, FileText,
-  CheckCircle, AlertCircle, ClipboardList, Calendar
+  CheckCircle, AlertCircle, ClipboardList, Calendar, Upload,
+  Link as LinkIcon, X, Download, ExternalLink
 } from 'lucide-react'
 import { toast } from 'sonner'
+
+type AttachmentFile = {
+  name: string
+  url: string
+  size?: number
+  type?: string
+}
+
+type ExternalLink = {
+  title: string
+  url: string
+}
 
 type Assignment = {
   id: string
@@ -27,6 +40,8 @@ type Assignment = {
   allowLateSubmission: boolean
   allowedFileTypes?: string
   maxFileSize?: number
+  attachments?: string // JSON string
+  links?: string // JSON string
   isActive: boolean
   lessonId?: string
   _count?: {
@@ -42,6 +57,8 @@ export default function AdminCourseAssignmentPage() {
   const [loading, setLoading] = useState(true)
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null)
+  const [uploadingFiles, setUploadingFiles] = useState(false)
+  const [newLink, setNewLink] = useState({ title: '', url: '' })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -86,8 +103,118 @@ export default function AdminCourseAssignmentPage() {
       allowLateSubmission: false,
       allowedFileTypes: 'pdf,docx,zip',
       maxFileSize: 10,
+      attachments: '[]',
+      links: '[]',
       isActive: true
     })
+    setNewLink({ title: '', url: '' })
+  }
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    if (!editingAssignment) return
+
+    try {
+      setUploadingFiles(true)
+      
+      const currentAttachments: AttachmentFile[] = editingAssignment.attachments 
+        ? JSON.parse(editingAssignment.attachments)
+        : []
+
+      for (const file of Array.from(files)) {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('type', 'assignment')
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          currentAttachments.push({
+            name: file.name,
+            url: data.url,
+            size: file.size,
+            type: file.type
+          })
+        } else {
+          toast.error(`Gagal upload ${file.name}`)
+        }
+      }
+
+      setEditingAssignment({
+        ...editingAssignment,
+        attachments: JSON.stringify(currentAttachments)
+      })
+      toast.success(`${files.length} file berhasil diupload`)
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error('Terjadi kesalahan saat upload file')
+    } finally {
+      setUploadingFiles(false)
+    }
+  }
+
+  const handleRemoveAttachment = (index: number) => {
+    if (!editingAssignment) return
+    
+    const currentAttachments: AttachmentFile[] = editingAssignment.attachments 
+      ? JSON.parse(editingAssignment.attachments)
+      : []
+    
+    currentAttachments.splice(index, 1)
+    
+    setEditingAssignment({
+      ...editingAssignment,
+      attachments: JSON.stringify(currentAttachments)
+    })
+    toast.success('File dihapus')
+  }
+
+  const handleAddLink = () => {
+    if (!editingAssignment) return
+    if (!newLink.title || !newLink.url) {
+      toast.error('Judul dan URL link wajib diisi')
+      return
+    }
+
+    const currentLinks: ExternalLink[] = editingAssignment.links 
+      ? JSON.parse(editingAssignment.links)
+      : []
+
+    currentLinks.push({ ...newLink })
+    
+    setEditingAssignment({
+      ...editingAssignment,
+      links: JSON.stringify(currentLinks)
+    })
+    
+    setNewLink({ title: '', url: '' })
+    toast.success('Link ditambahkan')
+  }
+
+  const handleRemoveLink = (index: number) => {
+    if (!editingAssignment) return
+    
+    const currentLinks: ExternalLink[] = editingAssignment.links 
+      ? JSON.parse(editingAssignment.links)
+      : []
+    
+    currentLinks.splice(index, 1)
+    
+    setEditingAssignment({
+      ...editingAssignment,
+      links: JSON.stringify(currentLinks)
+    })
+    toast.success('Link dihapus')
+  }
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return ''
+    const mb = bytes / (1024 * 1024)
+    return mb < 1 ? `${(bytes / 1024).toFixed(1)} KB` : `${mb.toFixed(1)} MB`
   }
 
   const handleSaveAssignment = async () => {
@@ -272,6 +399,54 @@ export default function AdminCourseAssignmentPage() {
                     )}
                   </div>
                 )}
+
+                {/* Display Attachments */}
+                {assignment.attachments && JSON.parse(assignment.attachments).length > 0 && (
+                  <div className="mt-3 border-t pt-3">
+                    <div className="text-sm font-medium mb-2">File Materials:</div>
+                    <div className="space-y-1">
+                      {(JSON.parse(assignment.attachments) as AttachmentFile[]).map((file, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <FileText className="h-3 w-3 text-blue-500" />
+                          <a 
+                            href={file.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            {file.name}
+                          </a>
+                          {file.size && (
+                            <span className="text-xs text-muted-foreground">({formatFileSize(file.size)})</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Display Links */}
+                {assignment.links && JSON.parse(assignment.links).length > 0 && (
+                  <div className="mt-3 border-t pt-3">
+                    <div className="text-sm font-medium mb-2">External Links:</div>
+                    <div className="space-y-1">
+                      {(JSON.parse(assignment.links) as ExternalLink[]).map((link, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <LinkIcon className="h-3 w-3 text-green-500" />
+                          <a 
+                            href={link.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-green-600 hover:underline"
+                          >
+                            {link.title}
+                          </a>
+                          <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))
@@ -314,6 +489,125 @@ export default function AdminCourseAssignmentPage() {
                     rows={5}
                     placeholder="Tulis instruksi detail untuk siswa..."
                   />
+                </div>
+
+                {/* File Attachments */}
+                <div className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base">File Tugas / Materials</Label>
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <Button 
+                        type="button" 
+                        size="sm" 
+                        variant="outline"
+                        disabled={uploadingFiles}
+                        onClick={() => document.getElementById('file-upload')?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {uploadingFiles ? 'Uploading...' : 'Upload File'}
+                      </Button>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e.target.files)}
+                      />
+                    </label>
+                  </div>
+                  
+                  {editingAssignment.attachments && JSON.parse(editingAssignment.attachments).length > 0 && (
+                    <div className="space-y-2">
+                      {(JSON.parse(editingAssignment.attachments) as AttachmentFile[]).map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-blue-500" />
+                            <div>
+                              <div className="text-sm font-medium">{file.name}</div>
+                              <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a href={file.url} target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="ghost">
+                                <Download className="h-3 w-3" />
+                              </Button>
+                            </a>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => handleRemoveAttachment(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Upload soal, template, atau material pendukung untuk siswa
+                  </p>
+                </div>
+
+                {/* External Links */}
+                <div className="border rounded-lg p-4 space-y-3">
+                  <Label className="text-base">Link Eksternal</Label>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="Judul link (e.g., Google Docs)"
+                      value={newLink.title}
+                      onChange={(e) => setNewLink({ ...newLink, title: e.target.value })}
+                    />
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="https://..."
+                        value={newLink.url}
+                        onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+                      />
+                      <Button 
+                        type="button"
+                        size="sm" 
+                        onClick={handleAddLink}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {editingAssignment.links && JSON.parse(editingAssignment.links).length > 0 && (
+                    <div className="space-y-2">
+                      {(JSON.parse(editingAssignment.links) as ExternalLink[]).map((link, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                          <div className="flex items-center gap-2">
+                            <LinkIcon className="h-4 w-4 text-green-500" />
+                            <div>
+                              <div className="text-sm font-medium">{link.title}</div>
+                              <div className="text-xs text-muted-foreground truncate max-w-xs">{link.url}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a href={link.url} target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="ghost">
+                                <ExternalLink className="h-3 w-3" />
+                              </Button>
+                            </a>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => handleRemoveLink(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Tambahkan link ke Google Drive, Docs, atau resource eksternal lainnya
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

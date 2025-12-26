@@ -96,6 +96,8 @@ export async function PUT(
       allowLateSubmission,
       allowedFileTypes,
       maxFileSize,
+      attachments,
+      links,
       isActive
     } = body
 
@@ -108,20 +110,28 @@ export async function PUT(
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
     }
 
-    // Update assignment
-    const updatedAssignment = await prisma.assignment.update({
-      where: { id: assignmentId },
-      data: {
-        title: title !== undefined ? title : assignment.title,
-        description: description !== undefined ? description : assignment.description,
-        instructions: instructions !== undefined ? instructions : assignment.instructions,
-        maxScore: maxScore !== undefined ? maxScore : assignment.maxScore,
-        dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : assignment.dueDate,
-        allowLateSubmission: allowLateSubmission !== undefined ? allowLateSubmission : assignment.allowLateSubmission,
-        allowedFileTypes: allowedFileTypes !== undefined ? allowedFileTypes : assignment.allowedFileTypes,
-        maxFileSize: maxFileSize !== undefined ? maxFileSize : assignment.maxFileSize,
-        isActive: isActive !== undefined ? isActive : assignment.isActive
-      }
+    // Update assignment using raw SQL to include new fields
+    await prisma.$executeRaw`
+      UPDATE "Assignment" 
+      SET 
+        title = ${title !== undefined ? title : assignment.title},
+        description = ${description !== undefined ? description : assignment.description},
+        instructions = ${instructions !== undefined ? instructions : assignment.instructions},
+        "maxScore" = ${maxScore !== undefined ? maxScore : assignment.maxScore},
+        "dueDate" = ${dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : assignment.dueDate},
+        "allowLateSubmission" = ${allowLateSubmission !== undefined ? allowLateSubmission : assignment.allowLateSubmission},
+        "allowedFileTypes" = ${allowedFileTypes !== undefined ? allowedFileTypes : assignment.allowedFileTypes},
+        "maxFileSize" = ${maxFileSize !== undefined ? maxFileSize : assignment.maxFileSize},
+        attachments = ${attachments !== undefined ? attachments : (assignment as any).attachments || null},
+        links = ${links !== undefined ? links : (assignment as any).links || null},
+        "isActive" = ${isActive !== undefined ? isActive : assignment.isActive},
+        "updatedAt" = NOW()
+      WHERE id = ${assignmentId}
+    `
+    
+    // Fetch updated assignment
+    const updatedAssignment = await prisma.assignment.findUnique({
+      where: { id: assignmentId }
     })
 
     return NextResponse.json({

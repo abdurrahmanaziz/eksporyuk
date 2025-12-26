@@ -2031,6 +2031,8 @@ model Assignment {
   allowLateSubmission Boolean   @default(false)
   allowedFileTypes    String?
   maxFileSize         Int?
+  attachments         String?   @db.Text // JSON array of file attachments
+  links               String?   @db.Text // JSON array of external links
   isActive            Boolean   @default(true)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt

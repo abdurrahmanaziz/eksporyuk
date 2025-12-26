@@ -86,6 +86,8 @@ export async function POST(
       allowLateSubmission,
       allowedFileTypes,
       maxFileSize,
+      attachments,
+      links,
       isActive,
       lessonId
     } = body
@@ -104,25 +106,41 @@ export async function POST(
     }
 
     // Create assignment
-    const assignment = await prisma.assignment.create({
-      data: {
-        courseId,
-        lessonId: lessonId || null,
-        title,
-        description,
-        instructions: instructions || null,
-        maxScore: maxScore || 100,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        allowLateSubmission: allowLateSubmission || false,
-        allowedFileTypes: allowedFileTypes || null,
-        maxFileSize: maxFileSize || null,
-        isActive: isActive !== undefined ? isActive : true
-      }
+    const assignment = await prisma.$executeRaw`
+      INSERT INTO "Assignment" (
+        id, "courseId", "lessonId", title, description, instructions,
+        "maxScore", "dueDate", "allowLateSubmission", "allowedFileTypes",
+        "maxFileSize", attachments, links, "isActive", "createdAt", "updatedAt"
+      ) VALUES (
+        gen_random_uuid()::text,
+        ${courseId},
+        ${lessonId || null},
+        ${title},
+        ${description},
+        ${instructions || null},
+        ${maxScore || 100},
+        ${dueDate ? new Date(dueDate) : null},
+        ${allowLateSubmission || false},
+        ${allowedFileTypes || null},
+        ${maxFileSize || null},
+        ${attachments || null},
+        ${links || null},
+        ${isActive !== undefined ? isActive : true},
+        NOW(),
+        NOW()
+      )
+      RETURNING *
+    `
+    
+    // Fetch the created assignment
+    const createdAssignment = await prisma.assignment.findFirst({
+      where: { courseId, title },
+      orderBy: { createdAt: 'desc' }
     })
 
     return NextResponse.json({
       message: 'Assignment created successfully',
-      assignment
+      assignment: createdAssignment
     }, { status: 201 })
   } catch (error) {
     console.error('Create assignment error:', error)
