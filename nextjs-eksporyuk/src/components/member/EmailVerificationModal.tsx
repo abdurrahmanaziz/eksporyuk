@@ -39,9 +39,37 @@ export default function EmailVerificationModal({ onComplete }: EmailVerification
         // Fetch current email from database
         fetchCurrentEmail()
         setIsOpen(true)
+      } else if (session.user.emailVerified) {
+        // Close modal if email is now verified
+        setIsOpen(false)
       }
     }
   }, [session, status])
+
+  // Auto-check verification status every 10 seconds when modal is open
+  useEffect(() => {
+    if (!isOpen) return
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/member/check-email-verified')
+        const data = await response.json()
+        
+        if (data.verified) {
+          // Email verified! Update session and close modal
+          await update()
+          toast.success('Email berhasil diverifikasi!')
+          setIsOpen(false)
+          onComplete?.()
+        }
+      } catch (error) {
+        // Silent fail - user can manually check
+        console.log('Auto-check failed:', error)
+      }
+    }, 10000) // Check every 10 seconds
+
+    return () => clearInterval(interval)
+  }, [isOpen, update, onComplete])
 
   const fetchCurrentEmail = async () => {
     try {
@@ -118,8 +146,8 @@ export default function EmailVerificationModal({ onComplete }: EmailVerification
   const displayEmail = currentEmail || session?.user?.email
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md [&>button]:hidden">
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
             <Mail className="h-8 w-8 text-orange-600" />
