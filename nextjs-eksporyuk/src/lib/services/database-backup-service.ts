@@ -21,9 +21,13 @@ const BACKUP_TABLES = [
   'Transaction',
   'AffiliateProfile',
   'AffiliateConversion',
+  'AffiliateCommission',
   'AffiliateCreditTransaction',
+  'AffiliateLink',
+  'AffiliateShortLink',
   'Wallet',
   'WalletTransaction',
+  'PendingRevenue',
   'Course',
   'CourseModule',
   'CourseLesson',
@@ -35,11 +39,16 @@ const BACKUP_TABLES = [
   'Integration',
   'IntegrationConfig',
   'Event',
+  'EventRegistration',
   'Group',
   'GroupMember',
   'Post',
+  'PostComment',
   'Notification',
   'Certificate',
+  'LeadMagnet',
+  'OptInPage',
+  'MentorProfile',
 ] as const
 
 interface BackupMetadata {
@@ -59,7 +68,7 @@ interface BackupResult {
 }
 
 class DatabaseBackupService {
-  private readonly MAX_BACKUPS = 7
+  private readonly MAX_BACKUPS = 48 // Keep 24 hours worth (30min interval)
   private readonly BACKUP_PREFIX = 'db-backups/'
 
   /**

@@ -8,138 +8,420 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id                     String            @id @default(cuid())
-  memberCode             String?           @unique
-  email                  String            @unique
-  username               String?           @unique
-  name                   String
-  password               String?
-  role                   Role              @default(MEMBER_FREE)
-  avatar                 String?
-  bio                    String?
-  phone                  String?
-  whatsapp               String?
-  province               String?
-  city                   String?
-  district               String?
-  address                String?
-  postalCode             String?
-  latitude               Float?
-  longitude              Float?
-  locationVerified       Boolean           @default(false)
-  profileCompleted       Boolean           @default(false)
-  isOnline               Boolean           @default(false)
-  lastSeenAt             DateTime?
-  lastActiveAt           DateTime?
-  emailVerified          Boolean           @default(false)
-  isActive               Boolean           @default(true)
-  isSuspended            Boolean           @default(false)
-  suspendReason          String?
-  suspendedAt            DateTime?
-  suspendedBy            String?
-  isFounder              Boolean           @default(false)
-  isCoFounder            Boolean           @default(false)
-  affiliateMenuEnabled   Boolean           @default(false)
-  revenueSharePercent    Float?
-  emailNotifications     Boolean           @default(true)
-  whatsappNotifications  Boolean           @default(false)
-  oneSignalPlayerId      String?
-  oneSignalSubscribedAt  DateTime?
-  oneSignalTags          Json?
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
-  referredById           String?
-  mailketingLists        Json?
-  mailketingSubscriberId String?
-  withdrawalPin          String?
-  withdrawalPinSetAt     DateTime?
-  coverImage             String?
-  commentReactions       CommentReaction[] @relation("UserCommentReactions")
-  followers              Follow[]          @relation("UserFollowers")
-  following              Follow[]          @relation("UserFollowing")
-  posts                  Post[]            @relation("UserPosts")
-  comments               PostComment[]     @relation("UserComments")
-  postReactions          PostReaction[]    @relation("UserPostReactions")
-  createdProducts        Product[]         @relation("ProductCreator")
-  savedPosts             SavedPost[]       @relation("UserSavedPosts")
-  userProducts           UserProduct[]     @relation("UserProductUser")
-
-  @@index([email])
-  @@index([username])
-  @@index([role])
-  @@index([province])
-  @@index([city])
-  @@index([district])
+model ActivityLog {
+  id        String   @id
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
 }
 
-model Wallet {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  balance        Decimal  @default(0)
-  balancePending Decimal  @default(0)
-  totalEarnings  Decimal  @default(0)
-  totalPayout    Decimal  @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model AffiliateAutomation {
+  id          String   @id
+  affiliateId String
+  name        String
+  triggerType String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+}
 
+model AffiliateAutomationJob {
+  id             String    @id
+  automationId   String
+  stepId         String
+  leadId         String
+  affiliateId    String
+  status         String    @default("pending")
+  scheduledAt    DateTime
+  executedAt     DateTime?
+  failedAt       DateTime?
+  errorMessage   String?
+  retryCount     Int       @default(0)
+  maxRetries     Int       @default(3)
+  creditDeducted Boolean   @default(false)
+  creditAmount   Int       @default(1)
+  emailSent      Boolean   @default(false)
+  emailId        String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+}
+
+model AffiliateAutomationLog {
+  id               String    @id
+  automationId     String
+  leadId           String
+  affiliateId      String
+  triggerType      String
+  triggerData      String?
+  status           String    @default("active")
+  currentStepOrder Int       @default(1)
+  totalSteps       Int       @default(0)
+  completedSteps   Int       @default(0)
+  failedSteps      Int       @default(0)
+  startedAt        DateTime  @default(now())
+  pausedAt         DateTime?
+  completedAt      DateTime?
+  lastExecutedAt   DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime
+}
+
+model AffiliateAutomationStep {
+  id           String   @id
+  automationId String
+  stepOrder    Int
+  delayHours   Int      @default(0)
+  emailSubject String
+  emailBody    String
+  isActive     Boolean  @default(true)
+  sentCount    Int      @default(0)
+  openedCount  Int      @default(0)
+  clickedCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+}
+
+model AffiliateBioCTA {
+  id               String   @id
+  bioPageId        String
+  buttonText       String
+  buttonType       String
+  buttonStyle      String   @default("button")
+  targetType       String?
+  targetId         String?
+  targetUrl        String?
+  membershipId     String?
+  productId        String?
+  courseId         String?
+  optinFormId      String?
+  optinDisplayMode String   @default("button")
+  backgroundColor  String   @default("#3B82F6")
+  textColor        String   @default("#FFFFFF")
+  thumbnailUrl     String?
+  price            String?
+  originalPrice    String?
+  subtitle         String?
+  showPrice        Boolean  @default(false)
+  showThumbnail    Boolean  @default(false)
+  titleSize        String   @default("sm")
+  subtitleSize     String   @default("xs")
+  buttonTextSize   String   @default("sm")
+  displayOrder     Int      @default(0)
+  clicks           Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+}
+
+model AffiliateBioPage {
+  id                String   @id
+  affiliateId       String
+  template          String   @default("modern")
+  buttonLayout      String   @default("stack")
+  displayName       String?
+  customHeadline    String?
+  customDescription String?
+  avatarUrl         String?
+  coverImage        String?
+  whatsappGroupLink String?
+  whatsappNumber    String?
+  primaryColor      String   @default("#3B82F6")
+  secondaryColor    String   @default("#10B981")
+  fontFamily        String   @default("inter")
+  showSocialIcons   Boolean  @default(true)
+  socialFacebook    String?
+  socialInstagram   String?
+  socialTwitter     String?
+  socialTiktok      String?
+  socialYoutube     String?
+  isActive          Boolean  @default(true)
+  viewCount         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+}
+
+model AffiliateBroadcast {
+  id              String    @id
+  affiliateId     String
+  name            String
+  subject         String
+  body            String
+  templateId      String?
+  status          String    @default("DRAFT")
+  targetSegment   Json?
+  totalRecipients Int       @default(0)
+  sentCount       Int       @default(0)
+  deliveredCount  Int       @default(0)
+  openedCount     Int       @default(0)
+  clickedCount    Int       @default(0)
+  failedCount     Int       @default(0)
+  creditUsed      Int       @default(0)
+  isScheduled     Boolean   @default(false)
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  recurringConfig Json?
+}
+
+model AffiliateBroadcastLog {
+  id           String    @id
+  broadcastId  String
+  leadId       String
+  status       String    @default("PENDING")
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+  createdAt    DateTime  @default(now())
+}
+
+model AffiliateCTATemplate {
+  id              String   @id
+  name            String
+  buttonText      String
+  buttonType      String
+  description     String?
+  backgroundColor String   @default("#3B82F6")
+  textColor       String   @default("#FFFFFF")
+  icon            String?
+  isActive        Boolean  @default(true)
+  useCount        Int      @default(0)
+  displayOrder    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+}
+
+model AffiliateChallenge {
+  id           String   @id
+  title        String
+  description  String
+  targetType   String
+  targetValue  Decimal
+  rewardType   String
+  rewardValue  Decimal
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean  @default(true)
+  membershipId String?
+  productId    String?
+  courseId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+
+  @@index([courseId])
+  @@index([membershipId])
+  @@index([productId])
+  @@index([startDate, endDate])
+}
+
+model AffiliateChallengeProgress {
+  id              String    @id
+  challengeId     String
+  affiliateId     String
+  currentValue    Decimal   @default(0)
+  completed       Boolean   @default(false)
+  completedAt     DateTime?
+  rewardClaimed   Boolean   @default(false)
+  claimedAt       DateTime?
+  rewardStatus    String    @default("NOT_CLAIMED")
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+
+  @@unique([challengeId, affiliateId])
+  @@index([affiliateId])
+  @@index([challengeId])
+  @@index([rewardStatus])
+}
+
+model AffiliateClick {
+  id           String    @id
+  linkId       String?
+  affiliateId  String?
+  ipAddress    String
+  userAgent    String
+  referrer     String?
+  productId    String?
+  membershipId String?
+  convertedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([affiliateId])
+  @@index([createdAt])
+  @@index([linkId])
+}
+
+model AffiliateConversion {
+  id               String    @id
+  affiliateId      String
+  transactionId    String    @unique
+  commissionAmount Decimal
+  commissionRate   Decimal
+  paidOut          Boolean   @default(false)
+  paidOutAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([affiliateId])
+  @@index([transactionId])
+}
+
+model AffiliateCredit {
+  id          String   @id
+  affiliateId String
+  balance     Int      @default(0)
+  totalTopUp  Int      @default(0)
+  totalUsed   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+}
+
+model AffiliateCreditTransaction {
+  id            String   @id
+  creditId      String
+  affiliateId   String
+  type          String
+  amount        Int
+  balanceBefore Int
+  balanceAfter  Int
+  description   String?
+  referenceType String?
+  referenceId   String?
+  paymentId     String?
+  status        String   @default("COMPLETED")
+  createdAt     DateTime @default(now())
+}
+
+model AffiliateEmailTemplate {
+  id           String   @id
+  name         String
+  slug         String
+  category     String
+  subject      String
+  body         String
+  previewText  String?
+  description  String?
+  thumbnailUrl String?
+  isDefault    Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  useCount     Int      @default(0)
+  createdById  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+}
+
+model AffiliateLead {
+  id              String    @id
+  affiliateId     String
+  optinFormId     String?
+  name            String
+  email           String?
+  phone           String?
+  whatsapp        String?
+  status          String    @default("new")
+  source          String    @default("optin")
+  notes           String?
+  lastContactedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+}
+
+model AffiliateLeadTag {
+  id        String   @id
+  leadId    String
+  tag       String
+  createdAt DateTime @default(now())
+}
+
+model AffiliateLink {
+  id           String            @id
+  userId       String?
+  affiliateId  String?
+  productId    String?
+  membershipId String?
+  courseId     String?
+  supplierId   String?
+  code         String            @unique
+  shortCode    String?           @unique
+  fullUrl      String?
+  couponCode   String?
+  linkType     AffiliateLinkType @default(CHECKOUT)
+  clicks       Int               @default(0)
+  conversions  Int               @default(0)
+  isActive     Boolean           @default(true)
+  isArchived   Boolean           @default(false)
+  expiresAt    DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime
+
+  @@index([affiliateId])
+  @@index([code])
+  @@index([shortCode])
   @@index([userId])
 }
 
-model WalletTransaction {
-  id          String   @id @default(cuid())
-  walletId    String
-  amount      Decimal
-  type        String
-  description String
-  reference   String?
-  createdAt   DateTime @default(now())
+model AffiliateMaterial {
+  id            String   @id
+  title         String
+  description   String
+  type          String
+  category      String
+  fileUrl       String?
+  content       String?
+  thumbnailUrl  String?
+  downloadCount Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
 
-  @@index([walletId])
-  @@index([createdAt])
+  @@index([category])
+  @@index([isActive])
+  @@index([type])
 }
 
-model Payout {
-  id            String       @id @default(cuid())
-  walletId      String
-  amount        Decimal
-  status        PayoutStatus @default(PENDING)
-  bankName      String?
-  accountName   String?
-  accountNumber String?
-  notes         String?
-  approvedBy    String?
-  approvedAt    DateTime?
-  paidAt        DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  @@index([walletId])
-  @@index([status])
-}
-
-model PendingRevenue {
-  id             String    @id @default(cuid())
-  walletId       String
-  transactionId  String
-  amount         Decimal
-  type           String
-  percentage     Decimal
-  status         String    @default("PENDING")
-  adjustedAmount Decimal?
-  adjustmentNote String?
-  approvedBy     String?
-  approvedAt     DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  @@index([walletId])
-  @@index([transactionId])
-  @@index([status])
+model AffiliateOptinForm {
+  id               String    @id
+  affiliateId      String
+  bioPageId        String?
+  slug             String?
+  formName         String
+  headline         String
+  description      String?
+  submitButtonText String    @default("Submit")
+  successMessage   String    @default("Terima kasih! Data Anda telah kami terima.")
+  redirectType     String    @default("message")
+  redirectUrl      String?
+  redirectWhatsapp String?
+  collectName      Boolean   @default(true)
+  collectEmail     Boolean   @default(true)
+  collectPhone     Boolean   @default(true)
+  isActive         Boolean   @default(true)
+  submissionCount  Int       @default(0)
+  bannerTitle      String?
+  bannerSubtitle   String?
+  bannerBadgeText  String?   @default("Event Terbatas - Daftar Sekarang!")
+  primaryColor     String?   @default("#2563eb")
+  secondaryColor   String?   @default("#4f46e5")
+  showCountdown    Boolean   @default(false)
+  countdownEndDate DateTime?
+  benefits         Json?     @default("[]")
+  faqs             Json?     @default("[]")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime
 }
 
 model AffiliateProfile {
-  id                    String    @id @default(cuid())
+  id                    String    @id
   userId                String    @unique
   affiliateCode         String    @unique
   shortLink             String    @unique
@@ -169,460 +451,563 @@ model AffiliateProfile {
   profileCompleted      Boolean   @default(false)
   profileCompletedAt    DateTime?
   createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  updatedAt             DateTime
 
   @@index([affiliateCode])
-  @@index([userId])
   @@index([shortLinkUsername])
-}
-
-model AffiliateLink {
-  id           String            @id @default(cuid())
-  userId       String?
-  affiliateId  String?
-  productId    String?
-  membershipId String?
-  courseId     String?
-  supplierId   String?
-  code         String            @unique
-  shortCode    String?           @unique
-  fullUrl      String?
-  couponCode   String?
-  linkType     AffiliateLinkType @default(CHECKOUT)
-  clicks       Int               @default(0)
-  conversions  Int               @default(0)
-  isActive     Boolean           @default(true)
-  isArchived   Boolean           @default(false)
-  expiresAt    DateTime?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-
   @@index([userId])
-  @@index([affiliateId])
-  @@index([code])
-  @@index([shortCode])
 }
 
-model AffiliateClick {
-  id           String    @id @default(cuid())
-  linkId       String?
-  affiliateId  String?
-  ipAddress    String
-  userAgent    String
-  referrer     String?
-  productId    String?
-  membershipId String?
-  convertedAt  DateTime?
-  createdAt    DateTime  @default(now())
-
-  @@index([linkId])
-  @@index([affiliateId])
-  @@index([createdAt])
-}
-
-model AffiliateConversion {
-  id               String    @id @default(cuid())
-  affiliateId      String
-  transactionId    String    @unique
-  commissionAmount Decimal
-  commissionRate   Decimal
-  paidOut          Boolean   @default(false)
-  paidOutAt        DateTime?
-  createdAt        DateTime  @default(now())
-
-  @@index([affiliateId])
-  @@index([transactionId])
-}
-
-model AffiliateChallenge {
-  id           String   @id @default(cuid())
-  title        String
-  description  String
-  targetType   String
-  targetValue  Decimal
-  rewardType   String
-  rewardValue  Decimal
-  startDate    DateTime
-  endDate      DateTime
-  isActive     Boolean  @default(true)
-  membershipId String?
-  productId    String?
-  courseId     String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([startDate, endDate])
-  @@index([membershipId])
-  @@index([productId])
-  @@index([courseId])
-}
-
-model AffiliateChallengeProgress {
-  id              String    @id @default(cuid())
-  challengeId     String
+model AffiliateShortLink {
+  id              String    @id
   affiliateId     String
-  currentValue    Decimal   @default(0)
-  completed       Boolean   @default(false)
-  completedAt     DateTime?
-  rewardClaimed   Boolean   @default(false)
-  claimedAt       DateTime?
-  rewardStatus    String    @default("NOT_CLAIMED")
-  approvedBy      String?
-  approvedAt      DateTime?
-  rejectionReason String?
+  domainId        String
+  username        String
+  slug            String?
+  targetType      String
+  targetId        String?
+  targetUrl       String?
+  fullShortUrl    String
+  affiliateLinkId String?
+  couponCode      String?
+  clicks          Int       @default(0)
+  conversions     Int       @default(0)
+  isActive        Boolean   @default(true)
+  expiresAt       DateTime?
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@unique([challengeId, affiliateId])
-  @@index([affiliateId])
-  @@index([challengeId])
-  @@index([rewardStatus])
+  updatedAt       DateTime
 }
 
-model AffiliateMaterial {
-  id            String   @id @default(cuid())
-  title         String
-  description   String
-  type          String
-  category      String
-  fileUrl       String?
-  content       String?
-  thumbnailUrl  String?
-  downloadCount Int      @default(0)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([type])
-  @@index([category])
-  @@index([isActive])
+model ApiKey {
+  id          String    @id
+  name        String
+  key         String
+  permissions Json
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
 }
 
-model MentorProfile {
-  id             String    @id @default(cuid())
-  userId         String    @unique
-  expertise      String?
-  bio            String?
-  commissionRate Decimal   @default(30)
-  totalStudents  Int       @default(0)
-  totalCourses   Int       @default(0)
-  totalEarnings  Decimal   @default(0)
-  rating         Decimal   @default(0)
-  isActive       Boolean   @default(true)
-  verifiedAt     DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  @@index([userId])
+model Assignment {
+  id                  String    @id
+  courseId            String
+  lessonId            String?
+  title               String
+  description         String
+  instructions        String?
+  maxScore            Int       @default(100)
+  dueDate             DateTime?
+  allowLateSubmission Boolean   @default(false)
+  allowedFileTypes    String?
+  maxFileSize         Int?
+  attachments         String?
+  links               String?
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime
 }
 
-model Membership {
-  id                      String             @id @default(cuid())
-  name                    String
-  slug                    String?            @unique
-  checkoutSlug            String?            @unique
-  checkoutTemplate        String?            @default("modern")
-  description             String
-  duration                MembershipDuration
-  price                   Decimal
-  originalPrice           Decimal?
-  discount                Int                @default(0)
-  commissionType          CommissionType     @default(PERCENTAGE)
-  affiliateCommissionRate Decimal            @default(30)
-  features                Json
-  isBestSeller            Boolean            @default(false)
-  isPopular               Boolean            @default(false)
-  isMostPopular           Boolean            @default(false)
-  isActive                Boolean            @default(true)
-  status                  MembershipStatus   @default(PUBLISHED)
-  salesPageUrl            String?
-  alternativeUrl          String?
-  reminders               Json?
-  formLogo                String?
-  formBanner              String?
-  formDescription         String?
-  mailketingListId        String?
-  mailketingListName      String?
-  autoAddToList           Boolean            @default(true)
-  autoRemoveOnExpire      Boolean            @default(false)
-  showInGeneralCheckout   Boolean            @default(true)
-  affiliateEnabled        Boolean            @default(true)
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
-
-  @@index([duration])
-  @@index([isActive])
-  @@index([status])
-  @@index([affiliateEnabled])
-}
-
-model MembershipGroup {
-  id           String   @id @default(cuid())
-  membershipId String
-  groupId      String
-  createdAt    DateTime @default(now())
-
-  @@unique([membershipId, groupId])
-  @@index([membershipId])
-  @@index([groupId])
-}
-
-model MembershipCourse {
-  id           String   @id @default(cuid())
-  membershipId String
-  courseId     String
-  createdAt    DateTime @default(now())
-
-  @@unique([membershipId, courseId])
-  @@index([membershipId])
-  @@index([courseId])
-}
-
-model MembershipProduct {
-  id           String   @id @default(cuid())
-  membershipId String
-  productId    String
-  createdAt    DateTime @default(now())
-
-  @@unique([membershipId, productId])
-  @@index([membershipId])
-  @@index([productId])
-}
-
-model MembershipFeatureAccess {
-  id           String   @id @default(cuid())
-  membershipId String
-  featureKey   String
-  enabled      Boolean  @default(true)
-  value        Json?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@unique([membershipId, featureKey])
-  @@index([membershipId])
-  @@index([featureKey])
-}
-
-model UserMembership {
-  id            String    @id @default(cuid())
-  userId        String
-  membershipId  String
-  startDate     DateTime  @default(now())
-  endDate       DateTime
-  isActive      Boolean   @default(true)
-  autoRenew     Boolean   @default(false)
-  status        String    @default("PENDING")
-  activatedAt   DateTime?
-  price         Decimal?
-  transactionId String?   @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@unique([userId, membershipId])
-  @@index([userId])
-  @@index([membershipId])
-  @@index([endDate])
-  @@index([status])
-}
-
-model MembershipReminder {
-  id              String          @id @default(cuid())
-  membershipId    String
-  title           String
-  description     String?
-  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
-  delayAmount     Int
-  delayUnit       String          @default("days")
-  specificDate    DateTime?
-  preferredTime   String?
-  timezone        String?         @default("Asia/Jakarta")
-  avoidWeekends   Boolean         @default(false)
-  daysOfWeek      Json?
-  channels        Json
-  emailEnabled    Boolean         @default(true)
-  emailSubject    String?
-  emailBody       String?
-  emailCTA        String?
-  emailCTALink    String?
-  whatsappEnabled Boolean         @default(false)
-  whatsappMessage String?
-  whatsappCTA     String?
-  whatsappCTALink String?
-  pushEnabled     Boolean         @default(false)
-  pushTitle       String?
-  pushBody        String?
-  pushIcon        String?
-  pushClickAction String?
-  inAppEnabled    Boolean         @default(false)
-  inAppTitle      String?
-  inAppBody       String?
-  inAppLink       String?
-  conditions      Json?
-  stopIfCondition Json?
-  sequenceOrder   Int             @default(0)
-  isActive        Boolean         @default(true)
-  stopOnAction    Boolean         @default(false)
-  sentCount       Int             @default(0)
-  deliveredCount  Int             @default(0)
-  openedCount     Int             @default(0)
-  clickedCount    Int             @default(0)
-  failedCount     Int             @default(0)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  @@unique([membershipId, title])
-  @@index([membershipId])
-  @@index([triggerType])
-  @@index([sequenceOrder])
-  @@index([isActive])
-}
-
-model MembershipFollowUp {
-  id              String   @id @default(cuid())
-  membershipId    String
-  title           String
-  description     String?
-  emailSubject    String
-  emailBody       String
-  emailCTA        String?
-  emailCTALink    String?
-  whatsappMessage String?
-  shortcodes      Json?
-  sequenceOrder   Int      @default(0)
-  isActive        Boolean  @default(true)
-  usageCount      Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([membershipId, title])
-  @@index([membershipId])
-  @@index([sequenceOrder])
-  @@index([isActive])
-}
-
-model FollowUpLog {
-  id            String          @id @default(cuid())
-  followUpId    String
-  affiliateId   String
-  leadEmail     String
-  leadName      String?
-  leadPhone     String?
-  channel       ReminderChannel @default(EMAIL)
-  status        ReminderStatus  @default(SENT)
-  sentAt        DateTime        @default(now())
-  transactionId String?
-  notes         String?
-  createdAt     DateTime        @default(now())
-
-  @@index([followUpId])
-  @@index([affiliateId])
-  @@index([leadEmail])
-  @@index([sentAt])
-}
-
-model ReminderLog {
-  id           String          @id @default(cuid())
-  reminderId   String
+model AssignmentSubmission {
+  id           String           @id
+  assignmentId String
   userId       String
-  channel      ReminderChannel
-  status       ReminderStatus  @default(PENDING)
-  scheduledAt  DateTime
+  content      String?
+  fileUrl      String?
+  fileName     String?
+  status       SubmissionStatus @default(SUBMITTED)
+  score        Int?
+  feedback     String?
+  gradedBy     String?
+  gradedAt     DateTime?
+  submittedAt  DateTime         @default(now())
+  updatedAt    DateTime
+}
+
+model BadgeDefinition {
+  id          String        @id
+  name        String
+  slug        String
+  description String
+  icon        String
+  color       String        @default("#3B82F6")
+  category    BadgeCategory @default(PARTICIPATION)
+  conditions  Json?
+  points      Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+}
+
+model BannedUser {
+  id         String    @id
+  userId     String
+  groupId    String?
+  reason     String
+  bannedById String
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Banner {
+  id                String          @id
+  title             String
+  description       String?
+  imageUrl          String?
+  videoUrl          String?
+  linkUrl           String
+  linkText          String?         @default("Lihat Selengkapnya")
+  targetRoles       Json
+  targetMemberships Json?
+  targetProvinces   Json?
+  placement         BannerPlacement @default(DASHBOARD)
+  displayType       BannerType      @default(CAROUSEL)
+  backgroundColor   String?         @default("#3B82F6")
+  textColor         String?         @default("#FFFFFF")
+  buttonColor       String?         @default("#FFFFFF")
+  buttonTextColor   String?         @default("#3B82F6")
+  priority          Int             @default(0)
+  startDate         DateTime
+  endDate           DateTime
+  isActive          Boolean         @default(true)
+  viewLimit         Int?
+  clickLimit        Int?
+  dailyBudget       Int?
+  createdBy         String
+  isSponsored       Boolean         @default(false)
+  sponsorName       String?
+  sponsorLogo       String?
+  totalViews        Int             @default(0)
+  totalClicks       Int             @default(0)
+  totalBudgetUsed   Decimal         @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime
+}
+
+model BannerClick {
+  id        String   @id
+  bannerId  String
+  userId    String?
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  clickedAt DateTime @default(now())
+}
+
+model BannerView {
+  id        String   @id
+  bannerId  String
+  userId    String?
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  viewedAt  DateTime @default(now())
+}
+
+model BrandedTemplate {
+  id             String    @id
+  name           String
+  slug           String
+  description    String?
+  category       String
+  type           String
+  roleTarget     String?
+  subject        String
+  content        String
+  ctaText        String?
+  ctaLink        String?
+  priority       String    @default("NORMAL")
+  isDefault      Boolean   @default(false)
+  isSystem       Boolean   @default(false)
+  isActive       Boolean   @default(true)
+  customBranding Json?
+  usageCount     Int       @default(0)
+  lastUsedAt     DateTime?
+  tags           Json?
+  variables      Json?
+  previewData    Json?
+  createdBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+}
+
+model BrandedTemplateUsage {
+  id         String   @id
+  templateId String
+  userId     String?
+  userRole   String?
+  context    String?
+  success    Boolean  @default(true)
+  error      String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+}
+
+model BroadcastCampaign {
+  id                      String    @id
+  name                    String
+  type                    String
+  status                  String    @default("DRAFT")
+  templateId              String?
+  templateType            String?
+  targetType              String
+  targetRoles             Json?
+  targetMembershipIds     Json?
+  targetGroupIds          Json?
+  targetCourseIds         Json?
+  targetEventIds          Json?
+  targetTransactionStatus Json?
+  targetTransactionType   Json?
+  customUserIds           Json?
+  emailSubject            String?
+  emailBody               String?
+  emailCtaText            String?
+  emailCtaLink            String?
+  whatsappMessage         String?
+  whatsappCtaText         String?
+  whatsappCtaLink         String?
+  scheduledAt             DateTime?
+  startedAt               DateTime?
+  completedAt             DateTime?
+  totalRecipients         Int       @default(0)
+  sentCount               Int       @default(0)
+  deliveredCount          Int       @default(0)
+  failedCount             Int       @default(0)
+  openedCount             Int       @default(0)
+  clickedCount            Int       @default(0)
+  createdById             String
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime
+}
+
+model BroadcastLog {
+  id           String    @id
+  campaignId   String
+  userId       String
+  channel      String
+  status       String    @default("PENDING")
   sentAt       DateTime?
   deliveredAt  DateTime?
   openedAt     DateTime?
   clickedAt    DateTime?
   failedAt     DateTime?
-  subject      String?
-  body         String?
-  ctaLink      String?
   errorMessage String?
-  ipAddress    String?
-  userAgent    String?
-  deviceInfo   Json?
-  mailketingId String?
-  whatsappId   String?
-  pushId       String?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-
-  @@index([reminderId])
-  @@index([userId])
-  @@index([channel])
-  @@index([status])
-  @@index([scheduledAt])
-  @@index([sentAt])
+  metadata     Json?
+  createdAt    DateTime  @default(now())
 }
 
-model ReminderTemplate {
-  id           String   @id @default(cuid())
-  name         String
-  description  String?
-  category     String?
-  templateData Json
-  isPublic     Boolean  @default(false)
-  createdBy    String
-  usageCount   Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([category])
-  @@index([createdBy])
+model Buyer {
+  id               String    @id
+  productName      String?
+  productSpecs     String?
+  quantity         String?
+  shippingTerms    String?
+  destinationPort  String?
+  paymentTerms     String?
+  companyName      String
+  country          String
+  city             String?
+  address          String?
+  contactPerson    String?
+  email            String?
+  phone            String?
+  website          String?
+  businessType     String?
+  productsInterest String?
+  annualImport     String?
+  isVerified       Boolean   @default(false)
+  verifiedBy       String?
+  verifiedAt       DateTime?
+  rating           Float?    @default(0)
+  totalDeals       Int       @default(0)
+  tags             String?
+  notes            String?
+  addedBy          String
+  viewCount        Int       @default(0)
+  likeCount        Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime
 }
 
-model ProductReminder {
-  id              String          @id @default(cuid())
-  productId       String
-  title           String
+model BuyerLike {
+  id      String   @id
+  userId  String
+  buyerId String
+  likedAt DateTime @default(now())
+}
+
+model BuyerView {
+  id       String   @id
+  userId   String
+  buyerId  String
+  viewedAt DateTime @default(now())
+}
+
+model Certificate {
+  id                    String   @id
+  userId                String
+  courseId              String
+  certificateNumber     String
+  completedAt           DateTime
+  issuedAt              DateTime @default(now())
+  studentName           String
+  courseName            String
+  completionDate        DateTime
+  certificateTemplateId String?
+  pdfUrl                String?
+  isValid               Boolean  @default(true)
+  verificationUrl       String?
+}
+
+model CertificateTemplate {
+  id              String   @id
+  name            String
   description     String?
-  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
-  delayAmount     Int
-  delayUnit       String          @default("days")
-  specificDate    DateTime?
-  preferredTime   String?
-  timezone        String?         @default("Asia/Jakarta")
-  avoidWeekends   Boolean         @default(false)
-  daysOfWeek      Json?
-  channels        Json
-  emailEnabled    Boolean         @default(true)
-  emailSubject    String?
-  emailBody       String?
-  emailCTA        String?
-  emailCTALink    String?
-  whatsappEnabled Boolean         @default(false)
-  whatsappMessage String?
-  whatsappCTA     String?
-  whatsappCTALink String?
-  pushEnabled     Boolean         @default(false)
-  pushTitle       String?
-  pushBody        String?
-  pushIcon        String?
-  pushClickAction String?
-  inAppEnabled    Boolean         @default(false)
-  inAppTitle      String?
-  inAppBody       String?
-  inAppLink       String?
-  conditions      Json?
-  stopIfCondition Json?
-  sequenceOrder   Int             @default(0)
-  isActive        Boolean         @default(true)
-  stopOnAction    Boolean         @default(false)
-  sentCount       Int             @default(0)
-  deliveredCount  Int             @default(0)
-  openedCount     Int             @default(0)
-  clickedCount    Int             @default(0)
-  failedCount     Int             @default(0)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  backgroundColor String   @default("#FFFFFF")
+  primaryColor    String   @default("#3B82F6")
+  secondaryColor  String?
+  textColor       String   @default("#1F2937")
+  layout          String   @default("MODERN")
+  logoUrl         String?
+  signatureUrl    String?
+  backgroundImage String?
+  borderStyle     String?
+  fontFamily      String   @default("Inter")
+  titleFontSize   String   @default("3xl")
+  mentorName      String?
+  directorName    String?
+  showLogo        Boolean  @default(true)
+  showSignature   Boolean  @default(true)
+  showQrCode      Boolean  @default(true)
+  showBorder      Boolean  @default(true)
+  isActive        Boolean  @default(true)
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+}
 
-  @@unique([productId, title])
-  @@index([productId])
-  @@index([triggerType])
-  @@index([sequenceOrder])
+model ChallengProgress {
+  id          String    @id
+  challengeId String
+  userId      String
+  progress    Int       @default(0)
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  rank        Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+}
+
+model ChatParticipant {
+  id          String    @id
+  roomId      String
+  userId      String
+  lastReadAt  DateTime?
+  unreadCount Int       @default(0)
+  isMuted     Boolean   @default(false)
+  isPinned    Boolean   @default(false)
+  joinedAt    DateTime  @default(now())
+}
+
+model ChatRoom {
+  id            String       @id
+  type          ChatRoomType @default(DIRECT)
+  name          String?
+  avatar        String?
+  user1Id       String?
+  user2Id       String?
+  groupId       String?
+  lastMessageAt DateTime?
+  lastMessage   String?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime
+}
+
+model CommentReaction {
+  id          String       @id
+  commentId   String
+  userId      String
+  type        ReactionType @default(LIKE)
+  createdAt   DateTime     @default(now())
+  PostComment PostComment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  User        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+}
+
+model ConversionEvent {
+  id              String   @id
+  userId          String
+  notificationId  String?
+  conversionType  String
+  conversionValue Decimal?
+  conversionUrl   String?
+  metadata        Json?
+  timestamp       DateTime @default(now())
+}
+
+model Coupon {
+  id                      String    @id
+  code                    String    @unique
+  description             String?
+  discountType            String
+  discountValue           Decimal
+  usageLimit              Int?
+  usageCount              Int       @default(0)
+  validUntil              DateTime?
+  expiresAt               DateTime?
+  isActive                Boolean   @default(true)
+  minPurchase             Decimal?
+  validFrom               DateTime?
+  productIds              Json?
+  membershipIds           Json?
+  courseIds               Json?
+  isAffiliateEnabled      Boolean   @default(false)
+  isForRenewal            Boolean   @default(false)
+  maxGeneratePerAffiliate Int?
+  maxUsagePerCoupon       Int?
+  basedOnCouponId         String?
+  createdBy               String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime
+  affiliateId             String?
+  generatedBy             String?
+  Coupon                  Coupon?   @relation("CouponToCoupon", fields: [basedOnCouponId], references: [id], onDelete: Cascade)
+  other_Coupon            Coupon[]  @relation("CouponToCoupon")
+
+  @@index([affiliateId])
+  @@index([basedOnCouponId])
+  @@index([code])
   @@index([isActive])
+  @@index([isAffiliateEnabled])
+}
+
+model Course {
+  id                      String                 @id
+  mentorId                String
+  title                   String
+  slug                    String?
+  checkoutSlug            String?
+  description             String
+  thumbnail               String?
+  price                   Decimal
+  originalPrice           Decimal?
+  mentorCommissionPercent Float                  @default(50)
+  commissionType          CommissionType         @default(PERCENTAGE)
+  affiliateCommissionRate Decimal                @default(30)
+  duration                Int?
+  level                   String?
+  status                  CourseStatus           @default(DRAFT)
+  isPublished             Boolean                @default(false)
+  publishedAt             DateTime?
+  submittedForReviewAt    DateTime?
+  reviewedBy              String?
+  approvedBy              String?
+  approvedAt              DateTime?
+  rejectedAt              DateTime?
+  rejectionReason         String?
+  monetizationType        CourseMonetizationType @default(FREE)
+  groupId                 String?
+  reminders               Json?
+  enrollmentCount         Int                    @default(0)
+  rating                  Decimal                @default(0)
+  formLogo                String?
+  formBanner              String?
+  formDescription         String?
+  certificateTemplateId   String?
+  mailketingListId        String?
+  mailketingListName      String?
+  autoAddToList           Boolean                @default(true)
+  affiliateOnly           Boolean                @default(false)
+  isAffiliateTraining     Boolean                @default(false)
+  isAffiliateMaterial     Boolean                @default(false)
+  roleAccess              CourseRoleAccess       @default(PUBLIC)
+  membershipIncluded      Boolean                @default(false)
+  isPublicListed          Boolean                @default(true)
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime
+}
+
+model CourseConsent {
+  id          String   @id
+  courseId    String
+  userId      String
+  consentText String
+  ipAddress   String?
+  userAgent   String?
+  agreedAt    DateTime @default(now())
+}
+
+model CourseDiscussion {
+  id             String    @id
+  courseId       String
+  lessonId       String?
+  title          String?
+  content        String
+  userId         String
+  parentId       String?
+  viewCount      Int       @default(0)
+  likesCount     Int       @default(0)
+  isMarkedSolved Boolean   @default(false)
+  solvedBy       String?
+  solvedAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+}
+
+model CourseEnrollment {
+  id            String    @id
+  courseId      String
+  userId        String
+  progress      Int       @default(0)
+  completed     Boolean   @default(false)
+  completedAt   DateTime?
+  transactionId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+}
+
+model CourseLesson {
+  id        String   @id
+  moduleId  String
+  title     String
+  content   String
+  videoUrl  String?
+  duration  Int?
+  order     Int
+  isFree    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model CourseModule {
+  id          String   @id
+  courseId    String
+  title       String
+  description String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+}
+
+model CourseNote {
+  id        String   @id
+  userId    String
+  courseId  String
+  lessonId  String
+  content   String
+  timestamp Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
 }
 
 model CourseReminder {
-  id              String          @id @default(cuid())
+  id              String          @id
   courseId        String
   title           String
   description     String?
@@ -664,16 +1049,194 @@ model CourseReminder {
   clickedCount    Int             @default(0)
   failedCount     Int             @default(0)
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  updatedAt       DateTime
 
   @@index([courseId])
-  @@index([triggerType])
-  @@index([sequenceOrder])
   @@index([isActive])
+  @@index([sequenceOrder])
+  @@index([triggerType])
+}
+
+model CourseReview {
+  id             String    @id
+  courseId       String
+  userId         String
+  rating         Int
+  review         String
+  isVerified     Boolean   @default(false)
+  isApproved     Boolean   @default(true)
+  moderatedBy    String?
+  moderatedAt    DateTime?
+  moderationNote String?
+  helpfulCount   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+}
+
+model CourseReviewHelpful {
+  id        String   @id
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model CourseSettings {
+  id                           String   @id
+  defaultMentorCommission      Float    @default(50)
+  defaultAffiliateCommission   Float    @default(30)
+  minWithdrawalAmount          Decimal  @default(50000)
+  withdrawalProcessingDays     Int      @default(3)
+  maxWithdrawalPerDay          Decimal  @default(10000000)
+  withdrawalMethods            Json?
+  autoApproveCourses           Boolean  @default(false)
+  autoApproveEnrollments       Boolean  @default(true)
+  defaultCourseVisibility      String   @default("PUBLIC")
+  requireCertificateCompletion Boolean  @default(true)
+  certificateMinScore          Int      @default(80)
+  enableAffiliateProgram       Boolean  @default(true)
+  enableMentorProgram          Boolean  @default(true)
+  mentorCanCreateGroup         Boolean  @default(true)
+  mentorCanCreateCourse        Boolean  @default(true)
+  mentorCanCreateMaterial      Boolean  @default(true)
+  mentorCanEditOwnCourse       Boolean  @default(true)
+  mentorCanDeleteOwnCourse     Boolean  @default(false)
+  mentorCanViewAnalytics       Boolean  @default(true)
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime
+}
+
+model DocumentDownloadLog {
+  id              String         @id
+  userId          String
+  documentId      String
+  membershipLevel String
+  downloadedAt    DateTime       @default(now())
+  ipAddress       String?
+  userAgent       String?
+  status          DownloadStatus @default(SUCCESS)
+  adminVerified   Boolean        @default(false)
+  notes           String?
+}
+
+model Documentation {
+  id              String                @id
+  slug            String
+  title           String
+  content         String
+  excerpt         String?
+  category        DocumentationCategory
+  targetRoles     Json
+  status          DocumentationStatus   @default(DRAFT)
+  isPublic        Boolean               @default(false)
+  icon            String?
+  order           Int                   @default(0)
+  parentId        String?
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  featuredImage   String?
+  publishedAt     DateTime?
+  archivedAt      DateTime?
+  viewCount       Int                   @default(0)
+  authorId        String
+  lastEditedById  String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime
+}
+
+model DocumentationRevision {
+  id              String   @id
+  documentationId String
+  content         String
+  title           String
+  excerpt         String?
+  changedById     String
+  changeNote      String?
+  version         Int
+  createdAt       DateTime @default(now())
+}
+
+model EmailTemplate {
+  id         String   @id
+  name       String
+  category   String?
+  roleTarget String?
+  subject    String
+  body       String
+  ctaText    String?
+  ctaLink    String?
+  variables  Json?
+  metadata   Json?
+  usageCount Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+}
+
+model EmailVerificationToken {
+  id         String   @id
+  identifier String
+  token      String
+  expires    DateTime
+  type       String?  @default("EMAIL_VERIFY")
+  metadata   String?
+  createdAt  DateTime @default(now())
+}
+
+model Event {
+  id              String          @id
+  creatorId       String
+  groupId         String?
+  title           String
+  description     String
+  thumbnail       String?
+  type            EventType
+  startDate       DateTime
+  endDate         DateTime
+  location        String?
+  meetingUrl      String?
+  meetingId       String?
+  meetingPassword String?
+  recordingUrl    String?
+  maxAttendees    Int?
+  price           Decimal?        @default(0)
+  commissionType  CommissionType?
+  commissionRate  Decimal?
+  isPublished     Boolean         @default(false)
+  isFeatured      Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+}
+
+model EventGroup {
+  id        String   @id
+  productId String
+  groupId   String
+  createdAt DateTime @default(now())
+}
+
+model EventMembership {
+  id           String   @id
+  productId    String
+  membershipId String
+  createdAt    DateTime @default(now())
+}
+
+model EventRSVP {
+  id            String    @id
+  eventId       String
+  userId        String
+  status        String    @default("GOING")
+  attended      Boolean   @default(false)
+  isPaid        Boolean   @default(false)
+  paidAt        DateTime?
+  transactionId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
 }
 
 model EventReminder {
-  id              String          @id @default(cuid())
+  id              String          @id
   eventId         String
   title           String
   description     String?
@@ -715,11 +1278,488 @@ model EventReminder {
   clickedCount    Int             @default(0)
   failedCount     Int             @default(0)
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  updatedAt       DateTime
+}
+
+model Expense {
+  id          String    @id
+  adminId     String
+  title       String
+  description String?
+  amount      Decimal
+  category    String
+  paidBy      String?
+  paidAt      DateTime  @default(now())
+  receipt     String?
+  isApproved  Boolean   @default(false)
+  approvedBy  String?
+  approvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+}
+
+model ExportDocument {
+  id             String   @id
+  name           String
+  slug           String
+  type           String
+  description    String?
+  templateHtml   String
+  templateFields Json
+  category       String?  @default("OTHER")
+  paperSize      String   @default("A4")
+  orientation    String   @default("portrait")
+  thumbnail      String?
+  isActive       Boolean  @default(true)
+  isPremium      Boolean  @default(false)
+  isBuiltIn      Boolean  @default(true)
+  usageCount     Int      @default(0)
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+}
+
+model Follow {
+  id                            String   @id
+  followerId                    String
+  followingId                   String
+  createdAt                     DateTime @default(now())
+  User_Follow_followerIdToUser  User     @relation("Follow_followerIdToUser", fields: [followerId], references: [id], onDelete: Cascade)
+  User_Follow_followingIdToUser User     @relation("Follow_followingIdToUser", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model FollowUpLog {
+  id            String          @id
+  followUpId    String
+  affiliateId   String
+  leadEmail     String
+  leadName      String?
+  leadPhone     String?
+  channel       ReminderChannel @default(EMAIL)
+  status        ReminderStatus  @default(SENT)
+  sentAt        DateTime        @default(now())
+  transactionId String?
+  notes         String?
+  createdAt     DateTime        @default(now())
+
+  @@index([affiliateId])
+  @@index([followUpId])
+  @@index([leadEmail])
+  @@index([sentAt])
+}
+
+model FollowUpTemplate {
+  id            String   @id
+  name          String
+  triggerHours  Int
+  message       String
+  channel       String
+  isActive      Boolean  @default(true)
+  createdBy     String
+  ownerId       String?
+  ownerType     String   @default("admin")
+  useMailkiting Boolean  @default(false)
+  useStarsender Boolean  @default(false)
+  useOnesignal  Boolean  @default(false)
+  usePusher     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+}
+
+model Forwarder {
+  id             String    @id
+  companyName    String
+  country        String    @default("Indonesia")
+  city           String
+  address        String?
+  contactPerson  String?
+  email          String?
+  phone          String?
+  whatsapp       String?
+  website        String?
+  serviceType    String?
+  routes         String?
+  services       String?
+  priceRange     String?
+  minShipment    String?
+  isVerified     Boolean   @default(false)
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  rating         Float?    @default(0)
+  totalShipments Int       @default(0)
+  tags           String?
+  notes          String?
+  addedBy        String
+  viewCount      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+}
+
+model ForwarderView {
+  id          String   @id
+  userId      String
+  forwarderId String
+  viewedAt    DateTime @default(now())
+}
+
+model GeneratedDocument {
+  id           String   @id
+  userId       String
+  templateId   String
+  documentData Json
+  documentHtml String
+  documentPdf  String?
+  title        String
+  documentNo   String?
+  notes        String?
+  status       String   @default("DRAFT")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+}
+
+model Group {
+  id              String    @id
+  name            String
+  description     String
+  avatar          String?
+  coverImage      String?
+  type            GroupType @default(PUBLIC)
+  ownerId         String
+  bannedWords     Json?
+  requireApproval Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  postingSettings Json?
+  allowRichText   Boolean   @default(true)
+  allowMedia      Boolean   @default(true)
+  allowPolls      Boolean   @default(true)
+  allowEvents     Boolean   @default(true)
+  allowScheduling Boolean   @default(true)
+  allowReactions  Boolean   @default(true)
+  allowMentions   Boolean   @default(true)
+  moderatesPosts  Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  slug            String?
+  Product         Product[]
+}
+
+model GroupChallenge {
+  id            String   @id
+  groupId       String
+  title         String
+  description   String?
+  type          String
+  target        Int?
+  startDate     DateTime
+  endDate       DateTime
+  rewardPoints  Int      @default(50)
+  rewardBadgeId String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+}
+
+model GroupMember {
+  id       String    @id
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+}
+
+model GroupQuiz {
+  id               String    @id
+  groupId          String
+  creatorId        String
+  title            String
+  description      String?
+  coverImage       String?
+  passingScore     Int       @default(70)
+  timeLimit        Int?
+  maxAttempts      Int       @default(1)
+  shuffleQuestions Boolean   @default(true)
+  shuffleOptions   Boolean   @default(true)
+  showResults      Boolean   @default(true)
+  isActive         Boolean   @default(true)
+  startDate        DateTime?
+  endDate          DateTime?
+  rewardPoints     Int       @default(10)
+  rewardBadgeId    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime
+}
+
+model GroupQuizAnswer {
+  id             String   @id
+  attemptId      String
+  questionId     String
+  selectedOption String?
+  isCorrect      Boolean  @default(false)
+  pointsEarned   Int      @default(0)
+  createdAt      DateTime @default(now())
+}
+
+model GroupQuizAttempt {
+  id          String    @id
+  quizId      String
+  userId      String
+  score       Int       @default(0)
+  maxScore    Int       @default(0)
+  percentage  Float     @default(0)
+  isPassed    Boolean   @default(false)
+  isCompleted Boolean   @default(false)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  timeSpent   Int?
+}
+
+model GroupQuizQuestion {
+  id           String       @id
+  quizId       String
+  question     String
+  questionType QuestionType @default(MULTIPLE_CHOICE)
+  options      Json
+  explanation  String?
+  points       Int          @default(1)
+  order        Int          @default(0)
+  imageUrl     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime
+}
+
+model GroupResource {
+  id            String   @id
+  groupId       String
+  uploaderId    String
+  title         String
+  description   String?
+  fileUrl       String
+  fileName      String
+  fileType      String
+  fileSize      Int
+  downloadCount Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model Integration {
+  id        String   @id
+  name      String
+  isEnabled Boolean  @default(false)
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model IntegrationConfig {
+  id           String    @id
+  service      String    @unique
+  config       Json
+  isActive     Boolean   @default(false)
+  lastTestedAt DateTime?
+  testStatus   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+}
+
+model LessonFile {
+  id        String   @id
+  lessonId  String
+  title     String
+  fileName  String
+  fileUrl   String
+  fileSize  Int?
+  fileType  String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model Membership {
+  id                      String             @id
+  name                    String
+  slug                    String?            @unique
+  checkoutSlug            String?            @unique
+  checkoutTemplate        String?            @default("modern")
+  description             String
+  duration                MembershipDuration
+  price                   Decimal
+  originalPrice           Decimal?
+  discount                Int                @default(0)
+  commissionType          CommissionType     @default(PERCENTAGE)
+  affiliateCommissionRate Decimal            @default(30)
+  features                Json
+  isBestSeller            Boolean            @default(false)
+  isPopular               Boolean            @default(false)
+  isMostPopular           Boolean            @default(false)
+  isActive                Boolean            @default(true)
+  status                  MembershipStatus   @default(PUBLISHED)
+  salesPageUrl            String?
+  alternativeUrl          String?
+  reminders               Json?
+  formLogo                String?
+  formBanner              String?
+  formDescription         String?
+  mailketingListId        String?
+  mailketingListName      String?
+  autoAddToList           Boolean            @default(true)
+  autoRemoveOnExpire      Boolean            @default(false)
+  showInGeneralCheckout   Boolean            @default(true)
+  affiliateEnabled        Boolean            @default(true)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime
+
+  @@index([affiliateEnabled])
+  @@index([duration])
+  @@index([isActive])
+  @@index([status])
+}
+
+model MembershipCourse {
+  id           String   @id
+  membershipId String
+  courseId     String
+  createdAt    DateTime @default(now())
+
+  @@unique([membershipId, courseId])
+  @@index([courseId])
+  @@index([membershipId])
+}
+
+model MembershipDocument {
+  id            String   @id
+  title         String
+  description   String?
+  category      String
+  fileUrl       String
+  fileName      String
+  fileSize      Int
+  fileType      String
+  minimumLevel  String
+  uploaderId    String
+  isActive      Boolean  @default(true)
+  viewCount     Int      @default(0)
+  downloadCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+}
+
+model MembershipFeatureAccess {
+  id           String   @id
+  membershipId String
+  featureKey   String
+  enabled      Boolean  @default(true)
+  value        Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+
+  @@unique([membershipId, featureKey])
+  @@index([featureKey])
+  @@index([membershipId])
+}
+
+model MembershipFollowUp {
+  id              String   @id
+  membershipId    String
+  title           String
+  description     String?
+  emailSubject    String
+  emailBody       String
+  emailCTA        String?
+  emailCTALink    String?
+  whatsappMessage String?
+  shortcodes      Json?
+  sequenceOrder   Int      @default(0)
+  isActive        Boolean  @default(true)
+  usageCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+
+  @@unique([membershipId, title])
+  @@index([isActive])
+  @@index([membershipId])
+  @@index([sequenceOrder])
+}
+
+model MembershipGroup {
+  id           String   @id
+  membershipId String
+  groupId      String
+  createdAt    DateTime @default(now())
+
+  @@unique([membershipId, groupId])
+  @@index([groupId])
+  @@index([membershipId])
+}
+
+model MembershipProduct {
+  id           String   @id
+  membershipId String
+  productId    String
+  createdAt    DateTime @default(now())
+
+  @@unique([membershipId, productId])
+  @@index([membershipId])
+  @@index([productId])
+}
+
+model MembershipReminder {
+  id              String          @id
+  membershipId    String
+  title           String
+  description     String?
+  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
+  delayAmount     Int
+  delayUnit       String          @default("days")
+  specificDate    DateTime?
+  preferredTime   String?
+  timezone        String?         @default("Asia/Jakarta")
+  avoidWeekends   Boolean         @default(false)
+  daysOfWeek      Json?
+  channels        Json
+  emailEnabled    Boolean         @default(true)
+  emailSubject    String?
+  emailBody       String?
+  emailCTA        String?
+  emailCTALink    String?
+  whatsappEnabled Boolean         @default(false)
+  whatsappMessage String?
+  whatsappCTA     String?
+  whatsappCTALink String?
+  pushEnabled     Boolean         @default(false)
+  pushTitle       String?
+  pushBody        String?
+  pushIcon        String?
+  pushClickAction String?
+  inAppEnabled    Boolean         @default(false)
+  inAppTitle      String?
+  inAppBody       String?
+  inAppLink       String?
+  conditions      Json?
+  stopIfCondition Json?
+  sequenceOrder   Int             @default(0)
+  isActive        Boolean         @default(true)
+  stopOnAction    Boolean         @default(false)
+  sentCount       Int             @default(0)
+  deliveredCount  Int             @default(0)
+  openedCount     Int             @default(0)
+  clickedCount    Int             @default(0)
+  failedCount     Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+
+  @@unique([membershipId, title])
+  @@index([isActive])
+  @@index([membershipId])
+  @@index([sequenceOrder])
+  @@index([triggerType])
 }
 
 model MembershipUpgradeLog {
-  id               String   @id @default(cuid())
+  id               String   @id
   userId           String
   oldMembershipId  String?
   newMembershipId  String
@@ -730,8 +1770,337 @@ model MembershipUpgradeLog {
   notes            String?
 }
 
+model MentorProfile {
+  id             String    @id
+  userId         String    @unique
+  expertise      String?
+  bio            String?
+  commissionRate Decimal   @default(30)
+  totalStudents  Int       @default(0)
+  totalCourses   Int       @default(0)
+  totalEarnings  Decimal   @default(0)
+  rating         Decimal   @default(0)
+  isActive       Boolean   @default(true)
+  verifiedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+
+  @@index([userId])
+}
+
+model Message {
+  id             String    @id
+  roomId         String?
+  senderId       String
+  receiverId     String?
+  content        String
+  type           String    @default("text")
+  attachmentUrl  String?
+  attachmentType String?
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+  isDelivered    Boolean   @default(false)
+  deliveredAt    DateTime?
+  reactions      Json?
+  replyToId      String?
+  isEdited       Boolean   @default(false)
+  isDeleted      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+  attachmentName String?
+  attachmentSize Int?
+}
+
+model Notification {
+  id            String           @id
+  userId        String
+  type          NotificationType
+  title         String
+  message       String
+  sourceType    String?
+  sourceId      String?
+  postId        String?
+  commentId     String?
+  eventId       String?
+  courseId      String?
+  groupId       String?
+  transactionId String?
+  link          String?
+  redirectUrl   String?
+  image         String?
+  icon          String?
+  channels      Json?
+  isRead        Boolean          @default(false)
+  readAt        DateTime?
+  isSent        Boolean          @default(false)
+  sentAt        DateTime?
+  isDelivered   Boolean          @default(false)
+  deliveredAt   DateTime?
+  isClicked     Boolean          @default(false)
+  clickedAt     DateTime?
+  metadata      Json?
+  actorId       String?
+  actorName     String?
+  actorAvatar   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime
+}
+
+model NotificationConsent {
+  id                  String    @id
+  userId              String
+  consentGiven        Boolean   @default(true)
+  channels            Json
+  purpose             String    @default("marketing")
+  ipAddress           String?
+  userAgent           String?
+  consentTimestamp    DateTime  @default(now())
+  consentExpiry       DateTime
+  revocationTimestamp DateTime?
+  revocationReason    String?
+}
+
+model NotificationDeliveryLog {
+  id             String    @id
+  notificationId String
+  playerId       String
+  userId         String?
+  status         String    @default("delivered")
+  platform       String?
+  openedAt       DateTime?
+  clickedAt      DateTime?
+  clickUrl       String?
+  ipAddress      String?
+  userAgent      String?
+  bounceReason   String?
+  timestamp      DateTime  @default(now())
+}
+
+model NotificationPreference {
+  id                       String   @id
+  userId                   String
+  enableAllEmail           Boolean  @default(true)
+  enableAllWhatsApp        Boolean  @default(false)
+  enableAllPush            Boolean  @default(true)
+  enableAllInApp           Boolean  @default(true)
+  chatNotifications        Boolean  @default(true)
+  commentNotifications     Boolean  @default(true)
+  postNotifications        Boolean  @default(true)
+  courseNotifications      Boolean  @default(true)
+  eventNotifications       Boolean  @default(true)
+  transactionNotifications Boolean  @default(true)
+  followerNotifications    Boolean  @default(true)
+  achievementNotifications Boolean  @default(true)
+  systemNotifications      Boolean  @default(true)
+  affiliateNotifications   Boolean  @default(true)
+  enableQuietHours         Boolean  @default(false)
+  quietHoursStart          String?
+  quietHoursEnd            String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime
+}
+
+model NotificationSubscription {
+  id               String   @id
+  userId           String
+  subscriptionType String
+  targetId         String
+  enableEmail      Boolean  @default(true)
+  enableWhatsApp   Boolean  @default(false)
+  enablePush       Boolean  @default(true)
+  enableInApp      Boolean  @default(true)
+  isAutoSubscribed Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+}
+
+model OneSignalAutoNotification {
+  id           String   @id
+  name         String
+  trigger      String
+  title        String
+  message      String
+  url          String?
+  enabled      Boolean  @default(true)
+  delayMinutes Int      @default(0)
+  targetType   String   @default("user")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+}
+
+model OneSignalTemplate {
+  id          String   @id
+  name        String
+  title       String
+  message     String
+  url         String?
+  imageUrl    String?
+  targetType  String   @default("all")
+  targetValue String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+}
+
+model OneSignalWebhookLog {
+  id               String    @id
+  eventType        String
+  payload          Json
+  processingStatus String    @default("pending")
+  errorMessage     String?
+  retryCount       Int       @default(0)
+  lastRetryAt      DateTime?
+  processedAt      DateTime?
+  timestamp        DateTime  @default(now())
+}
+
+model PasswordResetToken {
+  id        String    @id
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model Payout {
+  id            String       @id
+  walletId      String
+  amount        Decimal
+  status        PayoutStatus @default(PENDING)
+  bankName      String?
+  accountName   String?
+  accountNumber String?
+  notes         String?
+  approvedBy    String?
+  approvedAt    DateTime?
+  paidAt        DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime
+
+  @@index([status])
+  @@index([walletId])
+}
+
+model PendingRevenue {
+  id             String    @id
+  walletId       String
+  transactionId  String
+  amount         Decimal
+  type           String
+  percentage     Decimal
+  status         String    @default("PENDING")
+  adjustedAmount Decimal?
+  adjustmentNote String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+
+  @@index([status])
+  @@index([transactionId])
+  @@index([walletId])
+}
+
+model PointTransaction {
+  id          String   @id
+  userId      String
+  groupId     String?
+  points      Int
+  type        String
+  sourceId    String?
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model Post {
+  id               String         @id
+  authorId         String
+  groupId          String?
+  type             PostType       @default(POST)
+  content          String
+  contentFormatted Json?
+  images           Json?
+  videos           Json?
+  documents        Json?
+  linkPreview      Json?
+  location         Json?
+  pollData         Json?
+  eventData        Json?
+  quoteStyle       Json?
+  taggedUsers      Json?
+  metadata         Json?
+  isPinned         Boolean        @default(false)
+  isScheduled      Boolean        @default(false)
+  scheduledAt      DateTime?
+  commentsEnabled  Boolean        @default(true)
+  approvalStatus   ApprovalStatus @default(APPROVED)
+  likesCount       Int            @default(0)
+  commentsCount    Int            @default(0)
+  sharesCount      Int            @default(0)
+  reactionsCount   Json?
+  expiresAt        DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime
+  User             User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  PostComment      PostComment[]
+  PostReaction     PostReaction[]
+  SavedPost        SavedPost[]
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([groupId])
+}
+
+model PostComment {
+  id                String            @id
+  postId            String
+  userId            String
+  content           String
+  parentId          String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime
+  contentFormatted  Json?
+  images            Json?
+  mentionedUsers    Json?
+  reactionsCount    Json?
+  CommentReaction   CommentReaction[]
+  PostComment       PostComment?      @relation("PostCommentToPostComment", fields: [parentId], references: [id], onDelete: Cascade)
+  other_PostComment PostComment[]     @relation("PostCommentToPostComment")
+  Post              Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([parentId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model PostLike {
+  id        String   @id
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model PostReaction {
+  id        String       @id
+  postId    String
+  userId    String
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now())
+  Post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
 model Product {
-  id                      String          @id @default(cuid())
+  id                      String          @id
   creatorId               String
   name                    String
   slug                    String?
@@ -794,944 +2163,264 @@ model Product {
   viewCount               Int             @default(0)
   clickCount              Int             @default(0)
   createdAt               DateTime        @default(now())
-  updatedAt               DateTime        @updatedAt
-  creator                 User            @relation("ProductCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  group                   Group?          @relation(fields: [groupId], references: [id])
-  userProducts            UserProduct[]   @relation("ProductUserProducts")
-}
-
-model UserProduct {
-  id            String    @id @default(cuid())
-  userId        String
-  productId     String
-  purchaseDate  DateTime  @default(now())
-  expiresAt     DateTime?
-  isActive      Boolean   @default(true)
-  price         Decimal
-  transactionId String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  product       Product   @relation("ProductUserProducts", fields: [productId], references: [id], onDelete: Cascade)
-  user          User      @relation("UserProductUser", fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model EventMembership {
-  id           String   @id @default(cuid())
-  productId    String
-  membershipId String
-  createdAt    DateTime @default(now())
-}
-
-model EventGroup {
-  id        String   @id @default(cuid())
-  productId String
-  groupId   String
-  createdAt DateTime @default(now())
+  updatedAt               DateTime
+  User                    User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  Group                   Group?          @relation(fields: [groupId], references: [id])
+  UserProduct             UserProduct[]
 }
 
 model ProductCourse {
-  id        String   @id @default(cuid())
+  id        String   @id
   productId String
   courseId  String
   createdAt DateTime @default(now())
 }
 
-model Course {
-  id                      String                 @id @default(cuid())
-  mentorId                String
-  title                   String
-  slug                    String?
-  checkoutSlug            String?
-  description             String
-  thumbnail               String?
-  price                   Decimal
-  originalPrice           Decimal?
-  mentorCommissionPercent Float                  @default(50)
-  commissionType          CommissionType         @default(PERCENTAGE)
-  affiliateCommissionRate Decimal                @default(30)
-  duration                Int?
-  level                   String?
-  status                  CourseStatus           @default(DRAFT)
-  isPublished             Boolean                @default(false)
-  publishedAt             DateTime?
-  submittedForReviewAt    DateTime?
-  reviewedBy              String?
-  approvedBy              String?
-  approvedAt              DateTime?
-  rejectedAt              DateTime?
-  rejectionReason         String?
-  monetizationType        CourseMonetizationType @default(FREE)
-  groupId                 String?
-  reminders               Json?
-  enrollmentCount         Int                    @default(0)
-  rating                  Decimal                @default(0)
-  formLogo                String?
-  formBanner              String?
-  formDescription         String?
-  certificateTemplateId   String?
-  mailketingListId        String?
-  mailketingListName      String?
-  autoAddToList           Boolean                @default(true)
-  affiliateOnly           Boolean                @default(false)
-  isAffiliateTraining     Boolean                @default(false)
-  isAffiliateMaterial     Boolean                @default(false)
-  roleAccess              CourseRoleAccess       @default(PUBLIC)
-  membershipIncluded      Boolean                @default(false)
-  isPublicListed          Boolean                @default(true)
-  createdAt               DateTime               @default(now())
-  updatedAt               DateTime               @updatedAt
-}
-
-model UserCourseProgress {
-  id               String    @id @default(cuid())
-  userId           String
-  courseId         String
-  progress         Int       @default(0)
-  lastAccessedAt   DateTime  @default(now())
-  completedLessons Json?
-  isCompleted      Boolean   @default(false)
-  completedAt      DateTime?
-  hasAccess        Boolean   @default(true)
-  accessGrantedAt  DateTime  @default(now())
-  accessExpiresAt  DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
-model CourseModule {
-  id          String   @id @default(cuid())
-  courseId    String
-  title       String
-  description String?
-  order       Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model CourseLesson {
-  id        String   @id @default(cuid())
-  moduleId  String
-  title     String
-  content   String
-  videoUrl  String?
-  duration  Int?
-  order     Int
-  isFree    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model LessonFile {
-  id        String   @id @default(cuid())
-  lessonId  String
-  title     String
-  fileName  String
-  fileUrl   String
-  fileSize  Int?
-  fileType  String?
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model CourseEnrollment {
-  id            String    @id @default(cuid())
-  courseId      String
-  userId        String
-  progress      Int       @default(0)
-  completed     Boolean   @default(false)
-  completedAt   DateTime?
-  transactionId String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model CourseConsent {
-  id          String   @id @default(cuid())
-  courseId    String
-  userId      String
-  consentText String
-  ipAddress   String?
-  userAgent   String?
-  agreedAt    DateTime @default(now())
-}
-
-model Group {
-  id              String    @id @default(cuid())
-  name            String
-  description     String
-  avatar          String?
-  coverImage      String?
-  type            GroupType @default(PUBLIC)
-  ownerId         String
-  bannedWords     Json?
-  requireApproval Boolean   @default(false)
-  isActive        Boolean   @default(true)
-  postingSettings Json?
-  allowRichText   Boolean   @default(true)
-  allowMedia      Boolean   @default(true)
-  allowPolls      Boolean   @default(true)
-  allowEvents     Boolean   @default(true)
-  allowScheduling Boolean   @default(true)
-  allowReactions  Boolean   @default(true)
-  allowMentions   Boolean   @default(true)
-  moderatesPosts  Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  slug            String?
-  products        Product[]
-}
-
-model GroupMember {
-  id       String    @id @default(cuid())
-  groupId  String
-  userId   String
-  role     GroupRole @default(MEMBER)
-  joinedAt DateTime  @default(now())
-}
-
-model Post {
-  id               String         @id @default(cuid())
-  authorId         String
-  groupId          String?
-  type             PostType       @default(POST)
-  content          String
-  contentFormatted Json?
-  images           Json?
-  videos           Json?
-  documents        Json?
-  linkPreview      Json?
-  location         Json?
-  pollData         Json?
-  eventData        Json?
-  quoteStyle       Json?
-  taggedUsers      Json?
-  metadata         Json?
-  isPinned         Boolean        @default(false)
-  isScheduled      Boolean        @default(false)
-  scheduledAt      DateTime?
-  commentsEnabled  Boolean        @default(true)
-  approvalStatus   ApprovalStatus @default(APPROVED)
-  likesCount       Int            @default(0)
-  commentsCount    Int            @default(0)
-  sharesCount      Int            @default(0)
-  reactionsCount   Json?
-  expiresAt        DateTime?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  author           User           @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  comments         PostComment[]  @relation("PostComments")
-  reactions        PostReaction[]
-  savedBy          SavedPost[]
-
-  @@index([authorId])
-  @@index([groupId])
-  @@index([createdAt])
-}
-
-model PostLike {
-  id        String   @id @default(cuid())
-  postId    String
-  userId    String
-  createdAt DateTime @default(now())
-}
-
-model PostComment {
-  id               String            @id @default(cuid())
-  postId           String
-  userId           String
-  content          String
-  parentId         String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  contentFormatted Json?
-  images           Json?
-  mentionedUsers   Json?
-  reactionsCount   Json?
-  reactions        CommentReaction[]
-  parent           PostComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies          PostComment[]     @relation("CommentReplies")
-  post             Post              @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
-  user             User              @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([postId])
-  @@index([userId])
-  @@index([parentId])
-}
-
-model PostReaction {
-  id        String       @id @default(cuid())
-  postId    String
-  userId    String
-  type      ReactionType @default(LIKE)
-  createdAt DateTime     @default(now())
-  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User         @relation("UserPostReactions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId])
-  @@index([postId])
-  @@index([userId])
-}
-
-model CommentReaction {
-  id        String       @id @default(cuid())
-  commentId String
-  userId    String
-  type      ReactionType @default(LIKE)
-  createdAt DateTime     @default(now())
-  comment   PostComment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user      User         @relation("UserCommentReactions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([commentId, userId])
-  @@index([commentId])
-  @@index([userId])
-}
-
-model SavedPost {
-  id        String   @id @default(cuid())
-  postId    String
-  userId    String
-  createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserSavedPosts", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId])
-  @@index([postId])
-  @@index([userId])
-}
-
-model Event {
-  id              String          @id @default(cuid())
-  creatorId       String
-  groupId         String?
+model ProductReminder {
+  id              String          @id
+  productId       String
   title           String
-  description     String
-  thumbnail       String?
-  type            EventType
-  startDate       DateTime
-  endDate         DateTime
-  location        String?
-  meetingUrl      String?
-  meetingId       String?
-  meetingPassword String?
-  recordingUrl    String?
-  maxAttendees    Int?
-  price           Decimal?        @default(0)
-  commissionType  CommissionType?
-  commissionRate  Decimal?
-  isPublished     Boolean         @default(false)
-  isFeatured      Boolean         @default(false)
+  description     String?
+  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
+  delayAmount     Int
+  delayUnit       String          @default("days")
+  specificDate    DateTime?
+  preferredTime   String?
+  timezone        String?         @default("Asia/Jakarta")
+  avoidWeekends   Boolean         @default(false)
+  daysOfWeek      Json?
+  channels        Json
+  emailEnabled    Boolean         @default(true)
+  emailSubject    String?
+  emailBody       String?
+  emailCTA        String?
+  emailCTALink    String?
+  whatsappEnabled Boolean         @default(false)
+  whatsappMessage String?
+  whatsappCTA     String?
+  whatsappCTALink String?
+  pushEnabled     Boolean         @default(false)
+  pushTitle       String?
+  pushBody        String?
+  pushIcon        String?
+  pushClickAction String?
+  inAppEnabled    Boolean         @default(false)
+  inAppTitle      String?
+  inAppBody       String?
+  inAppLink       String?
+  conditions      Json?
+  stopIfCondition Json?
+  sequenceOrder   Int             @default(0)
+  isActive        Boolean         @default(true)
+  stopOnAction    Boolean         @default(false)
+  sentCount       Int             @default(0)
+  deliveredCount  Int             @default(0)
+  openedCount     Int             @default(0)
+  clickedCount    Int             @default(0)
+  failedCount     Int             @default(0)
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-}
+  updatedAt       DateTime
 
-model EventRSVP {
-  id            String    @id @default(cuid())
-  eventId       String
-  userId        String
-  status        String    @default("GOING")
-  attended      Boolean   @default(false)
-  isPaid        Boolean   @default(false)
-  paidAt        DateTime?
-  transactionId String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model Transaction {
-  id               String            @id @default(cuid())
-  userId           String
-  type             TransactionType
-  status           TransactionStatus @default(PENDING)
-  amount           Decimal
-  customerName     String?
-  customerEmail    String?
-  customerPhone    String?
-  customerWhatsapp String?
-  productId        String?
-  courseId         String?
-  eventId          String?
-  description      String?
-  reference        String?
-  originalAmount   Decimal?
-  notes            String?
-  paymentMethod    String?
-  paymentProvider  String?
-  externalId       String?
-  paymentUrl       String?
-  founderShare     Decimal?
-  coFounderShare   Decimal?
-  affiliateShare   Decimal?
-  mentorShare      Decimal?
-  companyFee       Decimal?
-  couponId         String?
-  discountAmount   Decimal?
-  affiliateId      String?
-  metadata         Json?
-  paidAt           DateTime?
-  expiredAt        DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  invoiceNumber    String?
-}
-
-model Coupon {
-  id                      String    @id @default(cuid())
-  code                    String    @unique
-  description             String?
-  discountType            String
-  discountValue           Decimal
-  usageLimit              Int?
-  usageCount              Int       @default(0)
-  validUntil              DateTime?
-  expiresAt               DateTime?
-  isActive                Boolean   @default(true)
-  minPurchase             Decimal?
-  validFrom               DateTime?
-  productIds              Json?
-  membershipIds           Json?
-  courseIds               Json?
-  isAffiliateEnabled      Boolean   @default(false)
-  isForRenewal            Boolean   @default(false)
-  maxGeneratePerAffiliate Int?
-  maxUsagePerCoupon       Int?
-  basedOnCouponId         String?
-  createdBy               String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  affiliateId             String?
-  generatedBy             String?
-  parentCoupon            Coupon?   @relation("CouponHierarchy", fields: [basedOnCouponId], references: [id], onDelete: Cascade)
-  childCoupons            Coupon[]  @relation("CouponHierarchy")
-
-  @@index([code])
-  @@index([basedOnCouponId])
-  @@index([affiliateId])
+  @@unique([productId, title])
   @@index([isActive])
-  @@index([isAffiliateEnabled])
+  @@index([productId])
+  @@index([sequenceOrder])
+  @@index([triggerType])
 }
 
-model Follow {
-  id          String   @id @default(cuid())
-  followerId  String
-  followingId String
-  createdAt   DateTime @default(now())
-  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
-  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
-
-  @@unique([followerId, followingId])
-  @@index([followerId])
-  @@index([followingId])
-}
-
-model ChatRoom {
-  id            String       @id @default(cuid())
-  type          ChatRoomType @default(DIRECT)
-  name          String?
-  avatar        String?
-  user1Id       String?
-  user2Id       String?
-  groupId       String?
-  lastMessageAt DateTime?
-  lastMessage   String?
-  isActive      Boolean      @default(true)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-}
-
-model ChatParticipant {
-  id          String    @id @default(cuid())
-  roomId      String
-  userId      String
-  lastReadAt  DateTime?
-  unreadCount Int       @default(0)
-  isMuted     Boolean   @default(false)
-  isPinned    Boolean   @default(false)
-  joinedAt    DateTime  @default(now())
-}
-
-model Message {
-  id             String    @id @default(cuid())
-  roomId         String?
-  senderId       String
-  receiverId     String?
-  content        String
-  type           String    @default("text")
-  attachmentUrl  String?
-  attachmentType String?
-  isRead         Boolean   @default(false)
-  readAt         DateTime?
-  isDelivered    Boolean   @default(false)
-  deliveredAt    DateTime?
-  reactions      Json?
-  replyToId      String?
-  isEdited       Boolean   @default(false)
-  isDeleted      Boolean   @default(false)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  attachmentName String?
-  attachmentSize Int?
-}
-
-model TypingIndicator {
-  id        String   @id @default(cuid())
-  roomId    String
-  userId    String
-  isTyping  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-}
-
-model Notification {
-  id            String           @id @default(cuid())
-  userId        String
-  type          NotificationType
-  title         String
-  message       String
-  sourceType    String?
-  sourceId      String?
-  postId        String?
-  commentId     String?
-  eventId       String?
-  courseId      String?
-  groupId       String?
-  transactionId String?
-  link          String?
-  redirectUrl   String?
-  image         String?
-  icon          String?
-  channels      Json?
-  isRead        Boolean          @default(false)
-  readAt        DateTime?
-  isSent        Boolean          @default(false)
-  sentAt        DateTime?
-  isDelivered   Boolean          @default(false)
-  deliveredAt   DateTime?
-  isClicked     Boolean          @default(false)
-  clickedAt     DateTime?
-  metadata      Json?
-  actorId       String?
-  actorName     String?
-  actorAvatar   String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-}
-
-model NotificationSubscription {
-  id               String   @id @default(cuid())
-  userId           String
-  subscriptionType String
-  targetId         String
-  enableEmail      Boolean  @default(true)
-  enableWhatsApp   Boolean  @default(false)
-  enablePush       Boolean  @default(true)
-  enableInApp      Boolean  @default(true)
-  isAutoSubscribed Boolean  @default(true)
+model Quiz {
+  id               String   @id
+  courseId         String
+  lessonId         String?
+  title            String
+  description      String?
+  passingScore     Int      @default(70)
+  timeLimit        Int?
+  maxAttempts      Int?
+  shuffleQuestions Boolean  @default(false)
+  shuffleAnswers   Boolean  @default(false)
+  showResults      Boolean  @default(true)
+  isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  updatedAt        DateTime
 }
 
-model NotificationPreference {
-  id                       String   @id @default(cuid())
-  userId                   String
-  enableAllEmail           Boolean  @default(true)
-  enableAllWhatsApp        Boolean  @default(false)
-  enableAllPush            Boolean  @default(true)
-  enableAllInApp           Boolean  @default(true)
-  chatNotifications        Boolean  @default(true)
-  commentNotifications     Boolean  @default(true)
-  postNotifications        Boolean  @default(true)
-  courseNotifications      Boolean  @default(true)
-  eventNotifications       Boolean  @default(true)
-  transactionNotifications Boolean  @default(true)
-  followerNotifications    Boolean  @default(true)
-  achievementNotifications Boolean  @default(true)
-  systemNotifications      Boolean  @default(true)
-  affiliateNotifications   Boolean  @default(true)
-  enableQuietHours         Boolean  @default(false)
-  quietHoursStart          String?
-  quietHoursEnd            String?
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-}
-
-model ActivityLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  action    String
-  entity    String
-  entityId  String?
-  ipAddress String?
-  userAgent String?
-  metadata  Json?
-  createdAt DateTime @default(now())
-}
-
-model Integration {
-  id        String   @id @default(cuid())
-  name      String
-  isEnabled Boolean  @default(false)
-  config    Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model EmailTemplate {
-  id         String   @id @default(cuid())
-  name       String
-  category   String?
-  roleTarget String?
-  subject    String
-  body       String
-  ctaText    String?
-  ctaLink    String?
-  variables  Json?
-  metadata   Json?
-  usageCount Int      @default(0)
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
-
-model WhatsAppTemplate {
-  id         String   @id @default(cuid())
-  name       String
-  category   String?
-  roleTarget String?
-  message    String
-  ctaText    String?
-  ctaLink    String?
-  maxLength  Int      @default(1024)
-  variables  Json?
-  metadata   Json?
-  usageCount Int      @default(0)
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
-
-model BrandedTemplate {
-  id             String    @id @default(cuid())
-  name           String
-  slug           String
-  description    String?
-  category       String
-  type           String
-  roleTarget     String?
-  subject        String
-  content        String
-  ctaText        String?
-  ctaLink        String?
-  priority       String    @default("NORMAL")
-  isDefault      Boolean   @default(false)
-  isSystem       Boolean   @default(false)
-  isActive       Boolean   @default(true)
-  customBranding Json?
-  usageCount     Int       @default(0)
-  lastUsedAt     DateTime?
-  tags           Json?
-  variables      Json?
-  previewData    Json?
-  createdBy      String?
+model QuizAnswer {
+  id             String    @id
+  attemptId      String
+  questionId     String
+  selectedOption String?
+  textAnswer     String?
+  isCorrect      Boolean   @default(false)
+  pointsEarned   Int       @default(0)
+  isGraded       Boolean   @default(false)
+  gradedBy       String?
+  gradedAt       DateTime?
+  feedback       String?
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
 }
 
-model BrandedTemplateUsage {
-  id         String   @id @default(cuid())
-  templateId String
-  userId     String?
-  userRole   String?
-  context    String?
-  success    Boolean  @default(true)
-  error      String?
-  metadata   Json?
-  createdAt  DateTime @default(now())
+model QuizAttempt {
+  id          String    @id
+  quizId      String
+  userId      String
+  score       Int       @default(0)
+  maxScore    Int
+  earnedScore Int       @default(0)
+  isPassed    Boolean   @default(false)
+  isCompleted Boolean   @default(false)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  timeSpent   Int?
 }
 
-model BroadcastCampaign {
-  id                      String    @id @default(cuid())
-  name                    String
-  type                    String
-  status                  String    @default("DRAFT")
-  templateId              String?
-  templateType            String?
-  targetType              String
-  targetRoles             Json?
-  targetMembershipIds     Json?
-  targetGroupIds          Json?
-  targetCourseIds         Json?
-  targetEventIds          Json?
-  targetTransactionStatus Json?
-  targetTransactionType   Json?
-  customUserIds           Json?
-  emailSubject            String?
-  emailBody               String?
-  emailCtaText            String?
-  emailCtaLink            String?
-  whatsappMessage         String?
-  whatsappCtaText         String?
-  whatsappCtaLink         String?
-  scheduledAt             DateTime?
-  startedAt               DateTime?
-  completedAt             DateTime?
-  totalRecipients         Int       @default(0)
-  sentCount               Int       @default(0)
-  deliveredCount          Int       @default(0)
-  failedCount             Int       @default(0)
-  openedCount             Int       @default(0)
-  clickedCount            Int       @default(0)
-  createdById             String
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
+model QuizQuestion {
+  id            String       @id
+  quizId        String
+  type          QuestionType @default(MULTIPLE_CHOICE)
+  question      String
+  explanation   String?
+  points        Int          @default(1)
+  order         Int
+  options       Json?
+  correctAnswer String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime
 }
 
-model BroadcastLog {
-  id           String    @id @default(cuid())
-  campaignId   String
+model ReminderLog {
+  id           String          @id
+  reminderId   String
   userId       String
-  channel      String
-  status       String    @default("PENDING")
+  channel      ReminderChannel
+  status       ReminderStatus  @default(PENDING)
+  scheduledAt  DateTime
   sentAt       DateTime?
   deliveredAt  DateTime?
   openedAt     DateTime?
   clickedAt    DateTime?
   failedAt     DateTime?
+  subject      String?
+  body         String?
+  ctaLink      String?
   errorMessage String?
-  metadata     Json?
-  createdAt    DateTime  @default(now())
+  ipAddress    String?
+  userAgent    String?
+  deviceInfo   Json?
+  mailketingId String?
+  whatsappId   String?
+  pushId       String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime
+
+  @@index([channel])
+  @@index([reminderId])
+  @@index([scheduledAt])
+  @@index([sentAt])
+  @@index([status])
+  @@index([userId])
 }
 
-model ApiKey {
-  id          String    @id @default(cuid())
-  name        String
-  key         String
-  permissions Json
-  isActive    Boolean   @default(true)
-  lastUsedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model UserRole {
-  id        String   @id @default(cuid())
-  userId    String
-  role      Role
-  createdAt DateTime @default(now())
-}
-
-model UserPermission {
-  id        String   @id @default(cuid())
-  userId    String
-  feature   String
-  enabled   Boolean  @default(true)
-  value     Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Expense {
-  id          String    @id @default(cuid())
-  adminId     String
-  title       String
-  description String?
-  amount      Decimal
-  category    String
-  paidBy      String?
-  paidAt      DateTime  @default(now())
-  receipt     String?
-  isApproved  Boolean   @default(false)
-  approvedBy  String?
-  approvedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model Buyer {
-  id               String    @id @default(cuid())
-  productName      String?
-  productSpecs     String?
-  quantity         String?
-  shippingTerms    String?
-  destinationPort  String?
-  paymentTerms     String?
-  companyName      String
-  country          String
-  city             String?
-  address          String?
-  contactPerson    String?
-  email            String?
-  phone            String?
-  website          String?
-  businessType     String?
-  productsInterest String?
-  annualImport     String?
-  isVerified       Boolean   @default(false)
-  verifiedBy       String?
-  verifiedAt       DateTime?
-  rating           Float?    @default(0)
-  totalDeals       Int       @default(0)
-  tags             String?
-  notes            String?
-  addedBy          String
-  viewCount        Int       @default(0)
-  likeCount        Int       @default(0)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
-model Supplier {
-  id             String    @id @default(cuid())
-  companyName    String
-  province       String
-  city           String
-  address        String?
-  contactPerson  String?
-  email          String?
-  phone          String?
-  whatsapp       String?
-  website        String?
-  businessType   String?
-  products       String
-  capacity       String?
-  certifications String?
-  isVerified     Boolean   @default(false)
-  verifiedBy     String?
-  verifiedAt     DateTime?
-  rating         Float?    @default(0)
-  totalDeals     Int       @default(0)
-  tags           String?
-  notes          String?
-  addedBy        String
-  viewCount      Int       @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  legalityDoc    String?
-  nibDoc         String?
-}
-
-model Forwarder {
-  id             String    @id @default(cuid())
-  companyName    String
-  country        String    @default("Indonesia")
-  city           String
-  address        String?
-  contactPerson  String?
-  email          String?
-  phone          String?
-  whatsapp       String?
-  website        String?
-  serviceType    String?
-  routes         String?
-  services       String?
-  priceRange     String?
-  minShipment    String?
-  isVerified     Boolean   @default(false)
-  verifiedBy     String?
-  verifiedAt     DateTime?
-  rating         Float?    @default(0)
-  totalShipments Int       @default(0)
-  tags           String?
-  notes          String?
-  addedBy        String
-  viewCount      Int       @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-model ExportDocument {
-  id             String   @id @default(cuid())
-  name           String
-  slug           String   @default(cuid())
-  type           String
-  description    String?
-  templateHtml   String
-  templateFields Json
-  category       String?  @default("OTHER")
-  paperSize      String   @default("A4")
-  orientation    String   @default("portrait")
-  thumbnail      String?
-  isActive       Boolean  @default(true)
-  isPremium      Boolean  @default(false)
-  isBuiltIn      Boolean  @default(true)
-  usageCount     Int      @default(0)
-  createdBy      String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-model GeneratedDocument {
-  id           String   @id @default(cuid())
-  userId       String
-  templateId   String
-  documentData Json
-  documentHtml String
-  documentPdf  String?
-  title        String
-  documentNo   String?
-  notes        String?
-  status       String   @default("DRAFT")
+model ReminderTemplate {
+  id           String   @id
+  name         String
+  description  String?
+  category     String?
+  templateData Json
+  isPublic     Boolean  @default(false)
+  createdBy    String
+  usageCount   Int      @default(0)
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime
+
+  @@index([category])
+  @@index([createdBy])
 }
 
-model MembershipDocument {
-  id            String   @id @default(cuid())
-  title         String
-  description   String?
-  category      String
-  fileUrl       String
-  fileName      String
-  fileSize      Int
-  fileType      String
-  minimumLevel  String
-  uploaderId    String
-  isActive      Boolean  @default(true)
-  viewCount     Int      @default(0)
-  downloadCount Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model Report {
+  id           String       @id
+  reporterId   String
+  type         ReportType
+  reason       String
+  description  String?
+  postId       String?
+  commentId    String?
+  userId       String?
+  groupId      String?
+  status       ReportStatus @default(PENDING)
+  reviewedById String?
+  reviewedAt   DateTime?
+  reviewNote   String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime
 }
 
-model DocumentDownloadLog {
-  id              String         @id @default(cuid())
-  userId          String
-  documentId      String
-  membershipLevel String
-  downloadedAt    DateTime       @default(now())
-  ipAddress       String?
-  userAgent       String?
-  status          DownloadStatus @default(SUCCESS)
-  adminVerified   Boolean        @default(false)
-  notes           String?
+model SalesPageSettings {
+  id                   String   @id
+  heroTitle            String?  @default("Belajar Ekspor Mudah dan Praktis di Komunitas")
+  heroHighlight        String?  @default("Mudah dan Praktis")
+  heroDescription      String?  @default("Dibimbing langsung oleh praktisi ekspor berpengalaman. Mulai dari persiapan dokumen, mencari buyer, hingga pengiriman barang ke luar negeri.")
+  heroBadgeText        String?  @default("7,000+ Calon Eksportir Bergabung")
+  heroCtaText          String?  @default("Mulai Belajar Sekarang")
+  heroCtaSecondaryText String?  @default("Lihat Fitur")
+  navbarLogo           String?
+  navbarLogoText       String?  @default("Eksporyuk")
+  navbarCtaText        String?  @default("Gabung Komunitas")
+  featuresTitle        String?  @default("Semua yang Anda Butuhkan untuk Sukses Ekspor")
+  featuresSubtitle     String?  @default("Platform lengkap untuk belajar dan praktik ekspor dengan bimbingan mentor berpengalaman")
+  featuresData         Json?
+  pricingTitle         String?  @default("Pilih Paket Membership Anda")
+  pricingSubtitle      String?  @default("Investasi terbaik untuk masa depan bisnis ekspor Anda")
+  pricingShowFromDb    Boolean  @default(true)
+  pricingCustomData    Json?
+  testimonialsTitle    String?  @default("Apa Kata Mereka?")
+  testimonialsSubtitle String?  @default("Kisah sukses dari member yang telah berhasil ekspor")
+  testimonialsData     Json?
+  faqTitle             String?  @default("Pertanyaan yang Sering Ditanyakan")
+  faqData              Json?
+  ctaTitle             String?  @default("Siap Memulai Perjalanan Ekspor Anda?")
+  ctaDescription       String?  @default("Bergabung sekarang dan dapatkan akses ke materi ekslusif serta bimbingan dari mentor berpengalaman.")
+  ctaButtonText        String?  @default("Gabung Komunitas Sekarang!")
+  ctaStats             Json?
+  footerDescription    String?  @default("Platform edukasi ekspor #1 di Indonesia untuk membantu UMKM go international.")
+  footerEmail          String?  @default("info@eksporyuk.com")
+  footerPhone          String?  @default("+62 812-3456-7890")
+  footerAddress        String?
+  footerSocialLinks    Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime
 }
 
-model BuyerView {
-  id       String   @id @default(cuid())
-  userId   String
-  buyerId  String
-  viewedAt DateTime @default(now())
+model SavedPost {
+  id        String   @id
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  Post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
 }
 
-model BuyerLike {
-  id      String   @id @default(cuid())
-  userId  String
-  buyerId String
-  likedAt DateTime @default(now())
-}
-
-model SupplierView {
-  id         String   @id @default(cuid())
-  userId     String
-  supplierId String
-  viewedAt   DateTime @default(now())
-}
-
-model ForwarderView {
-  id          String   @id @default(cuid())
-  userId      String
-  forwarderId String
-  viewedAt    DateTime @default(now())
+model ScheduledPost {
+  id               String   @id
+  authorId         String
+  groupId          String
+  content          String
+  contentFormatted Json?
+  images           Json?
+  videos           Json?
+  documents        Json?
+  type             PostType @default(POST)
+  scheduledAt      DateTime
+  timezone         String   @default("Asia/Jakarta")
+  status           String   @default("PENDING")
+  publishedPostId  String?
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
 }
 
 model Settings {
@@ -1768,7 +2457,6 @@ model Settings {
   siteFavicon                     String?
   primaryColor                    String?  @default("#0066CC")
   secondaryColor                  String?  @default("#0052CC")
-  // accentColor                     String?  @default("#3399FF")  // Commented - not in production DB
   buttonPrimaryBg                 String?  @default("#0066CC")
   buttonPrimaryText               String?  @default("#FFFFFF")
   buttonSecondaryBg               String?  @default("#6B7280")
@@ -1804,7 +2492,7 @@ model Settings {
   paymentMinAmount                Int      @default(10000)
   paymentMaxAmount                Int      @default(100000000)
   createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
+  updatedAt                       DateTime
   emailFooterAddress              String?
   emailFooterCompany              String?
   emailFooterEmail                String?
@@ -1894,262 +2582,8 @@ model Settings {
   notificationInAppEnabled        Boolean  @default(true)
 }
 
-model IntegrationConfig {
-  id           String    @id @default(cuid())
-  service      String    @unique
-  config       Json
-  isActive     Boolean   @default(false)
-  lastTestedAt DateTime?
-  testStatus   String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-}
-
-model SalesPageSettings {
-  id                   String   @id @default(cuid())
-  heroTitle            String?  @default("Belajar Ekspor Mudah dan Praktis di Komunitas")
-  heroHighlight        String?  @default("Mudah dan Praktis")
-  heroDescription      String?  @default("Dibimbing langsung oleh praktisi ekspor berpengalaman. Mulai dari persiapan dokumen, mencari buyer, hingga pengiriman barang ke luar negeri.")
-  heroBadgeText        String?  @default("7,000+ Calon Eksportir Bergabung")
-  heroCtaText          String?  @default("Mulai Belajar Sekarang")
-  heroCtaSecondaryText String?  @default("Lihat Fitur")
-  navbarLogo           String?
-  navbarLogoText       String?  @default("Eksporyuk")
-  navbarCtaText        String?  @default("Gabung Komunitas")
-  featuresTitle        String?  @default("Semua yang Anda Butuhkan untuk Sukses Ekspor")
-  featuresSubtitle     String?  @default("Platform lengkap untuk belajar dan praktik ekspor dengan bimbingan mentor berpengalaman")
-  featuresData         Json?
-  pricingTitle         String?  @default("Pilih Paket Membership Anda")
-  pricingSubtitle      String?  @default("Investasi terbaik untuk masa depan bisnis ekspor Anda")
-  pricingShowFromDb    Boolean  @default(true)
-  pricingCustomData    Json?
-  testimonialsTitle    String?  @default("Apa Kata Mereka?")
-  testimonialsSubtitle String?  @default("Kisah sukses dari member yang telah berhasil ekspor")
-  testimonialsData     Json?
-  faqTitle             String?  @default("Pertanyaan yang Sering Ditanyakan")
-  faqData              Json?
-  ctaTitle             String?  @default("Siap Memulai Perjalanan Ekspor Anda?")
-  ctaDescription       String?  @default("Bergabung sekarang dan dapatkan akses ke materi ekslusif serta bimbingan dari mentor berpengalaman.")
-  ctaButtonText        String?  @default("Gabung Komunitas Sekarang!")
-  ctaStats             Json?
-  footerDescription    String?  @default("Platform edukasi ekspor #1 di Indonesia untuk membantu UMKM go international.")
-  footerEmail          String?  @default("info@eksporyuk.com")
-  footerPhone          String?  @default("+62 812-3456-7890")
-  footerAddress        String?
-  footerSocialLinks    Json?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-}
-
-model FollowUpTemplate {
-  id            String   @id @default(cuid())
-  name          String
-  triggerHours  Int
-  message       String
-  channel       String
-  isActive      Boolean  @default(true)
-  createdBy     String
-  ownerId       String?
-  ownerType     String   @default("admin")
-  useMailkiting Boolean  @default(false)
-  useStarsender Boolean  @default(false)
-  useOnesignal  Boolean  @default(false)
-  usePusher     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-model Quiz {
-  id               String   @id @default(cuid())
-  courseId         String
-  lessonId         String?
-  title            String
-  description      String?
-  passingScore     Int      @default(70)
-  timeLimit        Int?
-  maxAttempts      Int?
-  shuffleQuestions Boolean  @default(false)
-  shuffleAnswers   Boolean  @default(false)
-  showResults      Boolean  @default(true)
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
-
-model QuizQuestion {
-  id            String       @id @default(cuid())
-  quizId        String
-  type          QuestionType @default(MULTIPLE_CHOICE)
-  question      String
-  explanation   String?
-  points        Int          @default(1)
-  order         Int
-  options       Json?
-  correctAnswer String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-}
-
-model QuizAttempt {
-  id          String    @id @default(cuid())
-  quizId      String
-  userId      String
-  score       Int       @default(0)
-  maxScore    Int
-  earnedScore Int       @default(0)
-  isPassed    Boolean   @default(false)
-  isCompleted Boolean   @default(false)
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
-  timeSpent   Int?
-}
-
-model QuizAnswer {
-  id             String    @id @default(cuid())
-  attemptId      String
-  questionId     String
-  selectedOption String?
-  textAnswer     String?
-  isCorrect      Boolean   @default(false)
-  pointsEarned   Int       @default(0)
-  isGraded       Boolean   @default(false)
-  gradedBy       String?
-  gradedAt       DateTime?
-  feedback       String?
-  createdAt      DateTime  @default(now())
-}
-
-model Assignment {
-  id                  String    @id @default(cuid())
-  courseId            String
-  lessonId            String?
-  title               String
-  description         String
-  instructions        String?
-  maxScore            Int       @default(100)
-  dueDate             DateTime?
-  allowLateSubmission Boolean   @default(false)
-  allowedFileTypes    String?
-  maxFileSize         Int?
-  attachments         String?   @db.Text // JSON array of file attachments
-  links               String?   @db.Text // JSON array of external links
-  isActive            Boolean   @default(true)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-}
-
-model AssignmentSubmission {
-  id           String           @id @default(cuid())
-  assignmentId String
-  userId       String
-  content      String?
-  fileUrl      String?
-  fileName     String?
-  status       SubmissionStatus @default(SUBMITTED)
-  score        Int?
-  feedback     String?
-  gradedBy     String?
-  gradedAt     DateTime?
-  submittedAt  DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-}
-
-model CourseNote {
-  id        String   @id @default(cuid())
-  userId    String
-  courseId  String
-  lessonId  String
-  content   String
-  timestamp Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model CourseDiscussion {
-  id             String    @id @default(cuid())
-  courseId       String
-  lessonId       String?
-  title          String?
-  content        String
-  userId         String
-  parentId       String?
-  viewCount      Int       @default(0)
-  likesCount     Int       @default(0)
-  isMarkedSolved Boolean   @default(false)
-  solvedBy       String?
-  solvedAt       DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-model CourseReview {
-  id             String    @id @default(cuid())
-  courseId       String
-  userId         String
-  rating         Int
-  review         String
-  isVerified     Boolean   @default(false)
-  isApproved     Boolean   @default(true)
-  moderatedBy    String?
-  moderatedAt    DateTime?
-  moderationNote String?
-  helpfulCount   Int       @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-model CourseReviewHelpful {
-  id        String   @id @default(cuid())
-  reviewId  String
-  userId    String
-  createdAt DateTime @default(now())
-}
-
-model Certificate {
-  id                    String   @id @default(cuid())
-  userId                String
-  courseId              String
-  certificateNumber     String
-  completedAt           DateTime
-  issuedAt              DateTime @default(now())
-  studentName           String
-  courseName            String
-  completionDate        DateTime
-  certificateTemplateId String?
-  pdfUrl                String?
-  isValid               Boolean  @default(true)
-  verificationUrl       String?
-}
-
-model CertificateTemplate {
-  id              String   @id @default(cuid())
-  name            String
-  description     String?
-  backgroundColor String   @default("#FFFFFF")
-  primaryColor    String   @default("#3B82F6")
-  secondaryColor  String?
-  textColor       String   @default("#1F2937")
-  layout          String   @default("MODERN")
-  logoUrl         String?
-  signatureUrl    String?
-  backgroundImage String?
-  borderStyle     String?
-  fontFamily      String   @default("Inter")
-  titleFontSize   String   @default("3xl")
-  mentorName      String?
-  directorName    String?
-  showLogo        Boolean  @default(true)
-  showSignature   Boolean  @default(true)
-  showQrCode      Boolean  @default(true)
-  showBorder      Boolean  @default(true)
-  isActive        Boolean  @default(true)
-  isDefault       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
 model ShortLinkDomain {
-  id              String   @id @default(cuid())
+  id              String   @id
   domain          String
   displayName     String
   isActive        Boolean  @default(true)
@@ -2161,337 +2595,11 @@ model ShortLinkDomain {
   totalLinks      Int      @default(0)
   totalClicks     Int      @default(0)
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model AffiliateShortLink {
-  id              String    @id @default(cuid())
-  affiliateId     String
-  domainId        String
-  username        String
-  slug            String?
-  targetType      String
-  targetId        String?
-  targetUrl       String?
-  fullShortUrl    String
-  affiliateLinkId String?
-  couponCode      String?
-  clicks          Int       @default(0)
-  conversions     Int       @default(0)
-  isActive        Boolean   @default(true)
-  expiresAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model AffiliateBioPage {
-  id                String   @id @default(cuid())
-  affiliateId       String
-  template          String   @default("modern")
-  buttonLayout      String   @default("stack")
-  displayName       String?
-  customHeadline    String?
-  customDescription String?
-  avatarUrl         String?
-  coverImage        String?
-  whatsappGroupLink String?
-  whatsappNumber    String?
-  primaryColor      String   @default("#3B82F6")
-  secondaryColor    String   @default("#10B981")
-  fontFamily        String   @default("inter")
-  showSocialIcons   Boolean  @default(true)
-  socialFacebook    String?
-  socialInstagram   String?
-  socialTwitter     String?
-  socialTiktok      String?
-  socialYoutube     String?
-  isActive          Boolean  @default(true)
-  viewCount         Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-}
-
-model AffiliateBioCTA {
-  id               String   @id @default(cuid())
-  bioPageId        String
-  buttonText       String
-  buttonType       String
-  buttonStyle      String   @default("button")
-  targetType       String?
-  targetId         String?
-  targetUrl        String?
-  membershipId     String?
-  productId        String?
-  courseId         String?
-  optinFormId      String?
-  optinDisplayMode String   @default("button")
-  backgroundColor  String   @default("#3B82F6")
-  textColor        String   @default("#FFFFFF")
-  thumbnailUrl     String?
-  price            String?
-  originalPrice    String?
-  subtitle         String?
-  showPrice        Boolean  @default(false)
-  showThumbnail    Boolean  @default(false)
-  titleSize        String   @default("sm")
-  subtitleSize     String   @default("xs")
-  buttonTextSize   String   @default("sm")
-  displayOrder     Int      @default(0)
-  clicks           Int      @default(0)
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
-
-model AffiliateOptinForm {
-  id               String    @id @default(cuid())
-  affiliateId      String
-  bioPageId        String?
-  slug             String?
-  formName         String
-  headline         String
-  description      String?
-  submitButtonText String    @default("Submit")
-  successMessage   String    @default("Terima kasih! Data Anda telah kami terima.")
-  redirectType     String    @default("message")
-  redirectUrl      String?
-  redirectWhatsapp String?
-  collectName      Boolean   @default(true)
-  collectEmail     Boolean   @default(true)
-  collectPhone     Boolean   @default(true)
-  isActive         Boolean   @default(true)
-  submissionCount  Int       @default(0)
-  bannerTitle      String?
-  bannerSubtitle   String?
-  bannerBadgeText  String?   @default("Event Terbatas - Daftar Sekarang!")
-  primaryColor     String?   @default("#2563eb")
-  secondaryColor   String?   @default("#4f46e5")
-  showCountdown    Boolean   @default(false)
-  countdownEndDate DateTime?
-  benefits         Json?     @default("[]")
-  faqs             Json?     @default("[]")
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
-model AffiliateLead {
-  id              String    @id @default(cuid())
-  affiliateId     String
-  optinFormId     String?
-  name            String
-  email           String?
-  phone           String?
-  whatsapp        String?
-  status          String    @default("new")
-  source          String    @default("optin")
-  notes           String?
-  lastContactedAt DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model AffiliateLeadTag {
-  id        String   @id @default(cuid())
-  leadId    String
-  tag       String
-  createdAt DateTime @default(now())
-}
-
-model AffiliateCredit {
-  id          String   @id @default(cuid())
-  affiliateId String
-  balance     Int      @default(0)
-  totalTopUp  Int      @default(0)
-  totalUsed   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model AffiliateCreditTransaction {
-  id            String   @id @default(cuid())
-  creditId      String
-  affiliateId   String
-  type          String
-  amount        Int
-  balanceBefore Int
-  balanceAfter  Int
-  description   String?
-  referenceType String?
-  referenceId   String?
-  paymentId     String?
-  status        String   @default("COMPLETED")
-  createdAt     DateTime @default(now())
-}
-
-model AffiliateBroadcast {
-  id              String    @id @default(cuid())
-  affiliateId     String
-  name            String
-  subject         String
-  body            String
-  templateId      String?
-  status          String    @default("DRAFT")
-  targetSegment   Json?
-  totalRecipients Int       @default(0)
-  sentCount       Int       @default(0)
-  deliveredCount  Int       @default(0)
-  openedCount     Int       @default(0)
-  clickedCount    Int       @default(0)
-  failedCount     Int       @default(0)
-  creditUsed      Int       @default(0)
-  isScheduled     Boolean   @default(false)
-  scheduledAt     DateTime?
-  sentAt          DateTime?
-  completedAt     DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  recurringConfig Json?
-}
-
-model AffiliateBroadcastLog {
-  id           String    @id @default(cuid())
-  broadcastId  String
-  leadId       String
-  status       String    @default("PENDING")
-  sentAt       DateTime?
-  deliveredAt  DateTime?
-  openedAt     DateTime?
-  clickedAt    DateTime?
-  failedAt     DateTime?
-  errorMessage String?
-  createdAt    DateTime  @default(now())
-}
-
-model AffiliateEmailTemplate {
-  id           String   @id @default(cuid())
-  name         String
-  slug         String
-  category     String
-  subject      String
-  body         String
-  previewText  String?
-  description  String?
-  thumbnailUrl String?
-  isDefault    Boolean  @default(false)
-  isActive     Boolean  @default(true)
-  useCount     Int      @default(0)
-  createdById  String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model AffiliateCTATemplate {
-  id              String   @id @default(cuid())
-  name            String
-  buttonText      String
-  buttonType      String
-  description     String?
-  backgroundColor String   @default("#3B82F6")
-  textColor       String   @default("#FFFFFF")
-  icon            String?
-  isActive        Boolean  @default(true)
-  useCount        Int      @default(0)
-  displayOrder    Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model AffiliateAutomation {
-  id          String   @id @default(cuid())
-  affiliateId String
-  name        String
-  triggerType String
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model AffiliateAutomationStep {
-  id           String   @id @default(cuid())
-  automationId String
-  stepOrder    Int
-  delayHours   Int      @default(0)
-  emailSubject String
-  emailBody    String
-  isActive     Boolean  @default(true)
-  sentCount    Int      @default(0)
-  openedCount  Int      @default(0)
-  clickedCount Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model AffiliateAutomationJob {
-  id             String    @id @default(cuid())
-  automationId   String
-  stepId         String
-  leadId         String
-  affiliateId    String
-  status         String    @default("pending")
-  scheduledAt    DateTime
-  executedAt     DateTime?
-  failedAt       DateTime?
-  errorMessage   String?
-  retryCount     Int       @default(0)
-  maxRetries     Int       @default(3)
-  creditDeducted Boolean   @default(false)
-  creditAmount   Int       @default(1)
-  emailSent      Boolean   @default(false)
-  emailId        String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-model AffiliateAutomationLog {
-  id               String    @id @default(cuid())
-  automationId     String
-  leadId           String
-  affiliateId      String
-  triggerType      String
-  triggerData      String?
-  status           String    @default("active")
-  currentStepOrder Int       @default(1)
-  totalSteps       Int       @default(0)
-  completedSteps   Int       @default(0)
-  failedSteps      Int       @default(0)
-  startedAt        DateTime  @default(now())
-  pausedAt         DateTime?
-  completedAt      DateTime?
-  lastExecutedAt   DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
-model Report {
-  id           String       @id @default(cuid())
-  reporterId   String
-  type         ReportType
-  reason       String
-  description  String?
-  postId       String?
-  commentId    String?
-  userId       String?
-  groupId      String?
-  status       ReportStatus @default(PENDING)
-  reviewedById String?
-  reviewedAt   DateTime?
-  reviewNote   String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-}
-
-model BannedUser {
-  id         String    @id @default(cuid())
-  userId     String
-  groupId    String?
-  reason     String
-  bannedById String
-  expiresAt  DateTime?
-  createdAt  DateTime  @default(now())
+  updatedAt       DateTime
 }
 
 model Story {
-  id        String   @id @default(cuid())
+  id        String   @id
   groupId   String
   userId    String
   imageUrl  String
@@ -2501,38 +2609,59 @@ model Story {
 }
 
 model StoryView {
-  id       String   @id @default(cuid())
+  id       String   @id
   storyId  String
   userId   String
   viewedAt DateTime @default(now())
 }
 
-model GroupResource {
-  id            String   @id @default(cuid())
-  groupId       String
-  uploaderId    String
-  title         String
-  description   String?
-  fileUrl       String
-  fileName      String
-  fileType      String
-  fileSize      Int
-  downloadCount Int      @default(0)
-  createdAt     DateTime @default(now())
+model Supplier {
+  id             String    @id
+  companyName    String
+  province       String
+  city           String
+  address        String?
+  contactPerson  String?
+  email          String?
+  phone          String?
+  whatsapp       String?
+  website        String?
+  businessType   String?
+  products       String
+  capacity       String?
+  certifications String?
+  isVerified     Boolean   @default(false)
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  rating         Float?    @default(0)
+  totalDeals     Int       @default(0)
+  tags           String?
+  notes          String?
+  addedBy        String
+  viewCount      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+  legalityDoc    String?
+  nibDoc         String?
 }
 
-model EmailVerificationToken {
-  id         String   @id @default(cuid())
-  identifier String
-  token      String
-  expires    DateTime
-  type       String?  @default("EMAIL_VERIFY")
-  metadata   String?
-  createdAt  DateTime @default(now())
+model SupplierMembership {
+  id            String    @id
+  userId        String
+  packageId     String
+  startDate     DateTime
+  endDate       DateTime?
+  isActive      Boolean   @default(true)
+  autoRenew     Boolean   @default(false)
+  price         Decimal
+  paymentId     String?
+  paymentMethod String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
 }
 
 model SupplierPackage {
-  id                      String              @id @default(cuid())
+  id                      String              @id
   name                    String
   slug                    String
   type                    SupplierPackageType
@@ -2546,26 +2675,31 @@ model SupplierPackage {
   isActive                Boolean             @default(true)
   displayOrder            Int                 @default(0)
   createdAt               DateTime            @default(now())
-  updatedAt               DateTime            @updatedAt
+  updatedAt               DateTime
 }
 
-model SupplierMembership {
-  id            String    @id @default(cuid())
-  userId        String
-  packageId     String
-  startDate     DateTime
-  endDate       DateTime?
-  isActive      Boolean   @default(true)
-  autoRenew     Boolean   @default(false)
-  price         Decimal
-  paymentId     String?
-  paymentMethod String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+model SupplierProduct {
+  id           String                @id
+  supplierId   String
+  title        String
+  slug         String
+  description  String?
+  images       Json?
+  documents    Json?
+  category     String?
+  tags         String?
+  status       SupplierProductStatus @default(DRAFT)
+  price        String?
+  minOrder     String?
+  viewCount    Int                   @default(0)
+  likeCount    Int                   @default(0)
+  inquiryCount Int                   @default(0)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime
 }
 
 model SupplierProfile {
-  id               String    @id @default(cuid())
+  id               String    @id
   userId           String
   companyName      String
   slug             String
@@ -2600,106 +2734,129 @@ model SupplierProfile {
   rating           Float?    @default(0)
   totalReviews     Int       @default(0)
   createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  updatedAt        DateTime
 }
 
-model SupplierProduct {
-  id           String                @id @default(cuid())
-  supplierId   String
-  title        String
-  slug         String
-  description  String?
-  images       Json?
-  documents    Json?
-  category     String?
-  tags         String?
-  status       SupplierProductStatus @default(DRAFT)
-  price        String?
-  minOrder     String?
-  viewCount    Int                   @default(0)
-  likeCount    Int                   @default(0)
-  inquiryCount Int                   @default(0)
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
+model SupplierView {
+  id         String   @id
+  userId     String
+  supplierId String
+  viewedAt   DateTime @default(now())
 }
 
-model GroupQuiz {
-  id               String    @id @default(cuid())
-  groupId          String
-  creatorId        String
-  title            String
+model Transaction {
+  id               String            @id
+  userId           String
+  type             TransactionType
+  status           TransactionStatus @default(PENDING)
+  amount           Decimal
+  customerName     String?
+  customerEmail    String?
+  customerPhone    String?
+  customerWhatsapp String?
+  productId        String?
+  courseId         String?
+  eventId          String?
   description      String?
-  coverImage       String?
-  passingScore     Int       @default(70)
-  timeLimit        Int?
-  maxAttempts      Int       @default(1)
-  shuffleQuestions Boolean   @default(true)
-  shuffleOptions   Boolean   @default(true)
-  showResults      Boolean   @default(true)
-  isActive         Boolean   @default(true)
-  startDate        DateTime?
-  endDate          DateTime?
-  rewardPoints     Int       @default(10)
-  rewardBadgeId    String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  reference        String?
+  originalAmount   Decimal?
+  notes            String?
+  paymentMethod    String?
+  paymentProvider  String?
+  externalId       String?
+  paymentUrl       String?
+  founderShare     Decimal?
+  coFounderShare   Decimal?
+  affiliateShare   Decimal?
+  mentorShare      Decimal?
+  companyFee       Decimal?
+  couponId         String?
+  discountAmount   Decimal?
+  affiliateId      String?
+  metadata         Json?
+  paidAt           DateTime?
+  expiredAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime
+  invoiceNumber    String?
 }
 
-model GroupQuizQuestion {
-  id           String       @id @default(cuid())
-  quizId       String
-  question     String
-  questionType QuestionType @default(MULTIPLE_CHOICE)
-  options      Json
-  explanation  String?
-  points       Int          @default(1)
-  order        Int          @default(0)
-  imageUrl     String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+model TypingIndicator {
+  id        String   @id
+  roomId    String
+  userId    String
+  isTyping  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }
 
-model GroupQuizAttempt {
-  id          String    @id @default(cuid())
-  quizId      String
-  userId      String
-  score       Int       @default(0)
-  maxScore    Int       @default(0)
-  percentage  Float     @default(0)
-  isPassed    Boolean   @default(false)
-  isCompleted Boolean   @default(false)
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
-  timeSpent   Int?
-}
+model User {
+  id                              String            @id
+  memberCode                      String?           @unique
+  email                           String            @unique
+  username                        String?           @unique
+  name                            String
+  password                        String?
+  role                            Role              @default(MEMBER_FREE)
+  avatar                          String?
+  bio                             String?
+  phone                           String?
+  whatsapp                        String?
+  province                        String?
+  city                            String?
+  district                        String?
+  address                         String?
+  postalCode                      String?
+  latitude                        Float?
+  longitude                       Float?
+  locationVerified                Boolean           @default(false)
+  profileCompleted                Boolean           @default(false)
+  isOnline                        Boolean           @default(false)
+  lastSeenAt                      DateTime?
+  lastActiveAt                    DateTime?
+  emailVerified                   Boolean           @default(false)
+  isActive                        Boolean           @default(true)
+  isSuspended                     Boolean           @default(false)
+  suspendReason                   String?
+  suspendedAt                     DateTime?
+  suspendedBy                     String?
+  isFounder                       Boolean           @default(false)
+  isCoFounder                     Boolean           @default(false)
+  affiliateMenuEnabled            Boolean           @default(false)
+  revenueSharePercent             Float?
+  emailNotifications              Boolean           @default(true)
+  whatsappNotifications           Boolean           @default(false)
+  oneSignalPlayerId               String?
+  oneSignalSubscribedAt           DateTime?
+  oneSignalTags                   Json?
+  createdAt                       DateTime          @default(now())
+  updatedAt                       DateTime
+  referredById                    String?
+  mailketingLists                 Json?
+  mailketingSubscriberId          String?
+  withdrawalPin                   String?
+  withdrawalPinSetAt              DateTime?
+  coverImage                      String?
+  CommentReaction                 CommentReaction[]
+  Follow_Follow_followerIdToUser  Follow[]          @relation("Follow_followerIdToUser")
+  Follow_Follow_followingIdToUser Follow[]          @relation("Follow_followingIdToUser")
+  Post                            Post[]
+  PostComment                     PostComment[]
+  PostReaction                    PostReaction[]
+  Product                         Product[]
+  SavedPost                       SavedPost[]
+  UserProduct                     UserProduct[]
 
-model GroupQuizAnswer {
-  id             String   @id @default(cuid())
-  attemptId      String
-  questionId     String
-  selectedOption String?
-  isCorrect      Boolean  @default(false)
-  pointsEarned   Int      @default(0)
-  createdAt      DateTime @default(now())
-}
-
-model BadgeDefinition {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String
-  description String
-  icon        String
-  color       String        @default("#3B82F6")
-  category    BadgeCategory @default(PARTICIPATION)
-  conditions  Json?
-  points      Int           @default(0)
-  isActive    Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  @@index([city])
+  @@index([district])
+  @@index([email])
+  @@index([province])
+  @@index([role])
+  @@index([username])
 }
 
 model UserBadge {
-  id        String   @id @default(cuid())
+  id        String   @id
   userId    String
   badgeId   String
   groupId   String?
@@ -2708,289 +2865,143 @@ model UserBadge {
   reason    String?
 }
 
+model UserCourseProgress {
+  id               String    @id
+  userId           String
+  courseId         String
+  progress         Int       @default(0)
+  lastAccessedAt   DateTime  @default(now())
+  completedLessons Json?
+  isCompleted      Boolean   @default(false)
+  completedAt      DateTime?
+  hasAccess        Boolean   @default(true)
+  accessGrantedAt  DateTime  @default(now())
+  accessExpiresAt  DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime
+}
+
+model UserMembership {
+  id            String    @id
+  userId        String
+  membershipId  String
+  startDate     DateTime  @default(now())
+  endDate       DateTime
+  isActive      Boolean   @default(true)
+  autoRenew     Boolean   @default(false)
+  status        String    @default("PENDING")
+  activatedAt   DateTime?
+  price         Decimal?
+  transactionId String?   @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+
+  @@unique([userId, membershipId])
+  @@index([endDate])
+  @@index([membershipId])
+  @@index([status])
+  @@index([userId])
+}
+
+model UserPermission {
+  id        String   @id
+  userId    String
+  feature   String
+  enabled   Boolean  @default(true)
+  value     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
 model UserPoints {
-  id          String   @id @default(cuid())
+  id          String   @id
   userId      String
   groupId     String?
   points      Int      @default(0)
   totalEarned Int      @default(0)
   level       Int      @default(1)
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime
 }
 
-model PointTransaction {
-  id          String   @id @default(cuid())
-  userId      String
-  groupId     String?
-  points      Int
+model UserProduct {
+  id            String    @id
+  userId        String
+  productId     String
+  purchaseDate  DateTime  @default(now())
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  price         Decimal
+  transactionId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  Product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserRole {
+  id        String   @id
+  userId    String
+  role      Role
+  createdAt DateTime @default(now())
+}
+
+model Wallet {
+  id             String   @id
+  userId         String   @unique
+  balance        Decimal  @default(0)
+  balancePending Decimal  @default(0)
+  totalEarnings  Decimal  @default(0)
+  totalPayout    Decimal  @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id          String   @id
+  walletId    String
+  amount      Decimal
   type        String
-  sourceId    String?
-  description String?
+  description String
+  reference   String?
   createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([walletId])
 }
 
-model GroupChallenge {
-  id            String   @id @default(cuid())
-  groupId       String
-  title         String
-  description   String?
-  type          String
-  target        Int?
-  startDate     DateTime
-  endDate       DateTime
-  rewardPoints  Int      @default(50)
-  rewardBadgeId String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model WhatsAppTemplate {
+  id         String   @id
+  name       String
+  category   String?
+  roleTarget String?
+  message    String
+  ctaText    String?
+  ctaLink    String?
+  maxLength  Int      @default(1024)
+  variables  Json?
+  metadata   Json?
+  usageCount Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
 }
 
-model ChallengProgress {
-  id          String    @id @default(cuid())
-  challengeId String
-  userId      String
-  progress    Int       @default(0)
-  isCompleted Boolean   @default(false)
-  completedAt DateTime?
-  rank        Int?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model ScheduledPost {
-  id               String   @id @default(cuid())
-  authorId         String
-  groupId          String
-  content          String
-  contentFormatted Json?
-  images           Json?
-  videos           Json?
-  documents        Json?
-  type             PostType @default(POST)
-  scheduledAt      DateTime
-  timezone         String   @default("Asia/Jakarta")
-  status           String   @default("PENDING")
-  publishedPostId  String?
-  errorMessage     String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
-
-model OneSignalTemplate {
-  id          String   @id @default(cuid())
-  name        String
-  title       String
-  message     String
-  url         String?
-  imageUrl    String?
-  targetType  String   @default("all")
-  targetValue String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model OneSignalAutoNotification {
-  id           String   @id @default(cuid())
-  name         String
-  trigger      String
-  title        String
-  message      String
-  url          String?
-  enabled      Boolean  @default(true)
-  delayMinutes Int      @default(0)
-  targetType   String   @default("user")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model Banner {
-  id                String          @id @default(cuid())
-  title             String
-  description       String?
-  imageUrl          String?
-  videoUrl          String?
-  linkUrl           String
-  linkText          String?         @default("Lihat Selengkapnya")
-  targetRoles       Json
-  targetMemberships Json?
-  targetProvinces   Json?
-  placement         BannerPlacement @default(DASHBOARD)
-  displayType       BannerType      @default(CAROUSEL)
-  backgroundColor   String?         @default("#3B82F6")
-  textColor         String?         @default("#FFFFFF")
-  buttonColor       String?         @default("#FFFFFF")
-  buttonTextColor   String?         @default("#3B82F6")
-  priority          Int             @default(0)
-  startDate         DateTime
-  endDate           DateTime
-  isActive          Boolean         @default(true)
-  viewLimit         Int?
-  clickLimit        Int?
-  dailyBudget       Int?
-  createdBy         String
-  isSponsored       Boolean         @default(false)
-  sponsorName       String?
-  sponsorLogo       String?
-  totalViews        Int             @default(0)
-  totalClicks       Int             @default(0)
-  totalBudgetUsed   Decimal         @default(0)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-}
-
-model BannerView {
-  id        String   @id @default(cuid())
-  bannerId  String
-  userId    String?
-  sessionId String?
-  ipAddress String?
-  userAgent String?
-  referer   String?
-  viewedAt  DateTime @default(now())
-}
-
-model BannerClick {
-  id        String   @id @default(cuid())
-  bannerId  String
-  userId    String?
-  sessionId String?
-  ipAddress String?
-  userAgent String?
-  referer   String?
-  clickedAt DateTime @default(now())
-}
-
-model CourseSettings {
-  id                           String   @id @default(cuid())
-  defaultMentorCommission      Float    @default(50)
-  defaultAffiliateCommission   Float    @default(30)
-  minWithdrawalAmount          Decimal  @default(50000)
-  withdrawalProcessingDays     Int      @default(3)
-  maxWithdrawalPerDay          Decimal  @default(10000000)
-  withdrawalMethods            Json?
-  autoApproveCourses           Boolean  @default(false)
-  autoApproveEnrollments       Boolean  @default(true)
-  defaultCourseVisibility      String   @default("PUBLIC")
-  requireCertificateCompletion Boolean  @default(true)
-  certificateMinScore          Int      @default(80)
-  enableAffiliateProgram       Boolean  @default(true)
-  enableMentorProgram          Boolean  @default(true)
-  mentorCanCreateGroup         Boolean  @default(true)
-  mentorCanCreateCourse        Boolean  @default(true)
-  mentorCanCreateMaterial      Boolean  @default(true)
-  mentorCanEditOwnCourse       Boolean  @default(true)
-  mentorCanDeleteOwnCourse     Boolean  @default(false)
-  mentorCanViewAnalytics       Boolean  @default(true)
-  createdAt                    DateTime @default(now())
-  updatedAt                    DateTime @updatedAt
-}
-
-model NotificationDeliveryLog {
-  id             String    @id @default(cuid())
-  notificationId String
-  playerId       String
-  userId         String?
-  status         String    @default("delivered")
-  platform       String?
-  openedAt       DateTime?
-  clickedAt      DateTime?
-  clickUrl       String?
-  ipAddress      String?
-  userAgent      String?
-  bounceReason   String?
-  timestamp      DateTime  @default(now())
-}
-
-model ConversionEvent {
-  id              String   @id @default(cuid())
-  userId          String
-  notificationId  String?
-  conversionType  String
-  conversionValue Decimal?
-  conversionUrl   String?
-  metadata        Json?
-  timestamp       DateTime @default(now())
-}
-
-model NotificationConsent {
-  id                  String    @id @default(cuid())
-  userId              String
-  consentGiven        Boolean   @default(true)
-  channels            Json
-  purpose             String    @default("marketing")
-  ipAddress           String?
-  userAgent           String?
-  consentTimestamp    DateTime  @default(now())
-  consentExpiry       DateTime
-  revocationTimestamp DateTime?
-  revocationReason    String?
-}
-
-model OneSignalWebhookLog {
-  id               String    @id @default(cuid())
-  eventType        String
-  payload          Json
-  processingStatus String    @default("pending")
-  errorMessage     String?
-  retryCount       Int       @default(0)
-  lastRetryAt      DateTime?
-  processedAt      DateTime?
-  timestamp        DateTime  @default(now())
-}
-
-model Documentation {
-  id              String                @id @default(cuid())
-  slug            String
-  title           String
-  content         String
-  excerpt         String?
-  category        DocumentationCategory
-  targetRoles     Json
-  status          DocumentationStatus   @default(DRAFT)
-  isPublic        Boolean               @default(false)
-  icon            String?
-  order           Int                   @default(0)
-  parentId        String?
-  metaTitle       String?
-  metaDescription String?
-  keywords        String?
-  featuredImage   String?
-  publishedAt     DateTime?
-  archivedAt      DateTime?
-  viewCount       Int                   @default(0)
-  authorId        String
-  lastEditedById  String?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-}
-
-model DocumentationRevision {
-  id              String   @id @default(cuid())
-  documentationId String
-  content         String
-  title           String
-  excerpt         String?
-  changedById     String
-  changeNote      String?
-  version         Int
+model support_ticket_messages {
+  id              String   @id
+  ticketId        String
+  senderId        String
+  senderRole      Role
+  message         String
+  attachments     Json?
+  isSystemMessage Boolean  @default(false)
   createdAt       DateTime @default(now())
+  updatedAt       DateTime
 }
 
-model PasswordResetToken {
-  id        String    @id @default(cuid())
-  email     String
-  token     String    @unique
-  expiresAt DateTime
-  createdAt DateTime  @default(now())
-  used      Boolean   @default(false)
-  usedAt    DateTime?
-
-  @@index([email])
-  @@index([expiresAt])
-}
-
-model SupportTicket {
-  id                  String         @id @default(cuid())
+model support_tickets {
+  id                  String         @id
   ticketNumber        String
   userId              String
   userRole            Role
@@ -3004,190 +3015,9 @@ model SupportTicket {
   relatedMembershipId String?
   relatedCourseId     String?
   createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  updatedAt           DateTime
   closedAt            DateTime?
   resolvedAt          DateTime?
-
-  @@map("support_tickets")
-}
-
-model SupportTicketMessage {
-  id              String   @id @default(cuid())
-  ticketId        String
-  senderId        String
-  senderRole      Role
-  message         String
-  attachments     Json?
-  isSystemMessage Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@map("support_ticket_messages")
-}
-
-enum DownloadStatus {
-  SUCCESS
-  FAILED
-  PENDING
-}
-
-enum Role {
-  ADMIN
-  MENTOR
-  AFFILIATE
-  MEMBER_PREMIUM
-  MEMBER_FREE
-}
-
-enum GroupType {
-  PUBLIC
-  PRIVATE
-  HIDDEN
-}
-
-enum GroupRole {
-  OWNER
-  ADMIN
-  MODERATOR
-  MEMBER
-}
-
-enum MembershipDuration {
-  SIX_MONTHS
-  TWELVE_MONTHS
-  LIFETIME
-}
-
-enum MembershipStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
-enum TransactionStatus {
-  PENDING
-  SUCCESS
-  FAILED
-  REFUNDED
-}
-
-enum TransactionType {
-  MEMBERSHIP
-  PRODUCT
-  COURSE
-  EVENT
-  COMMISSION
-  PAYOUT
-  SUPPLIER_MEMBERSHIP
-}
-
-enum AffiliateLinkType {
-  SALESPAGE_INTERNAL
-  SALESPAGE_EXTERNAL
-  CHECKOUT
-  CHECKOUT_PRO
-}
-
-enum EventType {
-  WEBINAR
-  WORKSHOP
-  MEETUP
-  CONFERENCE
-}
-
-enum PayoutStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  PAID
-}
-
-enum PostType {
-  POST
-  STORY
-  ANNOUNCEMENT
-  POLL
-  EVENT
-  QUOTE
-  SCHEDULED
-}
-
-enum ReactionType {
-  LIKE
-  LOVE
-  CARE
-  HAHA
-  WOW
-  SAD
-  ANGRY
-}
-
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum CouponType {
-  PERCENTAGE
-  FIXED
-}
-
-enum CommissionType {
-  PERCENTAGE
-  FLAT
-}
-
-enum NotificationType {
-  CHAT_MESSAGE
-  COMMENT
-  COMMENT_REPLY
-  POST
-  POST_APPROVED
-  POST_REJECTED
-  COURSE_DISCUSSION
-  COURSE_ENROLLED
-  EVENT_REMINDER
-  EVENT_REGISTERED
-  TRANSACTION
-  TRANSACTION_SUCCESS
-  FOLLOWER
-  FOLLOW
-  ACHIEVEMENT
-  SYSTEM
-  AFFILIATE
-  AFFILIATE_APPROVED
-  AFFILIATE_REJECTED
-  AFFILIATE_COMMISSION
-  MEMBERSHIP
-  PRODUCT_REVIEW
-  CONTENT_UPDATE
-  MESSAGE
-  REPORT
-  REPORT_REVIEWED
-  BAN
-}
-
-enum ChatRoomType {
-  DIRECT
-  GROUP
-  MENTOR_STUDENT
-  SUPPORT
-}
-
-enum ProductType {
-  DIGITAL
-  EVENT
-  COURSE_BUNDLE
-  EBOOK
-  TEMPLATE
-}
-
-enum ProductStatus {
-  DRAFT
-  PUBLISHED
-  COMING_SOON
-  ARCHIVED
 }
 
 enum AccessLevel {
@@ -3197,107 +3027,17 @@ enum AccessLevel {
   PRIVATE
 }
 
-enum ReminderChannel {
-  EMAIL
-  WHATSAPP
-  PUSH
-  IN_APP
-  SMS
+enum AffiliateLinkType {
+  SALESPAGE_INTERNAL
+  SALESPAGE_EXTERNAL
+  CHECKOUT
+  CHECKOUT_PRO
 }
 
-enum ReminderTrigger {
-  AFTER_PURCHASE
-  BEFORE_EXPIRY
-  ON_INACTIVE
-  ON_SPECIFIC_DATE
-  CONDITIONAL
-}
-
-enum ReminderStatus {
+enum ApprovalStatus {
   PENDING
-  SENT
-  DELIVERED
-  OPENED
-  CLICKED
-  FAILED
-  CANCELLED
-}
-
-enum EventVisibility {
-  PUBLIC
-  PRIVATE
-  MEMBERSHIP_ONLY
-  PRODUCT_ONLY
-}
-
-enum QuestionType {
-  MULTIPLE_CHOICE
-  TRUE_FALSE
-  SHORT_ANSWER
-  ESSAY
-}
-
-enum SubmissionStatus {
-  SUBMITTED
-  GRADED
-  RETURNED
-  LATE
-}
-
-enum CourseStatus {
-  DRAFT
-  PENDING_REVIEW
   APPROVED
   REJECTED
-  PUBLISHED
-  ARCHIVED
-  PRIVATE
-}
-
-enum CourseRoleAccess {
-  PUBLIC
-  MEMBER
-  AFFILIATE
-}
-
-enum CourseMonetizationType {
-  FREE
-  PAID
-  SUBSCRIPTION
-  AFFILIATE
-}
-
-enum ReportStatus {
-  PENDING
-  REVIEWED
-  RESOLVED
-  REJECTED
-}
-
-enum ReportType {
-  POST
-  COMMENT
-  USER
-  GROUP
-}
-
-enum SupplierPackageType {
-  FREE
-  PREMIUM
-  ENTERPRISE
-}
-
-enum SupplierDuration {
-  MONTHLY
-  YEARLY
-  LIFETIME
-}
-
-enum SupplierProductStatus {
-  DRAFT
-  ACTIVE
-  INACTIVE
-  PENDING_REVIEW
 }
 
 enum BadgeCategory {
@@ -3325,6 +3065,46 @@ enum BannerType {
   POPUP
   FLOATING
   INLINE
+}
+
+enum ChatRoomType {
+  DIRECT
+  GROUP
+  MENTOR_STUDENT
+  SUPPORT
+}
+
+enum CommissionType {
+  PERCENTAGE
+  FLAT
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+enum CourseMonetizationType {
+  FREE
+  PAID
+  SUBSCRIPTION
+  AFFILIATE
+}
+
+enum CourseRoleAccess {
+  PUBLIC
+  MEMBER
+  AFFILIATE
+}
+
+enum CourseStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+  ARCHIVED
+  PRIVATE
 }
 
 enum DocumentCategory {
@@ -3357,19 +3137,202 @@ enum DocumentationStatus {
   ARCHIVED
 }
 
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  WAITING_USER
-  RESOLVED
-  CLOSED
+enum DownloadStatus {
+  SUCCESS
+  FAILED
+  PENDING
 }
 
-enum TicketPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
+enum EventType {
+  WEBINAR
+  WORKSHOP
+  MEETUP
+  CONFERENCE
+}
+
+enum EventVisibility {
+  PUBLIC
+  PRIVATE
+  MEMBERSHIP_ONLY
+  PRODUCT_ONLY
+}
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum GroupType {
+  PUBLIC
+  PRIVATE
+  HIDDEN
+}
+
+enum MembershipDuration {
+  SIX_MONTHS
+  TWELVE_MONTHS
+  LIFETIME
+}
+
+enum MembershipStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum NotificationType {
+  CHAT_MESSAGE
+  COMMENT
+  COMMENT_REPLY
+  POST
+  POST_APPROVED
+  POST_REJECTED
+  COURSE_DISCUSSION
+  COURSE_ENROLLED
+  EVENT_REMINDER
+  EVENT_REGISTERED
+  TRANSACTION
+  TRANSACTION_SUCCESS
+  FOLLOWER
+  FOLLOW
+  ACHIEVEMENT
+  SYSTEM
+  AFFILIATE
+  AFFILIATE_APPROVED
+  AFFILIATE_REJECTED
+  AFFILIATE_COMMISSION
+  MEMBERSHIP
+  PRODUCT_REVIEW
+  CONTENT_UPDATE
+  MESSAGE
+  REPORT
+  REPORT_REVIEWED
+  BAN
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum PostType {
+  POST
+  STORY
+  ANNOUNCEMENT
+  POLL
+  EVENT
+  QUOTE
+  SCHEDULED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  COMING_SOON
+  ARCHIVED
+}
+
+enum ProductType {
+  DIGITAL
+  EVENT
+  COURSE_BUNDLE
+  EBOOK
+  TEMPLATE
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  CARE
+  HAHA
+  WOW
+  SAD
+  ANGRY
+}
+
+enum ReminderChannel {
+  EMAIL
+  WHATSAPP
+  PUSH
+  IN_APP
+  SMS
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  FAILED
+  CANCELLED
+}
+
+enum ReminderTrigger {
+  AFTER_PURCHASE
+  BEFORE_EXPIRY
+  ON_INACTIVE
+  ON_SPECIFIC_DATE
+  CONDITIONAL
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  REJECTED
+}
+
+enum ReportType {
+  POST
+  COMMENT
+  USER
+  GROUP
+}
+
+enum Role {
+  ADMIN
+  MENTOR
+  AFFILIATE
+  MEMBER_PREMIUM
+  MEMBER_FREE
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+  RETURNED
+  LATE
+}
+
+enum SupplierDuration {
+  MONTHLY
+  YEARLY
+  LIFETIME
+}
+
+enum SupplierPackageType {
+  FREE
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SupplierProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  PENDING_REVIEW
 }
 
 enum TicketCategory {
@@ -3380,4 +3343,36 @@ enum TicketCategory {
   ADS_TRACKING
   BUG_SYSTEM
   OTHER
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_USER
+  RESOLVED
+  CLOSED
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum TransactionType {
+  MEMBERSHIP
+  PRODUCT
+  COURSE
+  EVENT
+  COMMISSION
+  PAYOUT
+  SUPPLIER_MEMBERSHIP
 }

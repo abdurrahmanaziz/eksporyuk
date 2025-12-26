@@ -35,8 +35,8 @@
   ],
   "crons": [
     {
-      "path": "/api/backup",
-      "schedule": "0 0 * * *"
+      "path": "/api/cron/auto-backup",
+      "schedule": "*/30 * * * *"
     }
   ]
 }
