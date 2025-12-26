@@ -28,6 +28,8 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email dan password wajib diisi')
         }
 
+        console.log('[AUTH] Login attempt for email:', credentials.email)
+
         // Always try database first
         try {
           const user = await prisma.user.findUnique({
@@ -35,6 +37,8 @@ export const authOptions: NextAuthOptions = {
               email: credentials.email,
             },
           })
+
+          console.log('[AUTH] User found:', user ? 'YES' : 'NO', '| Has password:', user?.password ? 'YES' : 'NO')
 
           if (!user) {
             throw new Error('Email atau password salah')
@@ -45,7 +49,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           if (!user.password) {
-            throw new Error('Akun tidak memiliki password')
+            throw new Error('Akun tidak memiliki password. Silakan gunakan Google atau reset password.')
           }
 
           const isPasswordValid = await bcrypt.compare(

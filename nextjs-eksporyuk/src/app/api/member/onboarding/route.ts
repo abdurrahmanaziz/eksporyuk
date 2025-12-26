@@ -68,6 +68,34 @@ export async function GET() {
       )
     }
 
+    // Skip onboarding for ADMIN, MENTOR, FOUNDER roles - they don't need member onboarding
+    const skipRoles = ['ADMIN', 'MENTOR', 'FOUNDER', 'CO_FOUNDER']
+    if (skipRoles.includes(session.user.role as string)) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          profileCompleted: true,
+          onboardingCompleted: true,
+          skipOnboarding: true,
+          profile: {
+            isComplete: true,
+            missingFields: [],
+            completedCount: 6,
+            totalRequired: 6,
+            progress: 100,
+          },
+          steps: {
+            profileCompleted: true,
+            hasMembership: true,
+            hasJoinedGroup: true,
+            hasEnrolledCourse: true,
+          },
+          totalProgress: 100,
+          membership: null,
+        }
+      })
+    }
+
     // Get user with membership data
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },

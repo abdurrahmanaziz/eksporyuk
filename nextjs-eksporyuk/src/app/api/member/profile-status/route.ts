@@ -16,6 +16,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Skip profile completion check for ADMIN, MENTOR, FOUNDER roles
+    const skipRoles = ['ADMIN', 'MENTOR', 'FOUNDER', 'CO_FOUNDER']
+    if (skipRoles.includes(session.user.role as string)) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          isComplete: true,
+          skipProfileCompletion: true,
+          profile: null,
+          missingFields: [],
+          progress: 100,
+        }
+      })
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {

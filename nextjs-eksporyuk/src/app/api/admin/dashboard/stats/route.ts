@@ -48,6 +48,9 @@ export async function GET(req: NextRequest) {
       totalAffiliates,
       activeAffiliates,
       totalAffiliateRevenue,
+      totalAffiliateClicks,
+      totalAffiliateConversions,
+      totalAffiliateCommissions,
       oneSignalSubscribers,
       pendingReports,
       onlineUsers,
@@ -98,6 +101,13 @@ export async function GET(req: NextRequest) {
       prisma.affiliateProfile.count({ where: { applicationStatus: 'APPROVED' } }),
       prisma.affiliateProfile.aggregate({
         _sum: { totalEarnings: true }
+      }),
+      
+      // Affiliate stats
+      prisma.affiliateClick.count(),
+      prisma.affiliateConversion.count(),
+      prisma.affiliateConversion.aggregate({
+        _sum: { commissionAmount: true }
       }),
       
       // OneSignal
@@ -152,7 +162,10 @@ export async function GET(req: NextRequest) {
       affiliates: {
         total: totalAffiliates,
         active: activeAffiliates,
-        totalEarnings: Number(totalAffiliateRevenue._sum.totalEarnings || 0)
+        totalEarnings: Number(totalAffiliateRevenue._sum.totalEarnings || 0),
+        totalClicks: totalAffiliateClicks,
+        conversions: totalAffiliateConversions,
+        totalCommission: Number(totalAffiliateCommissions._sum.commissionAmount || 0)
       },
       notifications: {
         oneSignalSubscribers: oneSignalSubscribers,

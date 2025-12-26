@@ -10,7 +10,9 @@ export const dynamic = 'force-dynamic'
 // GET /api/dashboard/stats
 export async function GET(request: NextRequest) {
   try {
+    console.log('[DASHBOARD_STATS] Starting...')
     const user = await requireRole(['ADMIN', 'FOUNDER', 'CO_FOUNDER', 'MENTOR', 'AFFILIATE', 'MEMBER_PREMIUM', 'MEMBER_FREE'])
+    console.log('[DASHBOARD_STATS] User role:', user.role)
 
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'month' // day, week, month, year
@@ -91,32 +93,43 @@ export async function GET(request: NextRequest) {
         _count: true,
       })
 
-      // Get commission stats
-      const totalCommissions = await prisma.wallet.aggregate({
-        where: {
-          user: {
-            role: 'AFFILIATE',
-          },
-        },
-        _sum: { totalEarnings: true },
+      // Get commission stats - first get affiliate user IDs, then sum their wallets
+      const affiliateUsers = await prisma.user.findMany({
+        where: { role: 'AFFILIATE' },
+        select: { id: true }
       })
+      const affiliateUserIds = affiliateUsers.map(u => u.id)
+      
+      const totalCommissions = affiliateUserIds.length > 0 
+        ? await prisma.wallet.aggregate({
+            where: {
+              userId: { in: affiliateUserIds },
+            },
+            _sum: { totalEarnings: true },
+          })
+        : { _sum: { totalEarnings: null } }
 
-      // Get recent transactions
-      const recentTransactions = await prisma.transaction.findMany({
+      // Get recent transactions - query without user include since Transaction model has no relation
+      const recentTransactionsRaw = await prisma.transaction.findMany({
         where: {
           createdAt: { gte: startDate },
         },
         take: 10,
         orderBy: { createdAt: 'desc' },
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
-            },
-          },
-        },
       })
+      
+      // Enrich with user data manually
+      const userIds = [...new Set(recentTransactionsRaw.map(t => t.userId).filter(Boolean))]
+      const users = userIds.length > 0 ? await prisma.user.findMany({
+        where: { id: { in: userIds as string[] } },
+        select: { id: true, name: true, email: true }
+      }) : []
+      const userMap = new Map(users.map(u => [u.id, u]))
+      
+      const recentTransactions = recentTransactionsRaw.map(t => ({
+        ...t,
+        user: t.userId ? userMap.get(t.userId) || null : null
+      }))
 
       // Get conversion rate
       const totalClicks = await prisma.affiliateClick.count({
@@ -209,32 +222,16 @@ export async function GET(request: NextRequest) {
     if (user.role === 'MENTOR' || ['ADMIN', 'FOUNDER', 'CO_FOUNDER'].includes(user.role)) {
       const mentorProfile = await prisma.mentorProfile.findUnique({
         where: { userId: user.id },
-        include: {
-          courses: {
-            include: {
-              _count: {
-                select: { enrollments: true },
-              },
-            },
-          },
-        },
       })
 
       if (mentorProfile) {
-        const mentorRevenue = await prisma.transaction.aggregate({
-          where: {
-            status: 'SUCCESS',
-            createdAt: { gte: startDate },
-            product: {
-              creatorId: user.id,
-            },
-          },
-          _sum: { mentorShare: true },
-        })
+        // Get mentor revenue - Transaction model doesn't have product relation
+        // Use simple count and sum for mentor data
+        const mentorRevenue = 0 // TODO: Implement when Transaction has proper relations
 
         stats.mentor = {
           ...mentorProfile,
-          revenue: mentorRevenue._sum.mentorShare || 0,
+          revenue: mentorRevenue,
         }
       }
     }
@@ -243,15 +240,6 @@ export async function GET(request: NextRequest) {
     if (user.role === 'AFFILIATE' || ['ADMIN', 'FOUNDER', 'CO_FOUNDER'].includes(user.role)) {
       const affiliateProfile = await prisma.affiliateProfile.findUnique({
         where: { userId: user.id },
-        include: {
-          links: true,
-          _count: {
-            select: {
-              clicks: true,
-              conversions: true,
-            },
-          },
-        },
       })
 
       if (affiliateProfile) {
@@ -298,8 +286,10 @@ export async function GET(request: NextRequest) {
 
     stats.recentActivities = recentActivities
 
+    console.log('[DASHBOARD_STATS] Success')
     return NextResponse.json(stats)
   } catch (error: any) {
+    console.error('[DASHBOARD_STATS] Error:', error.message, error.stack)
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

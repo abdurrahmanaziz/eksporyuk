@@ -112,6 +112,9 @@ export default function MemberOnboardingChecklist({
 
   if (!data || dismissed) return null
 
+  // Skip for admin/mentor/staff - they don't need onboarding
+  if ((data as any).skipOnboarding) return null
+
   // If profile is already complete and all done, show success or hide
   if (data.profileCompleted && data.totalProgress >= 85) {
     if (variant === 'full') {

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear Session</title>
+</head>
+<body>
+  <h1>Clear Session</h1>
+  <p>Session cookies will be cleared...</p>
+  <script>
+    // Clear all cookies
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    // Clear localStorage
+    localStorage.clear();
+    
+    // Clear sessionStorage
+    sessionStorage.clear();
+    
+    setTimeout(function() {
+      alert('Session cleared! Redirecting to login...');
+      window.location.href = '/login';
+    }, 1000);
+  </script>
+</body>
+</html>

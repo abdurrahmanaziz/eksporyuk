@@ -83,8 +83,9 @@ export async function POST(request: NextRequest) {
     })
 
     // Build reset link - use dynamic app URL with query parameter
-    const appUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const resetLink = `${appUrl}/reset-password?token=${token}`
+    // CRITICAL: Trim to remove any whitespace/newlines from env vars
+    const appUrl = (process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').trim()
+    const resetLink = `${appUrl}/auth/reset-password?token=${token}`
 
     // Send email via Mailketing with new template
     try {

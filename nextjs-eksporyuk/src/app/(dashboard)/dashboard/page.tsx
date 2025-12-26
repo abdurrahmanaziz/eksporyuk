@@ -17,6 +17,7 @@ import TrialReminderBanner from '@/components/member/TrialReminderBanner'
 import FreeUserDashboard from '@/components/member/FreeUserDashboard'
 import MembershipExpiryBanner from '@/components/member/MembershipExpiryBanner'
 import PremiumMemberDashboard from '@/components/dashboard/PremiumMemberDashboard'
+import AdminDashboard from '@/components/dashboard/AdminDashboard'
 import { DashboardStatsSkeleton } from '@/components/ui/loading-skeletons'
 import {
   Users,
@@ -134,6 +135,15 @@ export default function DashboardPage() {
         {/* Premium Member Dashboard */}
         <PremiumMemberDashboard />
       </>
+    )
+  }
+
+  // Admin/Founder/Co-Founder Dashboard - Skip all member banners/modals
+  if (isAdmin || session?.user?.role === 'FOUNDER' || session?.user?.role === 'CO_FOUNDER') {
+    return (
+      <ResponsivePageWrapper>
+        <AdminDashboard stats={stats} theme={theme} session={session} />
+      </ResponsivePageWrapper>
     )
   }
 

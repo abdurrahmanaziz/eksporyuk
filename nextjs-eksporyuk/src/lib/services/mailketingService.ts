@@ -354,7 +354,7 @@ class MailketingService {
               
               <p style="color: #666; font-size: 14px; margin: 20px 0;">
                 Atau copy link berikut ke browser Anda:<br/>
-                <code style="background: white; border: 1px solid #ddd; padding: 10px; display: inline-block; word-break: break-all; font-size: 12px;">${resetLink}</code>
+                <code style="background: white; border: 1px solid #ddd; padding: 10px; display: inline-block; word-break: break-all; font-size: 12px; margin-top: 10px;">${resetLink}</code>
               </p>
               
               <div class="warning">
@@ -376,13 +376,16 @@ class MailketingService {
       `
 
       // Try to use branded template first, fallback to hardcoded
+      // IMPORTANT: Template uses {{resetUrl}} variable, not {{resetLink}}
       await sendEmailWithFallback(
         email,
         'reset-password', // Slug template (create later if needed)
         {
           userName: name,
-          resetLink: resetLink,
-          expiryTime: '1 jam'
+          resetUrl: resetLink,  // Template uses resetUrl variable
+          resetLink: resetLink,  // Fallback uses resetLink
+          expiryTime: '1 jam',
+          appName: appName
         },
         `🔐 Reset Password - ${appName}`,
         fallbackHtml
