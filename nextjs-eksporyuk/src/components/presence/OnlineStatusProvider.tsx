@@ -43,7 +43,10 @@ export default function OnlineStatusProvider({ children }: { children: React.Rea
     try {
       const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
       if (!pusherKey) {
-        console.log('[PUSHER] Key not configured, skipping real-time features')
+        // Silently skip if not configured (only log in dev)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[PUSHER] Key not configured, skipping real-time features')
+        }
         return
       }
       

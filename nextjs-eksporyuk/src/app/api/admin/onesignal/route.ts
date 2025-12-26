@@ -25,39 +25,52 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'stats'
 
     if (type === 'stats') {
-      // Get overall statistics using raw queries for OneSignal fields
+      // Get overall statistics using Prisma ORM (SQLite compatible)
       const totalUsers = await prisma.user.count()
       
-      const subscribedResult = await prisma.$queryRaw<Array<{count: bigint}>>`
-        SELECT COUNT(*) as count FROM User WHERE oneSignalPlayerId IS NOT NULL
-      `
-      const subscribedUsers = Number(subscribedResult[0]?.count || 0)
+      // Use Prisma ORM instead of raw SQL for better SQLite compatibility
+      const subscribedUsers = await prisma.user.count({
+        where: { oneSignalPlayerId: { not: null } }
+      })
 
       // Get subscription trend (last 30 days)
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-      const recentResult = await prisma.$queryRaw<Array<{count: bigint}>>`
-        SELECT COUNT(*) as count FROM User 
-        WHERE oneSignalSubscribedAt >= ${thirtyDaysAgo.toISOString()}
-      `
-      const recentSubscriptions = Number(recentResult[0]?.count || 0)
+      const recentSubscriptions = await prisma.user.count({
+        where: {
+          oneSignalSubscribedAt: { gte: thirtyDaysAgo }
+        }
+      })
 
-      // Get subscribers by membership tier
-      const tierCounts = await prisma.$queryRaw<Array<{role: string, count: bigint}>>`
-        SELECT role, COUNT(*) as count FROM User 
-        WHERE oneSignalPlayerId IS NOT NULL
-        GROUP BY role
-      `
+      // Get subscribers by membership tier using groupBy
+      const tierCountsRaw = await prisma.user.groupBy({
+        by: ['role'],
+        where: { oneSignalPlayerId: { not: null } },
+        _count: { role: true }
+      })
 
-      // Get subscribers by province (top 10)
-      const provinceCounts = await prisma.$queryRaw<Array<{province: string, count: bigint}>>`
-        SELECT province, COUNT(*) as count FROM User 
-        WHERE oneSignalPlayerId IS NOT NULL AND province IS NOT NULL
-        GROUP BY province
-        ORDER BY count DESC
-        LIMIT 10
-      `
+      const tierCounts = tierCountsRaw.map(t => ({
+        role: t.role,
+        count: t._count.role
+      }))
+
+      // Get subscribers by province (top 10) using groupBy
+      const provinceCountsRaw = await prisma.user.groupBy({
+        by: ['province'],
+        where: {
+          oneSignalPlayerId: { not: null },
+          province: { not: null }
+        },
+        _count: { province: true },
+        orderBy: { _count: { province: 'desc' } },
+        take: 10
+      })
+
+      const provinceCounts = provinceCountsRaw.map(p => ({
+        province: p.province || '',
+        count: p._count.province
+      }))
 
       return NextResponse.json({
         success: true,
@@ -66,10 +79,8 @@ export async function GET(request: NextRequest) {
           subscribedUsers,
           subscriptionRate: totalUsers > 0 ? Math.round((subscribedUsers / totalUsers) * 100) : 0,
           recentSubscriptions,
-          tierCounts: tierCounts.map(t => ({ role: t.role, count: Number(t.count) })),
-          provinceCounts: provinceCounts
-            .filter(p => p.province)
-            .map(p => ({ province: p.province, count: Number(p.count) }))
+          tierCounts,
+          provinceCounts: provinceCounts.filter(p => p.province)
         }
       })
     }
