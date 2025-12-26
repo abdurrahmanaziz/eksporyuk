@@ -188,6 +188,7 @@ const navigationByRole = {
       title: 'SISTEM',
       items: [
         { name: 'Pengaturan', href: '/admin/settings', icon: Settings },
+        { name: 'Affiliate Settings', href: '/admin/settings/affiliate', icon: Share2 },
         { name: 'Integrasi', href: '/admin/integrations', icon: Plug },
         { name: 'Mailketing', href: '/admin/mailketing', icon: Mail },
         { name: 'OneSignal', href: '/admin/onesignal', icon: Bell },

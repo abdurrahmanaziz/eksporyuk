@@ -73,7 +73,26 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({ success: true, settings })
+    // Get CourseSettings for affiliate commission and withdrawal settings
+    let courseSettings = await prisma.courseSettings.findFirst()
+    
+    if (!courseSettings) {
+      courseSettings = await prisma.courseSettings.create({
+        data: {
+          defaultAffiliateCommission: 30,
+          minWithdrawalAmount: 50000
+        }
+      })
+    }
+
+    // Merge settings with course settings for affiliate page
+    const mergedSettings = {
+      ...settings,
+      defaultAffiliateCommission: courseSettings.defaultAffiliateCommission,
+      minWithdrawalAmount: Number(courseSettings.minWithdrawalAmount)
+    }
+
+    return NextResponse.json({ success: true, settings: mergedSettings })
   } catch (error) {
     console.error('Error fetching settings:', error)
     return NextResponse.json({ 
@@ -283,15 +302,12 @@ export async function POST(request: NextRequest) {
     if (followUpMessage1Hour !== undefined) updateData.followUpMessage1Hour = toNullIfEmpty(followUpMessage1Hour)
     if (followUpMessage24Hour !== undefined) updateData.followUpMessage24Hour = toNullIfEmpty(followUpMessage24Hour)
     if (followUpMessage48Hour !== undefined) updateData.followUpMessage48Hour = toNullIfEmpty(followUpMessage48Hour)
-    // Affiliate settings
+    // Affiliate settings (Settings model)
     if (affiliateAutoApprove !== undefined) updateData.affiliateAutoApprove = affiliateAutoApprove
     if (affiliateCommissionEnabled !== undefined) updateData.affiliateCommissionEnabled = affiliateCommissionEnabled
-    if (defaultAffiliateCommission !== undefined && defaultAffiliateCommission !== null) {
-      updateData.defaultAffiliateCommission = parseInt(defaultAffiliateCommission)
-    }
-    if (minWithdrawalAmount !== undefined && minWithdrawalAmount !== null) {
-      updateData.minWithdrawalAmount = parseInt(minWithdrawalAmount)
-    }
+    
+    // Note: defaultAffiliateCommission and minWithdrawalAmount are in CourseSettings model
+    // We'll handle these separately below
 
     console.log('[SETTINGS API] Update data:', JSON.stringify(updateData, null, 2))
 
@@ -339,6 +355,39 @@ export async function POST(request: NextRequest) {
         followUpMessage48Hour: toNullIfEmpty(followUpMessage48Hour),
       }
     })
+
+    // Update CourseSettings for affiliate commission and withdrawal settings
+    if (defaultAffiliateCommission !== undefined || minWithdrawalAmount !== undefined) {
+      const courseUpdateData: any = {}
+      
+      if (defaultAffiliateCommission !== undefined && defaultAffiliateCommission !== null) {
+        courseUpdateData.defaultAffiliateCommission = parseFloat(defaultAffiliateCommission)
+      }
+      
+      if (minWithdrawalAmount !== undefined && minWithdrawalAmount !== null) {
+        courseUpdateData.minWithdrawalAmount = parseInt(minWithdrawalAmount)
+      }
+
+      if (Object.keys(courseUpdateData).length > 0) {
+        // Get or create CourseSettings
+        const existingCourseSettings = await prisma.courseSettings.findFirst()
+        
+        if (existingCourseSettings) {
+          await prisma.courseSettings.update({
+            where: { id: existingCourseSettings.id },
+            data: courseUpdateData
+          })
+        } else {
+          await prisma.courseSettings.create({
+            data: {
+              ...courseUpdateData,
+              defaultAffiliateCommission: courseUpdateData.defaultAffiliateCommission || 30,
+              minWithdrawalAmount: courseUpdateData.minWithdrawalAmount || 50000
+            }
+          })
+        }
+      }
+    }
 
     // Clear settings cache after update
     apiCache.delete(CACHE_KEYS.SETTINGS)
