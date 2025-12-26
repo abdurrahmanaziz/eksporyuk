@@ -11,8 +11,18 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || session.user?.role !== 'ADMIN') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verify admin role
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    })
+
+    if (user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -188,14 +198,14 @@ export async function GET(request: Request) {
     })
 
     const productIds = topProducts.map(p => p.productId).filter(Boolean) as string[]
-    const products = await prisma.product.findMany({
+    const products = productIds.length > 0 ? await prisma.product.findMany({
       where: { id: { in: productIds } },
       select: { id: true, name: true },
-    })
+    }) : []
 
     const topProductsWithNames = topProducts.map(p => ({
       id: p.productId,
-      name: products.find(prod => prod.id === p.productId)?.name || 'Unknown',
+      name: products.find(prod => prod.id === p.productId)?.name || 'Unknown Product',
       sales: p._count,
       revenue: Number(p._sum.amount) || 0,
     }))
@@ -213,14 +223,14 @@ export async function GET(request: Request) {
     })
 
     const courseIds = topCourses.map(c => c.courseId)
-    const courses = await prisma.course.findMany({
+    const courses = courseIds.length > 0 ? await prisma.course.findMany({
       where: { id: { in: courseIds } },
       select: { id: true, title: true },
-    })
+    }) : []
 
     const topCoursesWithNames = topCourses.map(c => ({
       id: c.courseId,
-      title: courses.find(course => course.id === c.courseId)?.title || 'Unknown',
+      title: courses.find(course => course.id === c.courseId)?.title || 'Unknown Course',
       enrollments: c._count,
       completion: 0, // Calculate if needed
     }))
@@ -232,18 +242,65 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' },
       take: 10,
-      include: {
-        user: { select: { name: true } },
-        product: { select: { name: true } },
-        membership: { select: { membership: { select: { name: true } } } },
-      },
+      select: {
+        id: true,
+        productId: true,
+        courseId: true,
+        eventId: true,
+        amount: true,
+        description: true,
+        createdAt: true,
+        userId: true,
+      }
     })
 
-    const activityLog = recentActivity.map(transaction => ({
-      type: transaction.productId ? 'PRODUCT' : 'MEMBERSHIP',
-      description: `${transaction.user?.name} membeli ${transaction.product?.name || transaction.membership?.membership?.name || 'item'}`,
-      timestamp: transaction.createdAt.toISOString(),
-    }))
+    // Get related data manually to avoid relation errors
+    const userIds = [...new Set(recentActivity.map(t => t.userId).filter(Boolean))] as string[]
+    const productIds2 = [...new Set(recentActivity.map(t => t.productId).filter(Boolean))] as string[]
+    const courseIds2 = [...new Set(recentActivity.map(t => t.courseId).filter(Boolean))] as string[]
+
+    const users = userIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true }
+    }) : []
+
+    const productsForActivity = productIds2.length > 0 ? await prisma.product.findMany({
+      where: { id: { in: productIds2 } },
+      select: { id: true, name: true }
+    }) : []
+
+    const coursesForActivity = courseIds2.length > 0 ? await prisma.course.findMany({
+      where: { id: { in: courseIds2 } },
+      select: { id: true, title: true }
+    }) : []
+
+    const activityLog = recentActivity.map(transaction => {
+      const user = users.find(u => u.id === transaction.userId)
+      const product = productsForActivity.find(p => p.id === transaction.productId)
+      const course = coursesForActivity.find(c => c.id === transaction.courseId)
+
+      let itemName = 'item'
+      let type = 'OTHER'
+      
+      if (product) {
+        itemName = product.name
+        type = 'PRODUCT'
+      } else if (course) {
+        itemName = course.title
+        type = 'COURSE'
+      } else if (transaction.eventId) {
+        type = 'EVENT'
+        itemName = transaction.description || 'event'
+      } else if (transaction.description) {
+        itemName = transaction.description
+      }
+
+      return {
+        type,
+        description: `${user?.name || 'User'} membeli ${itemName}`,
+        timestamp: transaction.createdAt.toISOString(),
+      }
+    })
 
     const response = NextResponse.json({
       overview: {
