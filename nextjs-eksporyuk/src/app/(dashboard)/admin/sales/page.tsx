@@ -73,6 +73,7 @@ interface Transaction {
   type: string;
   status: string;
   amount: number;
+  description?: string | null;
   customerName: string | null;
   customerEmail: string | null;
   customerPhone: string | null;
@@ -107,6 +108,18 @@ interface Transaction {
       name: string;
       duration?: string;
       reminders?: any;
+    }
+  } | null;
+  // UserMembership linked to transaction (for determining membership tier)
+  userMembership?: {
+    id: string;
+    membershipId: string;
+    userId: string;
+    transactionId?: string;
+    membership?: {
+      id: string;
+      name: string;
+      duration?: string;
     }
   } | null;
   coupon?: {
@@ -462,7 +475,11 @@ export default function AdminSalesPage() {
   };
 
   const getProductName = (tx: Transaction) => {
-    // Check metadata.productName first (from Sejoli import)
+    // Check description first (from Sejoli import) - shows actual paket name like "Kelas Eksporyuk 12 Bulan"
+    if (tx.description) {
+      return tx.description;
+    }
+    // Check metadata.productName (from Sejoli import)
     if (tx.metadata?.productName) {
       return tx.metadata.productName;
     }
@@ -494,6 +511,48 @@ export default function AdminSalesPage() {
       'COURSE': 'Kursus Online',
     };
     return typeLabels[tx.type] || tx.type || '-';
+  };
+
+  // Get specific product type for filtering (maps MEMBERSHIP to MEMBERSHIP_SIX_MONTHS, MEMBERSHIP_TWELVE_MONTHS, MEMBERSHIP_LIFETIME)
+  const getProductType = (tx: Transaction): string => {
+    // If transaction has a linked UserMembership, use that to determine type
+    if (tx.userMembership) {
+      const duration = tx.userMembership.membership?.duration;
+      
+      if (duration) {
+        if (duration === 'SIX_MONTHS' || duration === '6') return 'MEMBERSHIP_SIX_MONTHS';
+        if (duration === 'TWELVE_MONTHS' || duration === '12') return 'MEMBERSHIP_TWELVE_MONTHS';
+        if (duration === 'LIFETIME' || duration === '999') return 'MEMBERSHIP_LIFETIME';
+      }
+      return 'MEMBERSHIP';
+    }
+    
+    // Fallback: check metadata (for older transactions)
+    if (tx.type === 'MEMBERSHIP') {
+      // Get duration from membership relation, metadata membershipTier, or metadata duration
+      const tier = tx.metadata?.membershipTier;
+      const duration = tx.membership?.membership?.duration || tx.metadata?.membershipDuration;
+      
+      // Handle membershipTier from Sejoli import (e.g., '6_MONTH', '12_MONTH', 'LIFETIME')
+      if (tier) {
+        if (tier === '6_MONTH' || tier === 'SIX_MONTH') return 'MEMBERSHIP_SIX_MONTHS';
+        if (tier === '12_MONTH' || tier === 'TWELVE_MONTH') return 'MEMBERSHIP_TWELVE_MONTHS';
+        if (tier === 'LIFETIME') return 'MEMBERSHIP_LIFETIME';
+      }
+      
+      // Handle enum formats like SIX_MONTHS, TWELVE_MONTHS, LIFETIME
+      if (duration) {
+        if (duration === 'SIX_MONTHS' || duration === '6') return 'MEMBERSHIP_SIX_MONTHS';
+        if (duration === 'TWELVE_MONTHS' || duration === 'ONE_YEAR' || duration === '12') return 'MEMBERSHIP_TWELVE_MONTHS';
+        if (duration === 'LIFETIME' || duration === '999') return 'MEMBERSHIP_LIFETIME';
+      }
+      
+      // Fallback to general MEMBERSHIP if we can't determine duration
+      return 'MEMBERSHIP';
+    }
+    
+    // For other types, return as-is
+    return tx.type;
   };
 
   // Get affiliate name from various sources

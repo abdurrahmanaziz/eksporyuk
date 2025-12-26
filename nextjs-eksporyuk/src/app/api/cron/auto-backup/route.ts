@@ -2,7 +2,7 @@
  * AUTO BACKUP CRON - Every 30 minutes
  * Automatically backs up critical database data to Vercel Blob Storage
  * 
- * Schedule: */30 * * * * (every 30 minutes)
+ * Schedule: Every 30 minutes
  * Retention: Keep last 48 backups (24 hours worth)
  */
 

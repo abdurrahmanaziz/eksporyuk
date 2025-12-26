@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
     const transactionIds = rawTransactions.map(t => t.id)
     
     // Batch fetch related data
-    const [users, products, coupons, courses, conversions] = await Promise.all([
+    const [users, products, coupons, courses, conversions, userMemberships] = await Promise.all([
       prisma.user.findMany({
         where: { id: { in: userIds as string[] } },
         select: { id: true, name: true, email: true, phone: true, whatsapp: true }
@@ -130,6 +130,16 @@ export async function GET(request: NextRequest) {
           commissionAmount: true,
           paidOut: true 
         }
+      }),
+      // Fetch UserMemberships linked to these transactions
+      prisma.userMembership.findMany({
+        where: { transactionId: { in: transactionIds } },
+        select: {
+          id: true,
+          transactionId: true,
+          membershipId: true,
+          userId: true,
+        }
       })
     ])
     
@@ -139,6 +149,15 @@ export async function GET(request: NextRequest) {
     const couponMap = Object.fromEntries(coupons.map(c => [c.id, c]))
     const courseMap = Object.fromEntries(courses.map(c => [c.id, c]))
     const conversionMap = Object.fromEntries(conversions.map(c => [c.transactionId, c]))
+    const userMembershipMap = Object.fromEntries(userMemberships.map(um => [um.transactionId, um]))
+    
+    // Fetch membership details for user memberships
+    const membershipIds = [...new Set(userMemberships.map(um => um.membershipId).filter(Boolean))]
+    const memberships = await prisma.membership.findMany({
+      where: { id: { in: membershipIds } },
+      select: { id: true, name: true, duration: true }
+    })
+    const membershipMap = Object.fromEntries(memberships.map(m => [m.id, m]))
     
     // Fetch affiliate users for conversions
     const affiliateUserIds = [...new Set(conversions.map(c => c.affiliateId).filter(Boolean))]
@@ -151,6 +170,8 @@ export async function GET(request: NextRequest) {
     // Enrich transactions
     const transactions = rawTransactions.map(tx => {
       const conversion = conversionMap[tx.id]
+      const userMembership = userMembershipMap[tx.id]
+      
       return {
         ...tx,
         user: tx.userId ? userMap[tx.userId] || null : null,
@@ -158,6 +179,13 @@ export async function GET(request: NextRequest) {
         coupon: tx.couponId ? couponMap[tx.couponId] || null : null,
         course: tx.courseId ? courseMap[tx.courseId] || null : null,
         membership: null, // No relation for now
+        userMembership: userMembership ? {
+          id: userMembership.id,
+          membershipId: userMembership.membershipId,
+          userId: userMembership.userId,
+          transactionId: userMembership.transactionId,
+          membership: membershipMap[userMembership.membershipId] || undefined,
+        } : undefined,
         affiliateConversion: conversion ? {
           ...conversion,
           affiliate: {
@@ -167,13 +195,30 @@ export async function GET(request: NextRequest) {
       }
     })
     
-    // Filter by duration if needed (from metadata)
+    // Filter by duration if needed (looking up membership type from UserMembership)
     let filteredTransactions = transactions
     if (filterDuration) {
       filteredTransactions = transactions.filter(tx => {
-        if (tx.type !== 'MEMBERSHIP') return false
-        const duration = (tx.metadata as any)?.membershipDuration || (tx.metadata as any)?.duration
-        return String(duration) === String(filterDuration)
+        // Check if transaction has a linked UserMembership
+        const userMembership = userMembershipMap[tx.id]
+        if (!userMembership) return false
+        
+        // Get membership details
+        const membership = membershipMap[userMembership.membershipId]
+        if (!membership) return false
+        
+        // Get duration from membership
+        const duration = membership.duration
+        
+        // Map filter duration values to expected formats
+        const filterMap: Record<string, string[]> = {
+          'SIX_MONTHS': ['SIX_MONTHS', 'SEIS_MESES', '6_MONTH', 'SIX_MONTH', '6'],
+          'TWELVE_MONTHS': ['TWELVE_MONTHS', 'DOCE_MESES', '12_MONTH', 'TWELVE_MONTH', '12', 'ONE_YEAR'],
+          'LIFETIME': ['LIFETIME', 'SELAMANYA', '999'],
+        }
+        
+        const expectedFormats = filterMap[filterDuration] || [filterDuration]
+        return expectedFormats.includes(String(duration))
       })
     }
     
