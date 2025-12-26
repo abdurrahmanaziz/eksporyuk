@@ -2977,11 +2977,14 @@ model DocumentationRevision {
 model PasswordResetToken {
   id        String    @id @default(cuid())
   email     String
-  token     String
+  token     String    @unique
   expiresAt DateTime
   createdAt DateTime  @default(now())
   used      Boolean   @default(false)
   usedAt    DateTime?
+
+  @@index([email])
+  @@index([expiresAt])
 }
 
 model SupportTicket {

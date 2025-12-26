@@ -200,7 +200,10 @@ export async function PUT(request: NextRequest) {
     // Mark token as used
     await prisma.passwordResetToken.update({
       where: { token },
-      data: { used: true }
+      data: { 
+        used: true,
+        usedAt: new Date()
+      }
     })
 
     // Delete all other unused tokens for this email
