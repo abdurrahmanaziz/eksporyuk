@@ -224,12 +224,12 @@ export default function DocumentsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Kategori
               </label>
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <Select value={filterCategory || 'all'} onValueChange={(value) => setFilterCategory(value === 'all' ? '' : value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Semua kategori" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua kategori</SelectItem>
+                  <SelectItem value="all">Semua kategori</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}

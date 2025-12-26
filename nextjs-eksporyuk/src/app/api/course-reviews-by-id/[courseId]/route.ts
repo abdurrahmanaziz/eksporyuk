@@ -240,30 +240,38 @@ export async function POST(
     // Update course rating
     await updateCourseRating(courseId)
 
-    // Create notification for course mentor
-    await prisma.notification.create({
-      data: {
-        userId: course.mentorId,
-        type: 'PRODUCT_REVIEW',
-        title: 'New Course Review',
-        message: `${session.user.name} left a ${rating}-star review on ${course.title}`,
-        link: `/mentor/courses/${course.id}?tab=reviews`
-      }
-    })
-
-    // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: session.user.id,
-        action: 'COURSE_REVIEW_CREATED',
-        entity: 'COURSE',
-        entityId: courseId,
-        metadata: {
-          reviewId: newReview.id,
-          rating
+    // Create notification for course mentor (try-catch to prevent blocking)
+    try {
+      await prisma.notification.create({
+        data: {
+          userId: course.mentorId,
+          type: 'PRODUCT_REVIEW',
+          title: 'New Course Review',
+          message: `${session.user.name} left a ${rating}-star review on ${course.title}`,
+          link: `/mentor/courses/${course.id}?tab=reviews`
         }
-      }
-    })
+      })
+    } catch (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
+
+    // Log activity (try-catch to prevent blocking)
+    try {
+      await prisma.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: 'COURSE_REVIEW_CREATED',
+          entity: 'COURSE',
+          entityId: courseId,
+          metadata: {
+            reviewId: newReview.id,
+            rating
+          }
+        }
+      })
+    } catch (logError) {
+      console.error('Activity log creation failed (non-blocking):', logError)
+    }
 
     return NextResponse.json({
       message: 'Review submitted successfully',

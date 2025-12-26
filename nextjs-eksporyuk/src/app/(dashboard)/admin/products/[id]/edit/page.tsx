@@ -645,14 +645,14 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 <div className="space-y-2">
                   <Label>Grup Komunitas</Label>
                   <Select
-                    value={formData.groupId || ''}
-                    onValueChange={(value) => handleChange('groupId', value || null)}
+                    value={formData.groupId || 'none'}
+                    onValueChange={(value) => handleChange('groupId', value === 'none' ? null : value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih grup..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Tidak ada grup</SelectItem>
+                      <SelectItem value="none">Tidak ada grup</SelectItem>
                       {groups.map((group) => (
                         <SelectItem key={group.id} value={group.id}>
                           {group.name}
