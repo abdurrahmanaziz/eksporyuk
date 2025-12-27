@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { createUniqueSlug } from '@/lib/slug-utils'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -48,33 +49,62 @@ export async function GET(request: NextRequest) {
     }) : []
     const countMap = new Map(transactionCounts.map(c => [c.courseId, c._count]))
 
-    // Fetch mentor data separately (no direct relation in schema)
-    const mentorIds = courses.map(c => c.mentorId).filter(Boolean) as string[]
-    const mentorProfiles = mentorIds.length > 0 ? await prisma.mentorProfile.findMany({
-      where: { userId: { in: mentorIds } },
-      select: { userId: true }
+    // Get course mentors
+    const courseMentors = courseIds.length > 0 ? await prisma.courseMentor.findMany({
+      where: { 
+        courseId: { in: courseIds },
+        isActive: true 
+      }
     }) : []
-    
-    // Get user data for mentors
-    const users = mentorIds.length > 0 ? await prisma.user.findMany({
-      where: { id: { in: mentorIds } },
-      select: { id: true, name: true, email: true }
-    }) : []
-    
-    // Map mentor data to courses with _count
-    const coursesWithMentor = courses.map(course => ({
-      ...course,
-      _count: { transactions: countMap.get(course.id) || 0 },
-      mentor: course.mentorId ? {
-        id: course.mentorId,
-        user: users.find(u => u.id === course.mentorId) || { name: 'Unknown', email: '' }
-      } : null,
-      modules: [] // No modules relation defined
-    }))
 
+    // Get mentor profiles and users
+    const mentorIds = courseMentors.map(cm => cm.mentorId)
+    const mentorProfiles = mentorIds.length > 0 ? await prisma.mentorProfile.findMany({
+      where: { id: { in: mentorIds } }
+    }) : []
+
+    const userIds = mentorProfiles.map(mp => mp.userId)
+    const mentorUsers = userIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, email: true, avatar: true }
+    }) : []
+
+    const mentorUserMap = new Map(mentorUsers.map(u => [u.id, u]))
+    const mentorProfileMap = new Map(mentorProfiles.map(mp => [mp.id, mp]))
+
+    // Group mentors by course
+    const courseMentorMap = new Map()
+    courseMentors.forEach(cm => {
+      if (!courseMentorMap.has(cm.courseId)) {
+        courseMentorMap.set(cm.courseId, [])
+      }
+      const mentorProfile = mentorProfileMap.get(cm.mentorId)
+      const user = mentorProfile ? mentorUserMap.get(mentorProfile.userId) : null
+      
+      if (mentorProfile && user) {
+        courseMentorMap.get(cm.courseId).push({
+          id: cm.id,
+          mentorId: cm.mentorId,
+          role: cm.role,
+          mentor: {
+            ...mentorProfile,
+            user: user
+          }
+        })
+      }
+    })
+
+    // Map course data with mentors and transaction counts
+    const coursesWithData = courses.map(course => ({
+      ...course,
+      mentors: courseMentorMap.get(course.id) || [],
+      _count: {
+        transactions: countMap.get(course.id) || 0
+      }
+    }))
     return NextResponse.json({ 
       success: true,
-      courses: coursesWithMentor 
+      courses: coursesWithData 
     })
   } catch (error) {
     console.error('GET /api/admin/courses error:', error)
@@ -142,23 +172,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Generate slug from title
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-
-    // Check if slug already exists
-    const existingCourse = await prisma.course.findUnique({
-      where: { slug }
-    })
-
-    if (existingCourse) {
-      return NextResponse.json(
-        { error: 'Course with this title already exists' },
-        { status: 400 }
-      )
-    }
+    // Generate unique slug from title
+    const slug = await createUniqueSlug(title, 'course')
 
     // If admin doesn't specify mentor, use their own mentor profile or create one
     let finalMentorId = mentorId

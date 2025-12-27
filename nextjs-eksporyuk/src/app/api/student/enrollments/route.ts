@@ -19,41 +19,47 @@ export async function GET(req: NextRequest) {
       where: {
         userId: session.user.id
       },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            description: true,
-            shortDescription: true,
-            thumbnail: true,
-            mentorId: true,
-            isPublished: true,
-            difficulty: true,
-            category: true,
-            price: true,
-            discountedPrice: true
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
+    // Get courses data separately
+    const courseIds = enrollments.map(e => e.courseId)
+    const courses = await prisma.course.findMany({
+      where: {
+        id: { in: courseIds }
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        thumbnail: true,
+        mentorId: true,
+        isPublished: true,
+        level: true,
+        price: true
+      }
+    })
+
+    const coursesMap = new Map(courses.map(c => [c.id, c]))
+
     // Get progress for each enrollment
     const enrollmentsWithProgress = await Promise.all(
       enrollments.map(async (enrollment) => {
         const progress = await prisma.userCourseProgress.findFirst({
-      where: {
-        userId: session.user.id,
-        courseId: enrollment.courseId
-      }
+          where: {
+            userId: session.user.id,
+            courseId: enrollment.courseId
+          }
         })
+
+        const course = coursesMap.get(enrollment.courseId)
 
         return {
           ...enrollment,
+          course: course || null,
           detailedProgress: progress
         }
       })

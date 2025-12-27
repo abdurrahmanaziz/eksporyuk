@@ -3379,6 +3379,18 @@ enum TransactionStatus {
   REFUNDED
 }
 
+model CourseMentor {
+  id         String   @id
+  courseId   String
+  mentorId   String
+  role       String   @default("MENTOR") // "MENTOR", "CO_MENTOR", "ASSISTANT"
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+  
+  @@unique([courseId, mentorId])
+}
+
 enum TransactionType {
   MEMBERSHIP
   PRODUCT

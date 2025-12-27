@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { createUniqueSlug } from '@/lib/slug-utils'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -149,23 +150,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Generate slug from title
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-
-    // Check if slug already exists
-    const existingCourse = await prisma.course.findUnique({
-      where: { slug }
-    })
-
-    if (existingCourse) {
-      return NextResponse.json(
-        { error: 'Course with this title already exists' },
-        { status: 400 }
-      )
-    }
+    // Generate unique slug from title
+    const slug = await createUniqueSlug(title, 'course')
 
     // Get or create mentor profile for current user
     let mentorProfile = await prisma.mentorProfile.findUnique({
@@ -220,6 +206,17 @@ export async function POST(request: NextRequest) {
             }
           }
         }
+      }
+    })
+
+    // Create primary mentor relationship
+    await prisma.courseMentor.create({
+      data: {
+        id: `cm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        courseId: course.id,
+        mentorId: mentorProfile.id,
+        role: 'MENTOR',
+        isActive: true
       }
     })
 
