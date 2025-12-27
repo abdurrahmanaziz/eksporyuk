@@ -61,11 +61,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Increment view count (non-blocking, fire and forget)
-    prisma.affiliateOptinForm.update({
-      where: { id: optinForm.id },
-      data: { viewCount: { increment: 1 } }
-    }).catch(err => console.error('[VIEW COUNT] Failed to increment:', err))
+    // Note: viewCount field removed from schema, increment disabled
+    // If analytics needed, implement separate tracking table
 
     return NextResponse.json({ optinForm })
   } catch (error) {

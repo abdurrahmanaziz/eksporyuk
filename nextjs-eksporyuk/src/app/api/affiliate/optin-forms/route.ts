@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -154,7 +157,7 @@ export async function POST(req: NextRequest) {
       .substring(0, 50)
 
     // Check if slug exists, if so append random string
-    const existingForm = await prisma.affiliateOptinForm.findUnique({
+    const existingForm = await prisma.affiliateOptinForm.findFirst({
       where: { slug }
     })
 
@@ -165,6 +168,7 @@ export async function POST(req: NextRequest) {
     // Create optin form
     const optinForm = await prisma.affiliateOptinForm.create({
       data: {
+        id: createId(),
         affiliateId: affiliateProfile.id,
         bioPageId,
         slug,
@@ -188,7 +192,8 @@ export async function POST(req: NextRequest) {
         countdownEndDate: countdownEndDate ? new Date(countdownEndDate) : null,
         benefits: benefits || [],
         faqs: faqs || [],
-        leadMagnetId: leadMagnetId || null
+        updatedAt: new Date()
+        // leadMagnetId removed - field doesn't exist in schema
       }
     })
 

@@ -8,6 +8,9 @@ import { notificationService } from '@/lib/services/notificationService'
 import { pusherService } from '@/lib/pusher'
 import { onesignal } from '@/lib/integrations/onesignal'
 import { getXenditConfig } from '@/lib/integration-config'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 import Xendit from 'xendit-node'
 
 // Force this route to be dynamic
@@ -121,16 +124,16 @@ export async function POST(request: NextRequest) {
           where: { id: { in: transactionIds } },
         })
         
-        // Get membership transactions for all
-        const membershipTxs = await prisma.membershipTransaction.findMany({
+        // Get user memberships for all these transactions
+        const userMemberships = await prisma.userMembership.findMany({
           where: { transactionId: { in: transactionIds } },
         })
-        const membershipIds = [...new Set(membershipTxs.map(mt => mt.membershipId))]
-        const memberships = await prisma.membership.findMany({
-          where: { id: { in: membershipIds } },
-        })
+        const membershipIds = [...new Set(userMemberships.map((um: any) => um.membershipId).filter(Boolean))]
+        const memberships = membershipIds.length > 0 ? await prisma.membership.findMany({
+          where: { id: { in: membershipIds as string[] } },
+        }) : []
         const membershipMap = new Map(memberships.map(m => [m.id, m]))
-        const membershipTxMap = new Map(membershipTxs.map(mt => [mt.transactionId, mt]))
+        const userMembershipMap = new Map(userMemberships.map((um: any) => [um.transactionId, um]))
         
         // Get products and courses
         const productIds = [...new Set(transactions.filter(t => t.productId).map(t => t.productId!))]
@@ -143,9 +146,9 @@ export async function POST(request: NextRequest) {
         for (const tx of transactions) {
           try {
             // 1. Activate Membership Access
-            const membershipTx = membershipTxMap.get(tx.id)
-            if (tx.type === 'MEMBERSHIP' && membershipTx) {
-              const membership = membershipMap.get(membershipTx.membershipId)
+            const userMembership = userMembershipMap.get(tx.id)
+            if (tx.type === 'MEMBERSHIP' && userMembership) {
+              const membership = membershipMap.get((userMembership as any).membershipId)
               if (membership) {
                 const durationMap: Record<string, number> = {
                   'ONE_MONTH': 30,
@@ -168,11 +171,15 @@ export async function POST(request: NextRequest) {
                     }
                   },
                   create: {
+                    id: createId(),
                     userId: tx.userId,
                     membershipId: membership.id,
                     startDate,
                     endDate,
-                    isActive: true
+                    isActive: true,
+                    transactionId: tx.id,
+                    status: 'ACTIVE',
+                    updatedAt: new Date()
                   },
                   update: {
                     startDate,
@@ -198,11 +205,13 @@ export async function POST(request: NextRequest) {
               if (!existingEnrollment) {
                 await prisma.courseEnrollment.create({
                   data: {
+                    id: createId(),
                     userId: tx.userId,
                     courseId: tx.courseId,
                     progress: 0,
                     completed: false,
-                    transactionId: tx.id
+                    transactionId: tx.id,
+                    updatedAt: new Date()
                   }
                 })
               }
@@ -212,33 +221,44 @@ export async function POST(request: NextRequest) {
 
             // 3. Grant Product Access
             if (tx.type === 'PRODUCT' && tx.productId) {
-              await prisma.userProduct.upsert({
+              // Check if user product exists
+              const existingUserProduct = await prisma.userProduct.findFirst({
                 where: {
-                  userId_productId: {
-                    userId: tx.userId,
-                    productId: tx.productId
-                  }
-                },
-                create: {
                   userId: tx.userId,
-                  productId: tx.productId,
-                  price: tx.amount,
-                  transactionId: tx.id,
-                  purchaseDate: new Date()
-                },
-                update: {
-                  price: tx.amount,
-                  transactionId: tx.id,
-                  purchaseDate: new Date()
+                  productId: tx.productId
                 }
               })
+
+              if (existingUserProduct) {
+                await prisma.userProduct.update({
+                  where: { id: existingUserProduct.id },
+                  data: {
+                    price: tx.amount,
+                    transactionId: tx.id,
+                    purchaseDate: new Date(),
+                    updatedAt: new Date()
+                  }
+                })
+              } else {
+                await prisma.userProduct.create({
+                  data: {
+                    id: createId(),
+                    userId: tx.userId,
+                    productId: tx.productId,
+                    price: tx.amount,
+                    transactionId: tx.id,
+                    purchaseDate: new Date(),
+                    updatedAt: new Date()
+                  }
+                })
+              }
 
               console.log(`✓ Granted product access ${productMap.get(tx.productId)?.name} for user ${tx.userId}`)
             }
 
             // 4. Send In-App Notification
-            const membershipTxNotif = membershipTxMap.get(tx.id)
-            const membershipNotif = membershipTxNotif ? membershipMap.get(membershipTxNotif.membershipId) : null
+            const userMembershipNotif = userMembershipMap.get(tx.id)
+            const membershipNotif = userMembershipNotif ? membershipMap.get((userMembershipNotif as any).membershipId) : null
             await notificationService.send({
               userId: tx.userId,
               type: 'TRANSACTION',
@@ -271,15 +291,15 @@ export async function POST(request: NextRequest) {
       const notifUsers = await prisma.user.findMany({ where: { id: { in: notifUserIds } } })
       const notifUserMap = new Map(notifUsers.map(u => [u.id, u]))
       
-      const notifMembershipTxs = await prisma.membershipTransaction.findMany({
+      const notifUserMemberships = await prisma.userMembership.findMany({
         where: { transactionId: { in: transactionIds } },
       })
-      const notifMembershipIds = [...new Set(notifMembershipTxs.map(mt => mt.membershipId))]
+      const notifMembershipIds = [...new Set(notifUserMemberships.map((um: any) => um.membershipId).filter(Boolean))]
       const notifMemberships = notifMembershipIds.length > 0 ? await prisma.membership.findMany({
-        where: { id: { in: notifMembershipIds } },
+        where: { id: { in: notifMembershipIds as string[] } },
       }) : []
       const notifMembershipMap = new Map(notifMemberships.map(m => [m.id, m]))
-      const notifMembershipTxMap = new Map(notifMembershipTxs.map(mt => [mt.transactionId, mt]))
+      const notifUserMembershipMap = new Map(notifUserMemberships.map((um: any) => [um.transactionId, um]))
       
       const notifProductIds = [...new Set(notifTransactions.filter(t => t.productId).map(t => t.productId!))]
       const notifCourseIds = [...new Set(notifTransactions.filter(t => t.courseId).map(t => t.courseId!))]
@@ -310,8 +330,8 @@ export async function POST(request: NextRequest) {
           let transactionType = ''
           let accessMessage = ''
           
-          const membershipTxN = notifMembershipTxMap.get(transaction.id)
-          const membershipN = membershipTxN ? notifMembershipMap.get(membershipTxN.membershipId) : null
+          const notifUserMembership = notifUserMembershipMap.get(transaction.id)
+          const membershipN = notifUserMembership ? notifMembershipMap.get((notifUserMembership as any).membershipId) : null
           const productN = transaction.productId ? notifProductMap.get(transaction.productId) : null
           const courseN = transaction.courseId ? notifCourseMap.get(transaction.courseId) : null
           const userN = notifUserMap.get(transaction.userId)

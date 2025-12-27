@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -93,6 +96,7 @@ export async function POST(
     // Create affiliate profile with APPROVED status
     const affiliateProfile = await prisma.affiliateProfile.create({
       data: {
+        id: createId(),
         userId: userId,
         affiliateCode,
         shortLink,
@@ -109,6 +113,7 @@ export async function POST(
         totalClicks: 0,
         totalConversions: 0,
         totalEarnings: 0,
+        updatedAt: new Date()
       },
     })
 
@@ -125,11 +130,13 @@ export async function POST(
       where: { userId: userId },
       update: {},
       create: {
+        id: createId(),
         userId: userId,
         balance: 0,
         balancePending: 0,
         totalEarnings: 0,
         totalPayout: 0,
+        updatedAt: new Date()
       },
     })
 
@@ -141,6 +148,7 @@ export async function POST(
     if (!existingRole) {
       await prisma.userRole.create({
         data: {
+          id: createId(),
           userId,
           role: 'AFFILIATE',
         },

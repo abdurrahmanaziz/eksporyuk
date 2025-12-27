@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -227,6 +230,7 @@ export async function POST(req: NextRequest) {
 
     const lead = await prisma.affiliateLead.create({
       data: {
+        id: createId(),
         affiliateId: affiliateProfile.id,
         name,
         email,
@@ -234,7 +238,8 @@ export async function POST(req: NextRequest) {
         whatsapp: whatsapp || phone,
         status: status || 'new',
         source: source || 'manual',
-        notes
+        notes,
+        updatedAt: new Date()
       }
     })
 

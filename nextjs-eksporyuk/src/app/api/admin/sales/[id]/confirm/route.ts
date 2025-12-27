@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { processTransactionCommission } from '@/lib/commission-helper'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 export const dynamic = 'force-dynamic'
 
@@ -47,28 +50,33 @@ export async function POST(
     })
 
     // Activate membership if exists
-    if (transaction.membershipId) {
-      const membershipTransaction = await prisma.membershipTransaction.findFirst({
-        where: { transactionId: transaction.id },
+    // Check if there's a UserMembership record with this transactionId
+    const userMembership = await prisma.userMembership.findUnique({
+      where: { transactionId: transaction.id },
+    })
+
+    if (userMembership) {
+      // Get membership data
+      const membership = await prisma.membership.findUnique({ 
+        where: { id: userMembership.membershipId } 
       })
-      
-      // Get membership data manually
-      const membership = membershipTransaction 
-        ? await prisma.membership.findUnique({ where: { id: membershipTransaction.membershipId } })
-        : null
 
-      if (membershipTransaction && membership) {
+      if (membership) {
         const duration = membership.duration
+        const durationValue = typeof duration === 'number' ? duration : 365 // Default to 1 year
         const expiresAt = duration === 'LIFETIME' 
-          ? null 
-          : new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
+          ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years for lifetime
+          : new Date(Date.now() + durationValue * 24 * 60 * 60 * 1000)
 
-        await prisma.userMembership.create({
+        // Update userMembership to active
+        await prisma.userMembership.update({
+          where: { id: userMembership.id },
           data: {
-            userId: transaction.userId,
-            membershipId: transaction.membershipId,
             status: 'ACTIVE',
-            expiresAt,
+            isActive: true,
+            endDate: expiresAt,
+            activatedAt: new Date(),
+            updatedAt: new Date()
           }
         })
 
@@ -104,9 +112,13 @@ export async function POST(
       }
 
       // Get commission settings from membership or product
-      if (transaction.membershipId) {
+      const userMembership = await prisma.userMembership.findUnique({
+        where: { transactionId: transaction.id }
+      })
+
+      if (userMembership) {
         const membership = await prisma.membership.findUnique({
-          where: { id: transaction.membershipId },
+          where: { id: userMembership.membershipId },
           select: { affiliateCommissionRate: true, commissionType: true }
         })
         if (membership) {

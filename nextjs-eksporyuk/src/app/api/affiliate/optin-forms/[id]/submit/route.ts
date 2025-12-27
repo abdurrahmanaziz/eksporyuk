@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { automationExecutionService } from '@/lib/services/automationExecutionService'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 interface RouteParams {
   params: Promise<{
@@ -36,13 +39,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       where: { 
         id, 
         isActive: true 
-      },
-      include: {
-        affiliate: {
-          include: {
-            user: true
-          }
-        }
       }
     })
 
@@ -117,6 +113,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     // Create lead
     const lead = await prisma.affiliateLead.create({
       data: {
+        id: createId(),
         affiliateId: optinForm.affiliateId,
         optinFormId: optinForm.id,
         name: name || '',
@@ -125,7 +122,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         whatsapp: whatsapp || phone || null,
         source: 'optin',
         status: 'new',
-        notes: isSuspicious ? '⚠️ Flagged: Suspicious pattern detected' : null
+        notes: isSuspicious ? '⚠️ Flagged: Suspicious pattern detected' : null,
+        updatedAt: new Date()
       }
     })
 

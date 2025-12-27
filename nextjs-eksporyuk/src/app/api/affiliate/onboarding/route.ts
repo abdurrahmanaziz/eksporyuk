@@ -26,46 +26,46 @@ export async function GET() {
     // Get affiliate profile with related data
     // @ts-ignore - new fields may not be in cached types
     const affiliate: any = await prisma.affiliateProfile.findUnique({
-      where: { userId: session.user.id },
-      include: {
-        user: {
-          select: {
-            name: true,
-            avatar: true,
-            email: true,
-            emailVerified: true,
-            whatsapp: true,
-            phone: true,
-            profileCompleted: true,
-          }
-        },
-        links: {
-          take: 1,
-        },
-        conversions: {
-          take: 1,
-        },
-      }
+      where: { userId: session.user.id }
     })
 
     if (!affiliate) {
-      // User doesn't have affiliate profile yet - return empty state
-      return NextResponse.json({
-        success: true,
-        data: {
-          needsWelcome: false,
-          isProfileComplete: false,
-          hasAffiliateCode: false,
-          hasShortLink: false,
-          hasConversion: false,
-          hasBankInfo: false,
-          isEmailVerified: !!session.user.emailVerified,
-          applicationStatus: null,
-          completedSteps: 0,
-          totalSteps: 6,
-          completionPercentage: 0,
-        }
-      })
+      return NextResponse.json(
+        { success: false, error: 'Not an affiliate' },
+        { status: 403 }
+      )
+    }
+
+    // Manually fetch related data since schema doesn't have relations
+    const user = await prisma.user.findUnique({
+      where: { id: affiliate.userId },
+      select: {
+        name: true,
+        avatar: true,
+        email: true,
+        emailVerified: true,
+        whatsapp: true,
+        phone: true,
+        profileCompleted: true,
+      }
+    })
+
+    const links = await prisma.affiliateLink.findMany({
+      where: { affiliateId: affiliate.id },
+      take: 1,
+    })
+
+    const conversions = await prisma.affiliateConversion.findMany({
+      where: { affiliateId: affiliate.id },
+      take: 1,
+    })
+
+    // Enrich affiliate object
+    const enrichedAffiliate = {
+      ...affiliate,
+      user,
+      links,
+      conversions
     }
 
     // Check bank info from wallet/payout records (where we store bank data)

@@ -171,6 +171,20 @@ export async function GET(req: NextRequest) {
     // Get current user rank in all categories
     let currentUserRank = null
     if (session?.user?.id) {
+      // Get all affiliates and their total earnings for ranking
+      const allAffiliates = await prisma.affiliateProfile.findMany({
+        select: { id: true, userId: true, totalEarnings: true },
+        orderBy: { totalEarnings: 'desc' }
+      })
+
+      // Get user map for current user
+      const userIds = [session.user.id]
+      const users = await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, name: true, avatar: true }
+      })
+      const userMap = new Map(users.map(u => [u.id, u]))
+
       const userAffiliate = allAffiliates.find(a => a.userId === session.user.id)
       if (userAffiliate) {
         const allTimeRank = allAffiliates.findIndex(a => a.userId === session.user.id) + 1

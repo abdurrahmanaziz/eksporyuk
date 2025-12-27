@@ -3,6 +3,25 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { parse } from 'csv-parse/sync'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
+
+// Type for CSV record
+type SejoliRecord = {
+  INV?: string
+  inv?: string
+  product?: string
+  created_at?: string
+  name?: string
+  email?: string
+  phone?: string
+  price?: string
+  status?: string
+  affiliate?: string
+  affiliate_id?: string
+  [key: string]: any
+}
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -45,7 +64,7 @@ export async function POST(request: NextRequest) {
       columns: true,
       skip_empty_lines: true,
       trim: true,
-    })
+    }) as SejoliRecord[]
 
     // Get membership if specified
     let membership = null
@@ -99,7 +118,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Process each record
-    for (const record of records) {
+    for (const record of records as SejoliRecord[]) {
       try {
         const inv = record.INV || record.inv
         const product = record.product
@@ -197,7 +216,8 @@ export async function POST(request: NextRequest) {
           
           const newAffProfile = await prisma.affiliateProfile.create({
             data: {
-              user: { connect: { id: affiliateUser.id } },
+              id: createId(),
+              userId: affiliateUser.id,
               affiliateCode: affCode,
               shortLink: `https://eksy.id/${shortLinkUsername}`,
               shortLinkUsername,
@@ -208,6 +228,7 @@ export async function POST(request: NextRequest) {
               totalClicks: 0,
               isActive: true,
               approvedAt: new Date(),
+              updatedAt: new Date()
             }
           })
 
@@ -251,6 +272,7 @@ export async function POST(request: NextRequest) {
               const commission = Math.round(price * 0.30)
               await prisma.affiliateConversion.create({
                 data: {
+                  id: createId(),
                   affiliateId: affiliate.id,
                   transactionId: existingTx.id,
                   commissionAmount: commission,

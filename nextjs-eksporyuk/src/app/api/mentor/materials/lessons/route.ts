@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -66,17 +69,7 @@ export async function GET(request: NextRequest) {
         order: true,
         isFree: true,
         moduleId: true,
-        createdAt: true,
-        files: {
-          select: {
-            id: true,
-            title: true,
-            fileName: true,
-            fileUrl: true,
-            fileType: true,
-            fileSize: true
-          }
-        }
+        createdAt: true
       },
       orderBy: { order: 'asc' }
     })
@@ -154,13 +147,15 @@ export async function POST(request: NextRequest) {
 
     const lesson = await prisma.courseLesson.create({
       data: {
+        id: createId(),
         moduleId,
         title,
         content: content || '',
         videoUrl: videoUrl || null,
         duration: duration || null,
         isFree: isFree || false,
-        order: order || (maxOrder?.order || 0) + 1
+        order: order || (maxOrder?.order || 0) + 1,
+        updatedAt: new Date()
       }
     })
 
