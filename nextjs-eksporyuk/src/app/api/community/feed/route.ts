@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -269,6 +272,7 @@ export async function POST(request: NextRequest) {
     // Create the post
     const post = await prisma.post.create({
       data: {
+        id: createId(),
         content: content.trim(),
         authorId: session.user.id,
         groupId: groupId || null,
@@ -277,7 +281,8 @@ export async function POST(request: NextRequest) {
         videos: videos || [],
         taggedUsers: taggedUsers || [],
         contentFormatted: contentFormatted || null,
-        approvalStatus: 'APPROVED'
+        approvalStatus: 'APPROVED',
+        updatedAt: new Date(),
       }
     })
 

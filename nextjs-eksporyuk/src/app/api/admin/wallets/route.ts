@@ -16,7 +16,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get all users
+    // Get pagination params
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '50')
+    const skip = (page - 1) * limit
+
+    // Get total count
+    const totalUsers = await prisma.user.count()
+
+    // Get paginated users
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -27,7 +36,9 @@ export async function GET(request: NextRequest) {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      skip,
+      take: limit
     })
 
     const userIds = users.map(u => u.id)
@@ -68,7 +79,15 @@ export async function GET(request: NextRequest) {
       lastTransaction: latestTxMap.get(user.id) || null,
     }))
 
-    return NextResponse.json({ wallets })
+    return NextResponse.json({ 
+      wallets,
+      pagination: {
+        page,
+        limit,
+        total: totalUsers,
+        totalPages: Math.ceil(totalUsers / limit)
+      }
+    })
   } catch (error) {
     console.error('Error fetching wallets:', error)
     return NextResponse.json(

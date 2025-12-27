@@ -81,6 +81,18 @@ export async function POST(req: NextRequest) {
                             membership.duration === 'TWELVE_MONTHS' ? 365 :
                             membership.duration === 'LIFETIME' ? 36500 : 30
 
+        // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
+        await prisma.userMembership.updateMany({
+          where: { 
+            userId: adminUser.id,
+            isActive: true 
+          },
+          data: { 
+            isActive: false,
+            status: 'EXPIRED'
+          }
+        })
+
         await prisma.userMembership.create({
           data: {
             userId: adminUser.id,

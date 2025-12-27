@@ -252,6 +252,19 @@ async function handleInvoicePaid(data: any) {
           })
 
           if (membership) {
+            // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
+            await prisma.userMembership.updateMany({
+              where: { 
+                userId: transaction.userId,
+                isActive: true 
+              },
+              data: { 
+                isActive: false,
+                status: 'EXPIRED'
+              }
+            })
+            console.log(`[Xendit Webhook] Deactivated old memberships for user ${transaction.userId}`)
+
             // Fetch related data separately
             const [membershipGroups, membershipCourses, membershipProducts] = await Promise.all([
               prisma.membershipGroup.findMany({
@@ -975,6 +988,19 @@ async function handleVAPaymentComplete(data: any) {
           })
 
           if (membership) {
+            // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
+            await prisma.userMembership.updateMany({
+              where: { 
+                userId: transaction.userId,
+                isActive: true 
+              },
+              data: { 
+                isActive: false,
+                status: 'EXPIRED'
+              }
+            })
+            console.log(`[Xendit VA Webhook] Deactivated old memberships for user ${transaction.userId}`)
+
             // Fetch related data separately  
             const [membershipGroupsVA, membershipCoursesVA, membershipProductsVA] = await Promise.all([
               prisma.membershipGroup.findMany({

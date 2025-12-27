@@ -244,6 +244,18 @@ export async function POST(request: NextRequest) {
       end = new Date(start.getTime() + durationDays * 24 * 60 * 60 * 1000)
     }
 
+    // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
+    await prisma.userMembership.updateMany({
+      where: { 
+        userId: userId,
+        isActive: true 
+      },
+      data: { 
+        isActive: false,
+        status: 'EXPIRED'
+      }
+    })
+
     // Create user membership
     const newUserMembership = await prisma.userMembership.create({
       data: {

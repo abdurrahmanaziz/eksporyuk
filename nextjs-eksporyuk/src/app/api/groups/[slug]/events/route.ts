@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -138,6 +141,7 @@ export async function POST(
 
     const event = await prisma.event.create({
       data: {
+        id: createId(),
         groupId: params.id,
         creatorId: session.user.id,
         title,
@@ -146,7 +150,8 @@ export async function POST(
         endDate: endDate ? new Date(endDate) : null,
         location,
         meetLink,
-        maxAttendees
+        maxAttendees,
+        updatedAt: new Date(),
       },
       include: {
         creator: {
@@ -176,11 +181,13 @@ export async function POST(
       members.map(member =>
         prisma.notification.create({
           data: {
+            id: createId(),
             userId: member.userId,
             type: 'EVENT_CREATED',
             title: 'Event Baru',
             message: `${session.user.name} membuat event: ${title}`,
-            link: `/community/groups/${params.id}`
+            link: `/community/groups/${params.id}`,
+            updatedAt: new Date(),
           }
         })
       )

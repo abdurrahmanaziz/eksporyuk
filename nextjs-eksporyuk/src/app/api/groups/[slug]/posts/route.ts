@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { containsBannedWords, filterBannedWords } from '@/lib/moderation'
 import { notificationService } from '@/lib/services/notificationService'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -226,6 +229,7 @@ export async function POST(
     // Create post
     const post = await prisma.post.create({
       data: {
+        id: createId(),
         content: filteredContent,
         images: images || null,
         metadata: metadata ? JSON.stringify(metadata) : null,
@@ -235,6 +239,7 @@ export async function POST(
         approvalStatus,
         ...(type === 'STORY' && { expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }),
         ...(type === 'ANNOUNCEMENT' && { isPinned: true }),
+        updatedAt: new Date(),
       },
     })
 
@@ -254,11 +259,13 @@ export async function POST(
       })
       await prisma.notification.createMany({
         data: moderators.map(mod => ({
+          id: createId(),
           userId: mod.userId,
           type: 'POST_PENDING_APPROVAL',
           title: 'Postingan Baru Menunggu Persetujuan',
           message: `${session.user.name} membuat postingan yang perlu disetujui`,
           link: `/community/groups/${slug}`,
+          updatedAt: new Date(),
         }))
       })
     } else if (approvalStatus === 'APPROVED') {

@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+
+const createId = () => randomBytes(16).toString('hex')
 
 
 // GET - Fetch sales page settings
@@ -17,6 +20,7 @@ export async function GET() {
     if (!settings) {
       settings = await prisma.salesPageSettings.create({
         data: {
+          id: createId(),
           heroTitle: 'Belajar Ekspor Mudah dan Praktis di Komunitas',
           heroHighlight: 'Mudah dan Praktis',
           heroDescription: 'Dibimbing langsung oleh praktisi ekspor berpengalaman. Mulai dari persiapan dokumen, mencari buyer, hingga pengiriman barang ke luar negeri.',
@@ -64,6 +68,7 @@ export async function GET() {
           footerDescription: 'Platform edukasi ekspor #1 di Indonesia untuk membantu UMKM go international.',
           footerEmail: 'info@eksporyuk.com',
           footerPhone: '+62 812-3456-7890',
+          updatedAt: new Date(),
         }
       })
     }
@@ -99,7 +104,11 @@ export async function PUT(request: NextRequest) {
       })
     } else {
       settings = await prisma.salesPageSettings.create({
-        data: body
+        data: {
+          id: createId(),
+          ...body,
+          updatedAt: new Date(),
+        }
       })
     }
     

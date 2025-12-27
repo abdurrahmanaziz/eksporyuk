@@ -104,8 +104,8 @@ export async function GET(
         console.log('[API] Features is an array with', featuresData.length, 'items')
         
         // EMPTY ARRAY = General Checkout Page (show all membership options)
-        if (featuresData.length === 0) {
-          console.log('[API] Empty features array - this is a GENERAL CHECKOUT PAGE')
+        if (featuresData.length === 0 && plan.showInGeneralCheckout === true) {
+          console.log('[API] Empty features array + showInGeneralCheckout = true - this is a GENERAL CHECKOUT PAGE')
           console.log('[API] Fetching ALL active membership plans as options...')
           
           // Fetch all active memberships as price options
@@ -180,6 +180,28 @@ export async function GET(
           console.log('[API] Converted to', prices.length, 'price options')
           benefits = [] // No general benefits for multi-option page
         }
+        // EMPTY ARRAY but NOT general checkout = Single membership checkout
+        else if (featuresData.length === 0 && plan.showInGeneralCheckout !== true) {
+          console.log('[API] Empty features array but showInGeneralCheckout = false - SINGLE MEMBERSHIP')
+          console.log('[API] Building single price from database fields...')
+          
+          const basePrice = parseFloat(plan.price?.toString() || '0')
+          const originalPrice = plan.originalPrice ? parseFloat(plan.originalPrice.toString()) : null
+          
+          prices = [{
+            duration: plan.duration || 'ONE_MONTH',
+            label: plan.name,
+            price: basePrice,
+            marketingPrice: originalPrice, // Use marketingPrice for display
+            originalPrice: originalPrice,
+            discount: plan.discount || 0,
+            benefits: [],
+            badge: plan.isBestSeller ? '🔥 Best Seller' : plan.isMostPopular ? '⭐ Most Popular' : '',
+            isPopular: plan.isPopular || plan.isMostPopular || plan.isBestSeller
+          }]
+          
+          benefits = [] // No benefits in features
+        }
         // Check if array contains price objects or benefit strings
         else if (featuresData.length > 0) {
           const firstItem = featuresData[0]
@@ -202,6 +224,7 @@ export async function GET(
               duration: plan.duration || 'ONE_MONTH',
               label: plan.name,
               price: basePrice,
+              marketingPrice: originalPrice, // Harga coret
               originalPrice: originalPrice,
               benefits: benefits,
               badge: '',
@@ -224,12 +247,13 @@ export async function GET(
         } else {
           // Fallback: build from database fields
           const basePrice = parseFloat(plan.price?.toString() || '0')
-          const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
+          const originalPrice = plan.originalPrice ? parseFloat(plan.originalPrice.toString()) : null
           
           prices = [{
             duration: plan.duration || 'ONE_MONTH',
             label: plan.name,
             price: basePrice,
+            marketingPrice: originalPrice, // Harga coret
             originalPrice: originalPrice,
             discount: plan.discount || 0,
             benefits: [],
@@ -241,12 +265,13 @@ export async function GET(
         console.log('[API] No features found, building from database fields')
         // Fallback: build from database fields
         const basePrice = parseFloat(plan.price?.toString() || '0')
-        const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
+        const originalPrice = plan.originalPrice ? parseFloat(plan.originalPrice.toString()) : null
         
         prices = [{
           duration: plan.duration || 'ONE_MONTH',
           label: plan.name,
           price: basePrice,
+          marketingPrice: originalPrice, // Harga coret
           originalPrice: originalPrice,
           discount: plan.discount || 0,
           benefits: [],
@@ -262,12 +287,13 @@ export async function GET(
       
       // Fallback: build from database fields
       const basePrice = parseFloat(plan.price?.toString() || '0')
-      const originalPrice = parseFloat(plan.originalPrice?.toString() || basePrice.toString())
+      const originalPrice = plan.originalPrice ? parseFloat(plan.originalPrice.toString()) : null
       
       prices = [{
         duration: plan.duration || 'ONE_MONTH',
         label: plan.name,
         price: basePrice,
+        marketingPrice: originalPrice, // Harga coret
         originalPrice: originalPrice,
         discount: plan.discount || 0,
         benefits: [],

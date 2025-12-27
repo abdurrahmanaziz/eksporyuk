@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+
+const createId = () => randomBytes(16).toString('hex')
 
 
 // GET /api/admin/coupons - Get all coupons
@@ -122,6 +125,7 @@ export async function POST(request: NextRequest) {
 
     // Build data object - use undefined for empty arrays (Prisma JSON field requirement)
     const couponData: any = {
+      id: createId(),
       code: code.toUpperCase(),
       description: description || null,
       discountType: discountType,
@@ -135,6 +139,7 @@ export async function POST(request: NextRequest) {
       isForRenewal: isForRenewal || false,
       maxGeneratePerAffiliate: maxGeneratePerAffiliate ? Number(maxGeneratePerAffiliate) : null,
       maxUsagePerCoupon: maxUsagePerCoupon ? Number(maxUsagePerCoupon) : null,
+      updatedAt: new Date(),
     }
 
     // Only set JSON fields if they have values (Prisma doesn't accept null for JSON)
