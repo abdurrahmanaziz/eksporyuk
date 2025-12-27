@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
           basedOnCouponId: parentId,
         },
         include: {
-          parentCoupon: {
+          Coupon: {
             select: {
               code: true,
               discountType: true,
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              childCoupons: true,
+              other_Coupon: true,
             }
           }
         },
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         include: {
           _count: {
             select: {
-              childCoupons: true,
+              other_Coupon: true,
             }
           }
         },
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       // Get all coupons with relations
       coupons = await prisma.coupon.findMany({
         include: {
-          parentCoupon: {
+          Coupon: {
             select: {
               code: true,
               discountType: true,
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              childCoupons: true,
+              other_Coupon: true,
             }
           }
         },

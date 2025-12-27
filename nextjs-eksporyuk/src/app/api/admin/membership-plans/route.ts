@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Get member counts and revenue for each membership
+    // Get member counts per membership
     const memberCounts = await prisma.userMembership.groupBy({
       by: ['membershipId'],
       where: { status: 'ACTIVE' },
@@ -83,19 +83,50 @@ export async function GET(request: NextRequest) {
     })
     const countMap = new Map(memberCounts.map(c => [c.membershipId, c._count]))
 
-    // Get transaction counts per membership (SUCCESS only)
-    const transactionCounts = await prisma.transaction.groupBy({
-      by: ['membershipId'],
+    // Get transaction counts and revenue per membership via UserMembership join
+    const userMemberships = await prisma.userMembership.findMany({
+      where: { 
+        status: 'ACTIVE',
+        transactionId: { not: null }
+      },
+      select: {
+        membershipId: true,
+        transactionId: true
+      }
+    })
+
+    // Get all successful membership transactions
+    const transactions = await prisma.transaction.findMany({
       where: {
         status: 'SUCCESS',
         type: 'MEMBERSHIP',
-        membershipId: { not: null }
+        id: { in: userMemberships.map(um => um.transactionId!).filter(Boolean) }
       },
-      _count: true,
-      _sum: { amount: true }
+      select: {
+        id: true,
+        amount: true
+      }
     })
-    const transCountMap = new Map(transactionCounts.map(t => [t.membershipId!, t._count]))
-    const revenueMap = new Map(transactionCounts.map(t => [t.membershipId!, Number(t._sum.amount || 0)]))
+    
+    const transactionMap = new Map(transactions.map(t => [t.id, t]))
+    
+    // Build revenue map per membership
+    const revenueByMembership = new Map<string, { count: number; revenue: number }>()
+    userMemberships.forEach(um => {
+      if (um.transactionId) {
+        const tx = transactionMap.get(um.transactionId)
+        if (tx) {
+          const existing = revenueByMembership.get(um.membershipId) || { count: 0, revenue: 0 }
+          revenueByMembership.set(um.membershipId, {
+            count: existing.count + 1,
+            revenue: existing.revenue + Number(tx.amount)
+          })
+        }
+      }
+    })
+    
+    const transCountMap = new Map([...revenueByMembership.entries()].map(([id, data]) => [id, data.count]))
+    const revenueMap = new Map([...revenueByMembership.entries()].map(([id, data]) => [id, data.revenue]))
 
     // Sort plans by creation date (latest first)
     const sortedPlans = plans.sort((a, b) => {

@@ -3,11 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import IntegrationService from '@/lib/integrations/service'
+import { randomBytes } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+
+const createId = () => randomBytes(16).toString('hex')
 
 
 export async function POST(request: NextRequest) {
@@ -303,17 +306,20 @@ export async function POST(request: NextRequest) {
           isActive: true,
           testStatus: 'success',
           lastTestedAt: new Date(),
+          updatedAt: new Date(),
         }
       })
     } else {
       // Create new
       savedConfig = await prisma.integrationConfig.create({
         data: {
+          id: createId(),
           service,
           config,
           isActive: true,
           testStatus: 'success',
           lastTestedAt: new Date(),
+          updatedAt: new Date(),
         }
       })
     }
