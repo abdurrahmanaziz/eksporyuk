@@ -3,10 +3,13 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import bcryptjs from 'bcryptjs'
+import { randomBytes } from 'crypto'
 import { getNextMemberCode } from '@/lib/member-code'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+
+const createId = () => randomBytes(16).toString('hex')
 
 
 // GET - Fetch all users with filters
@@ -299,20 +302,25 @@ export async function POST(request: Request) {
     // Create user
     const newUser = await prisma.user.create({
       data: {
+        id: createId(),
         name,
         email,
         password: hashedPassword,
         role: userRole,
         isActive: isActive !== undefined ? isActive : true,
         memberCode,
+        updatedAt: new Date(),
       },
     })
 
     // Create wallet
     await prisma.wallet.create({
       data: {
+        id: createId(),
         userId: newUser.id,
         balance: 0,
+        balancePending: 0,
+        updatedAt: new Date(),
       },
     })
 
