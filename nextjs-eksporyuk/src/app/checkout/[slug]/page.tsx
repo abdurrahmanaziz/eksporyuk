@@ -916,87 +916,125 @@ export default function CheckoutPage() {
                         </Badge>
                       )}
                       
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                      {/* Layout seperti gambar: Radio Button → Package Name + Badge (inline) → Price */}
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          {/* Radio Button */}
+                          <div className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                             selectedPrice?.duration === price.duration || selectedPrice?.membershipId === price.membershipId
                               ? 'border-orange-500 bg-orange-500 shadow-sm'
-                              : 'border-gray-300'
+                              : 'border-gray-300 dark:border-gray-600'
                           }`}>
                             {(selectedPrice?.duration === price.duration || selectedPrice?.membershipId === price.membershipId) && (
-                              <div className="w-3 h-3 bg-white rounded-full" />
+                              <div className="w-2.5 h-2.5 bg-white rounded-full" />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            {/* Marketing Badge - Compact for mobile */}
-                            {price.marketingBadge && (
-                              <div className="mb-1">
-                                {price.marketingBadge === 'PALING_LARIS' && (
-                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
-                                    <span className="text-[10px] sm:text-xs md:text-sm">🔥</span>
-                                    <span className="uppercase tracking-tight">Paling Laris</span>
+                          
+                          {/* Package Info */}
+                          <div>
+                            {/* Package Name + Badge (Inline/Horizontal) */}
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white">{price.label}</h3>
+                              
+                              {/* Marketing Badge - Inline dengan nama */}
+                              {price.marketingBadge === 'PALING_LARIS' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full text-[10px] font-bold shadow-sm">
+                                  <span className="text-xs">🔥</span>
+                                  <span className="uppercase tracking-tight">PALING LARIS</span>
+                                </span>
+                              )}
+                              {price.marketingBadge === 'HARGA_HEMAT' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full text-[10px] font-bold shadow-sm">
+                                  <span className="text-xs">💰</span>
+                                  <span className="uppercase tracking-tight">HARGA HEMAT</span>
+                                </span>
+                              )}
+                              {price.marketingBadge === 'PROMO_GEDE' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full text-[10px] font-bold shadow-sm">
+                                  <span className="text-xs">🎉</span>
+                                  <span className="uppercase tracking-tight">PROMO GEDE</span>
+                                </span>
+                              )}
+                              {price.marketingBadge === 'PROMO_GENDENG' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full text-[10px] font-bold shadow-sm">
+                                  <span className="text-xs">⚡</span>
+                                  <span className="uppercase tracking-tight">PROMO GENDENG</span>
+                                </span>
+                              )}
+                              {price.marketingBadge === 'PROMO_AKHIR_TAHUN' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full text-[10px] font-bold shadow-sm">
+                                  <span className="text-xs">🎆</span>
+                                  <span className="uppercase tracking-tight">AKHIR TAHUN</span>
+                                </span>
+                              )}
+                              {price.marketingBadge === 'PROMO_AWAL_TAHUN' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full text-[10px] font-bold shadow-sm">
+                                  <span className="text-xs">🎊</span>
+                                  <span className="uppercase tracking-tight">AWAL TAHUN</span>
+                                </span>
+                              )}
+                              
+                              {/* Legacy Badge */}
+                              {price.badge && (
+                                <Badge variant="secondary" className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100">
+                                  {price.badge}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {/* Description - Optional subtitle */}
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-0">
+                              {price.duration === 'ONE_MONTH' ? 'Akses penuh selama 30 hari' :
+                               price.duration === 'THREE_MONTHS' ? 'Akses penuh selama 3 bulan' :
+                               price.duration === 'SIX_MONTHS' ? 'Hemat 50% dibanding bulanan' :
+                               price.duration === 'TWELVE_MONTHS' ? 'Investasi jangka panjang terbaik' :
+                               'Akses selamanya'}
+                            </p>
+                            
+                            {/* Price - Mobile (below description) */}
+                            <div className="mt-3 sm:hidden">
+                              {price.marketingPrice && price.marketingPrice > price.price ? (
+                                <>
+                                  <span className="text-sm text-gray-400 line-through decoration-red-400 decoration-2 block mb-1">
+                                    {formatCurrency(price.marketingPrice)}
                                   </span>
-                                )}
-                                {price.marketingBadge === 'HARGA_HEMAT' && (
-                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
-                                    <span className="text-[10px] sm:text-xs md:text-sm">💰</span>
-                                    <span className="uppercase tracking-tight">Harga Hemat</span>
-                                  </span>
-                                )}
-                                {price.marketingBadge === 'PROMO_GEDE' && (
-                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
-                                    <span className="text-[10px] sm:text-xs md:text-sm">🎉</span>
-                                    <span className="uppercase tracking-tight">Promo Gede</span>
-                                  </span>
-                                )}
-                                {price.marketingBadge === 'PROMO_GENDENG' && (
-                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-lg animate-bounce">
-                                    <span className="text-[10px] sm:text-xs md:text-sm">⚡</span>
-                                    <span className="uppercase tracking-tight">Promo Gendeng</span>
-                                  </span>
-                                )}
-                                {price.marketingBadge === 'PROMO_AKHIR_TAHUN' && (
-                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
-                                    <span className="text-[10px] sm:text-xs md:text-sm">🎆</span>
-                                    <span className="uppercase tracking-tight">Akhir Tahun</span>
-                                  </span>
-                                )}
-                                {price.marketingBadge === 'PROMO_AWAL_TAHUN' && (
-                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
-                                    <span className="text-[10px] sm:text-xs md:text-sm">🎊</span>
-                                    <span className="uppercase tracking-tight">Awal Tahun</span>
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            <h3 className="font-bold text-lg">{price.label}</h3>
-                            {price.badge && (
-                              <Badge variant="secondary" className="mt-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100">
-                                {price.badge}
-                              </Badge>
-                            )}
+                                  <p className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">
+                                    {formatCurrency(price.price)}
+                                  </p>
+                                </>
+                              ) : (
+                                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                                  {formatCurrency(price.price)}
+                                </p>
+                              )}
+                              {price.pricePerMonth && (
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                  per bulan
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <div className="text-right">
+                        
+                        {/* Price - Desktop (right side) */}
+                        <div className="hidden sm:block text-right pl-10">
                           {price.marketingPrice && price.marketingPrice > price.price ? (
                             <>
-                              <div className="flex items-center gap-2 justify-end mb-1">
-                                <span className="text-sm text-gray-400 line-through">
-                                  {formatCurrency(price.marketingPrice)}
-                                </span>
-                              </div>
-                              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                              <p className="text-sm text-gray-400 line-through decoration-red-400 decoration-2 mb-1">
+                                {formatCurrency(price.marketingPrice)}
+                              </p>
+                              <p className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">
                                 {formatCurrency(price.price)}
                               </p>
                             </>
                           ) : (
-                            <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                            <p className="text-xl font-bold text-gray-900 dark:text-white">
                               {formatCurrency(price.price)}
                             </p>
                           )}
                           {price.pricePerMonth && (
-                            <p className="text-sm text-gray-500">
-                              {formatCurrency(price.pricePerMonth)} / bln
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                              per bulan
                             </p>
                           )}
                         </div>

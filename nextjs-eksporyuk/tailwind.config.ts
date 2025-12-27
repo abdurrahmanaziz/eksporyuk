@@ -53,6 +53,16 @@ const config = {
     'bg-red-50', 'bg-red-100', 'bg-red-500', 'bg-red-600',
     'bg-green-50', 'bg-green-100', 'bg-green-500', 'bg-green-600',
     'bg-orange-50', 'bg-orange-100', 'bg-orange-500', 'bg-orange-600',
+    'bg-emerald-500', 'bg-rose-500', 'bg-pink-500', 'bg-purple-500', 'bg-indigo-500',
+    'bg-amber-500', 'bg-cyan-500',
+    // Gradients for marketing badges
+    'bg-gradient-to-r',
+    'from-orange-500', 'to-red-500',
+    'from-green-500', 'to-emerald-500',
+    'from-rose-500', 'to-pink-500',
+    'from-purple-500', 'to-indigo-500',
+    'from-amber-500', 'to-orange-500',
+    'from-blue-500', 'to-cyan-500',
     // Border
     'border', 'border-0', 'border-2', 'border-4',
     'border-t', 'border-b', 'border-l', 'border-r',
