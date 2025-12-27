@@ -290,15 +290,17 @@ export async function POST(request: NextRequest) {
         // Create new transaction
         const tx = await prisma.transaction.create({
           data: {
+            id: createId(),
             invoiceNumber: inv,
             userId: customer.id,
-            membershipId: membership?.id || null,
+            type: 'MEMBERSHIP', // Since these are membership imports
             amount: price,
-            status: 'COMPLETED',
+            status: 'SUCCESS',
             paymentMethod: 'MANUAL',
             affiliateId: affiliate?.id || null,
             createdAt: new Date(createdAt),
             paidAt: new Date(createdAt),
+            updatedAt: new Date(),
           }
         })
         results.transactionsCreated++
@@ -308,6 +310,7 @@ export async function POST(request: NextRequest) {
           const commission = Math.round(price * 0.30)
           await prisma.affiliateConversion.create({
             data: {
+              id: createId(),
               affiliateId: affiliate.id,
               transactionId: tx.id,
               commissionAmount: commission,
@@ -339,13 +342,15 @@ export async function POST(request: NextRequest) {
           if (!existingMembership) {
             await prisma.userMembership.create({
               data: {
+                id: createId(),
                 userId: customer.id,
                 membershipId: membership.id,
                 status: 'ACTIVE',
                 startDate: new Date(createdAt),
-                expiryDate: membership.durationDays 
+                endDate: membership.durationDays 
                   ? new Date(new Date(createdAt).getTime() + membership.durationDays * 24 * 60 * 60 * 1000)
-                  : null,
+                  : new Date(new Date(createdAt).getTime() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
+                updatedAt: new Date(),
               }
             })
           }

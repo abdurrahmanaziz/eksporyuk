@@ -4,6 +4,8 @@ import crypto from 'crypto'
 import { sendEmail } from '@/lib/email'
 import bcrypt from 'bcryptjs'
 
+const createId = () => crypto.randomBytes(16).toString('hex')
+
 
 export const dynamic = 'force-dynamic';
 // POST - Request password reset (send reset link to email)
@@ -40,6 +42,7 @@ export async function POST(request: NextRequest) {
     // Store token in database
     await prisma.emailVerificationToken.create({
       data: {
+        id: createId(),
         identifier: user.id,
         token: resetToken,
         expires,

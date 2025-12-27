@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/auth-options';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth/auth-options'
+import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -147,7 +150,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check slug uniqueness
-    const existing = await prisma.documentation.findUnique({
+    const existing = await prisma.documentation.findFirst({
       where: { slug }
     });
 
@@ -173,6 +176,7 @@ export async function POST(request: NextRequest) {
     // Create documentation
     const doc = await prisma.documentation.create({
       data: {
+        id: createId(),
         slug,
         title,
         content,
@@ -189,7 +193,8 @@ export async function POST(request: NextRequest) {
         keywords,
         featuredImage,
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
-        authorId: session.user.id
+        authorId: session.user.id,
+        updatedAt: new Date(),
       },
       include: {
         author: {
@@ -206,6 +211,7 @@ export async function POST(request: NextRequest) {
     // Create initial revision
     await prisma.documentationRevision.create({
       data: {
+        id: createId(),
         documentationId: doc.id,
         content,
         title,

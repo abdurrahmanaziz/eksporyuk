@@ -4,6 +4,8 @@ import crypto from 'crypto'
 import { mailketingService } from '@/lib/services/mailketingService'
 import bcrypt from 'bcryptjs'
 
+const createId = () => crypto.randomBytes(16).toString('hex')
+
 
 export const dynamic = 'force-dynamic';
 /**
@@ -75,6 +77,7 @@ export async function POST(request: NextRequest) {
     // Store token in database
     await prisma.passwordResetToken.create({
       data: {
+        id: createId(),
         email: normalizedEmail,
         token,
         expiresAt,

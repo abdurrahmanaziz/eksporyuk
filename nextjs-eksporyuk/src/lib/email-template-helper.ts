@@ -1,5 +1,8 @@
 import { prisma } from './prisma'
 import { mailketing } from './integrations/mailketing'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 /**
  * Replace variables dalam string
@@ -241,6 +244,7 @@ export async function sendBrandedEmail(
         // Create usage record (optional: get userId from variables if available)
         await prisma.brandedTemplateUsage.create({
           data: {
+            id: createId(),
             templateId: template.id,
             userId: null, // TODO: Extract from context if needed
             userRole: null,

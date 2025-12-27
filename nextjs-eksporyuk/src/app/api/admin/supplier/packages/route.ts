@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -100,7 +103,7 @@ export async function POST(request: Request) {
     }
 
     // Check if slug already exists
-    const existingPackage = await prisma.supplierPackage.findUnique({
+    const existingPackage = await prisma.supplierPackage.findFirst({
       where: { slug },
     })
 
@@ -114,6 +117,7 @@ export async function POST(request: Request) {
     // Create package
     const newPackage = await prisma.supplierPackage.create({
       data: {
+        id: createId(),
         name,
         slug,
         type,
@@ -126,6 +130,7 @@ export async function POST(request: Request) {
         displayOrder: displayOrder || 0,
         commissionType: commissionType || 'PERCENTAGE',
         affiliateCommissionRate: affiliateCommissionRate || 30,
+        updatedAt: new Date(),
       },
     })
 

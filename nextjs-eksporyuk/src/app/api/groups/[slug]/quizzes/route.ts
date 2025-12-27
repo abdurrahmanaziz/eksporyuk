@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -181,6 +184,7 @@ export async function POST(
     // Create quiz first
     const quiz = await prisma.groupQuiz.create({
       data: {
+        id: createId(),
         groupId: group.id,
         creatorId: session.user.id,
         title,
@@ -195,7 +199,8 @@ export async function POST(
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         rewardPoints,
-        rewardBadgeId
+        rewardBadgeId,
+        updatedAt: new Date(),
       }
     })
 
@@ -204,6 +209,7 @@ export async function POST(
       questions.map((q: any, index: number) =>
         prisma.groupQuizQuestion.create({
           data: {
+            id: createId(),
             quizId: quiz.id,
             question: q.question,
             questionType: q.questionType || 'MULTIPLE_CHOICE',
@@ -211,7 +217,8 @@ export async function POST(
             explanation: q.explanation,
             points: q.points || 1,
             order: index,
-            imageUrl: q.imageUrl
+            imageUrl: q.imageUrl,
+            updatedAt: new Date(),
           }
         })
       )

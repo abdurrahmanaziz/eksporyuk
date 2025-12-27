@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -96,10 +99,6 @@ export async function POST(request: NextRequest) {
     // Get the supplier profile
     const profileData = await prisma.supplierProfile.findUnique({
       where: { id: profileId },
-      include: {
-        user: true,
-        products: true,
-      },
     })
 
     if (!profileData) {
@@ -109,6 +108,12 @@ export async function POST(request: NextRequest) {
     if (!profileData.isVerified) {
       return NextResponse.json({ error: 'Profile is not verified' }, { status: 400 })
     }
+
+    // Fetch related data manually
+    const [user, products] = await Promise.all([
+      prisma.user.findUnique({ where: { id: profileData.userId } }),
+      prisma.supplierProduct.findMany({ where: { supplierId: profileData.id } })
+    ])
 
     // Check if already exists in Supplier database
     const existing = await prisma.supplier.findFirst({
@@ -125,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create products string from published products
-    const publishedProducts = profileData.products?.filter((p: any) => p.status === 'PUBLISHED') || []
+    const publishedProducts = products?.filter((p: any) => p.status === 'PUBLISHED') || []
     const productsList =
       publishedProducts.length > 0
         ? publishedProducts.map((p: any) => p.title).join(', ')
@@ -134,6 +139,7 @@ export async function POST(request: NextRequest) {
     // Sync to Supplier database
     const supplier = await prisma.supplier.create({
       data: {
+        id: createId(),
         companyName: profileData.companyName,
         province: profileData.province,
         city: profileData.city,
@@ -158,6 +164,7 @@ export async function POST(request: NextRequest) {
         notes: `Synced from SupplierProfile (ID: ${profileData.id}) on ${new Date().toISOString()}`,
         addedBy: session.user.id,
         viewCount: profileData.viewCount,
+        updatedAt: new Date(),
       },
     })
 

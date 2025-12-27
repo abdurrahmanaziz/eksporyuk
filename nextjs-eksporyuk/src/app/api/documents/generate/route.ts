@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -65,13 +68,15 @@ export async function POST(req: NextRequest) {
     // Create generated document
     const doc = await prisma.generatedDocument.create({
       data: {
+        id: createId(),
         userId: session.user.id,
         templateId,
         title,
         documentNo,
         documentData: data,
         documentHtml,
-        status: 'GENERATED'
+        status: 'GENERATED',
+        updatedAt: new Date(),
       }
     })
 

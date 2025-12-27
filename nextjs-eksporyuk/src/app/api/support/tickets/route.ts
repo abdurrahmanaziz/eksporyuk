@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { ticketNotificationService } from '@/lib/services/ticket-notification-service'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 export const dynamic = 'force-dynamic'
 
@@ -164,6 +167,7 @@ export async function POST(request: NextRequest) {
     // Create ticket
     const ticket = await prisma.support_tickets.create({
       data: {
+        id: createId(),
         ticketNumber,
         userId: session.user.id,
         userRole: session.user.role as any,
@@ -174,18 +178,21 @@ export async function POST(request: NextRequest) {
         relatedOrderId: validated.relatedOrderId,
         relatedMembershipId: validated.relatedMembershipId,
         relatedCourseId: validated.relatedCourseId,
+        updatedAt: new Date()
       }
     })
 
     // Create the first message separately
     const firstMessage = await prisma.support_ticket_messages.create({
       data: {
+        id: createId(),
         ticketId: ticket.id,
         senderId: session.user.id,
         senderRole: session.user.role as any,
         message: validated.message,
         attachments: validated.attachments || [],
-        isSystemMessage: false
+        isSystemMessage: false,
+        updatedAt: new Date()
       }
     })
 

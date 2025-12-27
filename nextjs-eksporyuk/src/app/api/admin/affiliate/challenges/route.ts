@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -229,6 +232,7 @@ export async function POST(req: NextRequest) {
 
     const challenge = await prisma.affiliateChallenge.create({
       data: {
+        id: createId(),
         title,
         description,
         targetType,
@@ -240,25 +244,25 @@ export async function POST(req: NextRequest) {
         isActive,
         membershipId: membershipId || null,
         productId: productId || null,
-        courseId: courseId || null
-      },
-      include: {
-        membership: {
-          select: { id: true, name: true, slug: true }
-        },
-        product: {
-          select: { id: true, name: true, slug: true }
-        },
-        course: {
-          select: { id: true, title: true, slug: true }
-        }
+        courseId: courseId || null,
+        updatedAt: new Date(),
       }
     })
+
+    // Fetch related data manually
+    const [membership, product, course] = await Promise.all([
+      membershipId ? prisma.membership.findUnique({ where: { id: membershipId }, select: { id: true, name: true, slug: true } }) : null,
+      productId ? prisma.product.findUnique({ where: { id: productId }, select: { id: true, name: true, slug: true } }) : null,
+      courseId ? prisma.course.findUnique({ where: { id: courseId }, select: { id: true, title: true, slug: true } }) : null
+    ])
 
     return NextResponse.json({
       message: 'Challenge created successfully',
       challenge: {
         ...challenge,
+        membership,
+        product,
+        course,
         targetValue: Number(challenge.targetValue),
         rewardValue: Number(challenge.rewardValue)
       }

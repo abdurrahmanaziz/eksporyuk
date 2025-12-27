@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { xenditService } from '@/lib/xendit'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -79,8 +82,10 @@ export async function POST(request: NextRequest) {
         // Create wallet separately (no nested relation)
         await prisma.wallet.create({
           data: {
+            id: createId(),
             userId: dbUser.id,
             balance: 0,
+            updatedAt: new Date()
           },
         })
         console.log(`[Simple Checkout] User auto-created: ${dbUser.id}`)
@@ -228,6 +233,7 @@ export async function POST(request: NextRequest) {
       
       transaction = await prisma.transaction.create({
         data: {
+          id: createId(),
           invoiceNumber: invoiceNumber,
           userId: session.user.id,
           type: 'MEMBERSHIP',
@@ -241,6 +247,7 @@ export async function POST(request: NextRequest) {
           customerWhatsapp: whatsapp || phone || '',
           description: `Membership: ${plan.name} - ${priceOption?.label || ''}`,
           externalId: `TXN-${Date.now()}-${session.user.id.slice(0, 8)}`, // For Xendit
+          updatedAt: new Date(),
           metadata: {
             membershipId: plan.id,
             membershipSlug: membershipSlug || plan.slug,
