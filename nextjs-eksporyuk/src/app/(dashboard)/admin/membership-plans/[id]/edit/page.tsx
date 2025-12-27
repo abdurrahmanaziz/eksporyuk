@@ -233,7 +233,8 @@ export default function EditMembershipPlanPage() {
         slug: membership.slug || "",
         description: membership.description || "",
         price: membership.price || 0,
-        marketingPrice: membership.marketingPrice ? Number(membership.marketingPrice) : undefined,
+        // PENTING: Database field adalah originalPrice, bukan marketingPrice!
+        marketingPrice: membership.originalPrice ? Number(membership.originalPrice) : undefined,
         duration: membership.duration || "SIX_MONTHS",
         status: membership.status || "DRAFT",
         features: [], // Empty - features are display only (badges)
@@ -366,7 +367,8 @@ export default function EditMembershipPlanPage() {
         slug: formData.slug.trim(),
         description: formData.description?.trim() || '',
         price: Math.max(0, formData.price), // Ensure non-negative
-        marketingPrice: formData.marketingPrice ? Number(formData.marketingPrice) : null, // Optional marketing price
+        // PENTING: Database field adalah originalPrice, bukan marketingPrice!
+        originalPrice: formData.marketingPrice ? Number(formData.marketingPrice) : null,
         duration: formData.duration,
         status: formData.status,
         isActive: formData.status === 'PUBLISHED', // Auto-set isActive based on status
