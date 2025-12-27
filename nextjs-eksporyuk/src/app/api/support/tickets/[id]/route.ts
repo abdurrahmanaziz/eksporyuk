@@ -133,7 +133,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     }
 
     // Fetch user and assignedTo manually
-    const [user, assignedTo] = await Promise.all([
+    const [ticketUser, ticketAssignedTo] = await Promise.all([
       prisma.user.findUnique({ where: { id: existingTicket.userId }, select: { id: true, name: true, email: true } }),
       existingTicket.assignedToId ? prisma.user.findUnique({ where: { id: existingTicket.assignedToId }, select: { id: true, name: true, email: true } }) : null
     ])
