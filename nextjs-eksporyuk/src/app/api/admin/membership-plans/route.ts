@@ -75,12 +75,27 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Get member counts manually for each membership
+    // Get member counts and revenue for each membership
     const memberCounts = await prisma.userMembership.groupBy({
       by: ['membershipId'],
+      where: { status: 'ACTIVE' },
       _count: true
     })
     const countMap = new Map(memberCounts.map(c => [c.membershipId, c._count]))
+
+    // Get transaction counts per membership (SUCCESS only)
+    const transactionCounts = await prisma.transaction.groupBy({
+      by: ['membershipId'],
+      where: {
+        status: 'SUCCESS',
+        type: 'MEMBERSHIP',
+        membershipId: { not: null }
+      },
+      _count: true,
+      _sum: { amount: true }
+    })
+    const transCountMap = new Map(transactionCounts.map(t => [t.membershipId!, t._count]))
+    const revenueMap = new Map(transactionCounts.map(t => [t.membershipId!, Number(t._sum.amount || 0)]))
 
     // Sort plans by creation date (latest first)
     const sortedPlans = plans.sort((a, b) => {
@@ -162,7 +177,12 @@ export async function GET(request: NextRequest) {
         affiliateCommission: parseFloat(plan.affiliateCommissionRate?.toString() || '0.30'),
         salespage: plan.salesPageUrl || '',
         memberCount: countMap.get(plan.id) || 0,
-        _count: { userMemberships: countMap.get(plan.id) || 0 }
+        transactionCount: transCountMap.get(plan.id) || 0,
+        revenue: revenueMap.get(plan.id) || 0,
+        _count: { 
+          userMemberships: countMap.get(plan.id) || 0,
+          transactions: transCountMap.get(plan.id) || 0
+        }
       }
     })
 

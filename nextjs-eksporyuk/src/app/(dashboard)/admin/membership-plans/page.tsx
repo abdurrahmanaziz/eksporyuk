@@ -350,15 +350,24 @@ export default function MembershipPlansPage() {
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-gray-700">
-                            {plan._count?.userMemberships || 0}
+                            {(plan as any)._count?.transactions || (plan as any).transactionCount || 0}
                           </span>
                           <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Trans.</span>
                         </div>
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-gray-700">
-                            {plan._count?.userMemberships || 0}
+                            {plan._count?.userMemberships || (plan as any).memberCount || 0}
                           </span>
                           <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Member</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-green-600">
+                            {((plan as any).revenue || 0) >= 1000000 
+                              ? `${(((plan as any).revenue || 0) / 1000000).toFixed(1)}jt`
+                              : `${Math.floor(((plan as any).revenue || 0) / 1000)}k`
+                            }
+                          </span>
+                          <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Revenue</span>
                         </div>
                       </div>
                     </td>
