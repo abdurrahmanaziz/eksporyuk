@@ -23,6 +23,7 @@ interface PriceOption {
   pricePerMonth?: number
   benefits: string[]
   badge?: string
+  marketingBadge?: string | null
   isPopular?: boolean
   membershipId?: string // For Pro checkout - specific membership ID
   membershipSlug?: string // For Pro checkout - specific membership slug
@@ -909,15 +910,15 @@ export default function CheckoutPage() {
                           : 'border-gray-200 hover:border-orange-300'
                       }`}
                     >
-                      {price.isPopular && (
-                        <Badge className="absolute -top-3 right-4 bg-orange-500 text-white font-semibold px-3 py-1">
+                      {price.isPopular && !price.marketingBadge && (
+                        <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white font-semibold px-2.5 py-1 text-xs">
                           ⭐ Paling Laris
                         </Badge>
                       )}
                       
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                             selectedPrice?.duration === price.duration || selectedPrice?.membershipId === price.membershipId
                               ? 'border-orange-500 bg-orange-500 shadow-sm'
                               : 'border-gray-300'
@@ -926,7 +927,48 @@ export default function CheckoutPage() {
                               <div className="w-3 h-3 bg-white rounded-full" />
                             )}
                           </div>
-                          <div>
+                          <div className="flex-1 min-w-0">
+                            {/* Marketing Badge - Compact for mobile */}
+                            {price.marketingBadge && (
+                              <div className="mb-1">
+                                {price.marketingBadge === 'PALING_LARIS' && (
+                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
+                                    <span className="text-[10px] sm:text-xs md:text-sm">🔥</span>
+                                    <span className="uppercase tracking-tight">Paling Laris</span>
+                                  </span>
+                                )}
+                                {price.marketingBadge === 'HARGA_HEMAT' && (
+                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
+                                    <span className="text-[10px] sm:text-xs md:text-sm">💰</span>
+                                    <span className="uppercase tracking-tight">Harga Hemat</span>
+                                  </span>
+                                )}
+                                {price.marketingBadge === 'PROMO_GEDE' && (
+                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
+                                    <span className="text-[10px] sm:text-xs md:text-sm">🎉</span>
+                                    <span className="uppercase tracking-tight">Promo Gede</span>
+                                  </span>
+                                )}
+                                {price.marketingBadge === 'PROMO_GENDENG' && (
+                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-lg animate-bounce">
+                                    <span className="text-[10px] sm:text-xs md:text-sm">⚡</span>
+                                    <span className="uppercase tracking-tight">Promo Gendeng</span>
+                                  </span>
+                                )}
+                                {price.marketingBadge === 'PROMO_AKHIR_TAHUN' && (
+                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
+                                    <span className="text-[10px] sm:text-xs md:text-sm">🎆</span>
+                                    <span className="uppercase tracking-tight">Akhir Tahun</span>
+                                  </span>
+                                )}
+                                {price.marketingBadge === 'PROMO_AWAL_TAHUN' && (
+                                  <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 md:px-3 md:py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded text-[9px] sm:text-[10px] md:text-xs font-bold shadow-sm sm:shadow-md animate-pulse">
+                                    <span className="text-[10px] sm:text-xs md:text-sm">🎊</span>
+                                    <span className="uppercase tracking-tight">Awal Tahun</span>
+                                  </span>
+                                )}
+                              </div>
+                            )}
                             <h3 className="font-bold text-lg">{price.label}</h3>
                             {price.badge && (
                               <Badge variant="secondary" className="mt-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100">

@@ -46,6 +46,7 @@ export async function GET(
         isBestSeller: true,
         isPopular: true,
         isMostPopular: true,
+        marketingBadge: true,
         isActive: true,
         status: true,
         reminders: true,
@@ -185,6 +186,7 @@ export async function GET(
               discount: m.discount || 0,
               benefits: membershipBenefits,
               badge: m.isBestSeller ? '🔥 Best Seller' : m.isMostPopular ? '⭐ Most Popular' : '',
+              marketingBadge: m.marketingBadge || null,
               isPopular: m.isPopular || m.isMostPopular || m.isBestSeller,
               membershipId: m.id, // Important: pass membership ID for checkout
               membershipSlug: m.checkoutSlug || m.slug // Use checkoutSlug or slug
@@ -214,6 +216,7 @@ export async function GET(
             discount: plan.discount || 0,
             benefits: [],
             badge: plan.isBestSeller ? '🔥 Best Seller' : plan.isMostPopular ? '⭐ Most Popular' : '',
+            marketingBadge: plan.marketingBadge || null,
             isPopular: plan.isPopular || plan.isMostPopular || plan.isBestSeller
           }]
           
@@ -236,7 +239,6 @@ export async function GET(
             // Build price from database fields
             const basePrice = parseFloat(plan.price?.toString() || '0')
             const originalPrice = plan.originalPrice ? parseFloat(plan.originalPrice.toString()) : null
-            
             prices = [{
               duration: plan.duration || 'ONE_MONTH',
               label: plan.name,
@@ -245,6 +247,7 @@ export async function GET(
               originalPrice: originalPrice,
               benefits: benefits,
               badge: '',
+              marketingBadge: plan.marketingBadge || null,
               isPopular: false
             }]
             

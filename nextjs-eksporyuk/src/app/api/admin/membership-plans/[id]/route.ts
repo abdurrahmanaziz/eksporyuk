@@ -54,6 +54,7 @@ export async function GET(
         isBestSeller: true,
         isPopular: true,
         isMostPopular: true,
+        marketingBadge: true,
         isActive: true,
         status: true,
         salesPageUrl: true,
@@ -148,6 +149,10 @@ export async function GET(
       prices,
       benefits,
       features: benefits, // Flat array for backward compatibility
+      membershipGroups, // Include junction table data
+      membershipCourses, // Include junction table data
+      membershipProducts, // Include junction table data
+      membershipFeatures, // Include feature access data
       affiliateCommission: parseFloat(plan.affiliateCommissionRate?.toString() || '0.30'),
       salespage: plan.salesPageUrl || '',
       followUpMessages: plan.reminders || []
@@ -191,6 +196,7 @@ export async function PATCH(
       duration,
       price,
       originalPrice,
+      marketingBadge,
       discount,
       commissionType,
       affiliateCommissionRate,
@@ -220,7 +226,7 @@ export async function PATCH(
     }
 
     if (duration !== undefined) {
-      const validDurations = ['SIX_MONTHS', 'TWELVE_MONTHS', 'LIFETIME']
+      const validDurations = ['ONE_MONTH', 'THREE_MONTHS', 'SIX_MONTHS', 'TWELVE_MONTHS', 'LIFETIME']
       if (!validDurations.includes(duration)) {
         return NextResponse.json({ 
           error: 'Durasi tidak valid', 
@@ -274,7 +280,7 @@ export async function PATCH(
     
     // Handle duration - only update if it's a valid enum value
     if (duration !== undefined) {
-      const validDurations = ['SIX_MONTHS', 'TWELVE_MONTHS', 'LIFETIME']
+      const validDurations = ['ONE_MONTH', 'THREE_MONTHS', 'SIX_MONTHS', 'TWELVE_MONTHS', 'LIFETIME']
       if (validDurations.includes(duration)) {
         updateData.duration = duration
         if (duration !== existingPlan.duration) changedFields.push('duration')
@@ -290,6 +296,12 @@ export async function PATCH(
       updateData.originalPrice = originalPrice
       if (originalPrice !== existingPlan.originalPrice) changedFields.push('originalPrice')
     }
+    
+    if (marketingBadge !== undefined) {
+      updateData.marketingBadge = marketingBadge
+      if (marketingBadge !== existingPlan.marketingBadge) changedFields.push('marketingBadge')
+    }
+    
     if (discount !== undefined) {
       updateData.discount = discount
       if (discount !== existingPlan.discount) changedFields.push('discount')

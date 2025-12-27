@@ -87,6 +87,7 @@ export async function POST(
         // Convert Decimal to number for proper handling
         price: Number(originalPlan.price),
         originalPrice: originalPlan.originalPrice ? Number(originalPlan.originalPrice) : undefined,
+        marketingBadge: originalPlan.marketingBadge ?? undefined,
         discount: originalPlan.discount ?? 0,
         commissionType: originalPlan.commissionType,
         affiliateCommissionRate: Number(originalPlan.affiliateCommissionRate),

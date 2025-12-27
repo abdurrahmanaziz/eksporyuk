@@ -1595,6 +1595,7 @@ model Membership {
   isBestSeller            Boolean            @default(false)
   isPopular               Boolean            @default(false)
   isMostPopular           Boolean            @default(false)
+  marketingBadge          MarketingBadge?
   isActive                Boolean            @default(true)
   status                  MembershipStatus   @default(PUBLISHED)
   salesPageUrl            String?
@@ -3171,6 +3172,8 @@ enum GroupType {
 }
 
 enum MembershipDuration {
+  ONE_MONTH
+  THREE_MONTHS
   SIX_MONTHS
   TWELVE_MONTHS
   LIFETIME
@@ -3180,6 +3183,15 @@ enum MembershipStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+enum MarketingBadge {
+  PALING_LARIS
+  HARGA_HEMAT
+  PROMO_GEDE
+  PROMO_GENDENG
+  PROMO_AKHIR_TAHUN
+  PROMO_AWAL_TAHUN
 }
 
 enum NotificationType {

@@ -124,7 +124,8 @@ export default function EditMembershipPlanPage() {
     description: "",
     price: 0,
     marketingPrice: undefined as number | undefined, // Optional marketing price
-    duration: "SIX_MONTHS" as "SIX_MONTHS" | "TWELVE_MONTHS" | "LIFETIME",
+    marketingBadge: null as "PALING_LARIS" | "HARGA_HEMAT" | "PROMO_GEDE" | "PROMO_GENDENG" | "PROMO_AKHIR_TAHUN" | "PROMO_AWAL_TAHUN" | null,
+    duration: "SIX_MONTHS" as "ONE_MONTH" | "THREE_MONTHS" | "SIX_MONTHS" | "TWELVE_MONTHS" | "LIFETIME",
     status: "DRAFT",
     features: [] as string[],
     
@@ -235,6 +236,7 @@ export default function EditMembershipPlanPage() {
         price: membership.price || 0,
         // PENTING: Database field adalah originalPrice, bukan marketingPrice!
         marketingPrice: membership.originalPrice ? Number(membership.originalPrice) : undefined,
+        marketingBadge: membership.marketingBadge || null,
         duration: membership.duration || "SIX_MONTHS",
         status: membership.status || "DRAFT",
         features: [], // Empty - features are display only (badges)
@@ -369,6 +371,7 @@ export default function EditMembershipPlanPage() {
         price: Math.max(0, formData.price), // Ensure non-negative
         // PENTING: Database field adalah originalPrice, bukan marketingPrice!
         originalPrice: formData.marketingPrice ? Number(formData.marketingPrice) : null,
+        marketingBadge: formData.marketingBadge || null,
         duration: formData.duration,
         status: formData.status,
         isActive: formData.status === 'PUBLISHED', // Auto-set isActive based on status
@@ -649,11 +652,12 @@ export default function EditMembershipPlanPage() {
 
       <form onSubmit={handleSubmit}>
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid grid-cols-7 w-full">
+          <TabsList className="grid grid-cols-8 w-full">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="access">Access</TabsTrigger>
             <TabsTrigger value="benefits">Benefits</TabsTrigger>
+            <TabsTrigger value="badge">Badge Promo</TabsTrigger>
             <TabsTrigger value="marketing">Marketing</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -794,7 +798,7 @@ export default function EditMembershipPlanPage() {
                   <Label htmlFor="duration">Durasi Membership</Label>
                   <Select
                     value={formData.duration}
-                    onValueChange={(value: "SIX_MONTHS" | "TWELVE_MONTHS" | "LIFETIME") =>
+                    onValueChange={(value: "ONE_MONTH" | "THREE_MONTHS" | "SIX_MONTHS" | "TWELVE_MONTHS" | "LIFETIME") =>
                       setFormData({ ...formData, duration: value })
                     }
                   >
@@ -802,12 +806,16 @@ export default function EditMembershipPlanPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="ONE_MONTH">1 Bulan</SelectItem>
+                      <SelectItem value="THREE_MONTHS">3 Bulan</SelectItem>
                       <SelectItem value="SIX_MONTHS">6 Bulan</SelectItem>
                       <SelectItem value="TWELVE_MONTHS">12 Bulan</SelectItem>
                       <SelectItem value="LIFETIME">Lifetime</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-muted-foreground">
+                    {formData.duration === 'ONE_MONTH' && '30 hari akses member'}
+                    {formData.duration === 'THREE_MONTHS' && '90 hari akses member'}
                     {formData.duration === 'SIX_MONTHS' && '180 hari akses member'}
                     {formData.duration === 'TWELVE_MONTHS' && '365 hari akses member'}
                     {formData.duration === 'LIFETIME' && 'Akses selamanya tanpa batas waktu'}
@@ -1288,7 +1296,191 @@ export default function EditMembershipPlanPage() {
             </Card>
           </TabsContent>
 
-          {/* Tab 5: Marketing */}
+          {/* Tab 5: Badge Promo */}
+          <TabsContent value="badge" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>🎯 Badge Promo Marketing</CardTitle>
+                <CardDescription>
+                  Pilih badge marketing kekinian untuk menarik perhatian pembeli
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <Label>Pilih Badge Promo</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {/* Tidak Ada Badge */}
+                    <div 
+                      onClick={() => setFormData({ ...formData, marketingBadge: null })}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                        formData.marketingBadge === null 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className="text-3xl">🚫</div>
+                        <div className="font-semibold text-sm">Tidak Ada Badge</div>
+                        <p className="text-xs text-muted-foreground">Tampilan standar</p>
+                      </div>
+                    </div>
+
+                    {/* Paling Laris */}
+                    <div 
+                      onClick={() => setFormData({ ...formData, marketingBadge: 'PALING_LARIS' })}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                        formData.marketingBadge === 'PALING_LARIS' 
+                          ? 'border-orange-500 bg-orange-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className="text-3xl">🔥</div>
+                        <div className="font-semibold text-sm text-orange-600">Paling Laris</div>
+                        <p className="text-xs text-muted-foreground">Best seller badge</p>
+                      </div>
+                    </div>
+
+                    {/* Harga Hemat */}
+                    <div 
+                      onClick={() => setFormData({ ...formData, marketingBadge: 'HARGA_HEMAT' })}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                        formData.marketingBadge === 'HARGA_HEMAT' 
+                          ? 'border-green-500 bg-green-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className="text-3xl">💰</div>
+                        <div className="font-semibold text-sm text-green-600">Harga Hemat</div>
+                        <p className="text-xs text-muted-foreground">Value for money</p>
+                      </div>
+                    </div>
+
+                    {/* Promo Gede */}
+                    <div 
+                      onClick={() => setFormData({ ...formData, marketingBadge: 'PROMO_GEDE' })}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                        formData.marketingBadge === 'PROMO_GEDE' 
+                          ? 'border-red-500 bg-red-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className="text-3xl">🎉</div>
+                        <div className="font-semibold text-sm text-red-600">Promo Gede</div>
+                        <p className="text-xs text-muted-foreground">Big discount</p>
+                      </div>
+                    </div>
+
+                    {/* Promo Gendeng */}
+                    <div 
+                      onClick={() => setFormData({ ...formData, marketingBadge: 'PROMO_GENDENG' })}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                        formData.marketingBadge === 'PROMO_GENDENG' 
+                          ? 'border-purple-500 bg-purple-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className="text-3xl">⚡</div>
+                        <div className="font-semibold text-sm text-purple-600">Promo Gendeng</div>
+                        <p className="text-xs text-muted-foreground">Crazy discount</p>
+                      </div>
+                    </div>
+
+                    {/* Promo Akhir Tahun */}
+                    <div 
+                      onClick={() => setFormData({ ...formData, marketingBadge: 'PROMO_AKHIR_TAHUN' })}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                        formData.marketingBadge === 'PROMO_AKHIR_TAHUN' 
+                          ? 'border-yellow-500 bg-yellow-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className="text-3xl">🎆</div>
+                        <div className="font-semibold text-sm text-yellow-600">Promo Akhir Tahun</div>
+                        <p className="text-xs text-muted-foreground">Year end sale</p>
+                      </div>
+                    </div>
+
+                    {/* Promo Awal Tahun */}
+                    <div 
+                      onClick={() => setFormData({ ...formData, marketingBadge: 'PROMO_AWAL_TAHUN' })}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                        formData.marketingBadge === 'PROMO_AWAL_TAHUN' 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className="text-3xl">🎊</div>
+                        <div className="font-semibold text-sm text-blue-600">Promo Awal Tahun</div>
+                        <p className="text-xs text-muted-foreground">New year sale</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview Badge */}
+                {formData.marketingBadge && (
+                  <div className="p-6 border-2 border-dashed rounded-lg bg-gray-50">
+                    <Label className="mb-3 block">Preview Badge (Ukuran Real di Checkout - Dengan Animasi)</Label>
+                    <div className="flex justify-center">
+                      {formData.marketingBadge === 'PALING_LARIS' && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-md text-xs font-bold shadow-md animate-pulse">
+                          <span className="text-sm">🔥</span>
+                          <span>PALING LARIS</span>
+                        </span>
+                      )}
+                      {formData.marketingBadge === 'HARGA_HEMAT' && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md text-xs font-bold shadow-md animate-pulse">
+                          <span className="text-sm">💰</span>
+                          <span>HARGA HEMAT</span>
+                        </span>
+                      )}
+                      {formData.marketingBadge === 'PROMO_GEDE' && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-md text-xs font-bold shadow-md animate-pulse">
+                          <span className="text-sm">🎉</span>
+                          <span>PROMO GEDE</span>
+                        </span>
+                      )}
+                      {formData.marketingBadge === 'PROMO_GENDENG' && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-md text-xs font-bold shadow-lg animate-bounce">
+                          <span className="text-sm">⚡</span>
+                          <span>PROMO GENDENG</span>
+                        </span>
+                      )}
+                      {formData.marketingBadge === 'PROMO_AKHIR_TAHUN' && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-md text-xs font-bold shadow-md animate-pulse">
+                          <span className="text-sm">🎆</span>
+                          <span>PROMO AKHIR TAHUN</span>
+                        </span>
+                      )}
+                      {formData.marketingBadge === 'PROMO_AWAL_TAHUN' && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-md text-xs font-bold shadow-md animate-pulse">
+                          <span className="text-sm">🎊</span>
+                          <span>PROMO AWAL TAHUN</span>
+                        </span>
+                      )}
+                      {formData.marketingBadge === 'PROMO_AWAL_TAHUN' && (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-blue-100 to-cyan-100 border border-blue-300 text-blue-700 rounded-lg text-xs font-semibold shadow-sm">
+                          <span className="text-sm">🎊</span>
+                          <span>Awal Tahun</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-center text-muted-foreground mt-3">
+                      Badge akan tampil di pojok kanan atas card paket
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 6: Marketing */}
           <TabsContent value="marketing" className="space-y-4">
             <Card>
               <CardHeader>
