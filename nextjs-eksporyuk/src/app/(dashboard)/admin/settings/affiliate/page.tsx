@@ -54,7 +54,7 @@ export default function AdminAffiliateSettingsPage() {
   const fetchSettings = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/admin/settings')
+      const response = await fetch('/api/admin/settings/affiliate')
       const data = await response.json()
 
       if (data.success && data.settings) {
@@ -64,6 +64,8 @@ export default function AdminAffiliateSettingsPage() {
           defaultAffiliateCommission: data.settings.defaultAffiliateCommission ?? 10,
           minWithdrawalAmount: data.settings.minWithdrawalAmount ?? 50000,
         })
+      } else {
+        toast.error(data.error || 'Gagal memuat pengaturan')
       }
     } catch (error) {
       console.error('Error fetching settings:', error)
@@ -75,7 +77,7 @@ export default function AdminAffiliateSettingsPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const response = await fetch('/api/admin/settings', {
+      const response = await fetch('/api/admin/settings/affiliate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
@@ -85,6 +87,10 @@ export default function AdminAffiliateSettingsPage() {
 
       if (data.success) {
         toast.success('Pengaturan affiliate berhasil disimpan!')
+        // Update local state with returned settings
+        if (data.settings) {
+          setSettings(data.settings)
+        }
       } else {
         toast.error(data.error || 'Gagal menyimpan pengaturan')
       }

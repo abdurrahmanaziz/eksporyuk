@@ -57,11 +57,15 @@ export default function UserMembershipsPage() {
   const [loadingActivities, setLoadingActivities] = useState(false)
 
   useEffect(() => {
-    fetchUserData()
-    fetchActivities()
+    if (userId) {
+      fetchUserData()
+      fetchActivities()
+    }
   }, [userId])
 
   const fetchUserData = async () => {
+    if (!userId) return
+    
     setLoading(true)
     try {
       const res = await fetch(`/api/admin/users/${userId}/memberships`)
@@ -80,6 +84,8 @@ export default function UserMembershipsPage() {
   }
 
   const fetchActivities = async () => {
+    if (!userId) return
+    
     setLoadingActivities(true)
     try {
       const res = await fetch(`/api/admin/users/${userId}/activities?type=membership`)
@@ -99,6 +105,19 @@ export default function UserMembershipsPage() {
     const now = new Date()
     const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     return diff
+  }
+
+  // Early return if no userId
+  if (!userId) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-muted-foreground">ID user tidak valid</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (loading) {
@@ -123,7 +142,8 @@ export default function UserMembershipsPage() {
     )
   }
 
-  const activeMembership = userData.userMemberships.find(m => m.isActive)
+  // Calculate active membership - safe here because userData is guaranteed to exist
+  const activeMembership = userData.userMemberships?.find(m => m.isActive) || null
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -198,9 +218,11 @@ export default function UserMembershipsPage() {
             <div className="border rounded-lg p-6 space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-xl font-semibold">{activeMembership.membership.name}</h3>
+                  <h3 className="text-xl font-semibold">
+                    {activeMembership.membership?.name || 'Paket Membership'}
+                  </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {activeMembership.membership.description}
+                    {activeMembership.membership?.description || 'Deskripsi tidak tersedia'}
                   </p>
                 </div>
                 <Badge variant={activeMembership.isActive ? 'default' : 'secondary'}>
@@ -214,11 +236,11 @@ export default function UserMembershipsPage() {
                   <div>
                     <p className="text-sm font-medium">Dimulai</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(activeMembership.startDate).toLocaleDateString('id-ID', {
+                      {activeMembership?.startDate ? new Date(activeMembership.startDate).toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric'
-                      })}
+                      }) : '-'}
                     </p>
                   </div>
                 </div>
@@ -228,11 +250,11 @@ export default function UserMembershipsPage() {
                   <div>
                     <p className="text-sm font-medium">Berakhir</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(activeMembership.endDate).toLocaleDateString('id-ID', {
+                      {activeMembership?.endDate ? new Date(activeMembership.endDate).toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric'
-                      })}
+                      }) : '-'}
                     </p>
                   </div>
                 </div>
@@ -242,14 +264,15 @@ export default function UserMembershipsPage() {
                   <div>
                     <p className="text-sm font-medium">Sisa Waktu</p>
                     <p className={`text-sm font-medium ${
-                      getRemainingDays(activeMembership.endDate) > 0 
+                      activeMembership?.endDate && getRemainingDays(activeMembership.endDate) > 0 
                         ? 'text-green-600' 
                         : 'text-red-600'
                     }`}>
-                      {getRemainingDays(activeMembership.endDate) > 0 
-                        ? `${getRemainingDays(activeMembership.endDate)} hari`
-                        : `Expired ${Math.abs(getRemainingDays(activeMembership.endDate))} hari lalu`
-                      }
+                      {activeMembership?.endDate ? (
+                        getRemainingDays(activeMembership.endDate) > 0 
+                          ? `${getRemainingDays(activeMembership.endDate)} hari`
+                          : `Expired ${Math.abs(getRemainingDays(activeMembership.endDate))} hari lalu`
+                      ) : '-'}
                     </p>
                   </div>
                 </div>
@@ -265,7 +288,7 @@ export default function UserMembershipsPage() {
                   }}
                 />
                 <p className="text-sm text-muted-foreground">
-                  Harga: Rp {activeMembership.membership.price.toLocaleString('id-ID')}
+                  Harga: Rp {activeMembership?.membership?.price?.toLocaleString('id-ID') || '0'}
                 </p>
               </div>
             </div>
@@ -281,7 +304,7 @@ export default function UserMembershipsPage() {
       </Card>
 
       {/* All Memberships History */}
-      {userData.userMemberships.length > 1 && (
+      {userData?.userMemberships && userData.userMemberships.length > 1 && (
         <Card>
           <CardHeader>
             <CardTitle>Riwayat Membership</CardTitle>
@@ -298,7 +321,9 @@ export default function UserMembershipsPage() {
                   <div key={membership.id} className="border rounded-lg p-4 space-y-2">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-medium">{membership.membership.name}</h4>
+                        <h4 className="font-medium">
+                          {membership.membership?.name || 'Paket Membership'}
+                        </h4>
                         <p className="text-sm text-muted-foreground">
                           {new Date(membership.startDate).toLocaleDateString('id-ID')} - {' '}
                           {new Date(membership.endDate).toLocaleDateString('id-ID')}

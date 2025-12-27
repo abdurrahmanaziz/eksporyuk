@@ -150,6 +150,7 @@ export function UpgradeMembershipModal({ userMembership, userEmail, onSuccess }:
   }
 
   const getRemainingDays = () => {
+    if (!userMembership?.endDate) return 0
     const end = new Date(userMembership.endDate)
     const now = new Date()
     const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
@@ -181,19 +182,19 @@ export function UpgradeMembershipModal({ userMembership, userEmail, onSuccess }:
           <div className="bg-muted p-4 rounded-lg space-y-2">
             <h4 className="font-medium">Membership Saat Ini:</h4>
             <div className="flex items-center justify-between">
-              <span className="text-sm">{userMembership.membership.name}</span>
-              <Badge variant={userMembership.isActive ? 'default' : 'secondary'}>
-                {userMembership.status}
+              <span className="text-sm">{userMembership?.membership?.name || 'Tidak ada membership'}</span>
+              <Badge variant={userMembership?.isActive ? 'default' : 'secondary'}>
+                {userMembership?.status || '-'}
               </Badge>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
               <span>
-                Berakhir: {new Date(userMembership.endDate).toLocaleDateString('id-ID', {
+                Berakhir: {userMembership?.endDate ? new Date(userMembership.endDate).toLocaleDateString('id-ID', {
                   day: 'numeric',
                   month: 'long', 
                   year: 'numeric'
-                })}
+                }) : '-'}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">

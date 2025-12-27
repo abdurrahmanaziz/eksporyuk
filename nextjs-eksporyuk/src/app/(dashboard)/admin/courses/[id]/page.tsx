@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Save, ArrowLeft, Plus, Edit, Trash2, GripVertical,
   BookOpen, PlayCircle, FileText, Settings, FileQuestion, ClipboardList,
-  Upload, Download, X, File, Shield
+  Upload, Download, X, File, Shield, Users
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -195,6 +195,14 @@ export default function AdminCourseDetailPage() {
   const [course, setCourse] = useState<Course | null>(null)
   const [activeTab, setActiveTab] = useState('info')
 
+  // Mentor states
+  const [courseMentors, setCourseMentors] = useState<any[]>([])
+  const [availableMentors, setAvailableMentors] = useState<any[]>([])
+  const [loadingMentors, setLoadingMentors] = useState(false)
+  const [addMentorOpen, setAddMentorOpen] = useState(false)
+  const [selectedMentorId, setSelectedMentorId] = useState('')
+  const [mentorRole, setMentorRole] = useState('')
+
   // Module & Lesson states
   const [modules, setModules] = useState<Module[]>([])
   const [editingModule, setEditingModule] = useState<Module | null>(null)
@@ -256,6 +264,8 @@ export default function AdminCourseDetailPage() {
         const data = await res.json()
         setCourse(data.course)
         setModules(data.course.modules || [])
+        // Fetch course mentors
+        fetchCourseMentors()
       } else {
         toast.error('Gagal memuat data kursus')
         router.push('/admin/courses')
@@ -346,6 +356,91 @@ export default function AdminCourseDetailPage() {
     }
   }
 
+  // Mentor Management Functions
+  const fetchCourseMentors = async () => {
+    try {
+      setLoadingMentors(true)
+      const res = await fetch(`/api/admin/courses/${courseId}/mentors`)
+      if (res.ok) {
+        const data = await res.json()
+        setCourseMentors(data.mentors || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch mentors:', error)
+    } finally {
+      setLoadingMentors(false)
+    }
+  }
+
+  const fetchAvailableMentors = async () => {
+    try {
+      const res = await fetch('/api/admin/mentors')
+      if (res.ok) {
+        const data = await res.json()
+        setAvailableMentors(data.mentors || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch available mentors:', error)
+    }
+  }
+
+  const handleAddMentor = async () => {
+    if (!selectedMentorId) return
+    
+    try {
+      setLoadingMentors(true)
+      const res = await fetch(`/api/admin/courses/${courseId}/mentors`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mentorId: selectedMentorId,
+          role: mentorRole || 'Mentor'
+        })
+      })
+
+      if (res.ok) {
+        toast.success('Mentor berhasil ditambahkan')
+        await fetchCourseMentors()
+        setAddMentorOpen(false)
+        setSelectedMentorId('')
+        setMentorRole('')
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Gagal menambahkan mentor')
+      }
+    } catch (error) {
+      console.error('Add mentor error:', error)
+      toast.error('Terjadi kesalahan')
+    } finally {
+      setLoadingMentors(false)
+    }
+  }
+
+  const handleRemoveMentor = async (mentorId: string) => {
+    if (!confirm('Yakin ingin menghapus mentor ini?')) return
+    
+    try {
+      setLoadingMentors(true)
+      const res = await fetch(`/api/admin/courses/${courseId}/mentors/${mentorId}`, {
+        method: 'DELETE'
+      })
+
+      if (res.ok) {
+        toast.success('Mentor berhasil dihapus')
+        await fetchCourseMentors()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Gagal menghapus mentor')
+      }
+    } catch (error) {
+      console.error('Remove mentor error:', error)
+      toast.error('Terjadi kesalahan')
+    } finally {
+      setLoadingMentors(false)
+    }
+  }
+
+  // Course Functions
   const handleCreateModule = async () => {
     if (!course) return
 
@@ -782,6 +877,10 @@ export default function AdminCourseDetailPage() {
           <TabsTrigger value="content">
             <BookOpen className="h-4 w-4 mr-2" />
             Konten & Modul
+          </TabsTrigger>
+          <TabsTrigger value="mentors">
+            <Users className="h-4 w-4 mr-2" />
+            Kelola Mentors
           </TabsTrigger>
         </TabsList>
 
@@ -1338,6 +1437,73 @@ export default function AdminCourseDetailPage() {
             )}
           </div>
         </TabsContent>
+
+        <TabsContent value="mentors" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Kelola Mentors</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Tambah atau hapus mentor untuk kelas ini
+                  </p>
+                </div>
+                <Button
+                  onClick={() => {
+                    fetchAvailableMentors()
+                    setAddMentorOpen(true)
+                  }}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Tambah Mentor
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingMentors ? (
+                <div className="flex justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                </div>
+              ) : courseMentors.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Belum ada mentor untuk kelas ini</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {courseMentors.map((mentor) => (
+                    <Card key={mentor.id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Users className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{mentor.name}</h4>
+                            <p className="text-sm text-muted-foreground">{mentor.email}</p>
+                            <p className="text-xs text-blue-600">
+                              Role: {mentor.role || 'Mentor'}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleRemoveMentor(mentor.id)}
+                          disabled={loadingMentors}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Hapus
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Edit Module Dialog */}
@@ -1642,6 +1808,71 @@ export default function AdminCourseDetailPage() {
                     setSelectedFile(null)
                     setUploadMethod('device')
                   }}>
+                    Batal
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Add Mentor Dialog */}
+      {addMentorOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Tambah Mentor</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAddMentorOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label>Pilih Mentor</Label>
+                  <select
+                    className="w-full p-2 border border-input rounded-md"
+                    value={selectedMentorId}
+                    onChange={(e) => setSelectedMentorId(e.target.value)}
+                  >
+                    <option value="">-- Pilih Mentor --</option>
+                    {availableMentors.map((mentor) => (
+                      <option key={mentor.id} value={mentor.id}>
+                        {mentor.name} ({mentor.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>Role (Opsional)</Label>
+                  <Input
+                    placeholder="Co-Mentor, Assistant, dll"
+                    value={mentorRole}
+                    onChange={(e) => setMentorRole(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleAddMentor}
+                    disabled={!selectedMentorId || loadingMentors}
+                  >
+                    {loadingMentors ? 'Menambahkan...' : 'Tambah'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setAddMentorOpen(false)
+                      setSelectedMentorId('')
+                      setMentorRole('')
+                    }}
+                  >
                     Batal
                   </Button>
                 </div>
