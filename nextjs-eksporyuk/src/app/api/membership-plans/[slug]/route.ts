@@ -10,11 +10,15 @@ export async function GET(
   try {
     const { slug } = await params
     
-    console.log(`[API] Fetching membership with slug: ${slug}`)
+    console.log(`[API] Fetching membership with checkoutSlug or slug: ${slug}`)
     
-    const plan = await prisma.membership.findUnique({
+    // Try to find by checkoutSlug first, then fallback to slug
+    const plan = await prisma.membership.findFirst({
       where: { 
-        slug: slug
+        OR: [
+          { checkoutSlug: slug },
+          { slug: slug }
+        ]
       },
       select: {
         id: true,
