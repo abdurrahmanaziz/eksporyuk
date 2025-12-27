@@ -16,8 +16,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify admin role (prefer session role; also auto-heal DB role mismatch)
-    if (session.user.role !== 'ADMIN') {
+    // Verify admin-equivalent role (allow ADMIN/FOUNDER/CO_FOUNDER)
+    const allowedRoles = ['ADMIN', 'FOUNDER', 'CO_FOUNDER']
+    if (!allowedRoles.includes(session.user.role || '')) {
       return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
     }
 
@@ -102,8 +103,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify admin role (prefer session role; also auto-heal DB role mismatch)
-    if (session.user.role !== 'ADMIN') {
+    // Verify admin-equivalent role (allow ADMIN/FOUNDER/CO_FOUNDER)
+    const allowedRoles = ['ADMIN', 'FOUNDER', 'CO_FOUNDER']
+    if (!allowedRoles.includes(session.user.role || '')) {
       return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
     }
 

@@ -11,6 +11,10 @@ export const dynamic = 'force-dynamic'
 
 
 export async function POST(request: NextRequest) {
+  // Track service in outer scope so catch can reference safely
+  let service: string | null = null
+  let configStr: string | null = null
+
   try {
     console.log('[INTEGRATION_SAVE] Starting save process...')
     
@@ -24,8 +28,8 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const service = formData.get('service') as string
-    const configStr = formData.get('config') as string
+    service = formData.get('service') as string
+    configStr = formData.get('config') as string
     
     console.log('[INTEGRATION_SAVE] Received:', { service, configStr })
     
@@ -330,7 +334,8 @@ export async function POST(request: NextRequest) {
       { 
         error: 'Gagal menyimpan konfigurasi', 
         details: error instanceof Error ? error.message : 'Unknown error',
-        service 
+        service: service || null,
+        configPreview: configStr ? configStr.slice(0, 200) : null
       },
       { status: 500 }
     )

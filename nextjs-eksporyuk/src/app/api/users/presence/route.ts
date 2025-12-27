@@ -7,6 +7,11 @@ import { pusherService } from '@/lib/pusher'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
+// Simple HEAD responder to avoid 404/405 for health pings
+export async function HEAD() {
+  return NextResponse.json({ success: true })
+}
+
 
 /**
  * UPDATE USER ONLINE STATUS

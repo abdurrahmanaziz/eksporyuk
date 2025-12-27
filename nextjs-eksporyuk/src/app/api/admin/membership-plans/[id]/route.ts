@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import crypto from 'crypto'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+
+// Generate cuid-like ID
+function generateId(): string {
+  return 'c' + crypto.randomBytes(12).toString('hex')
+}
 
 
 // Helper function to generate slug
@@ -372,18 +378,22 @@ export async function PATCH(
           // If string, convert to object
           if (typeof f === 'string') {
             return {
+              id: generateId(),
               membershipId: id,
               featureKey: f,
               enabled: true,
-              value: null
+              value: null,
+              updatedAt: new Date()
             }
           }
           // If object, use as is
           return {
+            id: generateId(),
             membershipId: id,
             featureKey: f.featureKey,
             enabled: f.enabled !== false,
-            value: f.value || null
+            value: f.value || null,
+            updatedAt: new Date()
           }
         })
         
@@ -406,6 +416,7 @@ export async function PATCH(
       if (groups.length > 0) {
         await prisma.membershipGroup.createMany({
           data: groups.map((groupId: string) => ({
+            id: generateId(),
             membershipId: id,
             groupId: groupId
           })),
@@ -427,6 +438,7 @@ export async function PATCH(
       if (courses.length > 0) {
         await prisma.membershipCourse.createMany({
           data: courses.map((courseId: string) => ({
+            id: generateId(),
             membershipId: id,
             courseId: courseId
           })),
@@ -448,6 +460,7 @@ export async function PATCH(
       if (products.length > 0) {
         await prisma.membershipProduct.createMany({
           data: products.map((productId: string) => ({
+            id: generateId(),
             membershipId: id,
             productId: productId
           })),

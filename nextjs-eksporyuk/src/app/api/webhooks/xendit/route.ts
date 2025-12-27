@@ -358,33 +358,33 @@ async function handleInvoicePaid(data: any) {
               }
             }
 
-            // Auto-join groups
-            for (const mg of membership.membershipGroups) {
+            // Auto-join groups (using groups array with full details)
+            for (const group of groups) {
               await prisma.groupMember.create({
                 data: {
-                  groupId: mg.group.id,
+                  groupId: group.id,
                   userId: transaction.userId,
                   role: 'MEMBER'
                 }
               }).catch(() => {}) // Ignore if already member
             }
 
-            // Auto-enroll courses
-            for (const mc of membership.membershipCourses) {
+            // Auto-enroll courses (using courses array with full details)
+            for (const course of courses) {
               await prisma.courseEnrollment.create({
                 data: {
                   userId: transaction.userId,
-                  courseId: mc.course.id
+                  courseId: course.id
                 }
               }).catch(() => {}) // Ignore if already enrolled
             }
 
-            // Auto-grant products
-            for (const mp of membership.membershipProducts) {
+            // Auto-grant products (using products array with full details)
+            for (const product of products) {
               await prisma.userProduct.create({
                 data: {
                   userId: transaction.userId,
-                  productId: mp.product.id,
+                  productId: product.id,
                   transactionId: transaction.id,
                   purchaseDate: now,
                   price: 0 // Free as part of membership
@@ -393,7 +393,7 @@ async function handleInvoicePaid(data: any) {
             }
 
             console.log(`UserMembership created for user ${transaction.userId}, membership ${membershipId}`)
-            console.log(`Auto-joined ${membership.membershipGroups.length} groups, ${membership.membershipCourses.length} courses, ${membership.membershipProducts.length} products`)
+            console.log(`Auto-joined ${groups.length} groups, ${courses.length} courses, ${products.length} products`)
 
             // Send membership activation welcome email
             try {
@@ -429,9 +429,9 @@ async function handleInvoicePaid(data: any) {
 
                       <p style="font-size: 16px;">Anda sekarang memiliki akses ke:</p>
                       <ul style="font-size: 14px; color: #4b5563;">
-                        ${membership.membershipCourses.length > 0 ? `<li>${membership.membershipCourses.length} Kursus Premium</li>` : ''}
-                        ${membership.membershipGroups.length > 0 ? `<li>${membership.membershipGroups.length} Grup Komunitas</li>` : ''}
-                        ${membership.membershipProducts.length > 0 ? `<li>${membership.membershipProducts.length} Produk Digital</li>` : ''}
+                        ${courses.length > 0 ? `<li>${courses.length} Kursus Premium</li>` : ''}
+                        ${groups.length > 0 ? `<li>${groups.length} Grup Komunitas</li>` : ''}
+                        ${products.length > 0 ? `<li>${products.length} Produk Digital</li>` : ''}
                         <li>Akses penuh ke fitur membership</li>
                       </ul>
                       
@@ -1044,37 +1044,39 @@ async function handleVAPaymentComplete(data: any) {
 
             console.log('[Xendit Webhook] ✅ UserMembership created:', membershipId)
 
-            // Auto-join groups, courses, products (same as handleInvoicePaid)
-            for (const mg of membership.membershipGroups) {
+            // Auto-join groups, courses, products (using VA fetched data)
+            for (const group of groupsVA) {
               await prisma.groupMember.create({
                 data: {
-                  groupId: mg.group.id,
+                  groupId: group.id,
                   userId: transaction.userId,
                   role: 'MEMBER'
                 }
               }).catch(() => {})
             }
 
-            for (const mc of membership.membershipCourses) {
+            for (const course of coursesVA) {
               await prisma.courseEnrollment.create({
                 data: {
                   userId: transaction.userId,
-                  courseId: mc.course.id
+                  courseId: course.id
                 }
               }).catch(() => {})
             }
 
-            for (const mp of membership.membershipProducts) {
+            for (const product of productsVA) {
               await prisma.userProduct.create({
                 data: {
                   userId: transaction.userId,
-                  productId: mp.product.id,
+                  productId: product.id,
                   transactionId: transaction.id,
                   purchaseDate: now,
                   price: 0
                 }
               }).catch(() => {})
             }
+
+            console.log(`[Xendit Webhook] ✅ Auto-joined ${groupsVA.length} groups, ${coursesVA.length} courses, ${productsVA.length} products`)
 
             // Add to Mailketing list
             if (membership.mailketingListId && membership.autoAddToList) {
@@ -1606,6 +1608,72 @@ async function handleEWalletPaymentComplete(data: any) {
         }
       })
       console.log('[Xendit Webhook] ✅ Membership activated via E-Wallet')
+
+      // Auto-enroll to courses and groups for E-Wallet payment
+      const membershipId = transaction.membership.membershipId
+      
+      // Fetch related data
+      const [membershipGroupsEW, membershipCoursesEW, membershipProductsEW] = await Promise.all([
+        prisma.membershipGroup.findMany({ where: { membershipId } }),
+        prisma.membershipCourse.findMany({ where: { membershipId } }),
+        prisma.membershipProduct.findMany({ where: { membershipId } })
+      ])
+
+      const groupIdsEW = membershipGroupsEW.map(mg => mg.groupId)
+      const courseIdsEW = membershipCoursesEW.map(mc => mc.courseId)
+      const productIdsEW = membershipProductsEW.map(mp => mp.productId)
+
+      const [groupsEW, coursesEW, productsEW] = await Promise.all([
+        groupIdsEW.length > 0 ? prisma.group.findMany({
+          where: { id: { in: groupIdsEW } },
+          select: { id: true, name: true }
+        }) : [],
+        courseIdsEW.length > 0 ? prisma.course.findMany({
+          where: { id: { in: courseIdsEW } },
+          select: { id: true, title: true }
+        }) : [],
+        productIdsEW.length > 0 ? prisma.product.findMany({
+          where: { id: { in: productIdsEW } },
+          select: { id: true, name: true }
+        }) : []
+      ])
+
+      // Auto-join groups
+      for (const group of groupsEW) {
+        await prisma.groupMember.create({
+          data: {
+            groupId: group.id,
+            userId: transaction.userId,
+            role: 'MEMBER'
+          }
+        }).catch(() => {})
+      }
+
+      // Auto-enroll courses
+      for (const course of coursesEW) {
+        await prisma.courseEnrollment.create({
+          data: {
+            userId: transaction.userId,
+            courseId: course.id
+          }
+        }).catch(() => {})
+      }
+
+      // Auto-grant products
+      const now = new Date()
+      for (const product of productsEW) {
+        await prisma.userProduct.create({
+          data: {
+            userId: transaction.userId,
+            productId: product.id,
+            transactionId: transaction.id,
+            purchaseDate: now,
+            price: 0
+          }
+        }).catch(() => {})
+      }
+
+      console.log(`[Xendit Webhook] ✅ E-Wallet: Auto-joined ${groupsEW.length} groups, ${coursesEW.length} courses, ${productsEW.length} products`)
     }
 
     // ============================================
