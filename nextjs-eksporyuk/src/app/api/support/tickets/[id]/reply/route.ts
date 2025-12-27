@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { ticketNotificationService } from '@/lib/services/ticket-notification-service'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 export const dynamic = 'force-dynamic'
 
@@ -34,19 +37,18 @@ export async function POST(request: NextRequest, { params }: Props) {
         id: true,
         userId: true,
         status: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true
-          }
-        }
       }
     })
 
     if (!ticket) {
       return NextResponse.json({ error: 'Tiket tidak ditemukan' }, { status: 404 })
     }
+
+    // Fetch ticket user manually
+    const ticketUser = await prisma.user.findUnique({
+      where: { id: ticket.userId },
+      select: { id: true, email: true, name: true }
+    })
 
     // Security: Only ticket owner or admin can reply
     if (session.user.role !== 'ADMIN' && ticket.userId !== session.user.id) {
@@ -67,12 +69,14 @@ export async function POST(request: NextRequest, { params }: Props) {
     // Create message
     const message = await prisma.support_ticket_messages.create({
       data: {
+        id: createId(),
         ticketId: params.id,
         senderId: session.user.id,
         senderRole: session.user.role as any,
         message: validated.message,
         attachments: validated.attachments || [],
-        isSystemMessage: false
+        isSystemMessage: false,
+        updatedAt: new Date(),
       }
     })
 
@@ -135,9 +139,9 @@ export async function POST(request: NextRequest, { params }: Props) {
           senderRole: 'ADMIN'
         },
         {
-          id: ticket.user.id,
-          email: ticket.user.email,
-          name: ticket.user.name || 'User'
+          id: ticketUser?.id || '',
+          email: ticketUser?.email || '',
+          name: ticketUser?.name || 'User'
         },
         true
       ).catch(err => console.error('[TICKET_REPLY] Notification error:', err))

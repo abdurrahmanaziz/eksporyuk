@@ -99,9 +99,9 @@ export async function GET(request: NextRequest) {
       }) : []
     ])
 
-    const userMap = new Map(users.map(u => [u.id, u]))
-    const assignedMap = new Map(assignedUsers.map(u => [u.id, u]))
-    const messageCountMap = new Map(messageCounts.map(m => [m.ticketId, m._count]))
+    const userMap = new Map(users.map(u => [u.id, u] as [string, typeof u]))
+    const assignedMap = new Map(assignedUsers.map(u => [u.id, u] as [string, typeof u]))
+    const messageCountMap = new Map(messageCounts.map(m => [m.ticketId, m._count] as [string, number]))
 
     // Get latest message per ticket
     const latestMessages = new Map<string, typeof messages[0]>()

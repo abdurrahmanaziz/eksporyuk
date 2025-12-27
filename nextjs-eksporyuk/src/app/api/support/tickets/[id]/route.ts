@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { ticketNotificationService } from '@/lib/services/ticket-notification-service'
+import { randomBytes } from 'crypto'
+
+const createId = () => randomBytes(16).toString('hex')
 
 export const dynamic = 'force-dynamic'
 
@@ -36,7 +39,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     }
 
     // Manually fetch related data
-    const [user, assignedTo, messages] = await Promise.all([
+    const [ticketUser, ticketAssignedTo, messages] = await Promise.all([
       prisma.user.findUnique({
         where: { id: ticket.userId },
         select: {
@@ -77,8 +80,8 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     const enrichedTicket = {
       ...ticket,
-      user,
-      assignedTo,
+      user: ticketUser,
+      assignedTo: ticketAssignedTo,
       messages: messages.map(msg => ({
         ...msg,
         sender: senderMap.get(msg.senderId) || null
@@ -121,14 +124,19 @@ export async function PATCH(request: NextRequest, { params }: Props) {
         status: true,
         priority: true,
         userId: true,
-        user: { select: { id: true, name: true, email: true } },
-        assignedTo: { select: { id: true, name: true, email: true } }
+        assignedToId: true,
       }
     })
 
     if (!existingTicket) {
       return NextResponse.json({ error: 'Tiket tidak ditemukan' }, { status: 404 })
     }
+
+    // Fetch user and assignedTo manually
+    const [user, assignedTo] = await Promise.all([
+      prisma.user.findUnique({ where: { id: existingTicket.userId }, select: { id: true, name: true, email: true } }),
+      existingTicket.assignedToId ? prisma.user.findUnique({ where: { id: existingTicket.assignedToId }, select: { id: true, name: true, email: true } }) : null
+    ])
 
     const isAdmin = session.user.role === 'ADMIN'
     const isOwner = session.user.id === existingTicket.userId
@@ -221,11 +229,13 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     if (systemMessage) {
       await prisma.support_ticket_messages.create({
         data: {
+          id: createId(),
           ticketId: params.id,
           senderId: session.user.id,
           senderRole: 'ADMIN',
           message: systemMessage.trim(),
-          isSystemMessage: true
+          isSystemMessage: true,
+          updatedAt: new Date(),
         }
       })
     }
