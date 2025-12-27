@@ -152,7 +152,8 @@ export async function GET(
           // Convert each membership to price option format
           prices = allMemberships.map(m => {
             const basePrice = parseFloat(m.price?.toString() || '0')
-            const originalPrice = parseFloat(m.originalPrice?.toString() || basePrice.toString())
+            // PENTING: originalPrice dari database apa adanya, jangan dibuat-buat!
+            const originalPrice = m.originalPrice ? parseFloat(m.originalPrice.toString()) : null
             
             // Parse benefits from features if it's a string array
             let membershipBenefits: string[] = []
@@ -179,7 +180,8 @@ export async function GET(
               duration: m.duration || 'ONE_MONTH',
               label: m.name,
               price: basePrice,
-              originalPrice: originalPrice,
+              marketingPrice: originalPrice, // Harga coret dari database
+              originalPrice: originalPrice,  // Keep for compatibility
               discount: m.discount || 0,
               benefits: membershipBenefits,
               badge: m.isBestSeller ? '🔥 Best Seller' : m.isMostPopular ? '⭐ Most Popular' : '',
@@ -195,16 +197,20 @@ export async function GET(
         // SINGLE CHECKOUT = tampilkan paket ini saja (1 pilihan)
         else if (isSingleCheckout && featuresData.length === 0) {
           console.log('[API] SINGLE CHECKOUT - Building single price from database fields...')
+          console.log('[API] Database price:', plan.price, 'Database originalPrice:', plan.originalPrice)
           
           const basePrice = parseFloat(plan.price?.toString() || '0')
+          // PENTING: Harga coret HARUS dari database, jangan dibuat-buat!
           const originalPrice = plan.originalPrice ? parseFloat(plan.originalPrice.toString()) : null
+          
+          console.log('[API] Processed basePrice:', basePrice, 'Processed originalPrice:', originalPrice)
           
           prices = [{
             duration: plan.duration || 'ONE_MONTH',
             label: plan.name,
             price: basePrice,
-            marketingPrice: originalPrice, // Use marketingPrice for display
-            originalPrice: originalPrice,
+            marketingPrice: originalPrice, // Harga coret dari database membership.originalPrice
+            originalPrice: originalPrice,  // Keep for compatibility
             discount: plan.discount || 0,
             benefits: [],
             badge: plan.isBestSeller ? '🔥 Best Seller' : plan.isMostPopular ? '⭐ Most Popular' : '',
