@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+
+const createId = () => randomBytes(16).toString('hex')
 
 // Generate slug
 function generateSlug(name: string): string {
@@ -27,19 +30,27 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Find original plan with relations
+    // Find original plan (no includes - relations not defined in schema)
     const originalPlan = await prisma.membership.findUnique({
-      where: { id },
-      include: {
-        membershipGroups: true,
-        membershipCourses: true,
-        membershipProducts: true,
-      }
+      where: { id }
     })
 
     if (!originalPlan) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
     }
+
+    // Fetch related data manually via junction tables
+    const [membershipCourses, membershipGroups, membershipProducts] = await Promise.all([
+      prisma.membershipCourse.findMany({
+        where: { membershipId: id }
+      }),
+      prisma.membershipGroup.findMany({
+        where: { membershipId: id }
+      }),
+      prisma.membershipProduct.findMany({
+        where: { membershipId: id }
+      })
+    ])
 
     // Create duplicate with modified name
     const duplicateName = `${originalPlan.name} (Copy)`
@@ -66,6 +77,7 @@ export async function POST(
     // Prisma requires undefined (not null) for optional fields we want to skip
     const duplicatedPlan = await prisma.membership.create({
       data: {
+        id: createId(),
         name: duplicateName,
         slug: finalSlug,
         checkoutSlug: finalSlug,
@@ -97,24 +109,43 @@ export async function POST(
         autoAddToList: originalPlan.autoAddToList,
         autoRemoveOnExpire: originalPlan.autoRemoveOnExpire,
         showInGeneralCheckout: false,
-        // Relations
-        membershipGroups: originalPlan.membershipGroups.length > 0 ? {
-          create: originalPlan.membershipGroups.map(mg => ({
-            groupId: mg.groupId
-          }))
-        } : undefined,
-        membershipCourses: originalPlan.membershipCourses.length > 0 ? {
-          create: originalPlan.membershipCourses.map(mc => ({
-            courseId: mc.courseId
-          }))
-        } : undefined,
-        membershipProducts: originalPlan.membershipProducts.length > 0 ? {
-          create: originalPlan.membershipProducts.map(mp => ({
-            productId: mp.productId
-          }))
-        } : undefined,
+        updatedAt: new Date(),
       }
     })
+
+    // Create relations separately via junction tables
+    if (membershipGroups.length > 0) {
+      await prisma.membershipGroup.createMany({
+        data: membershipGroups.map(mg => ({
+          id: createId(),
+          membershipId: duplicatedPlan.id,
+          groupId: mg.groupId,
+          createdAt: new Date()
+        }))
+      })
+    }
+
+    if (membershipCourses.length > 0) {
+      await prisma.membershipCourse.createMany({
+        data: membershipCourses.map(mc => ({
+          id: createId(),
+          membershipId: duplicatedPlan.id,
+          courseId: mc.courseId,
+          createdAt: new Date()
+        }))
+      })
+    }
+
+    if (membershipProducts.length > 0) {
+      await prisma.membershipProduct.createMany({
+        data: membershipProducts.map(mp => ({
+          id: createId(),
+          membershipId: duplicatedPlan.id,
+          productId: mp.productId,
+          createdAt: new Date()
+        }))
+      })
+    }
 
     return NextResponse.json({
       message: 'Paket berhasil diduplikasi',
