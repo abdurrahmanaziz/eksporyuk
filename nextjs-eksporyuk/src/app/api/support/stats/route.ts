@@ -27,18 +27,18 @@ export async function GET(request: NextRequest) {
       urgentTickets,
       highPriorityTickets
     ] = await Promise.all([
-      prisma.supportTicket.count(),
-      prisma.supportTicket.count({ where: { status: 'OPEN' } }),
-      prisma.supportTicket.count({ where: { status: 'IN_PROGRESS' } }),
-      prisma.supportTicket.count({ where: { status: 'WAITING_USER' } }),
-      prisma.supportTicket.count({ where: { status: 'RESOLVED' } }),
-      prisma.supportTicket.count({ where: { status: 'CLOSED' } }),
-      prisma.supportTicket.count({ where: { priority: 'URGENT' } }),
-      prisma.supportTicket.count({ where: { priority: 'HIGH' } })
+      prisma.support_tickets.count(),
+      prisma.support_tickets.count({ where: { status: 'OPEN' } }),
+      prisma.support_tickets.count({ where: { status: 'IN_PROGRESS' } }),
+      prisma.support_tickets.count({ where: { status: 'WAITING_USER' } }),
+      prisma.support_tickets.count({ where: { status: 'RESOLVED' } }),
+      prisma.support_tickets.count({ where: { status: 'CLOSED' } }),
+      prisma.support_tickets.count({ where: { priority: 'URGENT' } }),
+      prisma.support_tickets.count({ where: { priority: 'HIGH' } })
     ])
 
     // Tickets by category
-    const ticketsByCategory = await prisma.supportTicket.groupBy({
+    const ticketsByCategory = await prisma.support_tickets.groupBy({
       by: ['category'],
       _count: true,
       orderBy: {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
     
-    const recentTickets = await prisma.supportTicket.count({
+    const recentTickets = await prisma.support_tickets.count({
       where: {
         createdAt: {
           gte: sevenDaysAgo
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
 
     // Average response time (in hours)
     // Find tickets that have admin responses by querying messages first
-    const ticketsWithAdminMessages = await prisma.supportTicketMessage.findMany({
+    const ticketsWithAdminMessages = await prisma.support_ticket_messages.findMany({
       where: {
         senderRole: 'ADMIN'
       },
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     if (ticketIdsWithResponse.length > 0) {
       // Get messages for these tickets
-      const allMessages = await prisma.supportTicketMessage.findMany({
+      const allMessages = await prisma.support_ticket_messages.findMany({
         where: {
           ticketId: { in: ticketIdsWithResponse }
         },

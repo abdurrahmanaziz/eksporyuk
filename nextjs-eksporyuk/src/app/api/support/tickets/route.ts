@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     if (category) where.category = category
 
     const [tickets, total] = await Promise.all([
-      prisma.supportTicket.findMany({
+      prisma.support_tickets.findMany({
         where,
         orderBy: [
           { status: 'asc' }, // Open tickets first
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         skip: (page - 1) * limit,
         take: limit
       }),
-      prisma.supportTicket.count({ where })
+      prisma.support_tickets.count({ where })
     ])
 
     // Manually enrich with user data, assignedTo, messages, and counts
@@ -84,12 +84,12 @@ export async function GET(request: NextRequest) {
         where: { id: { in: assignedIds } },
         select: { id: true, name: true, email: true }
       }) : [],
-      ticketIds.length > 0 ? prisma.supportTicketMessage.findMany({
+      ticketIds.length > 0 ? prisma.support_ticket_messages.findMany({
         where: { ticketId: { in: ticketIds } },
         orderBy: { createdAt: 'desc' },
         select: { id: true, ticketId: true, message: true, createdAt: true, isSystemMessage: true }
       }) : [],
-      ticketIds.length > 0 ? prisma.supportTicketMessage.groupBy({
+      ticketIds.length > 0 ? prisma.support_ticket_messages.groupBy({
         by: ['ticketId'],
         where: { ticketId: { in: ticketIds } },
         _count: true
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
     // Generate ticket number: TICKET-YYYYMMDD-XXXX
     const today = new Date()
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '')
-    const count = await prisma.supportTicket.count({
+    const count = await prisma.support_tickets.count({
       where: {
         ticketNumber: {
           startsWith: `TICKET-${dateStr}-`
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
     const ticketNumber = `TICKET-${dateStr}-${String(count + 1).padStart(4, '0')}`
 
     // Create ticket
-    const ticket = await prisma.supportTicket.create({
+    const ticket = await prisma.support_tickets.create({
       data: {
         ticketNumber,
         userId: session.user.id,
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Create the first message separately
-    const firstMessage = await prisma.supportTicketMessage.create({
+    const firstMessage = await prisma.support_ticket_messages.create({
       data: {
         ticketId: ticket.id,
         senderId: session.user.id,

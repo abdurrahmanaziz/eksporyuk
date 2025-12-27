@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     }
 
     // Check ticket exists and user has access
-    const ticket = await prisma.supportTicket.findUnique({
+    const ticket = await prisma.support_tickets.findUnique({
       where: { id: params.id },
       select: {
         id: true,
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     const validated = replySchema.parse(body)
 
     // Create message
-    const message = await prisma.supportTicketMessage.create({
+    const message = await prisma.support_ticket_messages.create({
       data: {
         ticketId: params.id,
         senderId: session.user.id,
@@ -73,22 +73,28 @@ export async function POST(request: NextRequest, { params }: Props) {
         message: validated.message,
         attachments: validated.attachments || [],
         isSystemMessage: false
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            role: true
-          }
-        }
       }
     })
 
+    // Manually fetch sender
+    const sender = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        role: true
+      }
+    })
+
+    const enrichedMessage = {
+      ...message,
+      sender
+    }
+
     // Update ticket status if user replies (change from WAITING_USER to IN_PROGRESS)
     if (ticket.userId === session.user.id && ticket.status === 'WAITING_USER') {
-      await prisma.supportTicket.update({
+      await prisma.support_tickets.update({
         where: { id: params.id },
         data: { status: 'IN_PROGRESS' }
       })
@@ -96,14 +102,14 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     // If admin replies and status is OPEN, change to IN_PROGRESS
     if (session.user.role === 'ADMIN' && ticket.status === 'OPEN') {
-      await prisma.supportTicket.update({
+      await prisma.support_tickets.update({
         where: { id: params.id },
         data: { status: 'IN_PROGRESS' }
       })
     }
 
     // Get full ticket info for notification
-    const fullTicket = await prisma.supportTicket.findUnique({
+    const fullTicket = await prisma.support_tickets.findUnique({
       where: { id: params.id },
       select: {
         id: true,
@@ -165,7 +171,7 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     return NextResponse.json({
       success: true,
-      data: message,
+      data: enrichedMessage,
       message: 'Balasan berhasil dikirim'
     })
   } catch (error) {

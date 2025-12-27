@@ -22,39 +22,8 @@ export async function GET(request: NextRequest, { params }: Props) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const ticket = await prisma.supportTicket.findUnique({
-      where: { id: params.id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            role: true
-          }
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        messages: {
-          include: {
-            sender: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-                role: true
-              }
-            }
-          },
-          orderBy: { createdAt: 'asc' }
-        }
-      }
+    const ticket = await prisma.support_tickets.findUnique({
+      where: { id: params.id }
     })
 
     if (!ticket) {
@@ -66,9 +35,59 @@ export async function GET(request: NextRequest, { params }: Props) {
       return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 })
     }
 
+    // Manually fetch related data
+    const [user, assignedTo, messages] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: ticket.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+          role: true
+        }
+      }),
+      ticket.assignedToId ? prisma.user.findUnique({
+        where: { id: ticket.assignedToId },
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }) : null,
+      prisma.support_ticket_messages.findMany({
+        where: { ticketId: params.id },
+        orderBy: { createdAt: 'asc' }
+      })
+    ])
+
+    // Fetch senders for messages
+    const senderIds = messages.map(m => m.senderId).filter(Boolean)
+    const senders = senderIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: senderIds } },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        role: true
+      }
+    }) : []
+
+    const senderMap = new Map(senders.map(s => [s.id, s]))
+
+    const enrichedTicket = {
+      ...ticket,
+      user,
+      assignedTo,
+      messages: messages.map(msg => ({
+        ...msg,
+        sender: senderMap.get(msg.senderId) || null
+      }))
+    }
+
     return NextResponse.json({
       success: true,
-      data: ticket
+      data: enrichedTicket
     })
   } catch (error) {
     console.error(`[GET /api/support/tickets/${params.id}] Error:`, error)
@@ -92,7 +111,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     }
 
     // Fetch ticket and validate access
-    const existingTicket = await prisma.supportTicket.findUnique({
+    const existingTicket = await prisma.support_tickets.findUnique({
       where: { id: params.id },
       select: {
         id: true,
@@ -167,30 +186,40 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     }
 
     // Update ticket
-    const ticket = await prisma.supportTicket.update({
+    const ticket = await prisma.support_tickets.update({
       where: { id: params.id },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
+      data: updateData
     })
+
+    // Manually fetch user and assignedTo
+    const [user, assignedTo] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: ticket.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }),
+      ticket.assignedToId ? prisma.user.findUnique({
+        where: { id: ticket.assignedToId },
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }) : null
+    ])
+
+    const enrichedTicket = {
+      ...ticket,
+      user,
+      assignedTo
+    }
 
     // Add system message
     if (systemMessage) {
-      await prisma.supportTicketMessage.create({
+      await prisma.support_ticket_messages.create({
         data: {
           ticketId: params.id,
           senderId: session.user.id,
@@ -203,36 +232,36 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
     // Send notification to user if status changed
     const oldStatus = existingTicket.status
-    const newStatus = ticket.status
+    const newStatus = enrichedTicket.status
 
     if (newStatus && newStatus !== oldStatus) {
       if (newStatus === 'RESOLVED') {
         ticketNotificationService.notifyTicketResolved(
           {
             ticketId: params.id,
-            ticketNumber: ticket.ticketNumber,
-            title: ticket.title,
-            category: ticket.category
+            ticketNumber: enrichedTicket.ticketNumber,
+            title: enrichedTicket.title,
+            category: enrichedTicket.category
           },
           {
-            id: ticket.user.id,
-            email: ticket.user.email,
-            name: ticket.user.name || 'User'
+            id: enrichedTicket.user!.id,
+            email: enrichedTicket.user!.email,
+            name: enrichedTicket.user!.name || 'User'
           }
         ).catch(err => console.error('[TICKET_UPDATE] Notification error:', err))
       } else {
         ticketNotificationService.notifyStatusChange(
           {
             ticketId: params.id,
-            ticketNumber: ticket.ticketNumber,
-            title: ticket.title,
-            category: ticket.category,
+            ticketNumber: enrichedTicket.ticketNumber,
+            title: enrichedTicket.title,
+            category: enrichedTicket.category,
             status: newStatus
           },
           {
-            id: ticket.user.id,
-            email: ticket.user.email,
-            name: ticket.user.name || 'User'
+            id: enrichedTicket.user!.id,
+            email: enrichedTicket.user!.email,
+            name: enrichedTicket.user!.name || 'User'
           },
           oldStatus,
           newStatus
@@ -242,7 +271,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
     return NextResponse.json({
       success: true,
-      data: ticket,
+      data: enrichedTicket,
       message: 'Tiket berhasil diupdate'
     })
   } catch (error) {
@@ -266,7 +295,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
     }
 
     // Instead of hard delete, just close the ticket
-    await prisma.supportTicket.update({
+    await prisma.support_tickets.update({
       where: { id: params.id },
       data: {
         status: 'CLOSED',
