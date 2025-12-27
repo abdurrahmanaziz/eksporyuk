@@ -10,9 +10,13 @@ export async function GET(
   try {
     const { slug } = await params
     
-    console.log(`[API] Fetching membership with checkoutSlug or slug: ${slug}`)
+    console.log(`[API] Fetching membership with slug: ${slug}`)
     
-    // Try to find by checkoutSlug first, then fallback to slug
+    // LOGIC SEDERHANA:
+    // 1. Cari membership dengan checkoutSlug atau slug yang cocok
+    // 2. Kalau ketemu = ini SINGLE CHECKOUT (tampilkan paket ini saja)
+    // 3. Kalau tidak ketemu = ini GENERAL CHECKOUT (tampilkan semua paket)
+    
     const plan = await prisma.membership.findFirst({
       where: { 
         OR: [
@@ -91,6 +95,15 @@ export async function GET(
     console.log('[API] Features type:', typeof plan.features)
     console.log('[API] Features value:', JSON.stringify(plan.features).substring(0, 200))
     
+    // LOGIC BARU YANG BENAR:
+    // Kalau URL slug COCOK dengan checkoutSlug membership = SINGLE CHECKOUT (tampilkan paket ini aja)
+    // Kalau URL slug adalah slug general (misal 'pro') = GENERAL CHECKOUT (tampilkan semua paket)
+    
+    const isSingleCheckout = (plan.checkoutSlug === slug || plan.slug === slug) && plan.checkoutSlug !== 'pro' && plan.slug !== 'pro'
+    
+    console.log('[API] Checkout type:', isSingleCheckout ? 'SINGLE (only this package)' : 'GENERAL (all packages)')
+    console.log('[API] Matched checkoutSlug:', plan.checkoutSlug, 'Requested slug:', slug)
+    
     try {
       let featuresData = plan.features
       
@@ -103,10 +116,9 @@ export async function GET(
       if (Array.isArray(featuresData)) {
         console.log('[API] Features is an array with', featuresData.length, 'items')
         
-        // EMPTY ARRAY = General Checkout Page (show all membership options)
-        if (featuresData.length === 0 && plan.showInGeneralCheckout === true) {
-          console.log('[API] Empty features array + showInGeneralCheckout = true - this is a GENERAL CHECKOUT PAGE')
-          console.log('[API] Fetching ALL active membership plans as options...')
+        // GENERAL CHECKOUT = tampilkan semua paket sebagai pilihan
+        if (!isSingleCheckout && featuresData.length === 0) {
+          console.log('[API] GENERAL CHECKOUT - Fetching ALL active membership plans as options...')
           
           // Fetch all active memberships as price options
           const allMemberships = await prisma.membership.findMany({
@@ -180,10 +192,9 @@ export async function GET(
           console.log('[API] Converted to', prices.length, 'price options')
           benefits = [] // No general benefits for multi-option page
         }
-        // EMPTY ARRAY but NOT general checkout = Single membership checkout
-        else if (featuresData.length === 0 && plan.showInGeneralCheckout !== true) {
-          console.log('[API] Empty features array but showInGeneralCheckout = false - SINGLE MEMBERSHIP')
-          console.log('[API] Building single price from database fields...')
+        // SINGLE CHECKOUT = tampilkan paket ini saja (1 pilihan)
+        else if (isSingleCheckout && featuresData.length === 0) {
+          console.log('[API] SINGLE CHECKOUT - Building single price from database fields...')
           
           const basePrice = parseFloat(plan.price?.toString() || '0')
           const originalPrice = plan.originalPrice ? parseFloat(plan.originalPrice.toString()) : null
