@@ -24,26 +24,19 @@ export async function GET(request: NextRequest) {
         userId: session.user.id
       },
       include: {
-        post: {
+        Post: {
           include: {
-            author: {
+            User: {
               select: {
                 id: true,
                 name: true,
                 avatar: true
               }
             },
-            group: {
-              select: {
-                id: true,
-                name: true,
-                slug: true
-              }
-            },
             _count: {
               select: {
-                likes: true,
-                comments: true
+                PostReaction: true,
+                PostComment: true
               }
             }
           }
@@ -56,6 +49,19 @@ export async function GET(request: NextRequest) {
       skip: offset
     })
 
+    // Transform data to match frontend expected structure
+    const transformedPosts = savedPosts.map(item => ({
+      ...item,
+      post: item.Post ? {
+        ...item.Post,
+        author: item.Post.User,
+        _count: {
+          likes: item.Post._count?.PostReaction || 0,
+          comments: item.Post._count?.PostComment || 0
+        }
+      } : null
+    }))
+
     const total = await prisma.savedPost.count({
       where: {
         userId: session.user.id
@@ -64,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      savedPosts,
+      savedPosts: transformedPosts,
       total,
       hasMore: offset + savedPosts.length < total
     })
