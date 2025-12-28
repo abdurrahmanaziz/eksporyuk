@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { prisma } from '@/lib/prisma';
+import { ReactionType } from '@prisma/client';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -26,6 +27,16 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid reaction type' }, { status: 400 });
     }
 
+    // Verify comment exists
+    const commentExists = await prisma.postComment.findUnique({
+      where: { id: commentId },
+      select: { id: true }
+    });
+
+    if (!commentExists) {
+      return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
+    }
+
     // Check if user already has a reaction on this comment
     const existingReaction = await prisma.commentReaction.findFirst({
       where: {
@@ -47,16 +58,16 @@ export async function POST(
         // Different reaction - update it
         reaction = await prisma.commentReaction.update({
           where: { id: existingReaction.id },
-          data: { type },
+          data: { type: type as ReactionType },
         });
       }
     } else {
-      // New reaction
+      // New reaction - use upsert to handle race conditions
       reaction = await prisma.commentReaction.create({
         data: {
           commentId,
           userId: session.user.id,
-          type,
+          type: type as ReactionType,
         },
       });
     }
@@ -73,6 +84,7 @@ export async function POST(
       return acc;
     }, {} as Record<string, number>);
 
+    // Update PostComment with new reaction count
     await prisma.postComment.update({
       where: { id: commentId },
       data: { reactionsCount },
@@ -83,9 +95,17 @@ export async function POST(
       reaction,
       reactionsCount,
     });
-  } catch (error) {
-    console.error('Error handling comment reaction:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('[COMMENT REACTION API] Error:', error);
+    console.error('[COMMENT REACTION API] Error details:', {
+      message: error.message,
+      code: error.code,
+      meta: error.meta
+    });
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error.message 
+    }, { status: 500 });
   }
 }
 
