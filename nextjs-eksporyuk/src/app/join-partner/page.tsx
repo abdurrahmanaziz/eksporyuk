@@ -140,14 +140,17 @@ const RichAffiliateLandingPage = () => {
           <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-300">
             Ubah traffic Anda menjadi pundi-pundi rupiah. Bergabunglah dengan program affiliate paling menguntungkan di industri ekspor dan mulailah membangun kerajaan finansial Anda.
           </p>
-          <motion.div className="mt-10" variants={itemVariants}>
+          <motion.div variants={itemVariants} className="relative z-10">
             <Link href="/auth/register?role=AFFILIATE" passHref>
-              <Button 
-                size="lg" 
-                style={{ backgroundColor: brandColor, boxShadow: `0 4px 30px ${brandColor}40` }}
-                className="text-white font-bold text-lg px-8 py-6 rounded-full transform hover:scale-105 transition-transform duration-300"
+              <Button
+                size="lg"
+                style={{
+                  backgroundColor: brandColor,
+                  boxShadow: `0 4px 30px ${brandColor}40`,
+                }}
+                className="w-full md:w-auto text-white font-bold text-base md:text-lg px-6 py-5 md:px-8 md:py-6 rounded-full transform hover:scale-105 transition-transform duration-300"
               >
-                Daftar Sekarang & Raih Komisi Pertama Anda
+                Daftar Sekarang & Raih Komisi Partner
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
@@ -196,17 +199,17 @@ const RichAffiliateLandingPage = () => {
             <motion.div className="space-y-4" variants={itemVariants}>
               <div className="flex justify-center items-center w-20 h-20 mx-auto bg-gray-800 border-2 rounded-full text-3xl font-bold" style={{ borderColor: brandColor, color: brandColor }}>1</div>
               <h3 className="text-xl font-semibold text-white">Daftar</h3>
-              <p className="text-gray-400">Isi form pendaftaran dalam 60 detik.</p>
+              <p className="text-gray-400">Isi form pendaftaran singkat dalam waktu kurang dari 60 detik.</p>
             </motion.div>
             <motion.div className="space-y-4" variants={itemVariants}>
               <div className="flex justify-center items-center w-20 h-20 mx-auto bg-gray-800 border-2 rounded-full text-3xl font-bold" style={{ borderColor: '#22d3ee', color: '#22d3ee' }}>2</div>
               <h3 className="text-xl font-semibold text-white">Promosi</h3>
-              <p className="text-gray-400">Bagikan link unik Anda di sosial media.</p>
+              <p className="text-gray-400">Bagikan link unik Anda di berbagai platform sosial media.</p>
             </motion.div>
             <motion.div className="space-y-4" variants={itemVariants}>
               <div className="flex justify-center items-center w-20 h-20 mx-auto bg-gray-800 border-2 rounded-full text-3xl font-bold" style={{ borderColor: '#60a5fa', color: '#60a5fa' }}>3</div>
               <h3 className="text-xl font-semibold text-white">Hasilkan</h3>
-              <p className="text-gray-400">Dapatkan komisi dari setiap penjualan.</p>
+              <p className="text-gray-400">Dapatkan komisi instan dari setiap penjualan yang berhasil.</p>
             </motion.div>
           </div>
         </motion.section>
@@ -259,10 +262,13 @@ const RichAffiliateLandingPage = () => {
           </p>
           <div className="mt-8">
             <Link href="/auth/register?role=AFFILIATE" passHref>
-              <Button 
-                size="lg" 
-                style={{ backgroundColor: brandColor, boxShadow: `0 4px 30px ${brandColor}40` }}
-                className="text-white font-bold text-lg px-8 py-6 rounded-full transform hover:scale-105 transition-transform duration-300"
+              <Button
+                size="lg"
+                style={{
+                  backgroundColor: brandColor,
+                  boxShadow: `0 4px 30px ${brandColor}40`,
+                }}
+                className="w-full md:w-auto text-white font-bold text-base md:text-lg px-6 py-5 md:px-8 md:py-6 rounded-full transform hover:scale-105 transition-transform duration-300"
               >
                 Daftar & Dapatkan Komisi Pertamamu
                 <ArrowRight className="ml-2 w-5 h-5" />
