@@ -310,14 +310,27 @@ function CourseCard({
   onEnroll: (id: string) => void
   isEnrolled?: boolean
 }) {
+  const { data: session } = useSession()
+  
   const getMonetizationBadge = () => {
+    // PRD: Badge untuk affiliate-only courses
+    if (course.affiliateOnly || course.isAffiliateTraining) {
+      return <Badge className="bg-red-500 text-white">🎯 Khusus Affiliate</Badge>
+    }
+    
     // PRD: Tampilkan badge berdasarkan akses
     if (course.accessStatus === 'membership' || course.isFreeForUser) {
       return <Badge className="bg-green-500 text-white">🎫 Gratis (Member)</Badge>
     }
+    
     if (course.roleAccess === 'MEMBER') {
       return <Badge className="bg-orange-500 text-white">👤 Member Only</Badge>
     }
+    
+    if (course.roleAccess === 'AFFILIATE') {
+      return <Badge className="bg-purple-500 text-white">🎯 Affiliate Only</Badge>
+    }
+    
     switch (course.monetizationType) {
       case 'FREE':
         return <Badge className="bg-green-500 text-white">Gratis</Badge>
@@ -328,6 +341,46 @@ function CourseCard({
       default:
         return null
     }
+  }
+
+  const canAccessCourse = () => {
+    if (!session?.user) return false
+    
+    const userRole = session.user.role
+    
+    // Admin dan Mentor always can access
+    if (['ADMIN', 'MENTOR'].includes(userRole)) return true
+    
+    // Check affiliate-only restrictions
+    if (course.affiliateOnly || course.isAffiliateTraining) {
+      return userRole === 'AFFILIATE'
+    }
+    
+    // Check roleAccess
+    if (course.roleAccess === 'AFFILIATE') {
+      return userRole === 'AFFILIATE'
+    }
+    
+    if (course.roleAccess === 'MEMBER') {
+      // Will be checked server-side, but assume members can access
+      return ['MEMBER_PREMIUM', 'MEMBER_FREE'].includes(userRole) || course.accessStatus === 'membership'
+    }
+    
+    return true
+  }
+
+  const getAccessMessage = () => {
+    if (canAccessCourse()) return null
+    
+    if (course.affiliateOnly || course.isAffiliateTraining || course.roleAccess === 'AFFILIATE') {
+      return 'Kursus ini hanya tersedia untuk affiliate. Daftar sebagai affiliate untuk akses.'
+    }
+    
+    if (course.roleAccess === 'MEMBER') {
+      return 'Kursus ini hanya tersedia untuk member aktif. Beli membership untuk akses.'
+    }
+    
+    return 'Anda tidak memiliki akses ke kursus ini.'
   }
 
   const formatPrice = (price: number) => {
@@ -437,7 +490,16 @@ function CourseCard({
             )}
           </div>
 
-          {isEnrolled || course.accessStatus === 'enrolled' ? (
+          {!canAccessCourse() ? (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled
+              title={getAccessMessage() || ''}
+            >
+              <span className="text-xs">Tidak Tersedia</span>
+            </Button>
+          ) : isEnrolled || course.accessStatus === 'enrolled' ? (
             <Link href={`/learn/${course.slug}`}>
               <Button size="sm">Lanjutkan</Button>
             </Link>
@@ -458,6 +520,15 @@ function CourseCard({
             </Button>
           )}
         </div>
+        
+        {/* Access restriction message */}
+        {getAccessMessage() && (
+          <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md">
+            <p className="text-xs text-amber-800">
+              {getAccessMessage()}
+            </p>
+          </div>
+        )}
       </div>
     </Card>
   )

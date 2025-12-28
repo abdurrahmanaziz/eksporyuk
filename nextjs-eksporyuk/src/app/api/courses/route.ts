@@ -51,16 +51,67 @@ export async function GET(req: NextRequest) {
 
       // 2. Role-based filtering untuk public listing
       if (!session?.user || !['ADMIN', 'MENTOR'].includes(session.user.role)) {
-        // Exclude affiliate-only courses dari listing publik
-        if (!includeAffiliate) {
-          where.affiliateOnly = false
-          where.isAffiliateTraining = false
-          where.isAffiliateMaterial = false
-          where.roleAccess = { not: 'AFFILIATE' }
+        // User role untuk filtering
+        const userRole = session?.user?.role || 'GUEST'
+        
+        // Check if user has active membership
+        let hasActiveMembership = false
+        if (session?.user?.id) {
+          const activeMembership = await prisma.userMembership.findFirst({
+            where: {
+              userId: session.user.id,
+              status: 'ACTIVE',
+              endDate: { gte: new Date() }
+            }
+          })
+          hasActiveMembership = !!activeMembership
         }
         
-        // Only show publicly listed courses
-        where.isPublicListed = true
+        // Build role-based filters
+        const roleFilters: any[] = []
+        
+        // 1. Exclude affiliate-only courses if user is not affiliate
+        if (userRole !== 'AFFILIATE') {
+          roleFilters.push({
+            affiliateOnly: false
+          })
+          roleFilters.push({
+            isAffiliateTraining: false
+          })
+          roleFilters.push({
+            isAffiliateMaterial: false
+          })
+        }
+        
+        // 2. Filter based on roleAccess
+        const allowedRoleAccess: any[] = ['PUBLIC']
+        
+        if (userRole === 'AFFILIATE') {
+          allowedRoleAccess.push('AFFILIATE')
+        }
+        
+        if (hasActiveMembership || ['MEMBER_PREMIUM', 'MEMBER_FREE'].includes(userRole)) {
+          allowedRoleAccess.push('MEMBER')
+        }
+        
+        // 3. Combine filters
+        where.AND = [
+          {
+            OR: [
+              { roleAccess: { in: allowedRoleAccess } },
+              // Allow if any affiliate flags are false (for non-affiliates)
+              ...(userRole !== 'AFFILIATE' ? [{
+                AND: [
+                  { affiliateOnly: false },
+                  { isAffiliateTraining: false },
+                  { isAffiliateMaterial: false }
+                ]
+              }] : [])
+            ]
+          },
+          // Only show publicly listed courses
+          { isPublicListed: true }
+        ]
       }
 
       // 3. Specific roleAccess filter

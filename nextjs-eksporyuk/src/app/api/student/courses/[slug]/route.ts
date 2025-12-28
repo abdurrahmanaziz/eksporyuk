@@ -56,10 +56,36 @@ export async function GET(
     }
 
     // Check if user has access to this course
-    const hasAccess = await checkCourseAccess(userId, course.id)
+    const hasAccess = await checkCourseAccess(userId, course.id, course, session.user.role)
 
     if (!hasAccess) {
-      return NextResponse.json({ error: 'No access to this course' }, { status: 403 })
+      // Check specific reasons for denial
+      let denialReason = 'No access to this course'
+      
+      // Check affiliate-only restriction
+      if (course.affiliateOnly && session.user.role !== 'AFFILIATE' && !['ADMIN', 'MENTOR'].includes(session.user.role)) {
+        denialReason = 'This course is only available for affiliates. Please join our affiliate program first.'
+      }
+      
+      // Check roleAccess restriction
+      if (course.roleAccess === 'AFFILIATE' && session.user.role !== 'AFFILIATE' && !['ADMIN', 'MENTOR'].includes(session.user.role)) {
+        denialReason = 'This course requires affiliate role. Please join our affiliate program.'
+      }
+      
+      if (course.roleAccess === 'MEMBER') {
+        const hasActiveMembership = await prisma.userMembership.findFirst({
+          where: {
+            userId,
+            status: 'ACTIVE',
+            endDate: { gte: new Date() }
+          }
+        })
+        if (!hasActiveMembership && !['ADMIN', 'MENTOR'].includes(session.user.role)) {
+          denialReason = 'This course is only available for members. Please purchase a membership first.'
+        }
+      }
+      
+      return NextResponse.json({ error: denialReason }, { status: 403 })
     }
 
     // Get user's progress for this course
@@ -134,7 +160,58 @@ export async function GET(
   }
 }
 
-async function checkCourseAccess(userId: string, courseId: string): Promise<boolean> {
+async function checkCourseAccess(userId: string, courseId: string, course: any, userRole: string): Promise<boolean> {
+  // Admin and Mentor always have access
+  if (['ADMIN', 'MENTOR'].includes(userRole)) {
+    return true
+  }
+
+  // Get course details for role-based checks
+  const courseData = course || await prisma.course.findUnique({
+    where: { id: courseId },
+    select: {
+      id: true,
+      affiliateOnly: true,
+      isAffiliateTraining: true,
+      isAffiliateMaterial: true,
+      roleAccess: true,
+      monetizationType: true,
+      price: true
+    }
+  })
+
+  if (!courseData) return false
+
+  // Check affiliate-only restrictions
+  if (courseData.affiliateOnly || courseData.isAffiliateTraining || courseData.isAffiliateMaterial) {
+    if (userRole !== 'AFFILIATE') {
+      return false
+    }
+  }
+
+  // Check roleAccess restrictions
+  if (courseData.roleAccess === 'AFFILIATE' && userRole !== 'AFFILIATE') {
+    return false
+  }
+
+  if (courseData.roleAccess === 'MEMBER') {
+    const hasActiveMembership = await prisma.userMembership.findFirst({
+      where: {
+        userId,
+        status: 'ACTIVE',
+        endDate: { gte: new Date() }
+      }
+    })
+    if (!hasActiveMembership && !['MEMBER_PREMIUM', 'MEMBER_FREE'].includes(userRole)) {
+      return false
+    }
+  }
+
+  // Free courses are accessible to all (if they pass role checks above)
+  if (courseData.monetizationType === 'FREE' || Number(courseData.price) === 0) {
+    return true
+  }
+
   // Check direct enrollment
   const enrollment = await prisma.courseEnrollment.findUnique({
     where: {
