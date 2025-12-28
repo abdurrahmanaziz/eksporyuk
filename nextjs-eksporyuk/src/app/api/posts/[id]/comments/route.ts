@@ -26,7 +26,33 @@ export async function GET(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Get comments with proper relation names (simplified to avoid deep nesting issues)
+    // Nested reply include structure for up to 5 levels
+    const nestedReplyInclude = {
+      User: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          username: true,
+        },
+      },
+      CommentReaction: {
+        select: {
+          id: true,
+          userId: true,
+          type: true,
+        },
+      },
+    }
+
+    // Build nested structure for 5 levels
+    const level5 = { ...nestedReplyInclude }
+    const level4 = { ...nestedReplyInclude, other_PostComment: { include: level5, orderBy: { createdAt: 'asc' as const } } }
+    const level3 = { ...nestedReplyInclude, other_PostComment: { include: level4, orderBy: { createdAt: 'asc' as const } } }
+    const level2 = { ...nestedReplyInclude, other_PostComment: { include: level3, orderBy: { createdAt: 'asc' as const } } }
+    const level1 = { ...nestedReplyInclude, other_PostComment: { include: level2, orderBy: { createdAt: 'asc' as const } } }
+
+    // Get comments with proper relation names (5 levels of nested replies)
     const comments = await prisma.postComment.findMany({
       where: {
         postId: id,
@@ -41,17 +67,15 @@ export async function GET(
             username: true,
           },
         },
-        other_PostComment: {
-          include: {
-            User: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-                username: true,
-              },
-            },
+        CommentReaction: {
+          select: {
+            id: true,
+            userId: true,
+            type: true,
           },
+        },
+        other_PostComment: {
+          include: level1,
           orderBy: {
             createdAt: 'asc',
           },

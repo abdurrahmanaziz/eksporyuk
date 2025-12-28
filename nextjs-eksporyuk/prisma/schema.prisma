@@ -827,7 +827,7 @@ model ChatRoom {
 }
 
 model CommentReaction {
-  id          String       @id
+  id          String       @id @default(cuid())
   commentId   String
   userId      String
   type        ReactionType @default(LIKE)

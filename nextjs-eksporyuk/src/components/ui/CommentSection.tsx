@@ -45,11 +45,19 @@ interface Comment {
     replies: number
   }
   reactionsCount?: Record<string, number>
+  CommentReaction?: Array<{
+    id: string
+    userId: string
+    type: string
+  }>
   // Support both naming conventions
   replies?: Comment[]
   other_PostComment?: Comment[]
   parentId: string | null
 }
+
+// Maximum depth for displaying nested replies
+const MAX_DISPLAY_DEPTH = 5
 
 interface CommentSectionProps {
   postId: string
@@ -78,12 +86,21 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
   useEffect(() => {
     const expandAll: Record<string, boolean> = {}
     const initialLikes: Record<string, number> = {}
+    const initialLiked: Record<string, boolean> = {}
+    
     const processComments = (commentList: Comment[]) => {
       commentList.forEach(comment => {
-        // Set initial like counts from reactionsCount
+        // Set initial like counts from reactionsCount or CommentReaction
         if (comment.reactionsCount) {
           const totalLikes = Object.values(comment.reactionsCount).reduce((a, b) => a + b, 0)
           initialLikes[comment.id] = totalLikes
+        } else if (comment.CommentReaction) {
+          initialLikes[comment.id] = comment.CommentReaction.length
+          // Check if current user has liked
+          if (session?.user?.id) {
+            const userLiked = comment.CommentReaction.some(r => r.userId === session.user.id)
+            initialLiked[comment.id] = userLiked
+          }
         }
         const replies = getReplies(comment)
         if (replies.length > 0) {
@@ -95,7 +112,8 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
     processComments(comments)
     setExpandedReplies(expandAll)
     setLikeCounts(prev => ({ ...prev, ...initialLikes }))
-  }, [comments])
+    setLikedComments(prev => ({ ...prev, ...initialLiked }))
+  }, [comments, session?.user?.id])
 
   // Focus reply input when replying
   useEffect(() => {
@@ -450,14 +468,33 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
 
             {/* Nested Replies */}
             {hasReplies && isExpanded && (
-              <div className="mt-3 space-y-3">
-                {replies.map(reply => renderComment(reply, depth + 1))}
+              <div className={`mt-3 space-y-3 ${depth < MAX_DISPLAY_DEPTH - 1 ? 'pl-2 border-l-2 border-gray-100 dark:border-gray-800' : ''}`}>
+                {depth < MAX_DISPLAY_DEPTH ? (
+                  replies.map(reply => renderComment(reply, depth + 1))
+                ) : (
+                  <button
+                    onClick={() => {
+                      // Could navigate to full thread view or expand inline
+                      toast.info('Lihat thread lengkap untuk balasan lebih dalam')
+                    }}
+                    className="text-xs text-blue-600 font-medium hover:underline flex items-center gap-1"
+                  >
+                    <MessageCircle className="h-3 w-3" />
+                    Lihat {replies.length} balasan lainnya...
+                  </button>
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
     )
+  }
+
+  // Count total replies recursively
+  const countAllReplies = (comment: Comment): number => {
+    const replies = getReplies(comment)
+    return replies.length + replies.reduce((acc, reply) => acc + countAllReplies(reply), 0)
   }
 
   // Get top-level comments only
