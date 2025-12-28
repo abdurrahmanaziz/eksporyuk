@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     // Get mentor's courses
     const courses = await prisma.course.findMany({
-      where: { mentorId: mentorProfile.id },
+      where: { mentorId: session.user.id },
       select: {
         id: true,
         title: true,
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
 
     // Course performance (top 3 by enrollment)
     const topCourses = await prisma.course.findMany({
-      where: { mentorId: mentorProfile.id },
+      where: { mentorId: session.user.id },
       select: {
         id: true,
         title: true,

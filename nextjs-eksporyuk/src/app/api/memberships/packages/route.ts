@@ -63,7 +63,6 @@ export async function GET(request: NextRequest) {
         formLogo: true,
         formBanner: true,
         formDescription: true,
-        // Note: _count removed - not available in production schema
       },
     })
 
