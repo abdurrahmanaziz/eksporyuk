@@ -33,12 +33,10 @@ export async function POST(
     }
 
     // Check if user already saved this post
-    const existingSave = await prisma.savedPost.findUnique({
+    const existingSave = await prisma.savedPost.findFirst({
       where: {
-        postId_userId: {
-          postId,
-          userId: session.user.id,
-        },
+        postId,
+        userId: session.user.id,
       },
     })
 
@@ -103,12 +101,10 @@ export async function GET(
 
     const { id: postId } = await params
 
-    const savedPost = await prisma.savedPost.findUnique({
+    const savedPost = await prisma.savedPost.findFirst({
       where: {
-        postId_userId: {
-          postId,
-          userId: session.user.id,
-        },
+        postId,
+        userId: session.user.id,
       },
     })
 

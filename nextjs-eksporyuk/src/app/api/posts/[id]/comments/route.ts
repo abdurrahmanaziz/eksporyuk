@@ -36,7 +36,7 @@ export async function GET(
           username: true,
         },
       },
-      replies: {
+      other_PostComment: {
         include: {
           User: {
             select: {
@@ -46,7 +46,7 @@ export async function GET(
               username: true,
             },
           },
-          replies: {
+          other_PostComment: {
             include: {
               User: {
                 select: {
@@ -82,7 +82,7 @@ export async function GET(
             username: true,
           },
         },
-        replies: {
+        other_PostComment: {
           include: replyInclude,
           orderBy: {
             createdAt: 'asc',
