@@ -560,8 +560,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       {/* Editor Content Area with Avatar */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
         {/* Avatar + Editor Area */}
-        <div className="flex gap-3 items-start p-4 pb-2">
-          {userAvatar && (
+        <div className={`flex gap-3 p-4 pb-2 ${
+          selectedBackground && content.images.length === 0 && content.videos.length === 0 
+            ? 'flex-col items-center' 
+            : 'items-start'
+        }`}>
+          {userAvatar && !(selectedBackground && content.images.length === 0 && content.videos.length === 0) && (
             <Avatar className="w-12 h-12 flex-shrink-0">
               <AvatarImage src={userAvatar} alt={userName || 'User'} />
               <AvatarFallback className="bg-blue-500 text-white text-base">
@@ -569,14 +573,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               </AvatarFallback>
             </Avatar>
           )}
-          <div className="flex-1 relative">
-            {/* Background Preview Layer */}
+          <div className={`relative ${
+            selectedBackground && content.images.length === 0 && content.videos.length === 0 
+              ? 'w-full' 
+              : 'flex-1'
+          }`}>
+            {/* Background Preview Layer - Full width card style like Facebook */}
             {selectedBackground && content.images.length === 0 && content.videos.length === 0 && (
               <div
-                className="absolute inset-0 rounded-xl -m-2 p-4 pointer-events-none"
+                className="absolute inset-0 rounded-xl pointer-events-none"
                 style={{
                   ...selectedBackground.style,
                   zIndex: 0,
+                  margin: '-16px',
+                  padding: '16px',
                 }}
               />
             )}
@@ -585,10 +595,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               contentEditable
               onInput={handleInput}
               onKeyDown={handleKeyDown}
-              className={`min-h-[60px] focus:outline-none text-[15px] leading-relaxed relative z-10 ${
+              className={`focus:outline-none leading-relaxed relative z-10 ${
                 selectedBackground && content.images.length === 0 && content.videos.length === 0
-                  ? 'font-semibold text-lg'
-                  : 'text-gray-900 dark:text-gray-100'
+                  ? 'min-h-[180px] flex items-center justify-center text-center font-bold text-xl p-6'
+                  : 'min-h-[60px] text-[15px] text-gray-900 dark:text-gray-100'
               }`}
               style={{
                 whiteSpace: 'pre-wrap',
@@ -662,18 +672,42 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <span className="text-[11px] font-bold text-gray-400 tracking-wide">GIF</span>
           </button>
           
-          {/* Background Selector Button */}
+          {/* Background Selector Button - Click to shuffle/change background */}
           {allowBackground && content.images.length === 0 && content.videos.length === 0 && (
             <button
-              onClick={() => setShowBackgroundPicker(!showBackgroundPicker)}
+              onClick={() => {
+                if (selectedBackground && content.text.trim()) {
+                  // If background exists, shuffle to new random background
+                  const newBg = getRandomBackground();
+                  setSelectedBackground(newBg);
+                  setContent(prev => ({ ...prev, backgroundId: newBg.id }));
+                } else {
+                  // Show picker or toggle off
+                  setShowBackgroundPicker(!showBackgroundPicker);
+                }
+              }}
               className={`p-2 rounded-md transition-colors ${
                 selectedBackground 
                   ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200' 
                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
-              title="Pilih Background"
+              title={selectedBackground ? "Ganti Background (Klik untuk shuffle)" : "Pilih Background"}
             >
               <Palette size={20} className={selectedBackground ? 'text-indigo-600' : 'text-gray-400'} />
+            </button>
+          )}
+          
+          {/* Remove Background Button */}
+          {allowBackground && selectedBackground && content.images.length === 0 && content.videos.length === 0 && (
+            <button
+              onClick={() => {
+                setSelectedBackground(null);
+                setContent(prev => ({ ...prev, backgroundId: undefined }));
+              }}
+              className="p-2 rounded-md hover:bg-red-100 transition-colors"
+              title="Hapus Background"
+            >
+              <X size={18} className="text-red-500" />
             </button>
           )}
           
