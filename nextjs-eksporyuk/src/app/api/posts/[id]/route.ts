@@ -157,26 +157,29 @@ export async function PATCH(
         ...(content !== undefined && { content }),
         ...(images !== undefined && { images }),
         updatedAt: new Date(),
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-          },
-        },
-      },
+      }
     })
 
-    return NextResponse.json({ post })
+    // Get author and count manually (no relations in schema)
+    const [author, commentsCount, likesCount] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: post.authorId },
+        select: { id: true, name: true, email: true, avatar: true }
+      }),
+      prisma.postComment.count({ where: { postId: post.id } }),
+      prisma.postLike.count({ where: { postId: post.id } })
+    ])
+
+    const postWithDetails = {
+      ...post,
+      author,
+      _count: {
+        comments: commentsCount,
+        likes: likesCount,
+      },
+    }
+
+    return NextResponse.json({ post: postWithDetails })
   } catch (error) {
     console.error('Error updating post:', error)
     return NextResponse.json(

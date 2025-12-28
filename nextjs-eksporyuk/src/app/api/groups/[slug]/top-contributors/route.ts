@@ -59,20 +59,22 @@ export async function GET(
     // Get group members
     const groupMembers = await prisma.groupMember.findMany({
       where: { groupId: group.id },
-      select: { 
-        userId: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            role: true
-          }
-        }
-      }
+      select: { userId: true }
     })
 
     const memberIds = groupMembers.map(m => m.userId)
+
+    // Get user details for members
+    const memberUsers = await prisma.user.findMany({
+      where: { id: { in: memberIds } },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        role: true
+      }
+    })
+    const userMap = new Map(memberUsers.map(u => [u.id, u]))
 
     // Get posts count per user in this group
     const postsCount = await prisma.post.groupBy({
@@ -85,50 +87,41 @@ export async function GET(
       _count: { id: true }
     })
 
-    // Get comments count per user in this group's posts
-    const commentsCount = await prisma.postComment.groupBy({
+    // Get post IDs in this group for comments/reactions
+    const groupPosts = await prisma.post.findMany({
+      where: { groupId: group.id, createdAt: { gte: startDate } },
+      select: { id: true, authorId: true }
+    })
+    const groupPostIds = groupPosts.map(p => p.id)
+
+    // Get comments count per user on group posts
+    const commentsCount = groupPostIds.length > 0 ? await prisma.postComment.groupBy({
       by: ['userId'],
       where: {
         userId: { in: memberIds },
-        post: {
-          groupId: group.id
-        },
+        postId: { in: groupPostIds },
         createdAt: { gte: startDate }
       },
       _count: { id: true }
-    })
+    }) : []
 
-    // Get reactions received per user (on their posts in this group)
-    const reactionsReceived = await prisma.postReaction.groupBy({
+    // Get reactions received per post
+    const reactionsReceived = groupPostIds.length > 0 ? await prisma.postReaction.groupBy({
       by: ['postId'],
       where: {
-        post: {
-          groupId: group.id,
-          authorId: { in: memberIds }
-        },
+        postId: { in: groupPostIds },
         createdAt: { gte: startDate }
       },
       _count: { id: true }
-    })
+    }) : []
 
-    // Get post authors to map reactions
-    const postsWithReactions = reactionsReceived.length > 0 
-      ? await prisma.post.findMany({
-          where: {
-            id: { in: reactionsReceived.map(r => r.postId) }
-          },
-          select: {
-            id: true,
-            authorId: true
-          }
-        })
-      : []
-
-    // Calculate reactions per user
+    // Calculate reactions per user based on their posts
     const reactionsPerUser: Record<string, number> = {}
-    postsWithReactions.forEach(post => {
+    groupPosts.forEach(post => {
       const reactionCount = reactionsReceived.find(r => r.postId === post.id)?._count?.id || 0
-      reactionsPerUser[post.authorId] = (reactionsPerUser[post.authorId] || 0) + reactionCount
+      if (reactionCount > 0) {
+        reactionsPerUser[post.authorId] = (reactionsPerUser[post.authorId] || 0) + reactionCount
+      }
     })
 
     // Build score map: Posts × 3 + Comments × 2 + Reactions × 1
@@ -163,15 +156,18 @@ export async function GET(
     })
 
     // Sort by score and get top contributors
-    const sortedMembers = groupMembers
-      .map(member => ({
-        ...member.user,
-        posts: scoreMap[member.userId]?.posts || 0,
-        comments: scoreMap[member.userId]?.comments || 0,
-        reactions: scoreMap[member.userId]?.reactions || 0,
-        score: scoreMap[member.userId]?.score || 0
-      }))
-      .filter(m => m.score > 0) // Only show users with activity
+    const sortedMembers = memberIds
+      .map(userId => {
+        const user = userMap.get(userId)
+        return user ? {
+          ...user,
+          posts: scoreMap[userId]?.posts || 0,
+          comments: scoreMap[userId]?.comments || 0,
+          reactions: scoreMap[userId]?.reactions || 0,
+          score: scoreMap[userId]?.score || 0
+        } : null
+      })
+      .filter((m): m is NonNullable<typeof m> => m !== null && m.score > 0) // Only show users with activity
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
 

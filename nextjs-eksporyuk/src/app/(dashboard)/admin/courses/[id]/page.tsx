@@ -1845,7 +1845,7 @@ export default function AdminCourseDetailPage() {
                     <option value="">-- Pilih Mentor --</option>
                     {availableMentors.map((mentor) => (
                       <option key={mentor.id} value={mentor.id}>
-                        {mentor.name} ({mentor.email})
+                        {mentor.user?.name || mentor.name || 'Unknown'} ({mentor.user?.email || mentor.email || 'No email'})
                       </option>
                     ))}
                   </select>

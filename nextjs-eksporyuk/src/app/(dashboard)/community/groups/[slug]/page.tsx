@@ -49,7 +49,9 @@ import {
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import GroupSidebar from '@/components/groups/GroupSidebar'
 import RichTextEditor from '@/components/ui/RichTextEditor'
+import { RenderPostContent } from '@/components/community/RenderPostContent'
 import DashboardBanner from '@/components/banners/DashboardBanner'
+import { getBackgroundById } from '@/lib/post-backgrounds'
 import SidebarBanner from '@/components/banners/SidebarBanner'
 import OnlineStatusBadge from '@/components/presence/OnlineStatusBadge'
 import { ReactionPicker, ReactionSummary, ReactionModal } from '@/components/ui/Reactions'
@@ -634,6 +636,7 @@ export default function GroupDetailPage() {
           documents: postData.documents || [],
           type: postData.type || 'POST',
           metadata: postData.metadata || null,
+          backgroundId: postData.backgroundId || null,
         }),
       })
 
@@ -1690,16 +1693,38 @@ export default function GroupDetailPage() {
                         </DropdownMenu>
                       </div>
 
-                      {/* Post Content */}
-                      {post.contentFormatted ? (
-                        <div
-                          className="text-gray-800 mb-3 prose max-w-none"
-                          dangerouslySetInnerHTML={{ __html: post.contentFormatted.html }}
-                        />
+                      {/* Post Content with Background Support */}
+                      {post.backgroundId && !post.images?.length ? (
+                        // Post with background
+                        (() => {
+                          const bg = getBackgroundById(post.backgroundId);
+                          return bg ? (
+                            <div
+                              className="rounded-xl p-6 mb-3 min-h-[150px] flex items-center justify-center"
+                              style={bg.style}
+                            >
+                              <p
+                                className="text-center text-lg font-medium leading-relaxed whitespace-pre-wrap"
+                                style={{ color: bg.textColor }}
+                              >
+                                {post.content}
+                              </p>
+                            </div>
+                          ) : (
+                            <RenderPostContent 
+                              content={post.content}
+                              contentFormatted={post.contentFormatted}
+                              className="mb-3 text-gray-800"
+                            />
+                          );
+                        })()
                       ) : (
-                        <p className="text-gray-800 mb-3 whitespace-pre-wrap">
-                          {post.content}
-                        </p>
+                        // Regular post content
+                        <RenderPostContent 
+                          content={post.content}
+                          contentFormatted={post.contentFormatted}
+                          className="mb-3 text-gray-800"
+                        />
                       )}
 
                       {/* Media Display */}

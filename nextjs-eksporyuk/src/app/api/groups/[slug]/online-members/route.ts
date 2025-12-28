@@ -40,18 +40,23 @@ export async function GET(
       )
     }
 
-    // Get online members in this group (excluding mentors and current user)
+    // Get group member user IDs first
+    const groupMemberIds = await prisma.groupMember.findMany({
+      where: { groupId: group.id },
+      select: { userId: true }
+    })
+    const memberUserIds = groupMemberIds.map(m => m.userId)
+
+    // Get online members in this group (excluding current user)
     const onlineMembers = await prisma.user.findMany({
       where: {
         isOnline: true,
-        id: { not: session.user.id },
+        id: { 
+          not: session.user.id,
+          in: memberUserIds
+        },
         role: {
           in: ['MEMBER_PREMIUM', 'MEMBER_FREE', 'ADMIN']
-        },
-        groupMemberships: {
-          some: {
-            groupId: group.id
-          }
         }
       },
       take: limit,
@@ -62,28 +67,32 @@ export async function GET(
         avatar: true,
         role: true,
         isOnline: true,
-        lastActiveAt: true,
-        _count: {
-          select: {
-            followers: true,
-            following: true
-          }
-        }
+        lastActiveAt: true
       }
     })
 
-    // Get total online count (for "lihat semua" feature)
+    // Get follower counts manually (no relations)
+    const membersWithCounts = await Promise.all(onlineMembers.map(async (user) => {
+      const [followersCount, followingCount] = await Promise.all([
+        prisma.follow.count({ where: { followingId: user.id } }),
+        prisma.follow.count({ where: { followerId: user.id } })
+      ])
+      return {
+        ...user,
+        _count: { followers: followersCount, following: followingCount }
+      }
+    }))
+
+    // Get total online count
     const totalOnline = await prisma.user.count({
       where: {
         isOnline: true,
-        id: { not: session.user.id },
+        id: { 
+          not: session.user.id,
+          in: memberUserIds
+        },
         role: {
           in: ['MEMBER_PREMIUM', 'MEMBER_FREE', 'ADMIN']
-        },
-        groupMemberships: {
-          some: {
-            groupId: group.id
-          }
         }
       }
     })
@@ -92,14 +101,14 @@ export async function GET(
     const followingIds = await prisma.follow.findMany({
       where: {
         followerId: session.user.id,
-        followingId: { in: onlineMembers.map(u => u.id) }
+        followingId: { in: membersWithCounts.map(u => u.id) }
       },
       select: { followingId: true }
     })
 
     const followingSet = new Set(followingIds.map(f => f.followingId))
 
-    const membersWithFollowStatus = onlineMembers.map(user => ({
+    const membersWithFollowStatus = membersWithCounts.map(user => ({
       ...user,
       isFollowing: followingSet.has(user.id)
     }))

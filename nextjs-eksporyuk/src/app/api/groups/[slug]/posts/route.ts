@@ -64,6 +64,7 @@ async function getPostWithDetails(post: any, includeComments = false) {
     likes,
     reactions: reactionsWithUsers,
     comments,
+    backgroundId: post.backgroundId || null,
     _count: { comments: commentsCount, likes: likesCount, reactions: reactionsCount }
   }
 }
@@ -102,18 +103,22 @@ export async function GET(
           where: { groupId: group.id, userId: session.user.id }
         })
         
-        // Check membership access
-        const membershipAccess = await prisma.userMembership.findFirst({
-          where: {
-            userId: session.user.id,
-            isActive: true,
-            startDate: { lte: new Date() },
-            endDate: { gte: new Date() },
-            membership: {
-              membershipGroups: { some: { groupId: group.id } }
-            }
-          }
+        // Check membership access via MembershipGroup
+        let membershipAccess = null
+        const membershipGroup = await prisma.membershipGroup.findFirst({
+          where: { groupId: group.id }
         })
+        if (membershipGroup) {
+          membershipAccess = await prisma.userMembership.findFirst({
+            where: {
+              userId: session.user.id,
+              membershipId: membershipGroup.membershipId,
+              isActive: true,
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() }
+            }
+          })
+        }
 
         if (!directMember && !membershipAccess) {
           return NextResponse.json({ error: 'Access denied to this group' }, { status: 403 })
@@ -173,7 +178,7 @@ export async function POST(
 
     const { slug } = await params
     const body = await request.json()
-    const { content, images, type, metadata } = body
+    const { content, images, videos, type, metadata, backgroundId } = body
 
     if (!content || content.trim() === '') {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -199,15 +204,24 @@ export async function POST(
     // ADMIN can skip membership check
     if (!isAdmin) {
       const hasDirectMembership = !!membership
-      const hasMembershipAccess = await prisma.userMembership.findFirst({
-        where: {
-          userId: session.user.id,
-          isActive: true,
-          startDate: { lte: new Date() },
-          endDate: { gte: new Date() },
-          membership: { membershipGroups: { some: { groupId: group.id } } }
-        }
+      
+      // Check membership access via MembershipGroup
+      let hasMembershipAccess = null
+      const membershipGroup = await prisma.membershipGroup.findFirst({
+        where: { groupId: group.id }
       })
+      if (membershipGroup) {
+        hasMembershipAccess = await prisma.userMembership.findFirst({
+          where: {
+            userId: session.user.id,
+            membershipId: membershipGroup.membershipId,
+            isActive: true,
+            startDate: { lte: new Date() },
+            endDate: { gte: new Date() }
+          }
+        })
+      }
+      
       const isOwner = group.ownerId === session.user.id
 
       if (!hasDirectMembership && !hasMembershipAccess && !isOwner) {
@@ -226,13 +240,19 @@ export async function POST(
     const isAdminOrModerator = ['OWNER', 'ADMIN', 'MODERATOR'].includes(membership?.role || '')
     const approvalStatus = (group.requireApproval && !isAdminOrModerator) ? 'PENDING' : 'APPROVED'
 
+    // Background only for text-only posts
+    const hasMedia = (images && images.length > 0) || (videos && videos.length > 0)
+    const finalBackgroundId = hasMedia ? null : (backgroundId || null)
+
     // Create post
     const post = await prisma.post.create({
       data: {
         id: createId(),
         content: filteredContent,
-        images: images || null,
-        metadata: metadata ? JSON.stringify(metadata) : null,
+        images: images || [],
+        videos: videos || [],
+        backgroundId: finalBackgroundId,
+        ...(metadata && { metadata: JSON.stringify(metadata) }),
         type: type || 'POST',
         authorId: session.user.id,
         groupId: group.id,

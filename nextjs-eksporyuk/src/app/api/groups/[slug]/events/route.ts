@@ -54,42 +54,34 @@ export async function GET(
         } : {})
       },
       take: limit,
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        },
-        _count: {
-          select: {
-            rsvps: true
-          }
-        },
-        rsvps: {
-          where: {
-            userId: session.user.id
-          },
-          select: {
-            id: true,
-            status: true
-          }
-        }
-      },
       orderBy: {
         startDate: filter === 'past' ? 'desc' : 'asc'
       }
     })
 
-    // Transform events to include isRSVPd flag
-    const eventsWithRSVP = events.map(event => ({
-      ...event,
-      isRSVPd: event.rsvps.length > 0,
-      rsvps: undefined // Remove from response
+    // Get creators and RSVP data manually (no relations in schema)
+    const eventsWithDetails = await Promise.all(events.map(async (event) => {
+      const [creator, rsvpCount, userRsvp] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: event.creatorId },
+          select: { id: true, name: true, avatar: true }
+        }),
+        prisma.eventRSVP.count({ where: { eventId: event.id } }),
+        prisma.eventRSVP.findFirst({
+          where: { eventId: event.id, userId: session.user.id },
+          select: { id: true, status: true }
+        })
+      ])
+
+      return {
+        ...event,
+        creator,
+        _count: { rsvps: rsvpCount },
+        isRSVPd: !!userRsvp
+      }
     }))
 
-    return NextResponse.json({ events: eventsWithRSVP })
+    return NextResponse.json({ events: eventsWithDetails })
   } catch (error) {
     console.error('Get events error:', error)
     return NextResponse.json(
@@ -99,10 +91,10 @@ export async function GET(
   }
 }
 
-// POST /api/groups/[id]/events - Create event
+// POST /api/groups/[slug]/events - Create event
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -110,11 +102,23 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { slug } = await params
+
+    // Find group by slug first
+    const group = await prisma.group.findUnique({
+      where: { slug: slug },
+      select: { id: true }
+    })
+    
+    if (!group) {
+      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+    }
+
     // Check if user is member
     const member = await prisma.groupMember.findUnique({
       where: {
         groupId_userId: {
-          groupId: params.id,
+          groupId: group.id,
           userId: session.user.id
         }
       }
@@ -142,7 +146,7 @@ export async function POST(
     const event = await prisma.event.create({
       data: {
         id: createId(),
-        groupId: params.id,
+        groupId: group.id,
         creatorId: session.user.id,
         title,
         description,
@@ -167,7 +171,7 @@ export async function POST(
     // Notify group members
     const members = await prisma.groupMember.findMany({
       where: {
-        groupId: params.id,
+        groupId: group.id,
         userId: {
           not: session.user.id
         }

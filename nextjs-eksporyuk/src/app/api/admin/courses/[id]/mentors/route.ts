@@ -35,12 +35,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       orderBy: { createdAt: 'asc' }
     })
 
-    // Get mentor profiles and user data separately
+    // Get mentor profiles
     const mentorIds = courseMentors.map(cm => cm.mentorId)
     const mentorProfiles = await prisma.mentorProfile.findMany({
       where: { id: { in: mentorIds } }
     })
 
+    // Get user data for all mentor profiles
     const userIds = mentorProfiles.map(mp => mp.userId)
     const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
@@ -60,11 +61,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       const user = mentorProfile ? userMap.get(mentorProfile.userId) : null
       
       return {
-        id: cm.id,
+        id: cm.mentorId, // Use mentorId for removal
+        courseMentorId: cm.id,
         mentorId: cm.mentorId,
         role: cm.role,
         isActive: cm.isActive,
         createdAt: cm.createdAt,
+        name: user?.name || 'Unknown Mentor',
+        email: user?.email || '',
+        avatar: user?.avatar || null,
         mentor: mentorProfile ? {
           ...mentorProfile,
           user: user
@@ -112,36 +117,75 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Mentor ID is required' }, { status: 400 })
     }
 
-    // Verify mentor profile exists
-    const mentorProfile = await prisma.mentorProfile.findUnique({
+    // Try to find mentor profile by ID first
+    let mentorProfile = await prisma.mentorProfile.findUnique({
       where: { id: mentorId }
     })
 
+    // If not found, check if mentorId is a User ID and auto-create MentorProfile
     if (!mentorProfile) {
-      return NextResponse.json({ error: 'Mentor profile not found' }, { status: 404 })
+      // Check if mentorId is a User ID
+      const mentorUser = await prisma.user.findUnique({
+        where: { id: mentorId },
+        select: { id: true, role: true, name: true }
+      })
+
+      if (!mentorUser) {
+        return NextResponse.json({ error: 'Mentor tidak ditemukan' }, { status: 404 })
+      }
+
+      // Verify user is MENTOR or ADMIN
+      if (!['MENTOR', 'ADMIN'].includes(mentorUser.role)) {
+        return NextResponse.json({ error: 'User bukan mentor' }, { status: 400 })
+      }
+
+      // Check if MentorProfile exists by userId
+      mentorProfile = await prisma.mentorProfile.findUnique({
+        where: { userId: mentorId }
+      })
+
+      // If still not found, auto-create MentorProfile
+      if (!mentorProfile) {
+        const now = new Date()
+        mentorProfile = await prisma.mentorProfile.create({
+          data: {
+            id: `mentor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            userId: mentorId,
+            bio: null,
+            expertise: null,
+            isActive: true,
+            createdAt: now,
+            updatedAt: now
+          }
+        })
+        console.log('[CourseMentors] Auto-created MentorProfile for user:', mentorId)
+      }
     }
 
     // Check if mentor already assigned to this course
     const existingAssignment = await prisma.courseMentor.findFirst({
       where: {
         courseId,
-        mentorId,
+        mentorId: mentorProfile.id,
         isActive: true
       }
     })
 
     if (existingAssignment) {
-      return NextResponse.json({ error: 'Mentor already assigned to this course' }, { status: 409 })
+      return NextResponse.json({ error: 'Mentor sudah ditambahkan ke kursus ini' }, { status: 409 })
     }
 
     // Create mentor assignment
+    const now = new Date()
     const courseMentor = await prisma.courseMentor.create({
       data: {
         id: `cm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         courseId,
-        mentorId,
+        mentorId: mentorProfile.id,
         role: role,
-        isActive: true
+        isActive: true,
+        createdAt: now,
+        updatedAt: now
       }
     })
 

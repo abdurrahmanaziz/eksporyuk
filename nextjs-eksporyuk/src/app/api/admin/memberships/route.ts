@@ -18,9 +18,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    if (session.user.role !== 'ADMIN') {
+    // Allow ADMIN and MENTOR to fetch memberships (MENTOR needs it for course creation)
+    if (!['ADMIN', 'MENTOR'].includes(session.user.role)) {
       return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
+        { error: 'Forbidden - Admin or Mentor access required' },
         { status: 403 }
       )
     }

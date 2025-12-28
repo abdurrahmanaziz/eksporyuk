@@ -294,7 +294,7 @@ export async function POST(request: NextRequest) {
         images: images || [],
         videos: videos || [],
         taggedUsers: taggedUsers || [],
-        contentFormatted: contentFormatted || null,
+        ...(contentFormatted && { contentFormatted }),
         backgroundId: finalBackgroundId,
         approvalStatus: 'APPROVED',
         updatedAt: new Date(),

@@ -24,16 +24,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Get all mentor profiles with user details
-    const mentorProfiles = await prisma.mentorProfile.findMany({
-      orderBy: { createdAt: 'desc' }
-    })
-
-    const userIds = mentorProfiles.map(mp => mp.userId)
-    const users = await prisma.user.findMany({
+    // Strategy 1: Get users with MENTOR or ADMIN role directly
+    const mentorUsers = await prisma.user.findMany({
       where: { 
-        id: { in: userIds },
-        role: { in: ['MENTOR', 'ADMIN'] } // Only users with mentor or admin role
+        role: { in: ['MENTOR', 'ADMIN'] }
       },
       select: {
         id: true,
@@ -41,25 +35,32 @@ export async function GET(request: NextRequest) {
         email: true,
         avatar: true,
         role: true
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    // Strategy 2: Also get MentorProfiles for additional info
+    const mentorProfiles = await prisma.mentorProfile.findMany()
+    const profileMap = new Map(mentorProfiles.map(mp => [mp.userId, mp]))
+
+    // Combine data - use User as primary source
+    const mentorsWithDetails = mentorUsers.map(user => {
+      const profile = profileMap.get(user.id)
+      
+      return {
+        id: profile?.id || user.id, // Use profile ID if exists, otherwise user ID
+        userId: user.id,
+        bio: profile?.bio || null,
+        expertise: profile?.expertise || null,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+        user: user // Keep nested user for compatibility
       }
     })
 
-    const userMap = new Map(users.map(u => [u.id, u]))
-
-    const mentorsWithDetails = mentorProfiles
-      .map(mp => {
-        const user = userMap.get(mp.userId)
-        if (!user) return null
-        
-        return {
-          id: mp.id,
-          userId: mp.userId,
-          bio: mp.bio,
-          expertise: mp.expertise,
-          user: user
-        }
-      })
-      .filter(Boolean) // Remove null entries
+    console.log('[Admin Mentors] Found', mentorsWithDetails.length, 'mentors')
 
     return NextResponse.json({ 
       success: true, 
