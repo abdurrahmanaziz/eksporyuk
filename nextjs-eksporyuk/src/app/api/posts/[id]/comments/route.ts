@@ -160,7 +160,7 @@ export async function POST(
           ...(parentId && { parentId }),
         },
         include: {
-          user: {
+          User: {
             select: {
               id: true,
               name: true,
