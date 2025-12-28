@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import MemberOnboardingChecklist from '@/components/member/MemberOnboardingChecklist'
 import Link from 'next/link'
-import { Users, Lock, Eye, EyeOff, Plus, Search, Filter, MessageCircle, Calendar, AlertCircle } from 'lucide-react'
+import { Users, Lock, Eye, EyeOff, Plus, Search, Filter, MessageCircle, Calendar, AlertCircle, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { toast } from 'sonner'
 
 interface Group {
   id: string
@@ -33,13 +35,17 @@ interface Group {
     members: number
     posts: number
   }
+  hasAccess?: boolean // User has membership that grants access
+  isMember?: boolean // User is already a member
 }
 
 export default function GroupsPage() {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const [groups, setGroups] = useState<Group[]>([])
   const [filteredGroups, setFilteredGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
+  const [joiningGroupId, setJoiningGroupId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'my' | 'public' | 'private'>('all')
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null)
@@ -136,7 +142,48 @@ export default function GroupsPage() {
   }
 
   const isMember = (group: Group) => {
-    return group.members && group.members.length > 0
+    return group.isMember || (group.members && group.members.length > 0)
+  }
+
+  const handleJoinGroup = async (e: React.MouseEvent, group: Group) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (!session?.user?.id) {
+      toast.error('Silakan login terlebih dahulu')
+      return
+    }
+
+    // If group is private and user doesn't have access
+    if (group.type === 'PRIVATE' && !group.hasAccess) {
+      toast.error('Anda perlu membeli membership untuk bergabung ke grup ini')
+      router.push('/membership')
+      return
+    }
+
+    setJoiningGroupId(group.id)
+    
+    try {
+      const response = await fetch(`/api/groups/${group.id}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast.success('Berhasil bergabung ke grup!')
+        // Redirect to group page
+        router.push(`/community/groups/${group.slug}`)
+      } else {
+        toast.error(data.error || 'Gagal bergabung ke grup')
+      }
+    } catch (error) {
+      console.error('Error joining group:', error)
+      toast.error('Terjadi kesalahan saat bergabung ke grup')
+    } finally {
+      setJoiningGroupId(null)
+    }
   }
 
   // Profile not complete - show block
@@ -387,16 +434,43 @@ export default function GroupsPage() {
                         </div>
                       </div>
 
-                      {/* Join Button */}
-                      {!isMember(group) && (
+                      {/* Action Button */}
+                      {isMember(group) ? (
+                        <Button
+                          className="w-full bg-green-600 hover:bg-green-700 h-9"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Diskusi Sekarang
+                        </Button>
+                      ) : group.type === 'PRIVATE' && !group.hasAccess ? (
                         <Button
                           onClick={(e) => {
                             e.preventDefault()
-                            // Handle join
+                            router.push('/membership')
                           }}
+                          variant="outline"
+                          className="w-full h-9 border-orange-300 text-orange-600 hover:bg-orange-50"
+                        >
+                          <Lock className="w-4 h-4 mr-2" />
+                          Beli Membership
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={(e) => handleJoinGroup(e, group)}
+                          disabled={joiningGroupId === group.id}
                           className="w-full bg-indigo-600 hover:bg-indigo-700 h-9"
                         >
-                          Bergabung
+                          {joiningGroupId === group.id ? (
+                            <>
+                              <span className="animate-spin mr-2">⏳</span>
+                              Bergabung...
+                            </>
+                          ) : (
+                            <>
+                              <LogIn className="w-4 h-4 mr-2" />
+                              Join Grup
+                            </>
+                          )}
                         </Button>
                       )}
                     </CardContent>

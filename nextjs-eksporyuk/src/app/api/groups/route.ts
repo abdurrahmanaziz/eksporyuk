@@ -95,10 +95,65 @@ export async function GET(request: NextRequest) {
       }) : Promise.resolve([])
     ])
 
+    // Get user's active memberships to check group access
+    let userMembershipGroupIds: string[] = []
+    if (session?.user?.id) {
+      // Get user's active memberships
+      const userMemberships = await prisma.userMembership.findMany({
+        where: {
+          userId: session.user.id,
+          status: 'ACTIVE',
+        },
+        select: { membershipId: true }
+      })
+      
+      if (userMemberships.length > 0) {
+        // Get groups that these memberships give access to
+        const membershipGroupAccess = await prisma.membershipGroup.findMany({
+          where: {
+            membershipId: { in: userMemberships.map(m => m.membershipId) }
+          },
+          select: { groupId: true }
+        })
+        userMembershipGroupIds = membershipGroupAccess.map(mg => mg.groupId)
+      }
+    }
+
     const ownerMap = new Map(owners.map(o => [o.id, o]))
     const memberCountMap = new Map(memberCounts.map((m: any) => [m.groupId, m._count.userId]))
     const postCountMap = new Map(postCounts.map((p: any) => [p.groupId, p._count.id]))
     const membershipMap = new Map(userMemberships.map(m => [m.groupId, m]))
+
+    const enrichedGroups = groups.map(group => {
+      const isMember = membershipMap.has(group.id)
+      const hasAccess = userMembershipGroupIds.includes(group.id) || group.type === 'PUBLIC'
+      
+      return {
+        ...group,
+        owner: group.ownerId ? ownerMap.get(group.ownerId) || null : null,
+        ...(includeCount && {
+          _count: {
+            members: memberCountMap.get(group.id) || 0,
+            posts: postCountMap.get(group.id) || 0,
+          }
+        }),
+        isMember,
+        hasAccess,
+        ...(session?.user?.id && {
+          members: isMember ? [membershipMap.get(group.id)] : []
+        })
+      }
+    })
+
+    // Filter out private groups that user doesn't have access to (unless they're already a member)
+    const accessibleGroups = enrichedGroups.filter(group => {
+      if (group.type === 'PUBLIC') return true
+      if (group.isMember) return true
+      if (group.hasAccess) return true
+      // Admin can see all groups
+      if (session?.user?.role === 'ADMIN') return true
+      return false
+    })
 
     const enrichedGroups = groups.map(group => ({
       ...group,
@@ -115,7 +170,7 @@ export async function GET(request: NextRequest) {
     }))
 
     return NextResponse.json({
-      groups: enrichedGroups,
+      groups: accessibleGroups,
     })
   } catch (error) {
     console.error('Error fetching groups:', error)
