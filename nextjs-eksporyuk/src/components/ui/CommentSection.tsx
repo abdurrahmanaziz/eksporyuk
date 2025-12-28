@@ -44,6 +44,7 @@ interface Comment {
     likes: number
     replies: number
   }
+  reactionsCount?: Record<string, number>
   // Support both naming conventions
   replies?: Comment[]
   other_PostComment?: Comment[]
@@ -63,6 +64,8 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
   const [replyContent, setReplyContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({})
+  const [likedComments, setLikedComments] = useState<Record<string, boolean>>({})
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({})
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const replyInputRef = useRef<HTMLInputElement>(null)
 
@@ -74,8 +77,14 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
   // Auto-expand all replies by default
   useEffect(() => {
     const expandAll: Record<string, boolean> = {}
+    const initialLikes: Record<string, number> = {}
     const processComments = (commentList: Comment[]) => {
       commentList.forEach(comment => {
+        // Set initial like counts from reactionsCount
+        if (comment.reactionsCount) {
+          const totalLikes = Object.values(comment.reactionsCount).reduce((a, b) => a + b, 0)
+          initialLikes[comment.id] = totalLikes
+        }
         const replies = getReplies(comment)
         if (replies.length > 0) {
           expandAll[comment.id] = true
@@ -85,6 +94,7 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
     }
     processComments(comments)
     setExpandedReplies(expandAll)
+    setLikeCounts(prev => ({ ...prev, ...initialLikes }))
   }, [comments])
 
   // Focus reply input when replying
@@ -194,6 +204,48 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
   const handleReply = (commentId: string, username: string | null, name: string) => {
     setReplyingTo(commentId)
     setReplyContent(username ? `@${username} ` : '')
+  }
+
+  // Handle like comment
+  const handleLikeComment = async (commentId: string) => {
+    if (!session?.user?.id) {
+      toast.error('Silakan login untuk menyukai komentar')
+      return
+    }
+
+    // Optimistic update
+    const wasLiked = likedComments[commentId]
+    setLikedComments(prev => ({ ...prev, [commentId]: !wasLiked }))
+    setLikeCounts(prev => ({
+      ...prev,
+      [commentId]: (prev[commentId] || 0) + (wasLiked ? -1 : 1)
+    }))
+
+    try {
+      const response = await fetch(`/api/comments/${commentId}/reactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'LIKE' }),
+      })
+
+      if (!response.ok) {
+        // Revert on error
+        setLikedComments(prev => ({ ...prev, [commentId]: wasLiked }))
+        setLikeCounts(prev => ({
+          ...prev,
+          [commentId]: (prev[commentId] || 0) + (wasLiked ? 1 : -1)
+        }))
+        toast.error('Gagal menyukai komentar')
+      }
+    } catch (error) {
+      // Revert on error
+      setLikedComments(prev => ({ ...prev, [commentId]: wasLiked }))
+      setLikeCounts(prev => ({
+        ...prev,
+        [commentId]: (prev[commentId] || 0) + (wasLiked ? 1 : -1)
+      }))
+      console.error('Error liking comment:', error)
+    }
   }
 
   const toggleReplies = (commentId: string) => {
@@ -310,9 +362,16 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
 
             {/* Action buttons */}
             <div className="flex items-center gap-4 mt-2">
-              <button className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-500 transition-colors group">
-                <Heart className="h-4 w-4 group-hover:fill-red-500" />
-                <span>Suka</span>
+              <button 
+                onClick={() => handleLikeComment(comment.id)}
+                className={`flex items-center gap-1 text-xs transition-colors ${
+                  likedComments[comment.id] 
+                    ? 'text-red-500' 
+                    : 'text-gray-500 hover:text-red-500'
+                }`}
+              >
+                <Heart className={`h-4 w-4 ${likedComments[comment.id] ? 'fill-red-500' : ''}`} />
+                <span>{likeCounts[comment.id] ? `${likeCounts[comment.id]} Suka` : 'Suka'}</span>
               </button>
               <button
                 onClick={() => handleReply(comment.id, commentAuthor.username, commentAuthor.name)}

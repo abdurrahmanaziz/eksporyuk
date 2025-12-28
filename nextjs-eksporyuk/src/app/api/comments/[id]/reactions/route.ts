@@ -73,7 +73,7 @@ export async function POST(
       return acc;
     }, {} as Record<string, number>);
 
-    await prisma.comment.update({
+    await prisma.postComment.update({
       where: { id: commentId },
       data: { reactionsCount },
     });
@@ -99,7 +99,7 @@ export async function GET(
     const reactions = await prisma.commentReaction.findMany({
       where: { commentId },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
