@@ -96,6 +96,10 @@ export default function AdminCoursesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [monetizationFilter, setMonetizationFilter] = useState<string>('all')
+  
+  // Auto-enroll state
+  const [autoEnrolling, setAutoEnrolling] = useState(false)
+  const [enrollmentStats, setEnrollmentStats] = useState<any>(null)
 
   // Delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -282,6 +286,54 @@ export default function AdminCoursesPage() {
     }
   }
 
+  // Auto-enroll all affiliates to training courses
+  const handleAutoEnrollAffiliates = async () => {
+    if (!confirm('Auto-enroll semua affiliate ke training courses wajib?')) return
+    
+    try {
+      setAutoEnrolling(true)
+      toast.info('Memulai auto-enrollment...')
+      
+      const res = await fetch('/api/admin/auto-enroll-affiliates', {
+        method: 'POST'
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok) {
+        toast.success(`✅ Auto-enrollment selesai! ${data.stats.enrolled} enrollments dibuat, ${data.stats.skipped} sudah terdaftar`)
+        setEnrollmentStats(data.stats)
+      } else {
+        toast.error(data.error || 'Gagal auto-enroll affiliates')
+      }
+    } catch (error) {
+      console.error('Auto-enroll error:', error)
+      toast.error('Terjadi kesalahan saat auto-enroll')
+    } finally {
+      setAutoEnrolling(false)
+    }
+  }
+
+  // Check auto-enroll status
+  const checkEnrollmentStatus = async () => {
+    try {
+      const res = await fetch('/api/admin/auto-enroll-affiliates')
+      if (res.ok) {
+        const data = await res.json()
+        setEnrollmentStats(data.stats)
+      }
+    } catch (error) {
+      console.error('Check enrollment error:', error)
+    }
+  }
+
+  // Fetch enrollment stats on mount
+  useEffect(() => {
+    if (session?.user?.role === 'ADMIN') {
+      checkEnrollmentStatus()
+    }
+  }, [session])
+
   // Function to get checkout URL
   const getCheckoutUrl = (course: Course) => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
@@ -345,12 +397,39 @@ export default function AdminCoursesPage() {
           <h1 className="text-3xl font-bold mb-2">Manajemen Kursus</h1>
           <p className="text-muted-foreground">Kelola semua kursus dan persetujuan instructor</p>
         </div>
-        <Link href="/admin/courses/new">
-          <Button size="lg">
-            <Plus className="h-5 w-5 mr-2" />
-            Buat Kursus Baru
-          </Button>
-        </Link>
+        <div className="flex gap-3">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  onClick={handleAutoEnrollAffiliates}
+                  disabled={autoEnrolling}
+                >
+                  <Users className="h-5 w-5 mr-2" />
+                  {autoEnrolling ? 'Processing...' : 'Auto-Enroll Affiliates'}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Otomatis enroll semua affiliate ke training wajib</p>
+                {enrollmentStats && (
+                  <div className="mt-2 text-xs">
+                    <p>Affiliates: {enrollmentStats.affiliatesCount}</p>
+                    <p>Training Courses: {enrollmentStats.trainingCoursesCount}</p>
+                    <p>Completion: {enrollmentStats.completionRate}</p>
+                  </div>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Link href="/admin/courses/new">
+            <Button size="lg">
+              <Plus className="h-5 w-5 mr-2" />
+              Buat Kursus Baru
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}

@@ -109,10 +109,33 @@ export async function GET(
     
     // AFFILIATE course - hanya affiliate yang bisa akses
     if (courseRoleAccess === 'AFFILIATE' || courseWithRelations.affiliateOnly || courseWithRelations.isAffiliateTraining || courseWithRelations.isAffiliateMaterial) {
-      if (session.user.role !== 'ADMIN' && session.user.role !== 'AFFILIATE') {
+      if (session.user.role !== 'ADMIN' && session.user.role !== 'AFFILIATE' && session.user.role !== 'MENTOR') {
         return NextResponse.json({ 
           error: 'Anda tidak memiliki izin untuk mengakses kelas ini. Kelas ini khusus untuk Affiliate.' 
         }, { status: 403 })
+      }
+      
+      // AUTO-ENROLL: Jika user adalah AFFILIATE dan ini training wajib, otomatis enroll
+      if (session.user.role === 'AFFILIATE' && courseWithRelations.isAffiliateTraining) {
+        const existingEnrollment = await prisma.courseEnrollment.findFirst({
+          where: {
+            userId: session.user.id,
+            courseId: courseWithRelations.id
+          }
+        })
+
+        if (!existingEnrollment) {
+          await prisma.courseEnrollment.create({
+            data: {
+              userId: session.user.id,
+              courseId: courseWithRelations.id,
+              enrolledAt: new Date(),
+              progress: 0
+            }
+          })
+          console.log(`✅ AUTO-ENROLLED AFFILIATE to training: ${session.user.email}`)
+          hasAccess = true
+        }
       }
     }
     
