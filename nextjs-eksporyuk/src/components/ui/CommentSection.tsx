@@ -38,7 +38,7 @@ interface Comment {
     likes: number
     replies: number
   }
-  replies?: Comment[]
+  other_PostComment?: Comment[]
   parentId: string | null
 }
 
@@ -61,10 +61,10 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
   useEffect(() => {
     const expandAll: Record<string, boolean> = {}
     const setRepliesExpanded = (commentList: Comment[]) => {
-      commentList.forEach(comment => {
-        if (comment.replies && comment.replies.length > 0) {
+      comments.forEach(comment => {
+        if (comment.other_PostComment && comment.other_PostComment.length > 0) {
           expandAll[comment.id] = true
-          setRepliesExpanded(comment.replies)
+          setRepliesExpanded(comment.other_PostComment)
         }
       })
     }

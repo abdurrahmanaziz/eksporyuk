@@ -26,48 +26,7 @@ export async function GET(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Recursive include for nested replies (up to 3 levels)
-    const replyInclude = {
-      User: {
-        select: {
-          id: true,
-          name: true,
-          avatar: true,
-          username: true,
-        },
-      },
-      other_PostComment: {
-        include: {
-          User: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true,
-              username: true,
-            },
-          },
-          other_PostComment: {
-            include: {
-              User: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true,
-                  username: true,
-                },
-              },
-            },
-            orderBy: {
-              createdAt: 'asc' as const,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'asc' as const,
-        },
-      },
-    }
-
+    // Get comments with proper relation names (simplified to avoid deep nesting issues)
     const comments = await prisma.postComment.findMany({
       where: {
         postId: id,
@@ -83,7 +42,16 @@ export async function GET(
           },
         },
         other_PostComment: {
-          include: replyInclude,
+          include: {
+            User: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                username: true,
+              },
+            },
+          },
           orderBy: {
             createdAt: 'asc',
           },
@@ -157,6 +125,7 @@ export async function POST(
           content,
           postId: id,
           userId: session.user.id,
+          updatedAt: new Date(),
           ...(parentId && { parentId }),
         },
         include: {

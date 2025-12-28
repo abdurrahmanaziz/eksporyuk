@@ -2063,7 +2063,7 @@ model PostComment {
   content           String
   parentId          String?
   createdAt         DateTime          @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime          @updatedAt
   contentFormatted  Json?
   images            Json?
   mentionedUsers    Json?
