@@ -1,6 +1,27 @@
 import { withAuth, NextRequestWithAuth } from 'next-auth/middleware'
 import { NextResponse, NextRequest } from 'next/server'
 
+/**
+ * Check if user has multiple dashboard options and needs selection
+ * Admin goes straight to /admin - no selector needed
+ */
+function checkIfUserNeedsDashboardSelection(role: string, token: any): boolean {
+  // Admin goes straight to admin panel - no selection needed
+  if (role === 'ADMIN') return false
+  
+  // Check multi-role scenarios for non-admin users
+  const hasAffiliateAccess = token.affiliateMenuEnabled && token.hasAffiliateProfile
+  const hasMentorAccess = role === 'MENTOR'
+  const hasMemberAccess = ['MEMBER_FREE', 'MEMBER_PREMIUM', 'AFFILIATE', 'MENTOR'].includes(role)
+  
+  let dashboardCount = 0
+  if (hasMemberAccess) dashboardCount++
+  if (hasAffiliateAccess || role === 'AFFILIATE') dashboardCount++
+  if (hasMentorAccess) dashboardCount++
+  
+  return dashboardCount > 1
+}
+
 // Handle /login redirect before auth middleware
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -44,11 +65,19 @@ const authMiddleware = withAuth(
 
     const role = token.role as string
 
-    // Redirect /dashboard based on role
+    // Redirect /dashboard based on role - with multi-role support
     if (pathname === '/dashboard') {
+      // Check if user needs dashboard selection
+      const needsSelection = checkIfUserNeedsDashboardSelection(role, token)
+      
+      if (needsSelection) {
+        return NextResponse.redirect(new URL('/dashboard-selector', request.url))
+      }
+      
+      // Auto-redirect single-role users
       switch (role) {
         case 'ADMIN':
-          return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+          return NextResponse.redirect(new URL('/admin', request.url))
         case 'MENTOR':
           return NextResponse.redirect(new URL('/mentor/dashboard', request.url))
         case 'AFFILIATE':
@@ -72,10 +101,16 @@ const authMiddleware = withAuth(
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
-    if (pathname.startsWith('/affiliate') && role !== 'AFFILIATE') {
-      // Allow ADMIN full access
+    if (pathname.startsWith('/affiliate')) {
+      // Allow ADMIN full access - check first
       if (role === 'ADMIN') {
-        console.log('[MIDDLEWARE] Access granted: ADMIN has full access')
+        console.log('[MIDDLEWARE] Access granted: ADMIN has full access to affiliate')
+        return NextResponse.next()
+      }
+      
+      // Allow AFFILIATE role
+      if (role === 'AFFILIATE') {
+        console.log('[MIDDLEWARE] Access granted: AFFILIATE role')
         return NextResponse.next()
       }
       
@@ -144,6 +179,7 @@ const authMiddleware = withAuth(
 export const config = {
   matcher: [
     '/login', // Handle /login redirect
+    '/dashboard-selector',
     '/dashboard/:path*',
     '/admin/:path*',
     '/mentor/:path*',

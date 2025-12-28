@@ -45,3 +45,5 @@ next-env.d.ts
 .next/cache/
 .env.vercel
 ecosystem.config.json
+.env.vercel.production
+backup-restore-dec27.json

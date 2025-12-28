@@ -1609,7 +1609,7 @@ model Membership {
   isBestSeller            Boolean            @default(false)
   isPopular               Boolean            @default(false)
   isMostPopular           Boolean            @default(false)
-  marketingBadge          String?
+  marketingBadge          MarketingBadge?
   isActive                Boolean            @default(true)
   status                  MembershipStatus   @default(PUBLISHED)
   salesPageUrl            String?
@@ -2863,6 +2863,7 @@ model User {
   Product                         Product[]
   SavedPost                       SavedPost[]
   UserProduct                     UserProduct[]
+  userRoles                       UserRole[]
 
   @@index([city])
   @@index([district])
@@ -2960,6 +2961,12 @@ model UserRole {
   userId    String
   role      Role
   createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([userId])
+  @@index([role])
 }
 
 model Wallet {

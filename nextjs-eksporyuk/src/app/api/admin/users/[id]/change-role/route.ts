@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { mailketing } from '@/lib/integrations/mailketing'
+import { nanoid } from 'nanoid'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -87,6 +88,7 @@ export async function POST(
       // Add role to UserRole table
       await prisma.userRole.create({
         data: {
+          id: `role_${nanoid()}`,
           userId: id,
           role: role,
         }
@@ -257,8 +259,9 @@ export async function POST(
     }
   } catch (error) {
     console.error('Error changing role:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Gagal memproses perubahan role'
     return NextResponse.json(
-      { error: 'Gagal mengubah role' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
