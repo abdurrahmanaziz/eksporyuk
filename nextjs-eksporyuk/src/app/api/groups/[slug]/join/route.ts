@@ -12,10 +12,10 @@ function generateId(): string {
   return 'c' + randomBytes(12).toString('hex').slice(0, 24)
 }
 
-// POST /api/groups/[id]/join - Join a group
+// POST /api/groups/[slug]/join - Join a group
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -24,14 +24,14 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id: groupId } = await params
+    const { slug: groupSlug } = await params
 
     // Find group by ID or slug
     const group = await prisma.group.findFirst({
       where: {
         OR: [
-          { id: groupId },
-          { slug: groupId }
+          { id: groupSlug },
+          { slug: groupSlug }
         ]
       },
       select: {
