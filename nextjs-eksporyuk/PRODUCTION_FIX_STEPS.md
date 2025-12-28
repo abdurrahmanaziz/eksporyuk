@@ -29,8 +29,8 @@ NEXTAUTH_URL = https://eksporyuk.com
 
 #### GOOGLE OAUTH (Optional)
 ```
-GOOGLE_CLIENT_ID = 805480551537-b89th9psutjgarmrr8dtcj1409q353eb.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET = 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
+GOOGLE_CLIENT_ID = <your-google-client-id>
+GOOGLE_CLIENT_SECRET = <your-google-client-secret>
 ```
 
 ### Catatan Penting:
