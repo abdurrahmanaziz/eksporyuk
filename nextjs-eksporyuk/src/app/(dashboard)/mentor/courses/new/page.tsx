@@ -372,7 +372,7 @@ export default function NewCoursePage() {
                 'Status: Draft (menunggu persetujuan)'
               ]}
               actionLabel="Lanjut Tambah Modul"
-              onAction={() => router.push(`/mentor/courses/${successData.course?.id}`)}
+              onAction={() => router.push(`/admin/courses/${successData.course?.id}`)}
               className="min-h-[400px]"
             />
           </div>
@@ -793,8 +793,6 @@ export default function NewCoursePage() {
                 </div>
               </div>
             )}
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -1040,7 +1038,7 @@ export default function NewCoursePage() {
 
         {/* Submit Button */}
         <div className="flex justify-end gap-4">
-          <Link href="/mentor/courses">
+          <Link href="/admin/courses">
             <Button type="button" variant="outline" disabled={loading}>
               Batal
             </Button>

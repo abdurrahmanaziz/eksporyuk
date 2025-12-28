@@ -177,9 +177,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Generate unique slug from title
-    const slug = await createUniqueSlug(title, 'course')
-
     // Get or create mentor profile for current user
     let mentorProfile = await prisma.mentorProfile.findUnique({
       where: { userId: session.user.id }
