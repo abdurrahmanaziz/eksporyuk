@@ -67,6 +67,7 @@ export async function POST(
     // Log activity
     await prisma.activityLog.create({
       data: {
+        id: `log_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         userId: session.user.id,
         action: 'SET_PASSWORD',
         entity: 'User',
