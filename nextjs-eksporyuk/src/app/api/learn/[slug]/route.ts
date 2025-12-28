@@ -127,10 +127,12 @@ export async function GET(
         if (!existingEnrollment) {
           await prisma.courseEnrollment.create({
             data: {
+              id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
               userId: session.user.id,
               courseId: courseWithRelations.id,
-              enrolledAt: new Date(),
-              progress: 0
+              progress: 0,
+              completed: false,
+              updatedAt: new Date()
             }
           })
           console.log(`✅ AUTO-ENROLLED AFFILIATE to training: ${session.user.email}`)

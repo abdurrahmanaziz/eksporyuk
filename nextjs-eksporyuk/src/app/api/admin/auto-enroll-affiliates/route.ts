@@ -50,10 +50,11 @@ export async function POST(request: Request) {
       })
     }
 
-    // 2. Get all users with AFFILIATE role
+    // 2. Get all users with AFFILIATE role (synced from AffiliateConversion)
     const affiliates = await prisma.user.findMany({
       where: {
-        role: 'AFFILIATE'
+        role: 'AFFILIATE',
+        isActive: true // Only active users
       },
       select: {
         id: true,
@@ -62,12 +63,12 @@ export async function POST(request: Request) {
       }
     })
 
-    console.log(`👥 Found ${affiliates.length} affiliates`)
+    console.log(`👥 Found ${affiliates.length} active affiliates`)
 
     if (affiliates.length === 0) {
       return NextResponse.json({
         success: true,
-        message: 'No affiliates found to enroll',
+        message: 'No active affiliates found to enroll',
         enrolled: 0
       })
     }
@@ -87,13 +88,15 @@ export async function POST(request: Request) {
         })
 
         if (!existingEnrollment) {
-          // Create enrollment
+          // Create enrollment with correct fields
           await prisma.courseEnrollment.create({
             data: {
+              id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
               userId: affiliate.id,
               courseId: course.id,
-              enrolledAt: new Date(),
-              progress: 0
+              progress: 0,
+              completed: false,
+              updatedAt: new Date()
             }
           })
           
