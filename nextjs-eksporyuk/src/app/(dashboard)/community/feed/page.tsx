@@ -299,6 +299,7 @@ export default function CommunityFeedPage() {
           images: postData?.images || [],
           videos: postData?.videos || [],
           contentFormatted: postData?.contentFormatted || null,
+          backgroundId: postData?.backgroundId || null,
         }),
       })
 
