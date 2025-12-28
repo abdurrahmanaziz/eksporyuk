@@ -155,20 +155,6 @@ export async function GET(request: NextRequest) {
       return false
     })
 
-    const enrichedGroups = groups.map(group => ({
-      ...group,
-      owner: group.ownerId ? ownerMap.get(group.ownerId) || null : null,
-      ...(includeCount && {
-        _count: {
-          members: memberCountMap.get(group.id) || 0,
-          posts: postCountMap.get(group.id) || 0,
-        }
-      }),
-      ...(session?.user?.id && {
-        members: membershipMap.has(group.id) ? [membershipMap.get(group.id)] : []
-      })
-    }))
-
     return NextResponse.json({
       groups: accessibleGroups,
     })
