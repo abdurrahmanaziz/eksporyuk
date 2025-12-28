@@ -51,17 +51,7 @@ export async function GET(request: NextRequest) {
         enrollmentCount: true,
         rating: true,
         createdAt: true,
-        mentor: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-                avatar: true
-              }
-            }
-          }
-        },
+        mentorId: true,
         modules: {
           select: {
             id: true,
@@ -173,6 +163,7 @@ export async function POST(request: NextRequest) {
         data: {
           defaultMentorCommission: 50,
           defaultAffiliateCommission: 10,
+          updatedAt: new Date()
         },
       })
     }
@@ -185,10 +176,12 @@ export async function POST(request: NextRequest) {
     if (!mentorProfile) {
       mentorProfile = await prisma.mentorProfile.create({
         data: {
+          id: `mp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           userId: session.user.id,
           bio: '',
           expertise: '',
-          isActive: true
+          isActive: true,
+          updatedAt: new Date()
         }
       })
     }
@@ -218,7 +211,6 @@ export async function POST(request: NextRequest) {
         price: finalPrice,
         originalPrice: originalPrice || finalPrice,
         duration,
-        duration,
         level: level || 'BEGINNER',
         monetizationType: monetizationType || 'FREE',
         status: user.role === 'ADMIN' ? 'APPROVED' : 'DRAFT', // Admin auto-approved, Mentor starts as draft
@@ -230,18 +222,6 @@ export async function POST(request: NextRequest) {
         approvedBy: user.role === 'ADMIN' ? session.user.id : null,
         approvedAt: user.role === 'ADMIN' ? new Date() : null,
         updatedAt: new Date()
-      },
-      include: {
-        mentor: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true
-              }
-            }
-          }
-        }
       }
     })
 
@@ -252,7 +232,8 @@ export async function POST(request: NextRequest) {
         courseId: course.id,
         mentorId: mentorProfile.id,
         role: 'MENTOR',
-        isActive: true
+        isActive: true,
+        updatedAt: new Date()
       }
     })
 

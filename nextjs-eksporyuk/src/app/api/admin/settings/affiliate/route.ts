@@ -15,7 +15,8 @@ async function getOrCreateCourseSettings() {
       data: {
         id: randomUUID(),
         defaultAffiliateCommission: 10,
-        minWithdrawalAmount: 50000
+        minWithdrawalAmount: 50000,
+        updatedAt: new Date()
       }
     })
   }
@@ -31,14 +32,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Get main settings for affiliate flags
-    let settings = await prisma.settings.findUnique({ where: { id: 1 } })
+    let settings = await prisma.settings.findFirst()
     
     if (!settings) {
       settings = await prisma.settings.create({
         data: {
-          id: 1,
           affiliateAutoApprove: false,
           affiliateCommissionEnabled: true,
+          updatedAt: new Date()
         }
       })
     }
@@ -145,14 +146,15 @@ export async function POST(request: NextRequest) {
           data: {
             id: randomUUID(),
             defaultAffiliateCommission: courseUpdateData.defaultAffiliateCommission ?? 10,
-            minWithdrawalAmount: courseUpdateData.minWithdrawalAmount ?? 50000
+            minWithdrawalAmount: courseUpdateData.minWithdrawalAmount ?? 50000,
+            updatedAt: new Date()
           }
         })
       }
     }
 
     // Fetch updated settings to return
-    const updatedSettings = await prisma.settings.findUnique({ where: { id: 1 } })
+    const updatedSettings = await prisma.settings.findFirst()
     const updatedCourseSettings = await prisma.courseSettings.findFirst()
 
     console.log('[AFFILIATE SETTINGS API] Settings saved successfully')

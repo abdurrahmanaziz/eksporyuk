@@ -1609,7 +1609,7 @@ model Membership {
   isBestSeller            Boolean            @default(false)
   isPopular               Boolean            @default(false)
   isMostPopular           Boolean            @default(false)
-  marketingBadge          MarketingBadge?
+  marketingBadge          String?
   isActive                Boolean            @default(true)
   status                  MembershipStatus   @default(PUBLISHED)
   salesPageUrl            String?
@@ -2547,6 +2547,7 @@ model Settings {
   brandName                       String?  @default("Eksporyuk")
   brandShortName                  String?  @default("EYK")
   tagline                         String?  @default("Platform Ekspor Indonesia")
+  cardBg                          String?  @default("#ffffff")
   typographyHeadingSize           String?  @default("2rem")
   typographyBodySize              String?  @default("1rem")
   typographyFontFamily            String?  @default("Inter, sans-serif")

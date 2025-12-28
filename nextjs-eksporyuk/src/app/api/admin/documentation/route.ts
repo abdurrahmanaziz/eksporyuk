@@ -195,16 +195,6 @@ export async function POST(request: NextRequest) {
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
         authorId: session.user.id,
         updatedAt: new Date(),
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        }
       }
     });
 
