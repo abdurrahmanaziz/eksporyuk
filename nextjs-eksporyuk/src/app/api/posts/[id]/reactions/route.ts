@@ -30,7 +30,7 @@ export async function GET(
     const reactions = await prisma.postReaction.findMany({
       where: { postId },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,

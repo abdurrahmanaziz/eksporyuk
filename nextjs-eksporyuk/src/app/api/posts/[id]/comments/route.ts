@@ -28,7 +28,7 @@ export async function GET(
 
     // Recursive include for nested replies (up to 3 levels)
     const replyInclude = {
-      user: {
+      User: {
         select: {
           id: true,
           name: true,
@@ -38,7 +38,7 @@ export async function GET(
       },
       replies: {
         include: {
-          user: {
+          User: {
             select: {
               id: true,
               name: true,
@@ -48,7 +48,7 @@ export async function GET(
           },
           replies: {
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -74,7 +74,7 @@ export async function GET(
         parentId: null, // Only top-level comments
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
