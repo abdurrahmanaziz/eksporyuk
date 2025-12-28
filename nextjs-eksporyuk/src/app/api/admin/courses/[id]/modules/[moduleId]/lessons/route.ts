@@ -33,8 +33,13 @@ export async function GET(
     return NextResponse.json({ lessons })
   } catch (error) {
     console.error('Get lessons error:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Detailed error:', errorMsg)
     return NextResponse.json(
-      { error: 'Failed to fetch lessons' },
+      { 
+        error: 'Failed to fetch lessons',
+        details: errorMsg
+      },
       { status: 500 }
     )
   }
@@ -74,15 +79,19 @@ export async function POST(
     }
 
     // Create lesson
+    const lessonId = `les_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
     const lesson = await prisma.courseLesson.create({
       data: {
+        id: lessonId,
         title,
         content: content || '',
         videoUrl: videoUrl || null,
         duration: duration || null,
         order: order || 1,
         isFree: isFree || false,
-        moduleId
+        moduleId,
+        updatedAt: new Date()
       }
     })
 
@@ -92,8 +101,13 @@ export async function POST(
     }, { status: 201 })
   } catch (error) {
     console.error('Create lesson error:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Detailed error:', errorMsg)
     return NextResponse.json(
-      { error: 'Failed to create lesson' },
+      { 
+        error: 'Failed to create lesson',
+        details: errorMsg
+      },
       { status: 500 }
     )
   }
