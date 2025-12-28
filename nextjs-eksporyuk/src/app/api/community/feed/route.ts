@@ -255,15 +255,24 @@ export async function POST(request: NextRequest) {
       const isMember = await prisma.groupMember.findFirst({
         where: { groupId, userId: session.user.id }
       })
-      const hasMembershipAccess = await prisma.userMembership.findFirst({
-        where: {
-          userId: session.user.id,
-          isActive: true,
-          startDate: { lte: new Date() },
-          endDate: { gte: new Date() },
-          membership: { membershipGroups: { some: { groupId } } }
-        }
+      
+      // Check membership group access
+      const membershipGroupAccess = await prisma.membershipGroup.findFirst({
+        where: { groupId }
       })
+      let hasMembershipAccess = false
+      if (membershipGroupAccess) {
+        const userMembership = await prisma.userMembership.findFirst({
+          where: {
+            userId: session.user.id,
+            membershipId: membershipGroupAccess.membershipId,
+            isActive: true,
+            startDate: { lte: new Date() },
+            endDate: { gte: new Date() }
+          }
+        })
+        hasMembershipAccess = !!userMembership
+      }
 
       if (!isOwner && !isMember && !hasMembershipAccess) {
         return NextResponse.json({ error: 'Access denied to this group' }, { status: 403 })

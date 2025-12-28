@@ -273,6 +273,12 @@ export function getBackgroundsByCategory(category: PostBackground['category']): 
   return POST_BACKGROUNDS.filter(bg => bg.category === category)
 }
 
+// Helper function to get a random background
+export function getRandomBackground(): PostBackground {
+  const index = Math.floor(Math.random() * POST_BACKGROUNDS.length)
+  return POST_BACKGROUNDS[index]
+}
+
 // Background categories for UI
 export const BACKGROUND_CATEGORIES = [
   { id: 'export', name: 'Ekspor & Logistik', icon: '🚢' },

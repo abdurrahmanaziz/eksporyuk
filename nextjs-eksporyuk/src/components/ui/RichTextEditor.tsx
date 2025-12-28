@@ -24,7 +24,7 @@ import {
   Palette,
   X,
 } from 'lucide-react';
-import { POST_BACKGROUNDS, BACKGROUND_CATEGORIES, PostBackground, getBackgroundById } from '@/lib/post-backgrounds';
+import { POST_BACKGROUNDS, BACKGROUND_CATEGORIES, PostBackground, getBackgroundById, getRandomBackground } from '@/lib/post-backgrounds';
 
 interface RichTextEditorProps {
   value?: string;
@@ -203,6 +203,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       
       handleContentChange(text);
       
+      // Auto-assign random background when user starts typing (no media)
+      if (allowBackground && text.trim().length > 0 && !selectedBackground && content.images.length === 0 && content.videos.length === 0) {
+        const randomBg = getRandomBackground();
+        setSelectedBackground(randomBg);
+        setContent(prev => ({
+          ...prev,
+          backgroundId: randomBg.id
+        }));
+      }
+      
+      // Clear background if text is empty
+      if (text.trim().length === 0 && selectedBackground) {
+        setSelectedBackground(null);
+        setContent(prev => ({
+          ...prev,
+          backgroundId: undefined
+        }));
+      }
+      
       // Extract tagged users from mention elements
       const mentionElements = editorRef.current.querySelectorAll('.mention-tag');
       const taggedUserIds = Array.from(mentionElements).map(el => 
@@ -251,7 +270,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       
       updateActiveTools();
     }
-  }, [content.linkPreview, handleContentChange, updateActiveTools, showMentionPicker]);
+  }, [content.linkPreview, content.images.length, content.videos.length, handleContentChange, updateActiveTools, showMentionPicker, allowBackground, selectedBackground]);
 
   // Handle file upload
   const handleFileUpload = async (files: FileList, type: 'image' | 'video' | 'document') => {
@@ -550,16 +569,37 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               </AvatarFallback>
             </Avatar>
           )}
-          <div
-            ref={editorRef}
-            contentEditable
-            onInput={handleInput}
-            onKeyDown={handleKeyDown}
-            className="min-h-[60px] flex-1 focus:outline-none text-gray-900 dark:text-gray-100 text-[15px] leading-relaxed"
-            style={{ whiteSpace: 'pre-wrap' }}
-            suppressContentEditableWarning={true}
-            data-placeholder={placeholder}
-          />
+          <div className="flex-1 relative">
+            {/* Background Preview Layer */}
+            {selectedBackground && content.images.length === 0 && content.videos.length === 0 && (
+              <div
+                className="absolute inset-0 rounded-xl -m-2 p-4 pointer-events-none"
+                style={{
+                  ...selectedBackground.style,
+                  zIndex: 0,
+                }}
+              />
+            )}
+            <div
+              ref={editorRef}
+              contentEditable
+              onInput={handleInput}
+              onKeyDown={handleKeyDown}
+              className={`min-h-[60px] focus:outline-none text-[15px] leading-relaxed relative z-10 ${
+                selectedBackground && content.images.length === 0 && content.videos.length === 0
+                  ? 'font-semibold text-lg'
+                  : 'text-gray-900 dark:text-gray-100'
+              }`}
+              style={{
+                whiteSpace: 'pre-wrap',
+                color: selectedBackground && content.images.length === 0 && content.videos.length === 0
+                  ? selectedBackground.textColor
+                  : undefined,
+              }}
+              suppressContentEditableWarning={true}
+              data-placeholder={placeholder}
+            />
+          </div>
         </div>
         
         {/* Bottom Toolbar */}
