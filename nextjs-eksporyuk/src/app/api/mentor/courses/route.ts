@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       title,
+      slug: requestSlug, // Optional slug from request
       description,
       thumbnail,
       price,
@@ -129,11 +130,37 @@ export async function POST(request: NextRequest) {
 
     console.log('POST /api/admin/courses - Received body:', body)
 
-    // Validate required fields
-    if (!title || !description || price === undefined || price === null) {
-      console.error('Validation failed:', { title, description, price })
+    // Validate required fields with detailed error response
+    const validationErrors: Record<string, string[]> = {}
+    
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      validationErrors.title = ['Judul kursus wajib diisi']
+    } else if (title.trim().length < 3) {
+      validationErrors.title = ['Judul kursus minimal 3 karakter']
+    }
+    
+    if (!description || typeof description !== 'string' || !description.trim()) {
+      validationErrors.description = ['Deskripsi kursus wajib diisi']
+    } else if (description.trim().length < 10) {
+      validationErrors.description = ['Deskripsi kursus minimal 10 karakter']
+    }
+    
+    // Only validate price for PAID monetization type
+    if (monetizationType === 'PAID') {
+      if (price === undefined || price === null) {
+        validationErrors.price = ['Harga wajib diisi untuk kursus berbayar']
+      } else if (isNaN(Number(price)) || Number(price) < 0) {
+        validationErrors.price = ['Harga harus berupa angka dan tidak boleh negatif']
+      }
+    }
+    
+    if (Object.keys(validationErrors).length > 0) {
+      console.error('Validation failed:', validationErrors)
       return NextResponse.json(
-        { error: 'Title, description, and price are required' },
+        { 
+          error: 'Validasi gagal',
+          validation: validationErrors 
+        },
         { status: 400 }
       )
     }
@@ -171,18 +198,29 @@ export async function POST(request: NextRequest) {
 
     const finalMentorId = mentorId || mentorProfile.id
 
+    // Generate unique slug from title or use provided slug
+    const slug = requestSlug || await createUniqueSlug(title, 'course')
+    
+    // Generate unique course ID
+    const courseId = `crs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
     console.log('Using mentor ID:', finalMentorId)
+
+    // Set price to 0 for FREE and AFFILIATE types
+    const finalPrice = (monetizationType === 'FREE' || monetizationType === 'AFFILIATE') ? 0 : (price || 0)
 
     // Create course
     const course = await prisma.course.create({
       data: {
+        id: courseId,
         mentorId: finalMentorId,
         title,
         slug,
         description,
         thumbnail,
-        price,
-        originalPrice: originalPrice || price,
+        price: finalPrice,
+        originalPrice: originalPrice || finalPrice,
+        duration,
         duration,
         level: level || 'BEGINNER',
         monetizationType: monetizationType || 'FREE',
@@ -193,7 +231,8 @@ export async function POST(request: NextRequest) {
         mailketingListName,
         mentorCommissionPercent: settings.defaultMentorCommission,
         approvedBy: user.role === 'ADMIN' ? session.user.id : null,
-        approvedAt: user.role === 'ADMIN' ? new Date() : null
+        approvedAt: user.role === 'ADMIN' ? new Date() : null,
+        updatedAt: new Date()
       },
       include: {
         mentor: {
