@@ -82,7 +82,7 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
     return comment.replies || comment.other_PostComment || []
   }
 
-  // Auto-expand all replies by default
+  // Auto-expand all replies by default and initialize like states
   useEffect(() => {
     const expandAll: Record<string, boolean> = {}
     const initialLikes: Record<string, number> = {}
@@ -90,18 +90,22 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
     
     const processComments = (commentList: Comment[]) => {
       commentList.forEach(comment => {
-        // Set initial like counts from reactionsCount or CommentReaction
-        if (comment.reactionsCount) {
-          const totalLikes = Object.values(comment.reactionsCount).reduce((a, b) => a + b, 0)
-          initialLikes[comment.id] = totalLikes
-        } else if (comment.CommentReaction) {
-          initialLikes[comment.id] = comment.CommentReaction.length
-          // Check if current user has liked
-          if (session?.user?.id) {
-            const userLiked = comment.CommentReaction.some(r => r.userId === session.user.id)
-            initialLiked[comment.id] = userLiked
+        // Set initial like counts from reactionsCount
+        if (comment.reactionsCount && typeof comment.reactionsCount === 'object') {
+          const likeCount = (comment.reactionsCount as Record<string, number>)['LIKE'] || 0
+          initialLikes[comment.id] = likeCount
+        }
+        
+        // Check if current user has liked from CommentReaction array
+        if (comment.CommentReaction && Array.isArray(comment.CommentReaction) && session?.user?.id) {
+          const userLiked = comment.CommentReaction.some(r => r.userId === session.user?.id)
+          initialLiked[comment.id] = userLiked
+          // Also set count from CommentReaction if reactionsCount is not available
+          if (!comment.reactionsCount) {
+            initialLikes[comment.id] = comment.CommentReaction.filter(r => r.type === 'LIKE').length
           }
         }
+        
         const replies = getReplies(comment)
         if (replies.length > 0) {
           expandAll[comment.id] = true
@@ -111,8 +115,8 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
     }
     processComments(comments)
     setExpandedReplies(expandAll)
-    setLikeCounts(prev => ({ ...prev, ...initialLikes }))
-    setLikedComments(prev => ({ ...prev, ...initialLiked }))
+    setLikeCounts(initialLikes)
+    setLikedComments(initialLiked)
   }, [comments, session?.user?.id])
 
   // Focus reply input when replying
