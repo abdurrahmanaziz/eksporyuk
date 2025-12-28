@@ -83,8 +83,13 @@ export async function POST(
     })
   } catch (error) {
     console.error('POST /api/admin/courses/[id]/publish error:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Detailed error:', errorMsg)
     return NextResponse.json(
-      { error: 'Failed to publish course' },
+      { 
+        error: 'Failed to publish course',
+        details: errorMsg
+      },
       { status: 500 }
     )
   }

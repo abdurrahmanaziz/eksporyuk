@@ -100,12 +100,16 @@ export async function POST(
     }
 
     // Create module
+    const moduleId = `mod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
     const module = await prisma.courseModule.create({
       data: {
+        id: moduleId,
         title,
         description: description || '',
         order: order || 1,
-        courseId
+        courseId,
+        updatedAt: new Date()
       }
     })
 
@@ -115,8 +119,13 @@ export async function POST(
     }, { status: 201 })
   } catch (error) {
     console.error('Create module error:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Detailed error:', errorMsg)
     return NextResponse.json(
-      { error: 'Failed to create module' },
+      { 
+        error: 'Failed to create module',
+        details: errorMsg
+      },
       { status: 500 }
     )
   }
