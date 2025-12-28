@@ -15,6 +15,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    
+    // Verify post exists first
+    const postExists = await prisma.post.findUnique({
+      where: { id },
+      select: { id: true }
+    });
+    
+    if (!postExists) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
 
     // Recursive include for nested replies (up to 3 levels)
     const replyInclude = {

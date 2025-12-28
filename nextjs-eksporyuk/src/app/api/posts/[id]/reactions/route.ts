@@ -7,6 +7,75 @@ import { notificationService } from '@/lib/services/notificationService';
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
+// GET /api/posts/[id]/reactions - Get post reactions
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    const { id: postId } = await params;
+    
+    // Verify post exists first
+    const postExists = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { id: true }
+    });
+    
+    if (!postExists) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
+    // Get all reactions for the post
+    const reactions = await prisma.postReaction.findMany({
+      where: { postId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const reactionCounts = await prisma.postReaction.groupBy({
+      by: ['type'],
+      where: { postId },
+      _count: { id: true },
+    });
+
+    const reactionsCount = reactionCounts.reduce((acc, curr) => {
+      acc[curr.type] = curr._count.id;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Get current user's reaction if logged in
+    let currentReaction = null
+    if (session?.user?.id) {
+      const userReaction = await prisma.postReaction.findFirst({
+        where: {
+          postId,
+          userId: session.user.id
+        },
+        select: { type: true }
+      })
+      currentReaction = userReaction?.type || null
+    }
+
+    return NextResponse.json({
+      reactions,
+      reactionsCount,
+      counts: reactionsCount,
+      currentReaction,
+    });
+  } catch (error) {
+    console.error('Error fetching reactions:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
 
 export async function POST(
   req: NextRequest,
@@ -19,6 +88,17 @@ export async function POST(
     }
 
     const { id: postId } = await params;
+    
+    // Verify post exists first
+    const postExists = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { id: true }
+    });
+    
+    if (!postExists) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
     const { type } = await req.json();
 
     // Validate reaction type

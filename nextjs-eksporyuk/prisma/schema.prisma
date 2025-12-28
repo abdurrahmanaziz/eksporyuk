@@ -2057,7 +2057,7 @@ model Post {
 }
 
 model PostComment {
-  id                String            @id
+  id                String            @id @default(cuid())
   postId            String
   userId            String
   content           String
@@ -2080,14 +2080,14 @@ model PostComment {
 }
 
 model PostLike {
-  id        String   @id
+  id        String   @id @default(cuid())
   postId    String
   userId    String
   createdAt DateTime @default(now())
 }
 
 model PostReaction {
-  id        String       @id
+  id        String       @id @default(cuid())
   postId    String
   userId    String
   type      ReactionType @default(LIKE)
@@ -2393,7 +2393,7 @@ model SalesPageSettings {
 }
 
 model SavedPost {
-  id        String   @id
+  id        String   @id @default(cuid())
   postId    String
   userId    String
   createdAt DateTime @default(now())
