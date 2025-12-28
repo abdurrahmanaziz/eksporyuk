@@ -3,6 +3,12 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { prisma } from '@/lib/prisma';
 import { ReactionType } from '@prisma/client';
+import { randomBytes } from 'crypto';
+
+// Generate cuid-like ID
+function generateId(): string {
+  return 'c' + randomBytes(12).toString('hex').slice(0, 24);
+}
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -65,9 +71,10 @@ export async function POST(
         });
       }
     } else {
-      // New reaction - use upsert to handle race conditions
+      // New reaction - generate ID manually for compatibility
       reaction = await prisma.commentReaction.create({
         data: {
+          id: generateId(),
           commentId,
           userId: session.user.id,
           type: type as ReactionType,
