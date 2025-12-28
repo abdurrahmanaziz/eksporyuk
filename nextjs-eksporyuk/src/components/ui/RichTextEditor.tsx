@@ -21,7 +21,10 @@ import {
   Quote,
   Send,
   MoreHorizontal,
+  Palette,
+  X,
 } from 'lucide-react';
+import { POST_BACKGROUNDS, BACKGROUND_CATEGORIES, PostBackground, getBackgroundById } from '@/lib/post-backgrounds';
 
 interface RichTextEditorProps {
   value?: string;
@@ -35,6 +38,7 @@ interface RichTextEditorProps {
   allowMedia?: boolean;
   allowMentions?: boolean;
   allowHashtags?: boolean;
+  allowBackground?: boolean;
   initialContent?: any;
   groupSlug?: string;
   showSubmitButton?: boolean;
@@ -58,6 +62,7 @@ interface PostContent {
   location?: any;
   quoteStyle?: string;
   scheduledAt?: Date;
+  backgroundId?: string;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -72,6 +77,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   allowMedia = true,
   allowMentions = true,
   allowHashtags = true,
+  allowBackground = true,
   initialContent,
   groupSlug,
   showSubmitButton = false,
@@ -91,7 +97,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     videos: [],
     documents: [],
     taggedUsers: [],
+    backgroundId: undefined,
   });
+
+  // Background selector state
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
+  const [selectedBackground, setSelectedBackground] = useState<PostBackground | null>(null);
+  const [activeBackgroundCategory, setActiveBackgroundCategory] = useState<string>('export');
 
   const [activeTools, setActiveTools] = useState<Set<string>>(new Set());
   const [showToolbar, setShowToolbar] = useState(false);
@@ -461,10 +473,31 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   }, [allowMentions, allowHashtags]);
 
+  // Handle background selection
+  const handleSelectBackground = (background: PostBackground | null) => {
+    setSelectedBackground(background);
+    setContent(prev => ({
+      ...prev,
+      backgroundId: background?.id || undefined
+    }));
+    setShowBackgroundPicker(false);
+  };
+
+  // Disable background when media is added
+  useEffect(() => {
+    if (content.images.length > 0 || content.videos.length > 0) {
+      setSelectedBackground(null);
+      setContent(prev => ({ ...prev, backgroundId: undefined }));
+    }
+  }, [content.images, content.videos]);
+
   const handleSubmit = () => {
     if (content.text.trim() || content.images.length || content.videos.length || content.documents.length) {
       if (onSubmit) {
-        onSubmit(content);
+        onSubmit({
+          ...content,
+          backgroundId: selectedBackground?.id || undefined,
+        });
       }
       
       // Reset content
@@ -475,7 +508,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         videos: [],
         documents: [],
         taggedUsers: [],
+        backgroundId: undefined,
       });
+      setSelectedBackground(null);
       
       if (editorRef.current) {
         editorRef.current.innerHTML = '';
@@ -586,6 +621,21 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           >
             <span className="text-[11px] font-bold text-gray-400 tracking-wide">GIF</span>
           </button>
+          
+          {/* Background Selector Button */}
+          {allowBackground && content.images.length === 0 && content.videos.length === 0 && (
+            <button
+              onClick={() => setShowBackgroundPicker(!showBackgroundPicker)}
+              className={`p-2 rounded-md transition-colors ${
+                selectedBackground 
+                  ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200' 
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+              title="Pilih Background"
+            >
+              <Palette size={20} className={selectedBackground ? 'text-indigo-600' : 'text-gray-400'} />
+            </button>
+          )}
           
           <button
             onClick={() => setShowToolbar(!showToolbar)}
@@ -719,6 +769,87 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           {!mentionLoading && mentionResults.length === 0 && (
             <div className="p-4 text-center text-gray-500 text-sm">
               {mentionSearchTerm ? `No users found for "@${mentionSearchTerm}"` : 'Type username to search...'}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Background Picker Popup */}
+      {showBackgroundPicker && (
+        <div className="absolute z-50 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg w-80 sm:w-96 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-2">
+              <Palette size={16} />
+              Pilih Background
+            </h4>
+            <div className="flex items-center gap-2">
+              {selectedBackground && (
+                <button
+                  onClick={() => handleSelectBackground(null)}
+                  className="text-xs text-red-500 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50"
+                >
+                  Hapus
+                </button>
+              )}
+              <button
+                onClick={() => setShowBackgroundPicker(false)}
+                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <X size={16} className="text-gray-400" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 dark:border-gray-700">
+            {BACKGROUND_CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveBackgroundCategory(cat.id)}
+                className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                  activeBackgroundCategory === cat.id
+                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400'
+                }`}
+              >
+                {cat.icon} {cat.name}
+              </button>
+            ))}
+          </div>
+          
+          {/* Background Grid */}
+          <div className="p-3">
+            <div className="grid grid-cols-5 gap-2">
+              {POST_BACKGROUNDS.filter(bg => bg.category === activeBackgroundCategory).map((bg) => (
+                <button
+                  key={bg.id}
+                  onClick={() => handleSelectBackground(bg)}
+                  className={`w-full aspect-square rounded-lg transition-all duration-200 hover:scale-105 hover:ring-2 hover:ring-indigo-400 ${
+                    selectedBackground?.id === bg.id ? 'ring-2 ring-indigo-600 ring-offset-2' : ''
+                  }`}
+                  style={bg.style}
+                  title={bg.name}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Preview */}
+          {selectedBackground && (
+            <div className="px-3 pb-3">
+              <p className="text-xs text-gray-500 mb-2">Preview:</p>
+              <div
+                className="rounded-lg p-4 min-h-[60px] flex items-center justify-center"
+                style={selectedBackground.style}
+              >
+                <p
+                  className="text-center text-sm font-medium"
+                  style={{ color: selectedBackground.textColor }}
+                >
+                  {content.text || 'Contoh teks postingan'}
+                </p>
+              </div>
             </div>
           )}
         </div>

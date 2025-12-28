@@ -61,6 +61,7 @@ import FeedBanner from '@/components/banners/FeedBanner'
 import SidebarBanner from '@/components/banners/SidebarBanner'
 import UserHoverCard from '@/components/community/UserHoverCard'
 import CommentSection from '@/components/ui/CommentSection'
+import { getBackgroundById } from '@/lib/post-backgrounds'
 
 interface Post {
   id: string
@@ -68,6 +69,7 @@ interface Post {
   contentFormatted?: { html?: string } | null
   type: string
   images?: string[]
+  backgroundId?: string
   createdAt: string
   isPinned: boolean
   author: {
@@ -866,12 +868,39 @@ export default function CommunityFeedPage() {
                           )}
                         </div>
 
-                        {/* Post Content */}
-                        <RenderPostContent 
-                          content={post.content}
-                          contentFormatted={post.contentFormatted}
-                          className="mb-4 text-gray-800"
-                        />
+                        {/* Post Content with Background */}
+                        {post.backgroundId && !post.images?.length ? (
+                          // Post with background
+                          (() => {
+                            const bg = getBackgroundById(post.backgroundId);
+                            return bg ? (
+                              <div
+                                className="rounded-xl p-6 mb-4 min-h-[150px] flex items-center justify-center"
+                                style={bg.style}
+                              >
+                                <p
+                                  className="text-center text-lg font-medium leading-relaxed whitespace-pre-wrap"
+                                  style={{ color: bg.textColor }}
+                                >
+                                  {post.content}
+                                </p>
+                              </div>
+                            ) : (
+                              <RenderPostContent 
+                                content={post.content}
+                                contentFormatted={post.contentFormatted}
+                                className="mb-4 text-gray-800"
+                              />
+                            );
+                          })()
+                        ) : (
+                          // Regular post content
+                          <RenderPostContent 
+                            content={post.content}
+                            contentFormatted={post.contentFormatted}
+                            className="mb-4 text-gray-800"
+                          />
+                        )}
 
                         {/* Post Images */}
                         {post.images && post.images.length > 0 && (

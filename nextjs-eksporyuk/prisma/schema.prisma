@@ -2024,6 +2024,7 @@ model Post {
   type             PostType       @default(POST)
   content          String
   contentFormatted Json?
+  backgroundId     String?        // Post background style (gradient/solid color)
   images           Json?
   videos           Json?
   documents        Json?

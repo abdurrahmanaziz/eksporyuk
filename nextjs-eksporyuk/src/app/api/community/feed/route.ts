@@ -73,6 +73,7 @@ async function getPostWithDetails(post: any) {
     images: post.images || [],
     videos: post.videos || [],
     documents: post.documents || [],
+    backgroundId: post.backgroundId || null,
     reactionsCount: reactionsCountByType,
     pollData: post.pollData || null,
     eventData: post.eventData || null,
@@ -236,7 +237,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { content, groupId, images, videos, taggedUsers, contentFormatted, type = 'POST' } = await request.json()
+    const { content, groupId, images, videos, taggedUsers, contentFormatted, backgroundId, type = 'POST' } = await request.json()
 
     if (!content?.trim()) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -269,6 +270,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Background only applies to text-only posts (no images/videos)
+    const hasMedia = (images && images.length > 0) || (videos && videos.length > 0)
+    const finalBackgroundId = hasMedia ? null : (backgroundId || null)
+
     // Create the post
     const post = await prisma.post.create({
       data: {
@@ -281,6 +286,7 @@ export async function POST(request: NextRequest) {
         videos: videos || [],
         taggedUsers: taggedUsers || [],
         contentFormatted: contentFormatted || null,
+        backgroundId: finalBackgroundId,
         approvalStatus: 'APPROVED',
         updatedAt: new Date(),
       }
