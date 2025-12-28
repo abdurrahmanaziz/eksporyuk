@@ -243,17 +243,29 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
       const response = await fetch(`/api/comments/${commentId}/reactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ type: 'LIKE' }),
       })
 
+      const data = await response.json()
+      
       if (!response.ok) {
+        console.error('Comment reaction error:', data)
         // Revert on error
         setLikedComments(prev => ({ ...prev, [commentId]: wasLiked }))
         setLikeCounts(prev => ({
           ...prev,
           [commentId]: (prev[commentId] || 0) + (wasLiked ? 1 : -1)
         }))
-        toast.error('Gagal menyukai komentar')
+        toast.error(data.error || 'Gagal menyukai komentar')
+      } else {
+        // Update with actual count from server
+        if (data.reactionsCount?.LIKE !== undefined) {
+          setLikeCounts(prev => ({
+            ...prev,
+            [commentId]: data.reactionsCount.LIKE
+          }))
+        }
       }
     } catch (error) {
       // Revert on error
