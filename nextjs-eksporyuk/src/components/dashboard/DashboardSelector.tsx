@@ -73,13 +73,15 @@ export default function DashboardSelector() {
   const [isLoadingOptions, setIsLoadingOptions] = useState(true)
   const [allRoles, setAllRoles] = useState<string[]>([])
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
+  const [hasRedirected, setHasRedirected] = useState(false)
   
   const userRole = session?.user?.role || ''
   
   // Fetch dashboard options from API based on ALL user roles in database
   useEffect(() => {
     const fetchDashboardOptions = async () => {
-      if (!session?.user?.id) return
+      // Prevent refetching if already redirected or no session
+      if (hasRedirected || !session?.user?.id || status !== 'authenticated') return
       
       try {
         const response = await fetch('/api/user/dashboard-options')
@@ -103,23 +105,21 @@ export default function DashboardSelector() {
           setDashboardOptions(options)
           setAllRoles(data.allRoles || [])
           
-          // If user has preferred dashboard and it's available, redirect
-          if (data.preferredDashboard) {
+          // If user has preferred dashboard and it's available, redirect ONCE
+          if (data.preferredDashboard && !hasRedirected) {
             const preferred = options.find((o: DashboardOption) => o.id === data.preferredDashboard)
             if (preferred) {
-              // Add small delay to ensure session is fully established
-              setTimeout(() => {
-                router.push(preferred.href)
-              }, 100)
+              setHasRedirected(true)
+              router.replace(preferred.href)
               return
             }
           }
           
-          // Auto-redirect if only one option (add small delay)
-          if (options.length === 1) {
-            setTimeout(() => {
-              router.push(options[0].href)
-            }, 100)
+          // Auto-redirect if only one option ONCE
+          if (options.length === 1 && !hasRedirected) {
+            setHasRedirected(true)
+            router.replace(options[0].href)
+            return
           }
         }
       } catch (error) {
@@ -130,10 +130,8 @@ export default function DashboardSelector() {
       }
     }
     
-    if (session?.user?.id && status === 'authenticated') {
-      fetchDashboardOptions()
-    }
-  }, [session?.user?.id, status, router])
+    fetchDashboardOptions()
+  }, [session?.user?.id, status, hasRedirected])
   
   // Fallback function in case API fails
   const getFallbackOptions = (role: string): DashboardOption[] => {
@@ -181,19 +179,21 @@ export default function DashboardSelector() {
     return options
   }
   
-  // Admin redirect
+  // Admin redirect - only if not already redirected
   useEffect(() => {
-    if (userRole === 'ADMIN') {
-      router.push('/admin')
+    if (userRole === 'ADMIN' && !hasRedirected) {
+      setHasRedirected(true)
+      router.replace('/admin')
     }
-  }, [userRole, router])
+  }, [userRole, hasRedirected])
   
   // Redirect to login if no session
   useEffect(() => {
-    if (status !== 'loading' && !session?.user) {
-      router.push('/login')
+    if (status === 'unauthenticated' && !hasRedirected) {
+      setHasRedirected(true)
+      router.replace('/login')
     }
-  }, [status, session?.user, router])
+  }, [status, hasRedirected])
   
   // Loading state
   if (status === 'loading' || isLoadingOptions) {

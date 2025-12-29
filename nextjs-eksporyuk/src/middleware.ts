@@ -3,21 +3,33 @@ import { NextResponse, NextRequest } from 'next/server'
 
 /**
  * Check if user has multiple dashboard options and needs selection
- * Admin goes straight to /admin - no selector needed
+ * Returns false for single-role users, true for multi-role users
  */
 function checkIfUserNeedsDashboardSelection(role: string, token: any): boolean {
   // Admin goes straight to admin panel - no selection needed
   if (role === 'ADMIN') return false
   
+  // Supplier goes straight to supplier panel
+  if (role === 'SUPPLIER') return false
+  
   // Check multi-role scenarios for non-admin users
-  const hasAffiliateAccess = token.affiliateMenuEnabled && token.hasAffiliateProfile
+  const hasAffiliateAccess = token?.affiliateMenuEnabled && token?.hasAffiliateProfile
+  const isAffiliate = role === 'AFFILIATE'
   const hasMentorAccess = role === 'MENTOR'
-  const hasMemberAccess = ['MEMBER_FREE', 'MEMBER_PREMIUM', 'AFFILIATE', 'MENTOR'].includes(role)
+  const hasMemberAccess = ['MEMBER_FREE', 'MEMBER_PREMIUM'].includes(role)
   
   let dashboardCount = 0
-  if (hasMemberAccess) dashboardCount++
-  if (hasAffiliateAccess || role === 'AFFILIATE') dashboardCount++
+  
+  // Member dashboard available for members, affiliates, and mentors
+  if (hasMemberAccess || isAffiliate || hasMentorAccess) dashboardCount++
+  
+  // Affiliate dashboard - count only if ACTUALLY has affiliate access (not just member)
+  if (isAffiliate || hasAffiliateAccess) dashboardCount++
+  
+  // Mentor dashboard  
   if (hasMentorAccess) dashboardCount++
+  
+  console.log('[MIDDLEWARE] Dashboard count check:', { role, hasAffiliateAccess, dashboardCount })
   
   return dashboardCount > 1
 }
