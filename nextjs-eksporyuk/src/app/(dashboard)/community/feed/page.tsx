@@ -173,13 +173,20 @@ export default function CommunityFeedPage() {
   const fetchPosts = async () => {
     try {
       setLoading(true)
+      console.log('🚀 fetchPosts called')
+      console.log('Session user:', session?.user?.name, session?.user?.id)
+      
       const response = await fetch(`/api/community/feed?filter=all&page=1&limit=20`)
       console.log('Feed API response status:', response.status)
+      console.log('Feed API response headers:', response.headers.get('content-type'))
       
       if (response.ok) {
         const data = await response.json()
         console.log('Feed API data:', data)
         console.log('Posts count:', data.posts?.length || 0)
+        if (data.posts && data.posts.length > 0) {
+          console.log('First post sample:', data.posts[0]?.content?.substring(0, 50) + '...')
+        }
         setPosts(data.posts || [])
         
         // Fetch reactions for all posts
