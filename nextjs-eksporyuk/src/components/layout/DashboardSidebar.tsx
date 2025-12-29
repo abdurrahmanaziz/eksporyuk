@@ -571,8 +571,8 @@ export default function DashboardSidebar() {
       membershipCategory.items = membershipCategory.items.map(item => 
         item.href === '/dashboard/upgrade'
           ? { 
-              name: '💳 Lanjutkan Pembayaran', 
-              href: `/checkout/payment/${firstPending.id}`, 
+              name: '💳 Pembayaran', 
+              href: `/payment/va/${firstPending.id}`, 
               icon: CreditCard 
             }
           : item
