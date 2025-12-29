@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { User, DollarSign, GraduationCap, Shield, BarChart3, HelpCircle, UserCircle, LogOut } from 'lucide-react'
+import { 
+  User, DollarSign, GraduationCap, Shield, BarChart3, 
+  ArrowRight, Sparkles, LogOut
+} from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 interface DashboardOption {
@@ -14,6 +17,9 @@ interface DashboardOption {
   href: string
   color: string
   bgColor: string
+  gradient: string
+  iconBg: string
+  features: string[]
 }
 
 interface ApiDashboardOption {
@@ -35,6 +41,30 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   BarChart3
 }
 
+// Dashboard configurations with rich styling
+const dashboardConfigs: Record<string, Partial<DashboardOption>> = {
+  member: {
+    gradient: 'from-blue-600 via-blue-500 to-cyan-500',
+    iconBg: 'bg-white/20',
+    features: ['Akses Kursus Premium', 'Materi Eksklusif', 'Sertifikat'],
+  },
+  affiliate: {
+    gradient: 'from-emerald-600 via-emerald-500 to-teal-500',
+    iconBg: 'bg-white/20',
+    features: ['Komisi Tinggi', 'Tracking Real-time', 'Withdraw Cepat'],
+  },
+  mentor: {
+    gradient: 'from-purple-600 via-purple-500 to-indigo-500',
+    iconBg: 'bg-white/20',
+    features: ['Buat Kursus', 'Kelola Siswa', 'Analytics'],
+  },
+  admin: {
+    gradient: 'from-red-600 via-red-500 to-orange-500',
+    iconBg: 'bg-white/20',
+    features: ['Full Access', 'User Management', 'System Settings'],
+  },
+}
+
 export default function DashboardSelector() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -42,6 +72,7 @@ export default function DashboardSelector() {
   const [dashboardOptions, setDashboardOptions] = useState<DashboardOption[]>([])
   const [isLoadingOptions, setIsLoadingOptions] = useState(true)
   const [allRoles, setAllRoles] = useState<string[]>([])
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null)
   
   const userRole = session?.user?.role || ''
   
@@ -55,10 +86,11 @@ export default function DashboardSelector() {
         const data = await response.json()
         
         if (data.success && data.dashboardOptions) {
-          // Convert API options to component format with icon components
+          // Convert API options to component format with rich styling
           const options: DashboardOption[] = data.dashboardOptions.map((opt: ApiDashboardOption) => ({
             ...opt,
-            icon: iconMap[opt.icon] || User
+            icon: iconMap[opt.icon] || User,
+            ...dashboardConfigs[opt.id] || dashboardConfigs.member,
           }))
           
           setDashboardOptions(options)
@@ -82,7 +114,6 @@ export default function DashboardSelector() {
         }
       } catch (error) {
         console.error('Error fetching dashboard options:', error)
-        // Fallback to primary role only
         setDashboardOptions(getFallbackOptions(userRole))
       } finally {
         setIsLoadingOptions(false)
@@ -101,13 +132,14 @@ export default function DashboardSelector() {
     if (['MEMBER_FREE', 'MEMBER_PREMIUM', 'AFFILIATE', 'MENTOR'].includes(role)) {
       options.push({
         id: 'member',
-        title: 'Member Dashboard',
+        title: 'Member Area',
         description: 'Akses kursus, materi, dan fitur membership Anda',
         icon: User,
         href: '/dashboard?selected=member',
         color: 'text-blue-600',
-        bgColor: 'bg-blue-50 border-blue-200'
-      })
+        bgColor: 'bg-blue-50 border-blue-200',
+        ...dashboardConfigs.member,
+      } as DashboardOption)
     }
     
     if (role === 'AFFILIATE') {
@@ -118,8 +150,9 @@ export default function DashboardSelector() {
         icon: DollarSign,
         href: '/affiliate/dashboard',
         color: 'text-green-600',
-        bgColor: 'bg-green-50 border-green-200'
-      })
+        bgColor: 'bg-green-50 border-green-200',
+        ...dashboardConfigs.affiliate,
+      } as DashboardOption)
     }
     
     if (role === 'MENTOR') {
@@ -130,247 +163,256 @@ export default function DashboardSelector() {
         icon: GraduationCap,
         href: '/mentor/dashboard',
         color: 'text-purple-600',
-        bgColor: 'bg-purple-50 border-purple-200'
-      })
+        bgColor: 'bg-purple-50 border-purple-200',
+        ...dashboardConfigs.mentor,
+      } as DashboardOption)
     }
     
     return options
   }
   
-  // Admin redirect - they shouldn't be here, send to /admin
+  // Admin redirect
   useEffect(() => {
     if (userRole === 'ADMIN') {
       router.push('/admin')
     }
   }, [userRole, router])
   
-  // Redirect to login if no session - after all hooks
+  // Redirect to login if no session
   useEffect(() => {
     if (status !== 'loading' && !session?.user) {
       router.push('/login')
     }
   }, [status, session, router])
   
-  // Loading state - session loading or options loading
+  // Loading state
   if (status === 'loading' || isLoadingOptions) {
-    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600 text-sm">Memuat dashboard options...</p>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-500/30 rounded-full animate-spin border-t-blue-500 mx-auto"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-ping border-t-blue-400 mx-auto opacity-20"></div>
+          </div>
+          <p className="text-blue-200 mt-4 text-sm">Memuat dashboard...</p>
+        </div>
       </div>
-    </div>
+    )
   }
 
-  // No session - show loading while redirecting
+  // No session
   if (!session?.user) {
-    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-blue-500/30 rounded-full animate-spin border-t-blue-500"></div>
+      </div>
+    )
   }
   
-  // Admin should not see this page - show loading while redirecting
+  // Admin redirect
   if (userRole === 'ADMIN') {
-    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Mengarahkan ke Admin Panel...</p>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500 mx-auto"></div>
+          <p className="text-red-200 mt-4">Mengarahkan ke Admin Panel...</p>
+        </div>
       </div>
-    </div>
+    )
   }
 
   const handleDashboardSelect = async (option: DashboardOption) => {
     setLoading(option.id)
     
     try {
-      // Save preference to database via API
-      const response = await fetch('/api/user/set-preferred-dashboard', {
+      await fetch('/api/user/set-preferred-dashboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dashboardType: option.id })
       })
-      
-      if (!response.ok) {
-        console.error('Failed to save dashboard preference')
-      }
     } catch (error) {
       console.error('Error saving preference:', error)
     }
     
-    // Navigate to selected dashboard
     router.push(option.href)
   }
 
-  // Single option - show loading and redirect
+  // Single option - redirect
   if (dashboardOptions.length === 1) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Mengarahkan ke Dashboard...
-          </h2>
-          <p className="text-gray-600">
-            Mengakses {dashboardOptions[0].title}
-          </p>
+          <div className="w-16 h-16 border-4 border-blue-500/30 rounded-full animate-spin border-t-blue-500 mx-auto"></div>
+          <h2 className="text-xl font-semibold text-white mt-4">Mengarahkan ke Dashboard...</h2>
+          <p className="text-blue-200 mt-2">{dashboardOptions[0].title}</p>
         </div>
       </div>
     )
   }
 
-  // Get user display name
   const displayName = session.user.name?.split(' ')[0] || 'User'
   const fullName = session.user.name || session.user.email || 'User'
-  
-  // Get role badge text based on all roles
-  const getRoleBadges = () => {
-    const badges: string[] = []
-    
-    if (allRoles.includes('MEMBER_PREMIUM')) badges.push('Premium')
-    else if (allRoles.includes('MEMBER_FREE')) badges.push('Member')
-    
-    if (allRoles.includes('AFFILIATE')) badges.push('Affiliate')
-    if (allRoles.includes('MENTOR')) badges.push('Mentor')
-    if (allRoles.includes('ADMIN')) badges.push('Admin')
-    
-    return badges.length > 0 ? badges : ['Member']
-  }
-  
-  const roleBadges = getRoleBadges()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-      {/* Header - Mobile Responsive */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 sm:px-6">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <img src="/logo.png" alt="Eksporyuk" className="h-7 sm:h-8 w-auto" />
-              <span className="text-base sm:text-lg font-semibold text-gray-900 hidden sm:block">Eksporyuk</span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <header className="px-4 py-4 sm:px-6 sm:py-5">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="Eksporyuk" className="h-8 sm:h-10 w-auto" />
+              <span className="text-lg sm:text-xl font-bold text-white hidden sm:block">Eksporyuk</span>
             </div>
             
-            {/* User Info - Mobile Optimized */}
-            <div className="text-right">
-              <div className="text-xs sm:text-sm font-medium text-gray-900 flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
-                <span className="truncate max-w-[100px] sm:max-w-none">{fullName.split(' ')[0]}</span>
-                <span className="text-gray-400 hidden sm:inline">•</span>
-                <div className="flex gap-1">
-                  {roleBadges.map((badge, index) => (
-                    <span key={index} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                      {badge}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content - Mobile First */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="max-w-4xl w-full">
-          {/* Welcome Section */}
-          <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
-              Welcome Back, {displayName} 👋
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto px-4">
-              Pilih dashboard untuk mengelola aktivitas Anda
-            </p>
-          </div>
-
-          {/* Dashboard Options - Mobile Stacked, Desktop Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            {dashboardOptions.map((option) => {
-              const IconComponent = option.icon
-              const isLoading = loading === option.id
-              
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleDashboardSelect(option)}
-                  disabled={loading !== null}
-                  className={`
-                    relative overflow-hidden rounded-xl sm:rounded-2xl border-2 p-4 sm:p-6 text-left
-                    active:scale-[0.98] hover:scale-[1.02] hover:shadow-lg transform transition-all duration-200
-                    focus:outline-none focus:ring-4 focus:ring-blue-500/20
-                    disabled:opacity-70 disabled:cursor-not-allowed
-                    ${option.bgColor}
-                  `}
-                >
-                  {/* Loading overlay */}
-                  {isLoading && (
-                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-xl sm:rounded-2xl">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    </div>
-                  )}
-                  
-                  {/* Card Content */}
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    {/* Icon */}
-                    <div className={`flex-shrink-0 inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl ${option.bgColor} border`}>
-                      <IconComponent className={`w-5 h-5 sm:w-6 sm:h-6 ${option.color}`} />
-                    </div>
-                    
-                    {/* Text Content */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
-                        {option.title}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-2">
-                        {option.description}
-                      </p>
-                      
-                      {/* CTA Button */}
-                      <div className="mt-3 sm:mt-4">
-                        <span className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-white 
-                          ${option.id === 'affiliate' ? 'bg-green-600' :
-                            option.id === 'mentor' ? 'bg-purple-600' :
-                            'bg-blue-600'}
-                          transition-colors`}>
-                          {option.id === 'affiliate' ? '💰 Access Dashboard' : 
-                           option.id === 'mentor' ? '📚 Go to Dashboard' :
-                           '🏠 Go to Dashboard'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Footer Actions - Mobile Friendly */}
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-sm">
-            <button 
-              onClick={() => router.push('/help')}
-              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <HelpCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Bantuan</span>
-            </button>
-            <button 
-              onClick={() => router.push('/profile')}
-              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <UserCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Profil</span>
-            </button>
-            <button 
+            <button
               onClick={() => signOut({ callbackUrl: '/login' })}
-              className="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Keluar</span>
             </button>
           </div>
-          
-          <div className="text-center mt-6 text-xs text-gray-400">
-            © 2025 Eksporyuk. All rights reserved.
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6">
+          <div className="max-w-4xl w-full">
+            {/* Welcome Section */}
+            <div className="text-center mb-8 sm:mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-blue-300 text-sm mb-4">
+                <Sparkles className="w-4 h-4" />
+                <span>Selamat Datang Kembali</span>
+              </div>
+              
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3">
+                Halo, <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">{displayName}</span>! 👋
+              </h1>
+              
+              <p className="text-base sm:text-lg text-blue-200/80 max-w-md mx-auto">
+                Pilih dashboard yang ingin Anda akses hari ini
+              </p>
+            </div>
+
+            {/* Dashboard Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
+              {dashboardOptions.map((option) => {
+                const IconComponent = option.icon
+                const isLoading = loading === option.id
+                const isHovered = hoveredCard === option.id
+                
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleDashboardSelect(option)}
+                    onMouseEnter={() => setHoveredCard(option.id)}
+                    onMouseLeave={() => setHoveredCard(null)}
+                    disabled={loading !== null}
+                    className={`
+                      relative group overflow-hidden rounded-2xl sm:rounded-3xl p-1 text-left
+                      transform transition-all duration-300 ease-out
+                      ${isHovered ? 'scale-[1.02] shadow-2xl shadow-blue-500/20' : 'scale-100'}
+                      ${loading !== null ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
+                      focus:outline-none focus:ring-4 focus:ring-blue-500/30
+                    `}
+                  >
+                    {/* Gradient Border */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${option.gradient} opacity-80 rounded-2xl sm:rounded-3xl`}></div>
+                    
+                    {/* Card Content */}
+                    <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-5 sm:p-6 h-full">
+                      {/* Loading Overlay */}
+                      {isLoading && (
+                        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-20 rounded-2xl sm:rounded-3xl">
+                          <div className="w-10 h-10 border-3 border-white/30 rounded-full animate-spin border-t-white"></div>
+                        </div>
+                      )}
+
+                      {/* Top Row: Icon + Arrow */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${option.gradient} flex items-center justify-center shadow-lg`}>
+                          <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                        </div>
+                        
+                        <div className={`
+                          w-10 h-10 rounded-full bg-white/10 flex items-center justify-center
+                          transition-all duration-300
+                          ${isHovered ? 'bg-white/20 translate-x-1' : ''}
+                        `}>
+                          <ArrowRight className={`w-5 h-5 text-white transition-transform duration-300 ${isHovered ? 'translate-x-0.5' : ''}`} />
+                        </div>
+                      </div>
+
+                      {/* Title & Description */}
+                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
+                        {option.title}
+                      </h3>
+                      <p className="text-sm sm:text-base text-slate-400 mb-4 line-clamp-2">
+                        {option.description}
+                      </p>
+
+                      {/* Features Tags */}
+                      <div className="flex flex-wrap gap-2">
+                        {option.features?.map((feature, idx) => (
+                          <span
+                            key={idx}
+                            className={`
+                              inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                              bg-gradient-to-r ${option.gradient} bg-opacity-20 text-white/90
+                              border border-white/10
+                            `}
+                          >
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Hover Glow Effect */}
+                      <div className={`
+                        absolute inset-0 bg-gradient-to-br ${option.gradient} opacity-0 
+                        group-hover:opacity-10 transition-opacity duration-300 rounded-2xl sm:rounded-3xl
+                      `}></div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Role Info */}
+            <div className="text-center">
+              <p className="text-sm text-slate-500">
+                Login sebagai <span className="text-blue-400">{fullName}</span>
+              </p>
+              <div className="flex items-center justify-center gap-2 mt-2">
+                {allRoles.map((role, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-xs text-blue-300"
+                  >
+                    {role.replace('_', ' ')}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+
+        {/* Footer */}
+        <footer className="px-4 py-4 sm:px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="text-xs text-slate-600">
+              © 2025 Eksporyuk. All rights reserved.
+            </p>
+          </div>
+        </footer>
+      </div>
     </div>
   )
 }

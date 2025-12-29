@@ -1,19 +1,30 @@
 'use client'
 
 import { signOut, useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { Search, LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import ChatBell from './ChatBell'
 import NotificationBell from './NotificationBell'
+import DashboardSwitcher from '@/components/dashboard/DashboardSwitcher'
 import Link from 'next/link'
 import Image from 'next/image'
 
 export default function DashboardHeader() {
   const { data: session } = useSession()
+  const pathname = usePathname()
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' })
+  }
+
+  // Determine current dashboard from pathname
+  const getCurrentDashboard = (): 'member' | 'affiliate' | 'mentor' | 'admin' => {
+    if (pathname.startsWith('/admin')) return 'admin'
+    if (pathname.startsWith('/affiliate')) return 'affiliate'
+    if (pathname.startsWith('/mentor')) return 'mentor'
+    return 'member'
   }
 
   return (
@@ -36,6 +47,12 @@ export default function DashboardHeader() {
 
         {/* Action Buttons */}
         <div className="flex gap-1 sm:gap-2 items-center">
+          {/* Dashboard Switcher */}
+          <DashboardSwitcher 
+            currentDashboard={getCurrentDashboard()} 
+            variant="minimal"
+          />
+          
           {/* Chat Bell */}
           <ChatBell />
           
