@@ -189,8 +189,8 @@ export default function AffiliateBioPage() {
     try {
       const [membershipsRes, productsRes, coursesRes, eventsRes, optinFormsRes] = await Promise.all([
         fetch('/api/memberships?forAffiliate=true'),
-        fetch('/api/products'),
-        fetch('/api/courses'),
+        fetch('/api/products?forAffiliate=true'),
+        fetch('/api/courses?forAffiliate=true'),
         fetch('/api/events'),
         fetch('/api/affiliate/optin-forms')
       ])

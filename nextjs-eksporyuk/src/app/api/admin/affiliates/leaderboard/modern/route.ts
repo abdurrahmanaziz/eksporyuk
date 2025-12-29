@@ -15,9 +15,16 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    if (session.user.role !== 'ADMIN') {
+    // Allow both ADMIN and AFFILIATE roles
+    const isAdmin = session.user.role === 'ADMIN'
+    const isAffiliate = session.user.role === 'AFFILIATE'
+    
+    if (!isAdmin && !isAffiliate) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
+    
+    // For AFFILIATE users, only show their own data
+    const currentUserId = isAffiliate ? session.user.id : null
 
     const startTime = Date.now()
     console.log('🔄 Fetching leaderboard with REAL period-based data...')
@@ -40,6 +47,11 @@ export async function GET() {
       
       if (startDate) {
         whereClause.createdAt = { gte: startDate }
+      }
+      
+      // For AFFILIATE role users, only fetch their conversions
+      if (isAffiliate && currentUserId) {
+        whereClause.affiliateId = currentUserId
       }
       
       // Get conversions without relations
@@ -105,7 +117,7 @@ export async function GET() {
       // Sort and format
       return Array.from(aggregateMap.values())
         .sort((a, b) => b.totalCommission - a.totalCommission)
-        .slice(0, 10)
+        .slice(0, isAffiliate ? 1 : 10) // AFFILIATE users only see themselves
         .map((entry, index) => ({
           rank: index + 1,
           userId: entry.userId,

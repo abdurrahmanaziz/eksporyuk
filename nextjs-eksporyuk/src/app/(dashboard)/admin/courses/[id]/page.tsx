@@ -84,6 +84,9 @@ type Course = {
   affiliateOnly?: boolean
   isAffiliateTraining?: boolean
   isAffiliateMaterial?: boolean
+  affiliateEnabled?: boolean
+  commissionType?: string
+  affiliateCommissionRate?: number
   // PRD Perbaikan Fitur Kelas - field baru
   roleAccess?: string
   membershipIncluded?: boolean
@@ -303,6 +306,9 @@ export default function AdminCourseDetailPage() {
           affiliateOnly: course.affiliateOnly,
           isAffiliateTraining: course.isAffiliateTraining,
           isAffiliateMaterial: course.isAffiliateMaterial,
+          affiliateEnabled: course.affiliateEnabled,
+          commissionType: course.commissionType,
+          affiliateCommissionRate: course.affiliateCommissionRate,
           // PRD Perbaikan Fitur Kelas - field baru
           roleAccess: course.roleAccess,
           membershipIncluded: course.membershipIncluded,
@@ -1109,6 +1115,75 @@ export default function AdminCourseDetailPage() {
                       </p>
                     )}
                   </div>
+                </div>
+
+                {/* Pengaturan Komisi Affiliate */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-lg">💰 Pengaturan Komisi Affiliate</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Atur komisi untuk affiliate yang menjual kursus ini
+                  </p>
+                  
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="affiliateEnabled">Bisa di-Affiliate-kan</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Jika aktif, kursus ini akan tampil di dashboard affiliate untuk dipromosikan
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      id="affiliateEnabled"
+                      checked={course.affiliateEnabled ?? true}
+                      onChange={(e) => setCourse({ ...course, affiliateEnabled: e.target.checked })}
+                      className="h-5 w-5 rounded border-gray-300"
+                    />
+                  </div>
+
+                  {(course.affiliateEnabled ?? true) && (
+                    <div className="space-y-4 ml-4 pl-4 border-l-2 border-muted">
+                      <div>
+                        <Label htmlFor="commissionType">Tipe Komisi</Label>
+                        <Select
+                          value={course.commissionType || 'PERCENTAGE'}
+                          onValueChange={(value) => setCourse({ ...course, commissionType: value })}
+                        >
+                          <SelectTrigger id="commissionType">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="FLAT">Nominal Tetap (Rp)</SelectItem>
+                            <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="affiliateCommissionRate">
+                          {course.commissionType === 'FLAT' ? 'Nominal Komisi (Rp)' : 'Persentase Komisi (%)'}
+                        </Label>
+                        <Input
+                          id="affiliateCommissionRate"
+                          type="number"
+                          value={course.affiliateCommissionRate ?? 30}
+                          onChange={(e) => setCourse({ ...course, affiliateCommissionRate: parseFloat(e.target.value) })}
+                          min="0"
+                          placeholder={course.commissionType === 'FLAT' ? 'e.g. 100000' : 'e.g. 30'}
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {course.commissionType === 'FLAT' 
+                            ? `Affiliate akan mendapat Rp ${Number(course.affiliateCommissionRate || 0).toLocaleString('id-ID')} per penjualan`
+                            : `Affiliate akan mendapat ${course.affiliateCommissionRate || 30}% dari harga jual`
+                          }
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+                        <strong>Info:</strong> Komisi affiliate akan dibayarkan langsung ke saldo affiliate setelah transaksi dikonfirmasi.
+                        Sisa pendapatan akan dibagi antara Admin (15%), Founder (60%), dan Co-Founder (40%).
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Affiliate Training Settings */}

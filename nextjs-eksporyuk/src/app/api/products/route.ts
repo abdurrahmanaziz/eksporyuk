@@ -13,14 +13,24 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const slug = searchParams.get('slug')
     const includeInactive = searchParams.get('includeInactive') === 'true'
+    const forAffiliate = searchParams.get('forAffiliate') === 'true'
+
+    // Build where clause for products
+    const buildWhereClause = (additionalWhere: any = {}) => {
+      const where: any = { ...additionalWhere }
+      if (!includeInactive) {
+        where.isActive = true
+      }
+      if (forAffiliate) {
+        where.affiliateEnabled = true
+      }
+      return where
+    }
 
     // If slug provided, find specific product
     if (slug) {
       const product = await prisma.product.findFirst({
-        where: {
-          slug: slug,
-          ...(includeInactive ? {} : { isActive: true }),
-        },
+        where: buildWhereClause({ slug }),
         select: {
           id: true,
           name: true,
@@ -36,6 +46,9 @@ export async function GET(request: NextRequest) {
           groupId: true,
           isFeatured: true,
           isActive: true,
+          affiliateEnabled: true,
+          affiliateCommissionRate: true,
+          commissionType: true,
           formLogo: true,
           formBanner: true,
           formDescription: true,
@@ -75,9 +88,7 @@ export async function GET(request: NextRequest) {
 
     // Otherwise return all products
     const products = await prisma.product.findMany({
-      where: {
-        ...(includeInactive ? {} : { isActive: true }),
-      },
+      where: buildWhereClause(),
       orderBy: {
         createdAt: 'desc',
       },
@@ -96,6 +107,9 @@ export async function GET(request: NextRequest) {
         groupId: true,
         isFeatured: true,
         isActive: true,
+        affiliateEnabled: true,
+        affiliateCommissionRate: true,
+        commissionType: true,
         formLogo: true,
         formBanner: true,
         formDescription: true,

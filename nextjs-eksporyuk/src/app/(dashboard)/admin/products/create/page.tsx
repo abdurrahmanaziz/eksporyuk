@@ -102,6 +102,7 @@ export default function CreateProductPage() {
     // Settings
     isActive: true,
     isFeatured: false,
+    affiliateEnabled: true,
     commissionType: "PERCENTAGE",
     affiliateCommissionRate: 30,
   });
@@ -1137,43 +1138,67 @@ export default function CreateProductPage() {
                 <CardDescription>Komisi, status, dan pengaturan lainnya</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="commissionType">Tipe Komisi</Label>
-                  <Select
-                    value={formData.commissionType}
-                    onValueChange={(value) => handleChange("commissionType", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
-                      <SelectItem value="FLAT">Flat (IDR)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-4 border-b pb-4">
+                  <div className="flex items-center justify-between rounded-lg border p-4 bg-muted/30">
+                    <div className="space-y-0.5">
+                      <Label className="text-base">Bisa di-Affiliate-kan</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Jika aktif, produk ini akan tampil di dashboard affiliate untuk dipromosikan
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.affiliateEnabled}
+                      onCheckedChange={(checked) => handleChange("affiliateEnabled", checked)}
+                    />
+                  </div>
+
+                  {formData.affiliateEnabled && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="commissionType">Tipe Komisi</Label>
+                        <Select
+                          value={formData.commissionType}
+                          onValueChange={(value) => handleChange("commissionType", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="FLAT">Nominal Tetap (Rp)</SelectItem>
+                            <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="affiliateCommissionRate">
+                          {formData.commissionType === "PERCENTAGE"
+                            ? "Persentase Komisi (%)"
+                            : "Nominal Komisi (Rp)"}
+                        </Label>
+                        <Input
+                          id="affiliateCommissionRate"
+                          type="number"
+                          value={formData.affiliateCommissionRate}
+                          onChange={(e) => handleChange("affiliateCommissionRate", e.target.value)}
+                          placeholder={formData.commissionType === "PERCENTAGE" ? "30" : "100000"}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {formData.commissionType === "PERCENTAGE"
+                            ? `Affiliate akan mendapat ${formData.affiliateCommissionRate}% dari harga jual`
+                            : `Affiliate akan mendapat Rp ${Number(formData.affiliateCommissionRate).toLocaleString("id-ID")} per penjualan`}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+                        <strong>Info:</strong> Komisi affiliate akan dibayarkan langsung ke saldo affiliate setelah transaksi dikonfirmasi.
+                        Sisa pendapatan akan dibagi antara Admin (15%), Founder (60%), dan Co-Founder (40%).
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="affiliateCommissionRate">
-                    {formData.commissionType === "PERCENTAGE"
-                      ? "Komisi Affiliate (%)"
-                      : "Komisi Affiliate (IDR)"}
-                  </Label>
-                  <Input
-                    id="affiliateCommissionRate"
-                    type="number"
-                    value={formData.affiliateCommissionRate}
-                    onChange={(e) => handleChange("affiliateCommissionRate", e.target.value)}
-                    placeholder={formData.commissionType === "PERCENTAGE" ? "30" : "50000"}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {formData.commissionType === "PERCENTAGE"
-                      ? "Persentase komisi untuk affiliate (default 30%)"
-                      : "Jumlah tetap komisi untuk affiliate (dalam IDR)"}
-                  </p>
-                </div>
-
-                <div className="space-y-4 border-t pt-4">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <Label className="text-base">Produk Aktif</Label>

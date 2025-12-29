@@ -21,13 +21,18 @@ export async function GET(request: NextRequest) {
       whereClause = {
         isActive: true,
         status: 'PUBLISHED', // Only show PUBLISHED memberships in public checkout
-        showInGeneralCheckout: true, // Only show memberships enabled for general checkout
         NOT: {
           OR: [
             { slug: 'pro' }, // Exclude "Paket Pro" - ini hanya untuk admin/redirect
             { slug: 'member-free' } // Exclude "Member Free" - ini role default, bukan membership
           ]
         }
+      }
+      
+      // Only apply showInGeneralCheckout filter for non-affiliate requests
+      // Affiliates can promote all memberships that have affiliateEnabled=true
+      if (!forAffiliate) {
+        whereClause.showInGeneralCheckout = true
       }
     }
     

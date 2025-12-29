@@ -115,6 +115,7 @@ export async function PUT(
       // Settings
       isActive,
       isFeatured,
+      affiliateEnabled,
       commissionType,
       affiliateCommissionRate,
     } = body
@@ -157,6 +158,7 @@ export async function PUT(
         // Settings
         isActive,
         isFeatured,
+        affiliateEnabled: affiliateEnabled !== undefined ? affiliateEnabled : true,
         commissionType,
         affiliateCommissionRate,
       },

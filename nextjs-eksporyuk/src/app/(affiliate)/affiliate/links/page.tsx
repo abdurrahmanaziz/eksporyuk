@@ -157,7 +157,8 @@ export default function AffiliateLinksPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products')
+      // Use forAffiliate=true to only get products that can be promoted by affiliates
+      const response = await fetch('/api/products?forAffiliate=true')
       const data = await response.json()
       if (data.products) setProducts(data.products)
     } catch (error) {
@@ -167,7 +168,8 @@ export default function AffiliateLinksPage() {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch('/api/courses?includeAll=true')
+      // Use forAffiliate=true to only get courses that can be promoted by affiliates
+      const response = await fetch('/api/courses?forAffiliate=true')
       const data = await response.json()
       if (data.courses) setCourses(data.courses.filter((c: any) => c.isPublished))
     } catch (error) {

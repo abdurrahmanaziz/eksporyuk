@@ -2155,6 +2155,7 @@ model Product {
   upsaleMessage           String?
   commissionType          CommissionType  @default(PERCENTAGE)
   affiliateCommissionRate Decimal         @default(30)
+  affiliateEnabled        Boolean         @default(true)
   mentorCommission        Decimal         @default(30)
   groupId                 String?
   isActive                Boolean         @default(true)

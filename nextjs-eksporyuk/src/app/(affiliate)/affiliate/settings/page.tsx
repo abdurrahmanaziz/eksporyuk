@@ -3,8 +3,6 @@
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getRoleTheme } from '@/lib/role-themes'
-import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,19 +12,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import {
   User,
-  Mail,
-  Phone,
-  MapPin,
   Camera,
   Save,
-  Settings,
   CreditCard,
   Bell,
-  Shield,
   Loader2,
-  CheckCircle,
-  Building2,
-  Globe,
 } from 'lucide-react'
 
 interface UserProfile {
@@ -72,8 +62,6 @@ export default function AffiliateSettingsPage() {
     city: '',
     province: '',
   })
-
-  const theme = session?.user?.role ? getRoleTheme(session.user.role) : getRoleTheme('AFFILIATE')
 
   useEffect(() => {
     fetchProfile()
@@ -187,52 +175,24 @@ export default function AffiliateSettingsPage() {
 
   if (loading) {
     return (
-      <ResponsivePageWrapper>
-        <div className="p-8 max-w-4xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-          </div>
-        </div>
-      </ResponsivePageWrapper>
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+      </div>
     )
   }
 
-  const isProfileComplete = formData.name && formData.phone && formData.whatsapp
-
   return (
-    <ResponsivePageWrapper>
-      <div className="p-8 max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-md">
-              <Settings className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Pengaturan Profil</h1>
-              <p className="text-sm text-gray-600">Kelola informasi profil affiliate Anda</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Profile Completion Banner */}
-        {!isProfileComplete && (
-          <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <Bell className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-amber-900">Lengkapi Profil Anda</h3>
-                <p className="text-sm text-amber-700 mt-1">
-                  Lengkapi profil untuk mendapatkan akses penuh ke fitur affiliate dan mulai menghasilkan komisi.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="grid gap-6">
+    <div className="space-y-6 max-w-4xl">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <User className="h-8 w-8 text-purple-600" />
+          Pengaturan Profil
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Kelola informasi profil affiliate Anda
+        </p>
+      </div>
           {/* Avatar Section */}
           <Card className="shadow-lg border-purple-100">
             <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
@@ -446,35 +406,33 @@ export default function AffiliateSettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Save Button */}
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => router.push('/affiliate/dashboard')}
-              className="border-gray-300"
-            >
-              Batal
-            </Button>
-            <Button
-              onClick={handleSaveProfile}
-              disabled={saving}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Menyimpan...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Simpan Profil
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+      {/* Save Button */}
+      <div className="flex justify-end gap-3">
+        <Button
+          variant="outline"
+          onClick={() => router.push('/affiliate/dashboard')}
+          className="border-gray-300"
+        >
+          Batal
+        </Button>
+        <Button
+          onClick={handleSaveProfile}
+          disabled={saving}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Simpan Profil
+            </>
+          )}
+        </Button>
       </div>
-    </ResponsivePageWrapper>
+    </div>
   )
 }

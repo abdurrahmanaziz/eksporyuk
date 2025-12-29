@@ -19,9 +19,16 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status')
     const roleAccess = searchParams.get('roleAccess')
     const includeAffiliate = searchParams.get('includeAffiliate') === 'true'
+    const forAffiliate = searchParams.get('forAffiliate') === 'true'
     const slug = searchParams.get('slug')
 
     const where: any = {}
+
+    // For affiliate link generation - only show courses with affiliateEnabled=true
+    if (forAffiliate) {
+      where.affiliateEnabled = true
+      where.isPublished = true
+    }
 
     // Query by specific slug (untuk course detail page)
     if (slug) {

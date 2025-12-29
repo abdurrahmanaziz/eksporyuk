@@ -133,6 +133,7 @@ export async function POST(request: Request) {
       // Settings
       isActive,
       isFeatured,
+      affiliateEnabled,
       commissionType,
       affiliateCommissionRate,
     } = body
@@ -211,6 +212,7 @@ export async function POST(request: Request) {
         // Settings
         isActive: isActive !== undefined ? isActive : true,
         isFeatured: isFeatured || false,
+        affiliateEnabled: affiliateEnabled !== undefined ? affiliateEnabled : true,
         commissionType: commissionType || 'PERCENTAGE',
         affiliateCommissionRate: affiliateCommissionRate || 30,
         soldCount: 0,

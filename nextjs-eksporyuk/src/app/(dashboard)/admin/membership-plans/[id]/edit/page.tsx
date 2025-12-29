@@ -379,6 +379,8 @@ export default function EditMembershipPlanPage() {
         formLogo: formData.formLogo || '',
         formBanner: formData.formBanner || '',
         showInGeneralCheckout: formData.showInGeneralCheckout,
+        // Affiliate settings
+        affiliateEnabled: formData.affiliateEnabled,
         commissionType: formData.commissionType,
         affiliateCommissionRate: Number(formData.affiliateCommissionRate) || 30,
         features: uniqueBenefits,

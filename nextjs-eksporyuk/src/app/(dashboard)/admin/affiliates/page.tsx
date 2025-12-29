@@ -61,6 +61,8 @@ interface Affiliate {
     name: string
     email: string
     avatar?: string
+    role?: string
+    userRoles?: Array<{ role: string }>
   }
   affiliateCode: string
   shortLinkUsername?: string
@@ -94,10 +96,12 @@ export default function AffiliatesManagementPage() {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showApproveModal, setShowApproveModal] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
+  const [showRoleAssignModal, setShowRoleAssignModal] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [batchActionLoading, setBatchActionLoading] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [roleAssignLoading, setRoleAssignLoading] = useState(false)
 
   // Select all toggle
   const handleSelectAll = () => {
@@ -262,6 +266,36 @@ export default function AffiliatesManagementPage() {
     } catch (error) {
       console.error('Error toggling status:', error)
       alert('❌ Terjadi kesalahan')
+    }
+  }
+
+  const handleAssignAffiliateRole = async () => {
+    if (!selectedAffiliate) return
+    
+    try {
+      setRoleAssignLoading(true)
+      
+      const response = await fetch(`/api/admin/affiliates/${selectedAffiliate.userId}/assign-role`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: selectedAffiliate.userId }),
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert(`✅ ${data.message}`)
+        setShowRoleAssignModal(false)
+        setSelectedAffiliate(null)
+        fetchData()
+      } else {
+        alert('❌ Error: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Error assigning role:', error)
+      alert('❌ Terjadi kesalahan saat memberikan role')
+    } finally {
+      setRoleAssignLoading(false)
     }
   }
 
@@ -622,6 +656,7 @@ export default function AffiliatesManagementPage() {
                   <th className="text-left p-4 font-medium text-gray-600">Affiliate</th>
                   <th className="text-left p-4 font-medium text-gray-600">Kode</th>
                   <th className="text-center p-4 font-medium text-gray-600">Status</th>
+                  <th className="text-center p-4 font-medium text-gray-600">Role</th>
                   <th className="text-right p-4 font-medium text-gray-600">Total Komisi</th>
                   <th className="text-center p-4 font-medium text-gray-600 w-24">Aksi</th>
                 </tr>
@@ -668,6 +703,18 @@ export default function AffiliatesManagementPage() {
                           <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">Aktif</Badge>
                         ) : (
                           <Badge variant="secondary" className="text-xs">Nonaktif</Badge>
+                        )}
+                      </td>
+                      <td className="p-4 text-center">
+                        {affiliate.user.role === 'AFFILIATE' || (affiliate.user.userRoles && affiliate.user.userRoles.some(r => r.role === 'AFFILIATE')) ? (
+                          <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">AFFILIATE</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs cursor-pointer" onClick={() => {
+                            setSelectedAffiliate(affiliate)
+                            setShowRoleAssignModal(true)
+                          }}>
+                            + Assign Role
+                          </Badge>
                         )}
                       </td>
                       <td className="p-4 text-right">
@@ -958,6 +1005,59 @@ export default function AffiliatesManagementPage() {
               className="bg-gradient-to-r from-red-600 to-rose-600"
             >
               {actionLoading ? 'Memproses...' : 'Ya, Tolak'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Role Assignment Modal */}
+      <Dialog open={showRoleAssignModal} onOpenChange={setShowRoleAssignModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Berikan Role AFFILIATE</DialogTitle>
+            <DialogDescription>
+              Tetapkan role AFFILIATE ke pengguna ini agar dapat mengakses dashboard affiliate
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAffiliate && (
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  Anda akan memberikan role <strong>AFFILIATE</strong> kepada <strong>{selectedAffiliate.user.name}</strong>.
+                  Mereka akan mendapatkan akses ke fitur affiliate dan dashboard leaderboard.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <label className="text-gray-600">Nama</label>
+                  <p className="font-medium">{selectedAffiliate.user.name}</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">Email</label>
+                  <p className="font-medium text-xs">{selectedAffiliate.user.email}</p>
+                </div>
+              </div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-xs text-gray-700">
+                  ℹ️ Pastikan affiliate ini telah disetujui (status APPROVED) sebelum memberikan role ini.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowRoleAssignModal(false)}
+              disabled={roleAssignLoading}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleAssignAffiliateRole}
+              disabled={roleAssignLoading}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600"
+            >
+              {roleAssignLoading ? 'Memproses...' : 'Ya, Berikan Role'}
             </Button>
           </DialogFooter>
         </DialogContent>
