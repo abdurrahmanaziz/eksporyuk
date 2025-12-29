@@ -238,6 +238,7 @@ function UnifiedCheckoutContent() {
         
         if (currentPkg) {
           const discountAmount = coupon.type === 'percentage' 
+            ? (currentPkg.price * coupon.discount) / 100
             : coupon.discount
 
           // Update coupon code in input field

@@ -386,12 +386,6 @@ const navigationByRole = {
         { name: '🚀 Upgrade Premium', href: '/dashboard/upgrade', icon: Zap, badge: '🔥' },
       ]
     },
-    {
-      title: 'PROGRAM',
-      items: [
-        { name: '💰 Jadi Affiliate', href: '/dashboard/apply-affiliate', icon: Share2, badge: 'NEW' },
-      ]
-    },
   ],
   SUPPLIER: [
     {
