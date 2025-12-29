@@ -54,6 +54,7 @@ async function testBankInfoFix() {
 
     const payout = await prisma.payout.create({
       data: {
+        id: `payout_test_${Date.now()}`,
         walletId: wallet.id,
         amount: 0,
         status: 'PAID',
@@ -62,6 +63,7 @@ async function testBankInfoFix() {
         accountNumber: testBankInfo.accountNumber,
         notes: 'Test bank info for onboarding',
         paidAt: new Date(),
+        updatedAt: new Date(),
       }
     })
     console.log(`   ✓ Bank info saved to payout: ${payout.id}`)
