@@ -98,15 +98,15 @@ export default function AdminAnalyticsPage() {
     <ResponsivePageWrapper>
       <div className="min-h-screen bg-gray-50 p-6 space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-              <p className="text-gray-500 mt-1">Overview performa sistem</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">Overview performa sistem</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full">
               <Select value={period} onValueChange={setPeriod}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px] h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -116,61 +116,63 @@ export default function AdminAnalyticsPage() {
                   <SelectItem value="1y">1 Tahun</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isLoading}>
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              </Button>
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isLoading} className="h-9 w-9">
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </Button>
+                <Button variant="outline" className="flex-1 sm:flex-none h-9 text-xs sm:text-sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Export</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl border border-gray-100 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-500">Total Users</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-500">Total Users</span>
               <Users className="h-4 w-4 text-gray-400" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">{analytics?.overview.totalUsers?.toLocaleString() || 0}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{analytics?.overview.totalUsers?.toLocaleString() || 0}</div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500">+{analytics?.overview.newUsersToday || 0} hari ini</span>
               {formatGrowth(analytics?.overview.userGrowth || 0)}
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-6">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-500">Total Revenue</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-500">Total Revenue</span>
               <DollarSign className="h-4 w-4 text-gray-400" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">{formatCurrency(analytics?.overview.totalRevenue || 0)}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(analytics?.overview.totalRevenue || 0)}</div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500">Periode ini</span>
               {formatGrowth(analytics?.overview.revenueGrowth || 0)}
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-6">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-500">Total Transaksi</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-500">Total Transaksi</span>
               <ShoppingBag className="h-4 w-4 text-gray-400" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">{analytics?.overview.totalTransactions?.toLocaleString() || 0}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{analytics?.overview.totalTransactions?.toLocaleString() || 0}</div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500">Periode ini</span>
               {formatGrowth(analytics?.overview.transactionGrowth || 0)}
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-6">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-500">Active Membership</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-500">Active Membership</span>
               <TrendingUp className="h-4 w-4 text-gray-400" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">{analytics?.overview.activeMemberships?.toLocaleString() || 0}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{analytics?.overview.activeMemberships?.toLocaleString() || 0}</div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500">Member aktif</span>
               {formatGrowth(analytics?.overview.membershipGrowth || 0)}

@@ -613,7 +613,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
         
         {/* Bottom Toolbar */}
-        <div className="flex items-center gap-2 px-4 pb-3 pt-1 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-2 px-3 sm:px-4 pb-2 sm:pb-3 pt-1 border-t border-gray-100 dark:border-gray-700">
           {allowMedia && (
             <>
               <button
@@ -628,11 +628,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                   };
                   input.click();
                 }}
-                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-1.5 sm:p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title="Upload Image"
                 disabled={isUploading}
               >
-                <Image size={20} className="text-gray-400" />
+                <Image size={18} className="sm:w-5 sm:h-5 text-gray-400" />
               </button>
               
               <button
@@ -647,29 +647,29 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                   };
                   input.click();
                 }}
-                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-1.5 sm:p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title="Upload Video"
                 disabled={isUploading}
               >
-                <Video size={20} className="text-gray-400" />
+                <Video size={18} className="sm:w-5 sm:h-5 text-gray-400" />
               </button>
             </>
           )}
           
           <button
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative"
+            className="p-1.5 sm:p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative"
             title="Add Emoji"
           >
-            <Smile size={20} className="text-gray-400" />
+            <Smile size={18} className="sm:w-5 sm:h-5 text-gray-400" />
           </button>
           
           <button
             onClick={() => setShowGiphyPicker(!showGiphyPicker)}
-            className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             title="Add GIF"
           >
-            <span className="text-[11px] font-bold text-gray-400 tracking-wide">GIF</span>
+            <span className="text-[9px] sm:text-[11px] font-bold text-gray-400 tracking-wide">GIF</span>
           </button>
           
           {/* Background Selector Button - Click to shuffle/change background */}
@@ -686,14 +686,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                   setShowBackgroundPicker(!showBackgroundPicker);
                 }
               }}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-1.5 sm:p-2 rounded-md transition-colors ${
                 selectedBackground 
                   ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200' 
                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               title={selectedBackground ? "Ganti Background (Klik untuk shuffle)" : "Pilih Background"}
             >
-              <Palette size={20} className={selectedBackground ? 'text-indigo-600' : 'text-gray-400'} />
+              <Palette size={18} className={`sm:w-5 sm:h-5 ${selectedBackground ? 'text-indigo-600' : 'text-gray-400'}`} />
             </button>
           )}
           
@@ -704,34 +704,30 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 setSelectedBackground(null);
                 setContent(prev => ({ ...prev, backgroundId: undefined }));
               }}
-              className="p-2 rounded-md hover:bg-red-100 transition-colors"
+              className="p-1.5 sm:p-2 rounded-md hover:bg-red-100 transition-colors"
               title="Hapus Background"
             >
-              <X size={18} className="text-red-500" />
+              <X size={16} className="sm:w-4.5 sm:h-4.5 text-red-500" />
             </button>
           )}
           
           <button
             onClick={() => setShowToolbar(!showToolbar)}
-            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 sm:p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-auto sm:ml-0"
             title="More Options"
           >
-            <MoreHorizontal size={20} className="text-gray-400" />
+            <MoreHorizontal size={18} className="sm:w-5 sm:h-5 text-gray-400" />
           </button>
           
-          <div className="flex-1" />
-          
-          <div className="text-xs text-gray-400 hidden sm:block">
+          <div className="hidden sm:block text-xs text-gray-400">
             Ketik @ untuk mention
           </div>
-          
-          <div className="flex-1" />
           
           {showSubmitButton && (
             <button
               onClick={handleSubmit}
               disabled={submitButtonDisabled || (!content.text.trim() && !content.images.length && !content.videos.length && !content.documents.length)}
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
+              className="ml-auto sm:ml-2 px-3 sm:px-5 py-1.5 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
             >
               {submitButtonText || 'Post'}
             </button>
@@ -967,7 +963,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       {/* Media Preview Section */}
       {(content.images.length > 0 || content.videos.length > 0 || content.documents.length > 0) && (
         <div className="mt-3">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
             {content.images.map((image, index) => (
               <div key={index} className="relative group">
                 <img src={image} alt="" className="w-full h-24 object-cover rounded-lg" />

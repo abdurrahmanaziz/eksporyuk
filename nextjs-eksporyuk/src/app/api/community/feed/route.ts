@@ -239,8 +239,41 @@ export async function POST(request: NextRequest) {
 
     const { content, groupId, images, videos, taggedUsers, contentFormatted, backgroundId, type = 'POST' } = await request.json()
 
+    // Validate content
     if (!content?.trim()) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    }
+    
+    // Validate content length (max 10000 chars)
+    if (content.length > 10000) {
+      return NextResponse.json({ error: 'Content terlalu panjang (max 10000 karakter)' }, { status: 400 })
+    }
+    
+    // Validate images
+    if (images && Array.isArray(images)) {
+      if (images.length > 5) {
+        return NextResponse.json({ error: 'Maksimal 5 gambar saja' }, { status: 400 })
+      }
+      
+      for (const img of images) {
+        if (typeof img === 'string' && img.length > 5_000_000) {
+          return NextResponse.json({ error: 'Ukuran gambar terlalu besar (max 5MB per gambar)' }, { status: 400 })
+        }
+      }
+    }
+    
+    // Validate videos
+    if (videos && Array.isArray(videos)) {
+      if (videos.length > 2) {
+        return NextResponse.json({ error: 'Maksimal 2 video saja' }, { status: 400 })
+      }
+    }
+    
+    // Validate tagged users
+    if (taggedUsers && Array.isArray(taggedUsers)) {
+      if (taggedUsers.length > 10) {
+        return NextResponse.json({ error: 'Maksimal 10 mention saja' }, { status: 400 })
+      }
     }
 
     // If groupId specified, verify user has access
@@ -283,33 +316,33 @@ export async function POST(request: NextRequest) {
     const hasMedia = (images && images.length > 0) || (videos && videos.length > 0)
     const finalBackgroundId = hasMedia ? null : (backgroundId || null)
 
-    // Create the post
-    const post = await prisma.post.create({
-      data: {
-        id: createId(),
-        content: content.trim(),
-        authorId: session.user.id,
-        groupId: groupId || null,
-        type,
-        images: images || [],
-        videos: videos || [],
-        taggedUsers: taggedUsers || [],
-        ...(contentFormatted && { contentFormatted }),
-        backgroundId: finalBackgroundId,
-        approvalStatus: 'APPROVED',
-        updatedAt: new Date(),
-      }
-    })
-
-    // Get author and group info manually
-    const author = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, name: true, avatar: true }
-    })
-    const group = groupId ? await prisma.group.findUnique({
-      where: { id: groupId },
-      select: { id: true, name: true, slug: true }
-    }) : null
+    // Create the post with atomic transaction for data consistency
+    const [post, author, group] = await prisma.$transaction([
+      prisma.post.create({
+        data: {
+          id: createId(),
+          content: content.trim(),
+          authorId: session.user.id,
+          groupId: groupId || null,
+          type,
+          images: images || [],
+          videos: videos || [],
+          taggedUsers: taggedUsers || [],
+          ...(contentFormatted && { contentFormatted }),
+          backgroundId: finalBackgroundId,
+          approvalStatus: 'APPROVED',
+          updatedAt: new Date(),
+        }
+      }),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true, name: true, avatar: true }
+      }),
+      groupId ? prisma.group.findUnique({
+        where: { id: groupId },
+        select: { id: true, name: true, slug: true }
+      }) : Promise.resolve(null)
+    ])
 
     const postWithDetails = { ...post, author, group }
 
@@ -331,6 +364,21 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating community post:', error)
-    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+    
+    // Provide better error messages
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
+    }
+    
+    if (error instanceof Error) {
+      if (error.message.includes('unique constraint')) {
+        return NextResponse.json({ error: 'Post already exists' }, { status: 409 })
+      }
+      if (error.message.includes('not found')) {
+        return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
+      }
+    }
+    
+    return NextResponse.json({ error: 'Failed to create post. Please try again.' }, { status: 500 })
   }
 }
