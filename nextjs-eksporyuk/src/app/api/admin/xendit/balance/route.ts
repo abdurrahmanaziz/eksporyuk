@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 
 // Force dynamic to read from database at runtime
 export const dynamic = 'force-dynamic'
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     console.log('💰 [API] Fetching balance from Xendit...')
     
     // Check if Xendit is configured (reads from database OR env vars)
-    const isConfigured = await xenditService.isConfigured()
+    const isConfigured = await xenditProxy.isConfigured()
     console.log('🔑 Xendit is configured:', isConfigured)
     
     if (!isConfigured) {
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     }
     
     try {
-      const balance = await xenditService.getBalance()
+      const balance = await xenditProxy.getBalance()
 
       if (balance) {
         console.log('✅ [API] Balance fetched successfully:', balance)

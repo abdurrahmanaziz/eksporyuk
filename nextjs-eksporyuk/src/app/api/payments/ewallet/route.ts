@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 import { prisma } from '@/lib/prisma'
 
 
@@ -48,18 +48,22 @@ export async function POST(request: NextRequest) {
     // Format phone number
     const formattedPhone = formatPhoneNumber(phoneNumber)
 
-    // Create eWallet payment via Xendit
-    const paymentResult = await xenditService.createEWalletPayment(
-      transactionId,
-      transaction.amount,
-      formattedPhone,
-      ewalletType as 'OVO' | 'DANA' | 'LINKAJA' | 'GOPAY'
-    )
+    // Create eWallet payment via Xendit Proxy
+    const paymentResult = await xenditProxy.createEWalletPayment({
+      reference_id: transactionId,
+      currency: 'IDR',
+      amount: Number(transaction.amount),
+      checkout_method: 'ONE_TIME_PAYMENT',
+      channel_code: `ID_${ewalletType}`,
+      channel_properties: {
+        mobile_number: formattedPhone
+      }
+    })
 
-    if (!paymentResult.success) {
+    if (!paymentResult || !paymentResult.id) {
       return NextResponse.json({ 
         success: false, 
-        error: paymentResult.error || 'Failed to create eWallet payment' 
+        error: 'Failed to create eWallet payment' 
       }, { status: 500 })
     }
 
@@ -68,14 +72,14 @@ export async function POST(request: NextRequest) {
       where: { id: transactionId },
       data: {
         metadata: {
-          ...transaction.metadata,
+          ...transaction.metadata as any,
           ewalletPayment: {
-            id: paymentResult.data.id,
-            referenceId: paymentResult.data.referenceId,
+            id: paymentResult.id,
+            referenceId: paymentResult.reference_id,
             ewalletType: ewalletType,
             phoneNumber: formattedPhone,
-            actionUrl: paymentResult.data.actions?.desktopWebCheckoutUrl || paymentResult.data.actions?.mobileWebCheckoutUrl,
-            qrCode: paymentResult.data.actions?.qrCheckoutString
+            actionUrl: paymentResult.actions?.desktop_web_checkout_url || paymentResult.actions?.mobile_web_checkout_url,
+            qrCode: paymentResult.actions?.qr_checkout_string
           }
         }
       }
@@ -86,9 +90,9 @@ export async function POST(request: NextRequest) {
     let qrCode = null
     let instructions = []
 
-    if (paymentResult.data.actions) {
-      actionUrl = paymentResult.data.actions.desktopWebCheckoutUrl || paymentResult.data.actions.mobileWebCheckoutUrl
-      qrCode = paymentResult.data.actions.qrCheckoutString
+    if (paymentResult.actions) {
+      actionUrl = paymentResult.actions.desktop_web_checkout_url || paymentResult.actions.mobile_web_checkout_url
+      qrCode = paymentResult.actions.qr_checkout_string
     }
 
     // Get instructions based on eWallet type
@@ -97,15 +101,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       ewalletPayment: {
-        id: paymentResult.data.id,
-        referenceId: paymentResult.data.referenceId,
+        id: paymentResult.id,
+        referenceId: paymentResult.reference_id,
         ewalletType,
         phoneNumber: formattedPhone,
         amount: Number(transaction.amount),
         actionUrl,
         qrCode,
         instructions,
-        status: paymentResult.data.status
+        status: paymentResult.status
       }
     })
 

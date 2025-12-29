@@ -351,37 +351,43 @@ export async function POST(request: NextRequest) {
         // Create E-Wallet Payment
         console.log('[Product Simple Checkout] Creating Xendit E-Wallet payment:', paymentChannel)
         
-        const ewalletResult = await xenditService.createEWalletPayment(
-          transaction.externalId!,
-          amountNum,
-          phone || whatsapp || '',
-          paymentChannel as any
-        )
+        const ewalletResult = await xenditProxy.createEWalletPayment({
+          reference_id: transaction.externalId!,
+          currency: 'IDR',
+          amount: amountNum,
+          checkout_method: 'ONE_TIME_PAYMENT',
+          channel_code: paymentChannel,
+          channel_properties: {
+            success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?transaction_id=${transaction.id}`,
+            failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failed?transaction_id=${transaction.id}`,
+            mobile_number: phone || whatsapp || ''
+          }
+        })
 
-        if (ewalletResult.success && ewalletResult.data) {
-          xenditData = ewalletResult.data
+        if (ewalletResult && ewalletResult.id) {
+          xenditData = ewalletResult
           
           // Update transaction
           await prisma.transaction.update({
             where: { id: transaction.id },
             data: {
-              reference: ewalletResult.data.id,
+              reference: ewalletResult.id,
               paymentProvider: 'XENDIT',
               paymentMethod: `EWALLET_${paymentChannel}`,
-              paymentUrl: (ewalletResult.data as any).actions?.mobile_web_checkout_url || (ewalletResult.data as any).checkout_url,
+              paymentUrl: ewalletResult.actions?.mobile_web_checkout_url || ewalletResult.checkout_url,
               metadata: {
                 ...(transaction.metadata as any),
-                xenditEWalletId: ewalletResult.data.id,
-                xenditCheckoutUrl: (ewalletResult.data as any).actions?.mobile_web_checkout_url || (ewalletResult.data as any).checkout_url
+                xenditEWalletId: ewalletResult.id,
+                xenditCheckoutUrl: ewalletResult.actions?.mobile_web_checkout_url || ewalletResult.checkout_url
               }
             }
           })
 
           // Redirect to Xendit checkout URL
-          paymentUrl = (ewalletResult.data as any).actions?.mobile_web_checkout_url || (ewalletResult.data as any).checkout_url
+          paymentUrl = ewalletResult.actions?.mobile_web_checkout_url || ewalletResult.checkout_url
           console.log('[Product Simple Checkout] ✅ Xendit E-Wallet created, checkout URL:', paymentUrl)
         } else {
-          console.error('[Product Simple Checkout] ❌ Xendit E-Wallet creation failed:', ewalletResult.error)
+          console.error('[Product Simple Checkout] ❌ Xendit E-Wallet creation failed')
           paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
         }
 
@@ -389,26 +395,27 @@ export async function POST(request: NextRequest) {
         // Create QRIS Payment
         console.log('[Product Simple Checkout] Creating Xendit QRIS payment')
         
-        const qrisResult = await xenditService.createQRCode(
-          transaction.externalId!,
-          amountNum,
-          'DYNAMIC'
-        )
+        const qrisResult = await xenditProxy.createQRCode({
+          reference_id: transaction.externalId!,
+          type: 'DYNAMIC',
+          currency: 'IDR',
+          amount: amountNum
+        })
 
-        if (qrisResult.success && qrisResult.data) {
-          xenditData = qrisResult.data
+        if (qrisResult && qrisResult.id) {
+          xenditData = qrisResult
           
           // Update transaction
           await prisma.transaction.update({
             where: { id: transaction.id },
             data: {
-              reference: qrisResult.data.id,
+              reference: qrisResult.id,
               paymentProvider: 'XENDIT',
               paymentMethod: 'QRIS',
               metadata: {
                 ...(transaction.metadata as any),
-                xenditQRISId: qrisResult.data.id,
-                xenditQRISString: (qrisResult.data as any).qr_string
+                xenditQRISId: qrisResult.id,
+                xenditQRISString: qrisResult.qr_string
               }
             }
           })
@@ -416,7 +423,7 @@ export async function POST(request: NextRequest) {
           paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
           console.log('[Product Simple Checkout] ✅ Xendit QRIS created')
         } else {
-          console.error('[Product Simple Checkout] ❌ Xendit QRIS creation failed:', qrisResult.error)
+          console.error('[Product Simple Checkout] ❌ Xendit QRIS creation failed')
           paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
         }
 
