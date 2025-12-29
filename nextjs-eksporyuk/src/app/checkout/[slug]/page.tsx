@@ -454,7 +454,8 @@ export default function CheckoutPage() {
 
     setProcessing(true)
     try {
-      // Register user
+      // 1. Register user
+      console.log('[Checkout] Starting registration...')
       const registerRes = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -471,54 +472,65 @@ export default function CheckoutPage() {
         return
       }
 
-      toast.success('Registrasi berhasil! Sedang memproses checkout...')
+      console.log('[Checkout] Registration successful')
+      toast.success('Registrasi berhasil! Sedang login otomatis...')
 
-      // Auto login
+      // 2. Auto login with credentials
+      console.log('[Checkout] Auto-logging in...')
       const signInResult = await signIn('credentials', {
         email: registerData.email,
         password: registerData.password,
         redirect: false
       })
 
-      if (signInResult?.ok) {
-        // Wait a bit for session to update
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Process checkout directly after successful login
-        const membershipId = (selectedPrice as any).membershipId || plan?.id
-        const membershipSlug = (selectedPrice as any).membershipSlug || params.slug
-        
-        const checkoutRes = await fetch('/api/checkout/membership', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            planId: membershipId,
-            membershipSlug: membershipSlug,
-            priceOption: selectedPrice,
-            couponCode: appliedCoupon?.code,
-            finalPrice: calculateFinalPrice(),
-            name: registerData.name,
-            email: registerData.email,
-            phone: registerData.phone,
-            whatsapp: registerData.whatsapp || registerData.phone
-          })
+      if (!signInResult?.ok) {
+        console.error('[Checkout] Auto-login failed:', signInResult?.error)
+        toast.error('Auto login gagal. Silakan gunakan form login di bawah')
+        setProcessing(false)
+        return
+      }
+
+      console.log('[Checkout] Auto-login successful, waiting for session update...')
+      
+      // 3. Wait for session to be fully updated
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      console.log('[Checkout] Processing checkout...')
+      
+      // 4. Process checkout
+      const membershipId = (selectedPrice as any).membershipId || plan?.id
+      const membershipSlug = (selectedPrice as any).membershipSlug || params.slug
+      
+      const checkoutRes = await fetch('/api/checkout/membership', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: membershipId,
+          membershipSlug: membershipSlug,
+          priceOption: selectedPrice,
+          couponCode: appliedCoupon?.code,
+          finalPrice: calculateFinalPrice(),
+          name: registerData.name,
+          email: registerData.email,
+          phone: registerData.phone,
+          whatsapp: registerData.whatsapp || registerData.phone
         })
+      })
 
-        const checkoutData = await checkoutRes.json()
+      const checkoutData = await checkoutRes.json()
 
-        if (checkoutRes.ok && checkoutData.paymentUrl) {
-          // Redirect to payment page
-          window.location.href = checkoutData.paymentUrl
-        } else {
-          toast.error(checkoutData.message || 'Gagal memproses pembayaran')
-          setProcessing(false)
-        }
+      if (checkoutRes.ok && checkoutData.paymentUrl) {
+        console.log('[Checkout] Redirecting to payment page...')
+        toast.success('Checkout berhasil! Mengarahkan ke pembayaran...')
+        // Redirect to payment page
+        window.location.href = checkoutData.paymentUrl
       } else {
-        toast.error('Login otomatis gagal, silakan login manual')
+        console.error('[Checkout] Checkout failed:', checkoutData)
+        toast.error(checkoutData.message || 'Gagal memproses pembayaran')
         setProcessing(false)
       }
     } catch (error) {
-      console.error('Registration error:', error)
+      console.error('[Checkout] Registration error:', error)
       toast.error('Terjadi kesalahan saat registrasi')
       setProcessing(false)
     }
