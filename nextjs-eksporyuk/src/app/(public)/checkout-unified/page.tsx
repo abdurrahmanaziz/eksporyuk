@@ -234,11 +234,10 @@ function UnifiedCheckoutContent() {
 
       if (data.success && data.coupon) {
         const coupon = data.coupon
-        const currentPkg = packages.find(p => p.id === selectedPackage)
+        const currentPkg = packages.find(p => p?.id === selectedPackage)
         
         if (currentPkg) {
           const discountAmount = coupon.type === 'percentage' 
-            ? (currentPkg.price * coupon.discount) / 100
             : coupon.discount
 
           // Update coupon code in input field
@@ -255,12 +254,12 @@ function UnifiedCheckoutContent() {
 
   // Compute selected package with proper reactivity
   const selectedPkg = useMemo(() => {
-    const pkg = packages.find(p => p.id === selectedPackage)
+    const pkg = packages.find(p => p?.id === selectedPackage)
     console.log('🔍 Selected Package Debug:', {
       selectedPackage,
       packagesCount: packages.length,
       found: pkg?.name || 'NOT FOUND',
-      allPackageIds: packages.map(p => ({ id: p.id, slug: p.slug, name: p.name }))
+      allPackageIds: packages.filter(p => p).map(p => ({ id: p.id, slug: p.slug, name: p.name }))
     })
     return pkg
   }, [packages, selectedPackage])
@@ -355,7 +354,7 @@ function UnifiedCheckoutContent() {
 
       if (data.success && data.coupon) {
         const coupon = data.coupon
-        const currentPkg = packages.find(p => p.id === selectedPackage)
+        const currentPkg = packages.find(p => p?.id === selectedPackage)
         
         if (currentPkg) {
           const discountAmount = coupon.type === 'percentage' 
@@ -423,7 +422,7 @@ function UnifiedCheckoutContent() {
           <p className="text-gray-600 mb-2">ID/Slug yang dicari: <code className="bg-gray-100 px-2 py-1 rounded">{selectedPackage}</code></p>
           <p className="text-sm text-gray-500 mb-4">Paket yang tersedia:</p>
           <ul className="text-sm text-left bg-gray-50 p-4 rounded-lg mb-4 space-y-2">
-            {packages.map(pkg => (
+            {packages.filter(pkg => pkg).map(pkg => (
               <li key={pkg.id} className="border-b border-gray-200 pb-2 last:border-0">
                 <div className="font-semibold">{pkg.name}</div>
                 <div className="text-xs text-gray-500">ID: {pkg.id}</div>
@@ -479,7 +478,7 @@ function UnifiedCheckoutContent() {
 
     try {
       // Get selected package data
-      const selectedPkg = packages.find(p => p.id === selectedPackage)
+      const selectedPkg = packages.find(p => p?.id === selectedPackage)
       if (!selectedPkg) {
         showNotification('Paket tidak ditemukan', 'error')
         return
@@ -1025,7 +1024,7 @@ function UnifiedCheckoutContent() {
             <div className="mb-6">
               <h3 className="font-bold text-lg mb-4">Pilih Durasi</h3>
               <div className="space-y-3">
-                {packages.map((pkg) => {
+                {packages.filter(pkg => pkg).map((pkg) => {
                   return (
                     <div
                       key={pkg.id}
