@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 import { getOneSignalNotificationHistory, getOneSignalAppInfo } from '@/lib/onesignal'
 
 // Force this route to be dynamic

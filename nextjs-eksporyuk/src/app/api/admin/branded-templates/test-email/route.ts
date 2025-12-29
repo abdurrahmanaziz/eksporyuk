@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { createSimpleBrandedEmail, getBrandConfig, type TemplateData } from '@/lib/branded-template-engine'
 import { MailketingService } from '@/lib/integrations/mailketing'

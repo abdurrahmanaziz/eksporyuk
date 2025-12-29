@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 import { databaseBackupService } from '@/lib/services/database-backup-service'
 
 // POST - Create backup (Admin only)

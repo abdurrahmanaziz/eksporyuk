@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { pusherService } from '@/lib/pusher'
 import fs from 'fs'

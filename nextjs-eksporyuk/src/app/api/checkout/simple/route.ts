@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { xenditProxy } from '@/lib/xendit-proxy'
 import { randomBytes } from 'crypto'
@@ -283,179 +283,67 @@ export async function POST(request: NextRequest) {
     }
 
     // === XENDIT PAYMENT INTEGRATION ===
+    // Always use Invoice for redirect to Xendit checkout page
     let paymentUrl = ''
     let xenditData: any = null
 
     try {
-      console.log('[Simple Checkout] Payment integration - Method:', paymentMethod, 'Channel:', paymentChannel)
+      console.log('[Simple Checkout] Creating Xendit Invoice for redirect...')
       
-      if (paymentChannel && paymentMethod === 'bank_transfer') {
-        // Create Virtual Account
-        console.log('[Simple Checkout] Creating Xendit VA for bank:', paymentChannel)
+      // Create Xendit Invoice - this will redirect to Xendit checkout page
+      const invoice = await xenditProxy.createInvoice({
+        external_id: transaction.externalId!,
+        amount: amountNum,
+        payer_email: email || session.user.email || 'customer@eksporyuk.com',
+        description: `Membership: ${plan.name} - ${priceOption?.label || ''}`,
+        invoice_duration: 72 * 3600, // 72 hours in seconds
+        currency: 'IDR',
+        customer: {
+          given_names: name || session.user.name || 'Customer',
+          email: email || session.user.email || '',
+          mobile_number: whatsapp || phone || ''
+        },
+        success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?transaction_id=${transaction.id}`,
+        failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failed?transaction_id=${transaction.id}`
+      })
+
+      if (invoice && invoice.invoice_url) {
+        xenditData = invoice
+        paymentUrl = invoice.invoice_url
         
-        try {
-          const vaResult = await xenditProxy.createVirtualAccount({
-            external_id: transaction.externalId!,
-            bank_code: paymentChannel,
-            name: name || session.user.name || 'Customer',
-            amount: amountNum,
-            is_single_use: true,
-            expiration_date: new Date(Date.now() + (72 * 60 * 60 * 1000)).toISOString() // 72 hours
-          })
-
-          if (vaResult.success && vaResult.data) {
-            xenditData = vaResult.data
-            
-            // Check if it's a real VA number or checkout link
-            const isVANumber = vaResult.data.payment_method === 'VIRTUAL_ACCOUNT' && 
-                              vaResult.data.account_number &&
-                              !vaResult.data.account_number.startsWith('http');
-            
-            const isCheckoutLink = vaResult.data.payment_method === 'INVOICE' || 
-                                  vaResult.data.account_number?.startsWith('http');
-          
-          // Update transaction with Xendit VA info
-          await prisma.transaction.update({
-            where: { id: transaction.id },
-            data: {
-              reference: vaResult.data.id,
-              paymentProvider: 'XENDIT',
-              paymentMethod: `VA_${paymentChannel}`,
-              paymentUrl: isCheckoutLink ? vaResult.data.account_number : undefined,
-              metadata: {
-                ...(transaction.metadata as any),
-                xenditVAId: vaResult.data.id,
-                xenditVANumber: vaResult.data.account_number,
-                xenditBankCode: paymentChannel,
-                xenditExpiry: vaResult.data.expiration_date || (vaResult.data as any).expirationDate,
-                xenditPaymentMethod: vaResult.data.payment_method,
-                xenditFallback: vaResult.data._fallback || false,
-              }
+        // Update transaction with Xendit invoice info
+        await prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            reference: invoice.id,
+            paymentProvider: 'XENDIT',
+            paymentMethod: 'INVOICE',
+            paymentUrl: invoice.invoice_url,
+            expiredAt: invoice.expiry_date ? new Date(invoice.expiry_date) : new Date(Date.now() + 72 * 60 * 60 * 1000),
+            metadata: {
+              ...(transaction.metadata as any),
+              xenditInvoiceId: invoice.id,
+              xenditInvoiceUrl: invoice.invoice_url,
+              xenditExternalId: invoice.external_id,
+              xenditExpiry: invoice.expiry_date,
+              preferredPaymentMethod: paymentMethod,
+              preferredPaymentChannel: paymentChannel,
             }
-          })
-
-          // Determine where to redirect
-          if (isCheckoutLink) {
-            // Redirect to Xendit checkout (fallback scenario)
-            paymentUrl = vaResult.data.account_number;
-            console.log('[Simple Checkout] ⚠️ Using Xendit checkout link:', paymentUrl);
-          } else {
-            // Show VA number on our payment page
-            paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`;
-            console.log('[Simple Checkout] ✅ Xendit VA created:', vaResult.data.account_number);
           }
-        } else {
-          console.error('[Simple Checkout] ❌ Xendit VA creation failed:', (vaResult as any).error)
-          // Fallback to manual payment page
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
-        }
-        } catch (vaError: any) {
-          console.error('[Simple Checkout] ❌ Xendit VA exception:', vaError.message)
-          console.error('[Simple Checkout] ❌ VA Error stack:', vaError.stack)
-          // Fallback to manual payment page
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
-        }
+        })
 
-      } else if (paymentChannel && paymentMethod === 'ewallet') {
-        // Create E-Wallet Payment
-        console.log('[Simple Checkout] Creating Xendit E-Wallet payment:', paymentChannel)
-        
-        try {
-          const ewalletResult = await xenditProxy.createEWalletPayment({
-            reference_id: transaction.externalId!,
-            currency: 'IDR',
-            amount: amountNum,
-            checkout_method: 'ONE_TIME_PAYMENT',
-            channel_code: paymentChannel,
-            channel_properties: {
-              success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?transaction_id=${transaction.id}`,
-              failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failed?transaction_id=${transaction.id}`,
-              mobile_number: phone || whatsapp || ''
-            }
-          })
-
-        if (ewalletResult && ewalletResult.id) {
-          xenditData = ewalletResult
-          
-          // Update transaction
-          await prisma.transaction.update({
-            where: { id: transaction.id },
-            data: {
-              reference: ewalletResult.id,
-              paymentProvider: 'XENDIT',
-              paymentMethod: `EWALLET_${paymentChannel}`,
-              paymentUrl: ewalletResult.actions?.mobile_web_checkout_url || ewalletResult.checkout_url,
-              metadata: {
-                ...(transaction.metadata as any),
-                xenditEWalletId: ewalletResult.id,
-                xenditCheckoutUrl: ewalletResult.actions?.mobile_web_checkout_url || ewalletResult.checkout_url
-              }
-            }
-          })
-
-          // Redirect to Xendit checkout URL
-          paymentUrl = ewalletResult.actions?.mobile_web_checkout_url || ewalletResult.checkout_url
-          console.log('[Simple Checkout] ✅ Xendit E-Wallet created, checkout URL:', paymentUrl)
-        } else {
-          console.error('[Simple Checkout] ❌ Xendit E-Wallet creation failed')
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
-        }
-        } catch (ewalletError: any) {
-          console.error('[Simple Checkout] ❌ E-Wallet exception:', ewalletError.message)
-          console.error('[Simple Checkout] ❌ E-Wallet error stack:', ewalletError.stack)
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
-        }
-
-      } else if (paymentChannel === 'QRIS' && paymentMethod === 'qris') {
-        // Create QRIS Payment
-        console.log('[Simple Checkout] Creating Xendit QRIS payment')
-        
-        try {
-          const qrisResult = await xenditProxy.createQRCode({
-            reference_id: transaction.externalId!,
-            type: 'DYNAMIC',
-            currency: 'IDR',
-            amount: amountNum
-          })
-
-        if (qrisResult && qrisResult.id) {
-          xenditData = qrisResult
-          
-          // Update transaction
-          await prisma.transaction.update({
-            where: { id: transaction.id },
-            data: {
-              reference: qrisResult.id,
-              paymentProvider: 'XENDIT',
-              paymentMethod: 'QRIS',
-              metadata: {
-                ...(transaction.metadata as any),
-                xenditQRISId: qrisResult.id,
-                xenditQRISString: qrisResult.qr_string
-              }
-            }
-          })
-
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
-          console.log('[Simple Checkout] ✅ Xendit QRIS created')
-        } else {
-          console.error('[Simple Checkout] ❌ Xendit QRIS creation failed')
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
-        }
-        } catch (qrisError: any) {
-          console.error('[Simple Checkout] ❌ QRIS exception:', qrisError.message)
-          console.error('[Simple Checkout] ❌ QRIS error stack:', qrisError.stack)
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
-        }
-
+        console.log('[Simple Checkout] ✅ Xendit Invoice created:', invoice.id)
+        console.log('[Simple Checkout] ✅ Payment URL:', invoice.invoice_url)
       } else {
-        // Default: Manual bank transfer or no specific method
+        console.error('[Simple Checkout] ❌ Xendit Invoice creation failed - no invoice_url')
+        // Fallback to our payment page
         paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
       }
 
-    } catch (xenditError) {
-      console.error('[Simple Checkout] ❌ Xendit error:', xenditError)
-      // Fallback to manual payment
+    } catch (xenditError: any) {
+      console.error('[Simple Checkout] ❌ Xendit Invoice error:', xenditError.message)
+      console.error('[Simple Checkout] ❌ Error stack:', xenditError.stack)
+      // Fallback to our payment page
       paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
     }
 

@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 
 // Cache for link previews (in production, use Redis)
 const linkPreviewCache = new Map<string, { data: any; timestamp: number }>()

@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 import { notificationService } from '@/lib/services/notificationService'
 
 export async function POST(request: NextRequest) {

@@ -1,4 +1,4 @@
-import { authOptions } from '@/lib/auth/auth-options'
+import { authOptions } from '@/lib/auth-options'
 import NextAuth from 'next-auth'
 
 // Force dynamic - disable caching for auth routes
