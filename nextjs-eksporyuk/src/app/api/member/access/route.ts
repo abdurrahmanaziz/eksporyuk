@@ -285,10 +285,21 @@ export async function GET() {
         : '/checkout/pro',
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error checking member access:', error)
+    console.error('Error stack:', error?.stack)
+    console.error('Error message:', error?.message)
+    
+    // Return more detailed error for debugging
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { 
+        success: false, 
+        error: process.env.NODE_ENV === 'development' 
+          ? error?.message || 'Internal server error'
+          : 'Internal server error',
+        // Include stack trace only in development
+        ...(process.env.NODE_ENV === 'development' && { stack: error?.stack })
+      },
       { status: 500 }
     )
   }

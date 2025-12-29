@@ -83,53 +83,60 @@ export async function sendVerificationEmail(email: string, token: string, name: 
   console.log('   Email:', email)
   console.log('   Name:', name)
   console.log('   URL:', verificationUrl)
-  console.log('   Mailketing configured:', !!process.env.MAILKETING_API_KEY)
   
   try {
-    // Prefer branded template (plain text input -> auto HTML with header/footer)
-    const templateData: TemplateData = {
-      name,
-      email,
-      verification_url: verificationUrl,
-      site_name: 'EksporYuk',
-      site_url: baseUrl,
-      login_link: `${baseUrl}/login`,
-      dashboard_link: `${baseUrl}/dashboard`,
-    }
+    // Check if Mailketing is configured (from DB or env)
+    const mailketingConfigured = !!process.env.MAILKETING_API_KEY
+    console.log('   Mailketing configured:', mailketingConfigured)
+    
+    // Try branded template first
+    try {
+      const templateData: TemplateData = {
+        name,
+        email,
+        verification_url: verificationUrl,
+        site_name: 'EksporYuk',
+        site_url: baseUrl,
+        login_link: `${baseUrl}/login`,
+        dashboard_link: `${baseUrl}/dashboard`,
+      }
 
-    const renderedEmail = await renderBrandedTemplateBySlug('email-verification', templateData, {
-      fallbackSubject: 'Verifikasi Email Anda - EksporYuk',
-      fallbackContent: [
-        'Halo {name},',
-        '',
-        'Terima kasih telah mendaftar di EksporYuk.',
-        'Silakan verifikasi email Anda dengan klik tombol di bawah ini:',
-        '',
-        'Jika tombol tidak bisa diklik, salin link berikut ke browser:',
-        '{verification_url}',
-        '',
-        'Jika Anda tidak merasa mendaftar atau meminta perubahan ini, abaikan email ini.',
-        '',
-        'Salam hangat,',
-        'Tim EksporYuk'
-      ].join('\n'),
-      fallbackCtaText: 'Verifikasi Email Sekarang',
-      fallbackCtaLink: '{verification_url}',
-    })
-
-    if (renderedEmail) {
-      const result = await mailketing.sendEmail({
-        to: email,
-        subject: renderedEmail.subject,
-        html: renderedEmail.html,
-        text: renderedEmail.text,
-        tags: ['verification', 'onboarding']
+      const renderedEmail = await renderBrandedTemplateBySlug('email-verification', templateData, {
+        fallbackSubject: 'Verifikasi Email Anda - EksporYuk',
+        fallbackContent: [
+          'Halo {name},',
+          '',
+          'Terima kasih telah mendaftar di EksporYuk.',
+          'Silakan verifikasi email Anda dengan klik tombol di bawah ini:',
+          '',
+          'Jika tombol tidak bisa diklik, salin link berikut ke browser:',
+          '{verification_url}',
+          '',
+          'Jika Anda tidak merasa mendaftar atau meminta perubahan ini, abaikan email ini.',
+          '',
+          'Salam hangat,',
+          'Tim EksporYuk'
+        ].join('\n'),
+        fallbackCtaText: 'Verifikasi Email Sekarang',
+        fallbackCtaLink: '{verification_url}',
       })
 
-      if (result.success) {
-        console.log('✅ Verification email sent via branded template to:', email)
-        return { success: true, provider: 'mailketing', template: renderedEmail.templateName }
+      if (renderedEmail) {
+        const result = await mailketing.sendEmail({
+          to: email,
+          subject: renderedEmail.subject,
+          html: renderedEmail.html,
+          text: renderedEmail.text,
+          tags: ['verification', 'onboarding']
+        })
+
+        if (result.success) {
+          console.log('✅ Verification email sent via branded template to:', email)
+          return { success: true, provider: 'mailketing', template: renderedEmail.templateName }
+        }
       }
+    } catch (templateError: any) {
+      console.warn('⚠️ Branded template error (will try fallback):', templateError?.message)
     }
 
     // Fallback to hardcoded template if branded template failed
