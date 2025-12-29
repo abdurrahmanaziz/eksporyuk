@@ -10,25 +10,9 @@ export async function GET(
   try {
     const { transactionId } = await params
 
-    // Fetch transaction with full relations
+    // Fetch transaction without relations (relations not defined in schema)
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            whatsapp: true,
-          }
-        },
-        coupon: {
-          select: {
-            code: true,
-            discountType: true,
-            discountValue: true,
-          }
-        }
-      }
     })
 
     if (!transaction) {
@@ -36,6 +20,32 @@ export async function GET(
         { error: 'Transaksi tidak ditemukan' },
         { status: 404 }
       )
+    }
+
+    // Fetch related user data separately
+    let user = null
+    if (transaction.userId) {
+      user = await prisma.user.findUnique({
+        where: { id: transaction.userId },
+        select: {
+          name: true,
+          email: true,
+          whatsapp: true,
+        }
+      })
+    }
+
+    // Fetch related coupon data separately
+    let coupon = null
+    if (transaction.couponId) {
+      coupon = await prisma.coupon.findUnique({
+        where: { id: transaction.couponId },
+        select: {
+          code: true,
+          discountType: true,
+          discountValue: true,
+        }
+      })
     }
 
     // Get payment settings for expiry hours
@@ -134,9 +144,9 @@ export async function GET(
       status: transaction.status,
       
       // Customer Details
-      customerName: transaction.customerName || transaction.user?.name || 'Customer',
-      customerEmail: transaction.customerEmail || transaction.user?.email || '',
-      customerWhatsapp: transaction.customerWhatsapp || transaction.user?.whatsapp || '',
+      customerName: transaction.customerName || user?.name || 'Customer',
+      customerEmail: transaction.customerEmail || user?.email || '',
+      customerWhatsapp: transaction.customerWhatsapp || user?.whatsapp || '',
       
       // Time Details
       createdAt: transaction.createdAt.toISOString(),
@@ -144,10 +154,10 @@ export async function GET(
       paymentExpiryHours: paymentExpiryHours,
       
       // Coupon Details
-      coupon: transaction.coupon ? {
-        code: transaction.coupon.code,
-        discountType: transaction.coupon.discountType,
-        discountValue: Number(transaction.coupon.discountValue),
+      coupon: coupon ? {
+        code: coupon.code,
+        discountType: coupon.discountType,
+        discountValue: Number(coupon.discountValue),
       } : null,
       
       // Payment Method

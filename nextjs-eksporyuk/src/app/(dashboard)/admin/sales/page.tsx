@@ -1721,8 +1721,8 @@ export default function AdminSalesPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
-    </div>
     </ResponsivePageWrapper>
   );
 }
