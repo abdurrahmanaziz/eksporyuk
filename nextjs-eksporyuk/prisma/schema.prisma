@@ -344,7 +344,7 @@ model AffiliateLeadTag {
 }
 
 model AffiliateLink {
-  id           String            @id
+  id           String            @id @default(cuid())
   userId       String?
   affiliateId  String?
   productId    String?
@@ -362,7 +362,7 @@ model AffiliateLink {
   isArchived   Boolean           @default(false)
   expiresAt    DateTime?
   createdAt    DateTime          @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime          @updatedAt
 
   @@index([affiliateId])
   @@index([code])
