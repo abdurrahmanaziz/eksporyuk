@@ -85,6 +85,13 @@ export default function DashboardSelector() {
         const response = await fetch('/api/user/dashboard-options')
         const data = await response.json()
         
+        if (!response.ok) {
+          console.error('Error fetching dashboard options:', data)
+          setDashboardOptions(getFallbackOptions(userRole))
+          setIsLoadingOptions(false)
+          return
+        }
+        
         if (data.success && data.dashboardOptions) {
           // Convert API options to component format with rich styling
           const options: DashboardOption[] = data.dashboardOptions.map((opt: ApiDashboardOption) => ({
@@ -100,16 +107,19 @@ export default function DashboardSelector() {
           if (data.preferredDashboard) {
             const preferred = options.find((o: DashboardOption) => o.id === data.preferredDashboard)
             if (preferred) {
-              router.push(preferred.href)
+              // Add small delay to ensure session is fully established
+              setTimeout(() => {
+                router.push(preferred.href)
+              }, 100)
               return
             }
           }
           
-          // Auto-redirect if only one option
+          // Auto-redirect if only one option (add small delay)
           if (options.length === 1) {
             setTimeout(() => {
               router.push(options[0].href)
-            }, 500)
+            }, 100)
           }
         }
       } catch (error) {
@@ -120,10 +130,10 @@ export default function DashboardSelector() {
       }
     }
     
-    if (session?.user?.id) {
+    if (session?.user?.id && status === 'authenticated') {
       fetchDashboardOptions()
     }
-  }, [session?.user?.id, userRole, router])
+  }, [session?.user?.id, status, router])
   
   // Fallback function in case API fails
   const getFallbackOptions = (role: string): DashboardOption[] => {
@@ -183,7 +193,7 @@ export default function DashboardSelector() {
     if (status !== 'loading' && !session?.user) {
       router.push('/login')
     }
-  }, [status, session, router])
+  }, [status, session?.user, router])
   
   // Loading state
   if (status === 'loading' || isLoadingOptions) {
@@ -318,9 +328,9 @@ export default function DashboardSelector() {
                     className={`
                       relative group overflow-hidden rounded-2xl sm:rounded-3xl p-1 text-left
                       transform transition-all duration-300 ease-out
-                      ${isHovered ? 'scale-[1.02] shadow-2xl shadow-blue-500/20' : 'scale-100'}
-                      ${loading !== null ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
-                      focus:outline-none focus:ring-4 focus:ring-blue-500/30
+                      ${isHovered ? 'scale-105 shadow-2xl shadow-blue-500/30' : 'scale-100'}
+                      ${loading !== null ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                      focus:outline-none focus:ring-4 focus:ring-blue-500/40
                     `}
                   >
                     {/* Gradient Border */}
@@ -337,16 +347,16 @@ export default function DashboardSelector() {
 
                       {/* Top Row: Icon + Arrow */}
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${option.gradient} flex items-center justify-center shadow-lg`}>
-                          <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                        <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${option.gradient} flex items-center justify-center shadow-2xl`}>
+                          <IconComponent className="w-8 h-8 sm:w-10 sm:h-10 text-white" strokeWidth={1.5} />
                         </div>
                         
                         <div className={`
-                          w-10 h-10 rounded-full bg-white/10 flex items-center justify-center
+                          w-12 h-12 rounded-full bg-white/10 flex items-center justify-center
                           transition-all duration-300
-                          ${isHovered ? 'bg-white/20 translate-x-1' : ''}
+                          ${isHovered ? 'bg-white/20 translate-x-1.5 shadow-xl' : ''}
                         `}>
-                          <ArrowRight className={`w-5 h-5 text-white transition-transform duration-300 ${isHovered ? 'translate-x-0.5' : ''}`} />
+                          <ArrowRight className={`w-6 h-6 text-white transition-transform duration-300 ${isHovered ? 'translate-x-1' : ''}`} strokeWidth={2} />
                         </div>
                       </div>
 

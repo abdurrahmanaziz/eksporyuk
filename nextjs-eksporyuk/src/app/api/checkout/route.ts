@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 import { prisma } from '@/lib/prisma'
 import { getNextInvoiceNumber } from '@/lib/invoice-generator'
 import { isPaymentMethodAvailable, validatePaymentAmount } from '@/lib/payment-methods'
@@ -412,12 +412,12 @@ export async function POST(request: NextRequest) {
       // Create Virtual Account for specific bank
       console.log('🏦 Creating Virtual Account for:', paymentChannel)
       
-      xenditPayment = await xenditService.createVirtualAccount({
-        externalId: transaction.id,
-        bankCode: paymentChannel,
+      xenditPayment = await xenditProxy.createVirtualAccount({
+        external_id: transaction.id,
+        bank_code: paymentChannel,
         name: customer.name,
         amount: finalAmount,
-        isSingleUse: true,
+        is_single_use: true,
       })
 
       console.log('✅ Xendit VA Response:', xenditPayment)

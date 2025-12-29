@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 import { prisma } from '@/lib/prisma'
 
 
@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Virtual Account via Xendit
-    const vaResult = await xenditService.createVirtualAccount({
-      externalId: `VA-${transactionId}`,
-      bankCode: bankCode,
+    const vaResult = await xenditProxy.createVirtualAccount({
+      external_id: `VA-${transactionId}`,
+      bank_code: bankCode,
       name: customerName,
       amount: transaction.amount,
-      isSingleUse: true,
-      expirationDate: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      is_single_use: true,
+      expiration_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
     })
 
     if (!vaResult.success) {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 import { getXenditConfig } from '@/lib/integration-config'
 
@@ -147,12 +147,12 @@ export async function POST(request: Request) {
       // Create Virtual Account for specific bank (same as membership system)
       console.log('🏦 Creating Virtual Account for:', paymentChannel)
       
-      xenditPayment = await xenditService.createVirtualAccount({
-        externalId: transaction.id,
-        bankCode: paymentChannel,
+      xenditPayment = await xenditProxy.createVirtualAccount({
+        external_id: transaction.id,
+        bank_code: paymentChannel,
         name: affiliate.user.name,
         amount: price,
-        isSingleUse: true,
+        is_single_use: true,
       })
 
       console.log('✅ Xendit VA Response:', xenditPayment)

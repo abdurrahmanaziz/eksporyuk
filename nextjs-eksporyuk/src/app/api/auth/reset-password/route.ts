@@ -31,26 +31,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Cek token valid dan tidak expired
-    const resetToken = await prisma.passwordResetToken.findFirst({
+    const resetToken = await prisma.emailVerificationToken.findFirst({
       where: {
         token,
-        used: false,
-        expiresAt: {
-          gt: new Date() // Belum expired
-        }
+        type: 'PASSWORD_RESET'
       }
     })
 
-    if (!resetToken) {
+    if (!resetToken || resetToken.expires < new Date()) {
       return NextResponse.json(
         { error: 'Link reset password tidak valid atau sudah kadaluarsa. Mohon minta link baru.' },
         { status: 400 }
       )
     }
 
-    // Cari user berdasarkan email di token
+    // Cari user berdasarkan identifier (user ID) di token
     const user = await prisma.user.findUnique({
-      where: { email: resetToken.email },
+      where: { id: resetToken.identifier },
       select: { id: true, email: true, name: true }
     })
 
@@ -73,21 +70,9 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Mark token sebagai used
-    await prisma.passwordResetToken.update({
-      where: { id: resetToken.id },
-      data: {
-        used: true,
-        usedAt: new Date()
-      }
-    })
-
-    // Hapus semua token lama untuk email ini
-    await prisma.passwordResetToken.deleteMany({
-      where: {
-        email: resetToken.email,
-        id: { not: resetToken.id }
-      }
+    // Hapus token setelah digunakan
+    await prisma.emailVerificationToken.delete({
+      where: { id: resetToken.id }
     })
 
     // Kirim email konfirmasi

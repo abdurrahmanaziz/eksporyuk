@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
-import { XenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -228,7 +228,6 @@ export async function POST(request: NextRequest) {
 
     // Create Xendit payment based on method
     console.log('[Checkout Process] Payment method:', paymentMethod, 'Channel:', paymentChannel)
-    const xenditService = new XenditService()
     let paymentUrl = ''
     let xenditReference = ''
     let xenditExternalId = transaction.id
@@ -238,13 +237,13 @@ export async function POST(request: NextRequest) {
     if (paymentMethod === 'bank_transfer' && paymentChannel) {
       console.log('[Checkout Process] Creating Virtual Account for bank:', paymentChannel)
       
-      const vaResult = await xenditService.createVirtualAccount({
-        externalId: transaction.id,
-        bankCode: paymentChannel, // BCA, MANDIRI, BNI, BRI, PERMATA, BSI
+      const vaResult = await xenditProxy.createVirtualAccount({
+        external_id: transaction.id,
+        bank_code: paymentChannel, // BCA, MANDIRI, BNI, BRI, PERMATA, BSI
         name: customerName,
         amount: finalAmount,
-        isSingleUse: true,
-        expirationDate: new Date(Date.now() + expiryDurationMs) // From payment settings
+        is_single_use: true,
+        expiration_date: new Date(Date.now() + expiryDurationMs).toISOString() // From payment settings
       })
 
       console.log('[Checkout Process] VA Result:', JSON.stringify(vaResult, null, 2))

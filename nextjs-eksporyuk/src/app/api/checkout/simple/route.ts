@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 import { randomBytes } from 'crypto'
 
 const createId = () => randomBytes(16).toString('hex')
@@ -294,13 +294,13 @@ export async function POST(request: NextRequest) {
         console.log('[Simple Checkout] Creating Xendit VA for bank:', paymentChannel)
         
         try {
-          const vaResult = await xenditService.createVirtualAccount({
-            externalId: transaction.externalId!,
-            bankCode: paymentChannel,
+          const vaResult = await xenditProxy.createVirtualAccount({
+            external_id: transaction.externalId!,
+            bank_code: paymentChannel,
             name: name || session.user.name || 'Customer',
             amount: amountNum,
-            isSingleUse: true,
-            expirationDate: new Date(Date.now() + (72 * 60 * 60 * 1000)) // 72 hours
+            is_single_use: true,
+            expiration_date: new Date(Date.now() + (72 * 60 * 60 * 1000)).toISOString() // 72 hours
           })
 
           if (vaResult.success && vaResult.data) {
