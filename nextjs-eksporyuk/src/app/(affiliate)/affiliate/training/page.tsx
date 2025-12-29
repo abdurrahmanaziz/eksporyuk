@@ -280,10 +280,18 @@ export default function AffiliateTrainingPage() {
         >
           <BookOpen className="w-7 h-7" style={{ color: theme.primary }} />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">Panduan Affiliate</h1>
           <p className="text-gray-600">Pelajari strategi dan tips sukses menjadi affiliate</p>
         </div>
+        <Link
+          href="/learn/training-affiliate"
+          className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-colors"
+          style={{ backgroundColor: theme.primary }}
+        >
+          <Play className="w-4 h-4" />
+          Lihat di Dashboard
+        </Link>
       </div>
 
       {/* Stats */}

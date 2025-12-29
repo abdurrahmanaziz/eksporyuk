@@ -5397,3 +5397,285 @@ Sekarang **tidak ada yang kelewat**:
 * Audit & Validasi ✅
 
 
+
+# 📘 PRD – FITUR POSTINGAN KOMUNITAS
+
+**Produk:** Komunitas Ekspor Yuk
+**Modul:** Community Feed / Post
+**Versi:** Final v1.0
+**Scope:** Pembuatan, tampilan, dan pengelolaan postingan komunitas
+
+---
+
+## 1. TUJUAN FITUR
+
+Menyediakan fitur postingan komunitas yang:
+
+* Modern (seperti Facebook)
+* Visual (background, dekorasi, gradient)
+* Relevan dengan **ekspor, bisnis, dan keuangan**
+* Mudah digunakan (mobile & web)
+* Fleksibel untuk pengembangan ke depan
+
+---
+
+## 2. JENIS POSTINGAN (POST TYPES)
+
+### 2.1 Text Post
+
+* Postingan teks biasa
+* Mendukung:
+
+  * Bold
+  * Italic
+  * Line break
+  * Emoji
+
+---
+
+### 2.2 Text + Background Post (CORE FEATURE)
+
+Postingan teks dengan **background visual**, mirip Facebook.
+
+---
+
+### 2.3 Text + Media Post
+
+* Text + Image (1–5 gambar)
+* Text + Attachment (PDF, DOC – future ready)
+
+---
+
+### 2.4 System / Announcement Post (opsional)
+
+* Untuk pengumuman penting
+* Tampilan lebih tebal / badge khusus
+
+---
+
+## 3. FITUR BACKGROUND POSTINGAN (WAJIB)
+
+### 3.1 Jenis Background
+
+1. **Solid Color**
+2. **Gradient**
+3. **Image / Pattern**
+4. **Ilustrasi Tematik**
+
+---
+
+### 3.2 Kategori Background (KHUSUS EKSPOR & BISNIS)
+
+#### A. Ekspor & Logistik
+
+* Kapal kargo
+* Container
+* Pelabuhan
+* Peta dunia
+* Jalur perdagangan
+
+#### B. Bisnis & Keuangan
+
+* Grafik naik
+* Financial abstract
+* Growth & scaling
+* Currency / finance pattern
+
+#### C. Edukasi & Motivasi
+
+* Quote background
+* Soft gradient
+* Minimal clean layout
+
+---
+
+### 3.3 Aturan Background
+
+* Background **hanya aktif untuk post tipe teks**
+* Jika user upload gambar → background otomatis nonaktif
+* Sistem auto-set **warna teks** agar tetap terbaca
+
+---
+
+### 3.4 Struktur Data Background
+
+```json
+{
+  "background_id": "export-gradient-01",
+  "background_type": "gradient",
+  "category": "export",
+  "asset_url": "/assets/bg/export-gradient-01.png",
+  "text_color": "#ffffff",
+  "overlay_opacity": 0.6
+}
+```
+
+---
+
+## 4. EDITOR POSTINGAN
+
+### 4.1 Komponen Editor
+
+* Text input (auto resize)
+* Background selector (carousel / grid)
+* Emoji picker
+* Media upload
+* Preview realtime
+
+---
+
+### 4.2 Editor Rules
+
+* Maksimal karakter (configurable, default: 1.000)
+* Validasi teks kosong
+* Preview sama dengan tampilan feed
+
+---
+
+## 5. TAMPILAN POSTINGAN DI FEED
+
+### 5.1 Layout
+
+* Card-based
+* Rounded
+* Shadow halus
+* Mobile-first
+
+---
+
+### 5.2 Elemen Post Card
+
+* Avatar
+* Nama user
+* Timestamp
+* Konten post
+* Background / media
+* Action bar (like, comment, share, save)
+
+---
+
+## 6. INTERAKSI POSTINGAN
+
+### 6.1 Reaksi
+
+* Like
+* Save
+* Share (internal link)
+
+---
+
+### 6.2 Komentar
+
+* Nested comment (1 level)
+* Emoji support
+* Timestamp
+
+---
+
+## 7. EDIT & DELETE POST
+
+### 7.1 Edit Post
+
+* Bisa edit:
+
+  * Teks
+  * Background
+* Tidak bisa edit:
+
+  * Media (jika ada)
+
+---
+
+### 7.2 Delete Post
+
+* Soft delete (status = deleted)
+* Tidak langsung hapus dari database
+
+---
+
+## 8. PIN & HIGHLIGHT (OPTIONAL)
+
+* Post bisa di-pin
+* Post pinned muncul di atas feed
+* Highlight visual khusus
+
+---
+
+## 9. PERFORMANCE & UX
+
+* Lazy load feed
+* Lazy load background image
+* Cache asset background
+* Skeleton loader saat loading
+
+---
+
+## 10. KEAMANAN & VALIDASI TEKNIS
+
+* Validasi input di backend
+* Sanitasi teks (XSS protection)
+* Limit request posting (rate limit)
+
+---
+
+## 11. DATABASE DESIGN (INTI)
+
+### 11.1 Tabel `posts`
+
+```sql
+posts
+- id
+- user_id
+- content
+- post_type
+- background_id (nullable)
+- media_url (nullable)
+- status (active, deleted)
+- created_at
+- updated_at
+```
+
+---
+
+### 11.2 Tabel `post_backgrounds`
+
+```sql
+post_backgrounds
+- id
+- name
+- category
+- type
+- asset_url
+- text_color
+- overlay_opacity
+```
+
+---
+
+## 12. API ENDPOINT (SINGKAT)
+
+* POST /api/posts
+* GET /api/posts
+* PUT /api/posts/{id}
+* DELETE /api/posts/{id}
+* GET /api/post-backgrounds
+
+---
+
+## 13. CATATAN PENTING (WAJIB)
+
+* ❗ Fokus **visual & kenyamanan membaca**
+* ❗ Background harus relevan dengan **ekspor & bisnis**
+* ❗ Tidak ada popup, gunakan full page / inline editor
+* ❗ Harus konsisten di web & mobile
+
+---
+
+### ✅ STATUS PRD
+
+✔ Scope jelas
+✔ Tidak bahas role
+✔ Tidak bahas membership
+✔ Siap langsung diimplementasi
+✔ Cocok untuk desain di Stitch
+

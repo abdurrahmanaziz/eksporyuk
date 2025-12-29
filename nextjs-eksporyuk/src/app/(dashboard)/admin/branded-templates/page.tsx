@@ -85,6 +85,7 @@ export default function AdminBrandedTemplatesPage() {
   const [uploading, setUploading] = useState(false)
   const [previewHtml, setPreviewHtml] = useState<string>('')
   const [loadingPreview, setLoadingPreview] = useState(false)
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
 
   const categoryIcons: Record<string, string> = {
     'SYSTEM': '⚙️',
@@ -1531,15 +1532,29 @@ Tim Eksporyuk"
                     </CardTitle>
                     <div className="flex gap-2">
                       {selectedTemplate.type === 'EMAIL' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => fetchPreviewHtml(selectedTemplate)}
-                          disabled={loadingPreview}
-                        >
-                          <RefreshCw className={`w-4 h-4 mr-1 ${loadingPreview ? 'animate-spin' : ''}`} />
-                          Refresh Preview
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              fetchPreviewHtml(selectedTemplate)
+                              setShowPreviewModal(true)
+                            }}
+                            disabled={loadingPreview}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Preview HTML Email
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fetchPreviewHtml(selectedTemplate)}
+                            disabled={loadingPreview}
+                          >
+                            <RefreshCw className={`w-4 h-4 mr-1 ${loadingPreview ? 'animate-spin' : ''}`} />
+                            Refresh
+                          </Button>
+                        </>
                       )}
                       <Button
                         variant="outline"
@@ -1859,6 +1874,62 @@ Tim Eksporyuk"
           </CardContent>
         </Card>
       </div>
+
+      {/* HTML Email Preview Modal */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-2">
+                <Mail className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold">Preview HTML Email</h3>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPreviewModal(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="flex-1 overflow-hidden p-4">
+              {loadingPreview ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                  <span className="ml-2">Loading preview...</span>
+                </div>
+              ) : previewHtml ? (
+                <iframe
+                  srcDoc={previewHtml}
+                  className="w-full h-full border rounded"
+                  title="Email Preview"
+                  sandbox="allow-same-origin"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <AlertCircle className="w-8 h-8 mr-2" />
+                  <span>No preview available</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between p-4 border-t bg-gray-50">
+              <p className="text-xs text-gray-600">
+                💡 Preview menggunakan data sample. Email asli akan menggunakan data real saat dikirim.
+              </p>
+              <Button
+                onClick={() => setShowPreviewModal(false)}
+              >
+                Tutup
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </ResponsivePageWrapper>
   )
 }

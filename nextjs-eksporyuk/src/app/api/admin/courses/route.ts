@@ -199,10 +199,12 @@ export async function POST(request: NextRequest) {
         // Create mentor profile for admin
         const newMentor = await prisma.mentorProfile.create({
           data: {
+            id: `mentor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             userId: session.user.id,
             bio: 'Administrator',
             expertise: 'All topics',
-            isActive: true
+            isActive: true,
+            updatedAt: new Date()
           }
         })
         finalMentorId = newMentor.id
@@ -256,8 +258,23 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // If MEMBERSHIP type and membershipIds provided, create course-membership relations
-    if (monetizationType === 'MEMBERSHIP' && membershipIds && membershipIds.length > 0) {
+    // Create CourseMentor relation
+    await prisma.courseMentor.create({
+      data: {
+        id: `cm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        courseId: course.id,
+        mentorId: finalMentorId,
+        role: 'PRIMARY',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    })
+
+    console.log('✅ Created course and mentor relation:', course.id)
+
+    // If SUBSCRIPTION type and membershipIds provided, create course-membership relations
+    if (monetizationType === 'SUBSCRIPTION' && membershipIds && membershipIds.length > 0) {
       // Check if CourseMembership model exists, if so create relations
       try {
         for (const membershipId of membershipIds) {

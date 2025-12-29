@@ -276,8 +276,8 @@ export default function NewCoursePage() {
       }
     }
 
-    // Validate membership selection for MEMBERSHIP type
-    if (formData.monetizationType === 'MEMBERSHIP' && selectedMemberships.length === 0) {
+    // Validate membership selection for SUBSCRIPTION type
+    if (formData.monetizationType === 'SUBSCRIPTION' && selectedMemberships.length === 0) {
       setValidationErrors({ memberships: ['Pilih minimal 1 membership yang dapat mengakses kursus ini'] })
       toast.error('Pilih minimal 1 membership')
       return
@@ -300,8 +300,8 @@ export default function NewCoursePage() {
         groupId: formData.groupId || null,
         mailketingListId: formData.mailketingListId || null,
         mailketingListName: formData.mailketingListName || null,
-        // Membership access - for MEMBERSHIP type
-        membershipIds: formData.monetizationType === 'MEMBERSHIP' ? selectedMemberships : [],
+        // Membership access - for SUBSCRIPTION type
+        membershipIds: formData.monetizationType === 'SUBSCRIPTION' ? selectedMemberships : [],
         // Affiliate settings - for PAID courses
         affiliateEnabled: formData.monetizationType === 'PAID' ? formData.affiliateEnabled : false,
         affiliateCommissionRate: formData.monetizationType === 'PAID' && formData.affiliateEnabled 
@@ -649,7 +649,7 @@ export default function NewCoursePage() {
                       <span className="text-xs text-muted-foreground">Pembelian satuan (one-time payment)</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="MEMBERSHIP">
+                  <SelectItem value="SUBSCRIPTION">
                     <div className="flex flex-col items-start">
                       <span className="font-medium">👥 Member Only</span>
                       <span className="text-xs text-muted-foreground">Hanya untuk anggota membership aktif</span>
@@ -677,7 +677,7 @@ export default function NewCoursePage() {
                 {formData.monetizationType === 'PAID' && (
                   <p>💳 User harus membayar sekali untuk mengakses kursus ini selamanya</p>
                 )}
-                {formData.monetizationType === 'MEMBERSHIP' && (
+                {formData.monetizationType === 'SUBSCRIPTION' && (
                   <p>🔒 Hanya user dengan membership aktif yang dapat mengakses kursus ini</p>
                 )}
                 {formData.monetizationType === 'AFFILIATE' && (
@@ -736,8 +736,8 @@ export default function NewCoursePage() {
               </div>
             )}
             
-            {/* Membership Selection - Show when MEMBERSHIP type */}
-            {formData.monetizationType === 'MEMBERSHIP' && (
+            {/* Membership Selection - Show when SUBSCRIPTION type */}
+            {formData.monetizationType === 'SUBSCRIPTION' && (
               <div className="space-y-4">
                 <div className="p-3 bg-purple-50 rounded-lg text-sm text-purple-700 border border-purple-200">
                   👥 Pilih membership yang dapat mengakses kursus ini

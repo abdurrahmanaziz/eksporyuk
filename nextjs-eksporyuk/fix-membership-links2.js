@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { nanoid } = require('nanoid');
 const prisma = new PrismaClient();
 
 async function main() {
@@ -32,7 +33,11 @@ async function main() {
       
       if (!exists) {
         await prisma.membershipCourse.create({
-          data: { membershipId: m.id, courseId: course.id }
+          data: { 
+            id: `mc_${nanoid(16)}`,
+            membershipId: m.id, 
+            courseId: course.id 
+          }
         });
         console.log(`  ✅ Linked to course: ${course.title}`);
       } else {
@@ -48,7 +53,11 @@ async function main() {
       
       if (!exists) {
         await prisma.membershipGroup.create({
-          data: { membershipId: m.id, groupId: group.id }
+          data: { 
+            id: `mg_${nanoid(16)}`,
+            membershipId: m.id, 
+            groupId: group.id 
+          }
         });
         console.log(`  ✅ Linked to group: ${group.name}`);
       } else {

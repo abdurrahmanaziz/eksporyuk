@@ -1,113 +1,95 @@
-/**
- * Check Sejoli transactions raw data
- */
-
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-async function checkSejoliTransactions() {
-  console.log('🔍 CHECKING SEJOLI TRANSACTION DATA\n');
-
-  try {
-    // Cek beberapa transaksi yang mencurigakan
-    const samples = await prisma.transaction.findMany({
-      where: {
-        status: 'SUCCESS'
-      },
-      orderBy: {
-        id: 'asc'
-      },
-      take: 20
-    });
-
-    console.log(`📊 Sample transactions (first 20):\n`);
-    
-    for (const tx of samples) {
-      console.log('─'.repeat(80));
-      console.log(`ID: ${tx.id}`);
-      console.log(`Description: ${tx.description}`);
-      console.log(`Type: ${tx.type}`);
-      console.log(`Status: ${tx.status}`);
-      console.log(`Amount: Rp ${tx.amount}`);
-      console.log(`User ID: ${tx.userId}`);
-      console.log(`Created: ${tx.createdAt}`);
-      
-      if (tx.metadata) {
-        console.log(`Metadata:`);
-        const meta = typeof tx.metadata === 'string' ? JSON.parse(tx.metadata) : tx.metadata;
-        Object.entries(meta).forEach(([key, value]) => {
-          console.log(`  - ${key}: ${value}`);
-        });
-      }
-      
-      // Get user info
-      const user = await prisma.user.findUnique({
-        where: { id: tx.userId },
-        select: { email: true, role: true, name: true }
-      });
-      
-      if (user) {
-        console.log(`User: ${user.email} (${user.role})`);
-      }
-      
-      // Check if user has membership
-      const membership = await prisma.userMembership.findFirst({
-        where: {
-          userId: tx.userId,
-          status: 'ACTIVE'
-        }
-      });
-      
-      if (membership) {
-        const membershipData = await prisma.membership.findUnique({
-          where: { id: membership.membershipId }
-        });
-        console.log(`Membership: ${membershipData?.duration || 'Unknown'}`);
-      } else {
-        console.log(`Membership: None`);
-      }
-      
-      console.log('');
+async function main() {
+  // Cek transaksi dari Sejoli
+  console.log('=== TRANSACTIONS FROM SEJOLI ===');
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      OR: [
+        { paymentGateway: 'SEJOLI' },
+        { externalOrderId: { startsWith: 'sejoli' } },
+        { notes: { contains: 'sejoli' } }
+      ]
+    },
+    take: 20,
+    include: {
+      user: { select: { email: true, name: true, role: true } },
+      membership: { select: { name: true } }
     }
-
-    // Check transaction types distribution
-    console.log('\n' + '═'.repeat(80));
-    console.log('📊 TRANSACTION TYPE DISTRIBUTION:\n');
-    
-    const typeStats = await prisma.$queryRaw`
-      SELECT 
-        type,
-        COUNT(*) as count,
-        COUNT(DISTINCT "userId") as unique_users
-      FROM "Transaction"
-      WHERE status = 'SUCCESS'
-      GROUP BY type
-      ORDER BY count DESC
-    `;
-    
-    console.log(typeStats);
-
-    // Check transactions with metadata containing product names
-    console.log('\n' + '═'.repeat(80));
-    console.log('📊 CHECKING METADATA STRUCTURE:\n');
-    
-    const withMetadata = await prisma.transaction.findFirst({
-      where: {
-        status: 'SUCCESS',
-        metadata: { not: null }
-      }
-    });
-    
-    if (withMetadata) {
-      console.log('Sample transaction with metadata:');
-      console.log(JSON.stringify(withMetadata, null, 2));
+  });
+  
+  console.log(`Found ${transactions.length} Sejoli transactions`);
+  transactions.forEach(t => {
+    console.log(`- ${t.user?.email} | ${t.membership?.name || 'No membership'} | ${t.status} | Gateway: ${t.paymentGateway}`);
+  });
+  
+  // Cek semua transaksi by gateway
+  console.log('\n=== TRANSACTIONS BY GATEWAY ===');
+  const byGateway = await prisma.transaction.groupBy({
+    by: ['paymentGateway'],
+    _count: { id: true }
+  });
+  byGateway.forEach(g => console.log(`${g.paymentGateway || 'NULL'}: ${g._count.id}`));
+  
+  // Cek transaksi by membership
+  console.log('\n=== TRANSACTIONS BY MEMBERSHIP ===');
+  const byMembership = await prisma.transaction.groupBy({
+    by: ['membershipId'],
+    _count: { id: true }
+  });
+  
+  for (const t of byMembership) {
+    if (t.membershipId) {
+      const plan = await prisma.membership.findUnique({ where: { id: t.membershipId } });
+      console.log(`${plan?.name || t.membershipId}: ${t._count.id} transactions`);
+    } else {
+      console.log(`No membership: ${t._count.id} transactions`);
     }
-
-  } catch (error) {
-    console.error('❌ Error:', error);
-  } finally {
-    await prisma.$disconnect();
   }
+  
+  // Cek user yang punya role MEMBER_FREE tapi ada di UserMembership
+  console.log('\n=== FREE MEMBERS WITH ACTIVE MEMBERSHIP ===');
+  const freeWithMembership = await prisma.user.findMany({
+    where: {
+      role: 'MEMBER_FREE',
+      userMemberships: {
+        some: { status: 'ACTIVE' }
+      }
+    },
+    include: {
+      userMemberships: {
+        where: { status: 'ACTIVE' },
+        include: { membership: { select: { name: true } } }
+      }
+    },
+    take: 10
+  });
+  
+  console.log(`Free members with active membership: ${freeWithMembership.length}`);
+  freeWithMembership.forEach(u => {
+    const memberships = u.userMemberships.map(um => um.membership?.name).join(', ');
+    console.log(`- ${u.email} | Memberships: ${memberships}`);
+  });
+  
+  // Cek user MEMBER_PREMIUM tanpa UserMembership aktif
+  console.log('\n=== PREMIUM MEMBERS WITHOUT ACTIVE MEMBERSHIP ===');
+  const premiumWithoutMembership = await prisma.user.count({
+    where: {
+      role: 'MEMBER_PREMIUM',
+      NOT: {
+        userMemberships: {
+          some: { status: 'ACTIVE' }
+        }
+      }
+    }
+  });
+  console.log(`Premium members without active UserMembership: ${premiumWithoutMembership}`);
+  
+  await prisma.$disconnect();
 }
 
-checkSejoliTransactions();
+main().catch(e => {
+  console.error(e);
+  process.exit(1);
+});
