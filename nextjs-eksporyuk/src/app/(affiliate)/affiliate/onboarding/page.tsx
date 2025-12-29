@@ -257,75 +257,30 @@ export default function AffiliateOnboardingPage() {
 
         {/* Single Form */}
         <div className="space-y-8">
-          {/* Email Verification Section - Only show if not verified */}
-          {needsEmailVerification && (
-            <Card className="shadow-lg border-amber-100">
-              <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-amber-600" />
-                  Verifikasi Email
-                </CardTitle>
-                <CardDescription>
-                  Verifikasi email Anda untuk melanjutkan
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <Alert className="mb-4 border-amber-200 bg-amber-50">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription className="text-amber-800">
-                    Email Anda (<strong>{session?.user?.email}</strong>) harus diverifikasi sebelum melanjutkan.
-                  </AlertDescription>
-                </Alert>
-                
-                <div className="flex flex-col gap-3">
-                  <Button
-                    onClick={handleSendVerificationEmail}
-                    disabled={sendingVerificationEmail}
-                    className="bg-amber-500 hover:bg-amber-600 text-white"
-                  >
-                    {sendingVerificationEmail ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Mengirim Email Verifikasi...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="h-4 w-4 mr-2" />
-                        Kirim Email Verifikasi
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button
-                    onClick={handleMarkEmailVerified}
-                    variant="outline"
-                    className="border-amber-200 text-amber-700 hover:bg-amber-50"
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Email Sudah Terverifikasi?
-                  </Button>
-                  
-                  <p className="text-xs text-gray-600 mt-2">
-                    Kirim email verifikasi atau klik tombol kedua jika sudah memverifikasi email.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          
-          {!needsEmailVerification && (
-            <Card className="shadow-lg border-green-100 bg-green-50">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-green-900">Email Terverifikasi</p>
-                    <p className="text-sm text-green-700">{session?.user?.email}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Email Status Section - Just informational, not blocking */}
+          <Card className={`shadow-lg ${needsEmailVerification ? 'border-blue-100 bg-blue-50' : 'border-green-100 bg-green-50'}`}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                {needsEmailVerification ? (
+                  <>
+                    <Mail className="h-6 w-6 text-blue-600 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-blue-900">Email: {session?.user?.email}</p>
+                      <p className="text-sm text-blue-700">Verifikasi email opsional - bisa dilakukan nanti</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-green-900">Email Terverifikasi</p>
+                      <p className="text-sm text-green-700">{session?.user?.email}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
           
           {/* Profile Section */}
           <Card className="shadow-lg border-purple-100">
@@ -483,7 +438,7 @@ export default function AffiliateOnboardingPage() {
           <div className="flex justify-center pt-4 pb-8">
             <Button
               onClick={handleSubmit}
-              disabled={saving || needsEmailVerification}
+              disabled={saving}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3"
               size="lg"
             >
