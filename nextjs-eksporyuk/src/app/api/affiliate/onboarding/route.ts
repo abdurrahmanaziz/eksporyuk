@@ -101,7 +101,7 @@ export async function GET() {
 
     const trainingCompleted = affiliate.trainingCompleted || false
     const firstLinkCreated = affiliate.firstLinkCreated || (affiliate.links?.length || 0) > 0
-    const bankInfoCompleted = hasBankInfo || !!(
+    const bankInfoCompleted = affiliate.bankInfoCompleted || hasBankInfo || !!(
       affiliate.bankName && 
       affiliate.bankAccountName && 
       affiliate.bankAccountNumber
@@ -246,6 +246,10 @@ export async function POST(request: Request) {
       case 'profile':
         updateData.profileCompleted = completed
         if (completed) updateData.profileCompletedAt = new Date()
+        break
+      case 'bank':
+        updateData.bankInfoCompleted = completed
+        if (completed) updateData.bankInfoCompletedAt = new Date()
         break
       case 'training':
         updateData.trainingCompleted = completed
