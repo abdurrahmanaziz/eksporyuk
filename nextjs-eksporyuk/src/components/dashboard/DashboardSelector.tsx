@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { User, DollarSign, GraduationCap, Shield, BarChart3 } from 'lucide-react'
+import { User, DollarSign, GraduationCap, Shield, BarChart3, HelpCircle, UserCircle, LogOut } from 'lucide-react'
+import { signOut } from 'next-auth/react'
 
 interface DashboardOption {
   id: string
@@ -18,7 +19,7 @@ interface DashboardOption {
 export default function DashboardSelector() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<string | null>(null)
   
   const userRole = session?.user?.role || ''
   
@@ -39,7 +40,7 @@ export default function DashboardSelector() {
         title: 'Member Dashboard', 
         description: 'Akses kursus, materi, dan fitur membership Anda',
         icon: User,
-        href: '/dashboard',
+        href: '/dashboard?selected=member', // Add query param to bypass selection check
         color: 'text-blue-600',
         bgColor: 'bg-blue-50 border-blue-200'
       })
@@ -86,7 +87,7 @@ export default function DashboardSelector() {
     if (dashboardOptions.length === 1) {
       const timer = setTimeout(() => {
         router.push(dashboardOptions[0].href)
-      }, 1000)
+      }, 500)
       return () => clearTimeout(timer)
     }
   }, [dashboardOptions, router])
@@ -100,21 +101,21 @@ export default function DashboardSelector() {
   
   // Loading state
   if (status === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
   }
 
   // No session - show loading while redirecting
   if (!session?.user) {
-    return <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
   }
   
   // Admin should not see this page - show loading while redirecting
   if (userRole === 'ADMIN') {
-    return <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
         <p className="text-gray-600">Mengarahkan ke Admin Panel...</p>
@@ -122,27 +123,16 @@ export default function DashboardSelector() {
     </div>
   }
 
-  const handleDashboardSelect = async (option: DashboardOption) => {
-    setLoading(true)
-    
-    // Optional: Save user preference
-    try {
-      await fetch('/api/user/set-preferred-dashboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dashboardType: option.id })
-      })
-    } catch (error) {
-      console.log('Could not save preference:', error)
-    }
-    
+  const handleDashboardSelect = (option: DashboardOption) => {
+    setLoading(option.id)
+    // Direct navigation - no need for API call
     router.push(option.href)
   }
 
-  // Single option - show loading
+  // Single option - show loading and redirect
   if (dashboardOptions.length === 1) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -156,99 +146,142 @@ export default function DashboardSelector() {
     )
   }
 
+  // Get user display name
+  const displayName = session.user.name?.split(' ')[0] || 'User'
+  const fullName = session.user.name || session.user.email || 'User'
+  const roleBadge = userRole === 'MEMBER_PREMIUM' ? 'Premium Member' : 
+                   userRole === 'MEMBER_FREE' ? 'Free Member' :
+                   userRole === 'AFFILIATE' ? 'Affiliate' :
+                   userRole === 'MENTOR' ? 'Mentor' : 'Member'
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <img src="/logo.png" alt="Platform" className="h-8 w-auto" />
-              <span className="text-xl font-semibold text-gray-900">Platform Name</span>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+      {/* Header - Mobile Responsive */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-3 sm:px-6">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <img src="/logo.png" alt="Eksporyuk" className="h-7 sm:h-8 w-auto" />
+              <span className="text-base sm:text-lg font-semibold text-gray-900 hidden sm:block">Eksporyuk</span>
             </div>
+            
+            {/* User Info - Mobile Optimized */}
             <div className="text-right">
-              <div className="text-sm text-gray-500">Help Center</div>
-              <div className="text-sm font-medium text-gray-900">
-                {session.user.name || session.user.email} • Premium Member
+              <div className="text-xs sm:text-sm font-medium text-gray-900 flex items-center gap-1 sm:gap-2">
+                <span className="truncate max-w-[100px] sm:max-w-none">{fullName.split(' ')[0]}</span>
+                <span className="text-gray-400 hidden sm:inline">•</span>
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{roleBadge}</span>
               </div>
             </div>
           </div>
+        </div>
+      </header>
+
+      {/* Main Content - Mobile First */}
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="max-w-4xl w-full">
+          {/* Welcome Section */}
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
+              Welcome Back, {displayName} 👋
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto px-4">
+              Pilih dashboard untuk mengelola aktivitas Anda
+            </p>
+          </div>
+
+          {/* Dashboard Options - Mobile Stacked, Desktop Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            {dashboardOptions.map((option) => {
+              const IconComponent = option.icon
+              const isLoading = loading === option.id
+              
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleDashboardSelect(option)}
+                  disabled={loading !== null}
+                  className={`
+                    relative overflow-hidden rounded-xl sm:rounded-2xl border-2 p-4 sm:p-6 text-left
+                    active:scale-[0.98] hover:scale-[1.02] hover:shadow-lg transform transition-all duration-200
+                    focus:outline-none focus:ring-4 focus:ring-blue-500/20
+                    disabled:opacity-70 disabled:cursor-not-allowed
+                    ${option.bgColor}
+                  `}
+                >
+                  {/* Loading overlay */}
+                  {isLoading && (
+                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-xl sm:rounded-2xl">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                  )}
+                  
+                  {/* Card Content */}
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    {/* Icon */}
+                    <div className={`flex-shrink-0 inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl ${option.bgColor} border`}>
+                      <IconComponent className={`w-5 h-5 sm:w-6 sm:h-6 ${option.color}`} />
+                    </div>
+                    
+                    {/* Text Content */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
+                        {option.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-2">
+                        {option.description}
+                      </p>
+                      
+                      {/* CTA Button */}
+                      <div className="mt-3 sm:mt-4">
+                        <span className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-white 
+                          ${option.id === 'affiliate' ? 'bg-green-600' :
+                            option.id === 'mentor' ? 'bg-purple-600' :
+                            'bg-blue-600'}
+                          transition-colors`}>
+                          {option.id === 'affiliate' ? '💰 Access Dashboard' : 
+                           option.id === 'mentor' ? '📚 Go to Dashboard' :
+                           '🏠 Go to Dashboard'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Footer Actions - Mobile Friendly */}
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-sm">
+            <button 
+              onClick={() => router.push('/help')}
+              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Bantuan</span>
+            </button>
+            <button 
+              onClick={() => router.push('/profile')}
+              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <UserCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Profil</span>
+            </button>
+            <button 
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Keluar</span>
+            </button>
+          </div>
           
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Welcome Back, {session.user.name?.split(' ')[0] || 'User'}
-          </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            You are signed in. Select a dashboard below to manage your activities.
-          </p>
+          <div className="text-center mt-6 text-xs text-gray-400">
+            © 2025 Eksporyuk. All rights reserved.
+          </div>
         </div>
-
-        {/* Dashboard Options Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {dashboardOptions.map((option) => {
-            const IconComponent = option.icon
-            return (
-              <button
-                key={option.id}
-                onClick={() => handleDashboardSelect(option)}
-                disabled={loading}
-                className={`
-                  relative overflow-hidden rounded-2xl border-2 p-6 text-left
-                  hover:scale-105 hover:shadow-lg transform transition-all duration-200
-                  focus:outline-none focus:ring-4 focus:ring-blue-500/20
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  ${option.bgColor}
-                `}
-                style={{
-                  backgroundImage: option.id === 'affiliate' 
-                    ? "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"80\" cy=\"20\" r=\"8\" fill=\"%23059669\" opacity=\"0.3\"/><circle cx=\"20\" cy=\"80\" r=\"12\" fill=\"%23059669\" opacity=\"0.2\"/></svg>')"
-                    : option.id === 'member'
-                    ? "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><rect x=\"10\" y=\"30\" width=\"30\" height=\"20\" rx=\"4\" fill=\"%232563eb\" opacity=\"0.2\"/><rect x=\"60\" y=\"50\" width=\"25\" height=\"15\" rx=\"3\" fill=\"%232563eb\" opacity=\"0.3\"/></svg>')"
-                    : ''
-                }}
-              >
-                {/* Icon */}
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${option.bgColor} border mb-4`}>
-                  <IconComponent className={`w-6 h-6 ${option.color}`} />
-                </div>
-                
-                {/* Content */}
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {option.title}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {option.description}
-                </p>
-                
-                {/* CTA Button */}
-                <div className="mt-4">
-                  <span className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white 
-                    ${option.id === 'affiliate' ? 'bg-green-600 hover:bg-green-700' :
-                      option.id === 'admin' ? 'bg-red-600 hover:bg-red-700' :
-                      option.id === 'mentor' ? 'bg-purple-600 hover:bg-purple-700' :
-                      'bg-blue-600 hover:bg-blue-700'}
-                    transition-colors`}>
-                    {option.id === 'affiliate' ? '💰 Access Dashboard' : 
-                     option.id === 'mentor' ? '📚 Go to Dashboard' :
-                     option.id === 'admin' ? '⚡ Manage Platform' :
-                     '🏠 Go to Dashboard'}
-                  </span>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-500 space-x-4">
-          <button className="hover:text-gray-700">❓ Need Help?</button>
-          <button className="hover:text-gray-700">👤 My Profile</button>
-          <button className="hover:text-gray-700">🚪 Sign Out</button>
-        </div>
-        
-        <div className="text-center mt-4 text-xs text-gray-400">
-          © 2023 Platform Name. All rights reserved.
-        </div>
-      </div>
+      </main>
     </div>
   )
 }

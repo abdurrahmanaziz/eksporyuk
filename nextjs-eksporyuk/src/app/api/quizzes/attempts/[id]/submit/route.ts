@@ -183,6 +183,7 @@ export async function POST(
                 if (!existingCert) {
                   await prisma.certificate.create({
                     data: {
+                      id: `cert_${Date.now()}_${Math.random().toString(36).substring(7)}`,
                       userId: attempt.userId,
                       courseId: attempt.quiz.courseId,
                       certificateNumber: `CERT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,

@@ -386,8 +386,10 @@ async function handleInvoicePaid(data: any) {
             for (const course of courses) {
               await prisma.courseEnrollment.create({
                 data: {
+                  id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
                   userId: transaction.userId,
-                  courseId: course.id
+                  courseId: course.id,
+                  updatedAt: new Date()
                 }
               }).catch(() => {}) // Ignore if already enrolled
             }
@@ -515,10 +517,12 @@ async function handleInvoicePaid(data: any) {
         // Create enrollment
         await prisma.courseEnrollment.create({
           data: {
+            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: transaction.userId,
             courseId: transaction.courseId,
             progress: 0,
             transactionId: transaction.id,
+            updatedAt: new Date(),
           },
         })
 
@@ -1084,8 +1088,10 @@ async function handleVAPaymentComplete(data: any) {
             for (const course of coursesVA) {
               await prisma.courseEnrollment.create({
                 data: {
+                  id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
                   userId: transaction.userId,
-                  courseId: course.id
+                  courseId: course.id,
+                  updatedAt: new Date()
                 }
               }).catch(() => {})
             }
@@ -1282,10 +1288,12 @@ async function handleVAPaymentComplete(data: any) {
         // Create enrollment
         await prisma.courseEnrollment.create({
           data: {
+            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: transaction.userId,
             courseId: transaction.courseId,
             progress: 0,
             transactionId: transaction.id,
+            updatedAt: new Date(),
           },
         })
 
@@ -1679,8 +1687,10 @@ async function handleEWalletPaymentComplete(data: any) {
       for (const course of coursesEW) {
         await prisma.courseEnrollment.create({
           data: {
+            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: transaction.userId,
-            courseId: course.id
+            courseId: course.id,
+            updatedAt: new Date()
           }
         }).catch(() => {})
       }
@@ -1810,10 +1820,12 @@ async function handleEWalletPaymentComplete(data: any) {
       if (!existingEnrollment) {
         await prisma.courseEnrollment.create({
           data: {
+            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: transaction.userId,
             courseId: transaction.courseId,
             progress: 0,
             transactionId: transaction.id,
+            updatedAt: new Date(),
           },
         })
         console.log('[Xendit Webhook] ✅ CourseEnrollment created via E-Wallet')

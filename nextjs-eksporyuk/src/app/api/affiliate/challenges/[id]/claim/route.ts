@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { sendChallengeRewardClaimedEmail, sendChallengeRewardApprovedEmail } from '@/lib/challenge-email-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -127,7 +128,8 @@ export async function POST(
               rewardStatus: 'APPROVED',
               rewardClaimed: true,
               claimedAt: new Date(),
-              approvedAt: new Date()
+              approvedAt: new Date(),
+              updatedAt: new Date()
             }
           })
         })
@@ -151,7 +153,8 @@ export async function POST(
               rewardStatus: 'APPROVED',
               rewardClaimed: true,
               claimedAt: new Date(),
-              approvedAt: new Date()
+              approvedAt: new Date(),
+              updatedAt: new Date()
             }
           })
         })
@@ -162,7 +165,8 @@ export async function POST(
             rewardStatus: 'APPROVED',
             rewardClaimed: true,
             claimedAt: new Date(),
-            approvedAt: new Date()
+            approvedAt: new Date(),
+            updatedAt: new Date()
           }
         })
       }
@@ -172,7 +176,26 @@ export async function POST(
         message: 'Reward claimed and auto-approved successfully!',
         status: 'APPROVED',
         autoApproved: true
-      })
+      }, { status: 200 })
+    }
+
+    // Send reward approved email in background (for auto-approved rewards)
+    try {
+      const user = await prisma.user.findUnique({ where: { id: session.user.id } })
+      if (user?.email && shouldAutoApprove) {
+        sendChallengeRewardApprovedEmail({
+          email: user.email,
+          name: affiliateProfile.displayName || user.name || 'Affiliate',
+          challengeName: challenge.title,
+          rewardValue: Number(challenge.rewardValue),
+          rewardType: challenge.rewardType.replace(/_/g, ' '),
+          approvalDate: new Date().toLocaleDateString('id-ID')
+        }).catch(err => {
+          console.error('Failed to send reward approved email:', err)
+        })
+      }
+    } catch (emailErr) {
+      console.error('Error sending reward approved email:', emailErr)
     }
 
     // Submit claim for admin approval (manual approval required)
@@ -180,9 +203,30 @@ export async function POST(
       where: { id: progress.id },
       data: {
         rewardStatus: 'PENDING',
-        claimedAt: new Date()
+        claimedAt: new Date(),
+        updatedAt: new Date()
       }
     })
+
+    // Send reward claimed email in background
+    try {
+      const user = await prisma.user.findUnique({ where: { id: session.user.id } })
+      if (user?.email) {
+        sendChallengeRewardClaimedEmail({
+          email: user.email,
+          name: affiliateProfile.displayName || user.name || 'Affiliate',
+          challengeName: challenge.title,
+          rewardValue: Number(challenge.rewardValue),
+          rewardType: challenge.rewardType.replace(/_/g, ' '),
+          claimDate: new Date().toLocaleDateString('id-ID'),
+          claimStatus: 'PENDING'
+        }).catch(err => {
+          console.error('Failed to send reward claimed email:', err)
+        })
+      }
+    } catch (emailErr) {
+      console.error('Error sending reward claimed email:', emailErr)
+    }
 
     return NextResponse.json({ 
       success: true,

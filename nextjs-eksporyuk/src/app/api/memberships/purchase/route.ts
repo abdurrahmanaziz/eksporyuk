@@ -244,8 +244,10 @@ export async function POST(request: NextRequest) {
       for (const mc of membership.membershipCourses) {
         await prisma.courseEnrollment.create({
           data: {
+            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: user.id,
-            courseId: mc.course.id
+            courseId: mc.course.id,
+            updatedAt: new Date()
           }
         }).catch(() => {}) // Ignore if already enrolled
       }

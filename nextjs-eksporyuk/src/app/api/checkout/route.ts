@@ -317,11 +317,13 @@ export async function POST(request: NextRequest) {
       try {
         await prisma.courseEnrollment.create({
           data: {
+            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: customer.id,
             courseId: courseId,
             transactionId: transaction.id,
             progress: 0,
             completed: false,
+            updatedAt: new Date(),
           }
         })
       } catch (error) {

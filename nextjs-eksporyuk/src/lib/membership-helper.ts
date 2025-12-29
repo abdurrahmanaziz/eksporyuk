@@ -206,13 +206,15 @@ export async function activateCourseAccess(
       // Create new progress
       await prisma.userCourseProgress.create({
         data: {
+          id: `progress_${Date.now()}_${Math.random().toString(36).substring(7)}`,
           userId,
           courseId,
           hasAccess: true,
           accessGrantedAt: new Date(),
           accessExpiresAt: expiresAt,
           progress: 0,
-          completedLessons: []
+          completedLessons: [],
+          updatedAt: new Date()
         }
       })
     }

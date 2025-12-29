@@ -207,10 +207,12 @@ export async function POST(request: NextRequest) {
       // Create enrollment directly
       await prisma.courseEnrollment.create({
         data: {
+          id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
           userId: session.user.id,
           courseId: course.id,
           enrolledAt: new Date(),
-          progress: 0
+          progress: 0,
+          updatedAt: new Date()
         }
       })
 

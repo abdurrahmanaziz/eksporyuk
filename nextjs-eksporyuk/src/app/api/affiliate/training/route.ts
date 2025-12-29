@@ -58,19 +58,22 @@ export async function GET(request: NextRequest) {
         ],
         status: { in: ['PUBLISHED', 'APPROVED'] }
       },
-      include: {
-        modules: {
-          include: {
-            lessons: true,
-          },
-        },
-      },
       orderBy: [
         // @ts-ignore
         { isAffiliateTraining: 'desc' },
         { createdAt: 'asc' },
       ],
-    }) as unknown as CourseWithModules[]
+    })
+
+    // Get modules and lessons separately for each course
+    const courseIds = courses.map(c => c.id)
+    const modules = await prisma.courseModule.findMany({
+      where: { courseId: { in: courseIds } }
+    })
+
+    const lessons = await prisma.courseLesson.findMany({
+      where: { moduleId: { in: modules.map(m => m.id) } }
+    })
 
     // Get enrollments for current user
     const enrollments = await prisma.courseEnrollment.findMany({
@@ -102,7 +105,11 @@ export async function GET(request: NextRequest) {
       const progress = progressRecords.find(p => p.courseId === course.id)
       const certificate = certificates.find(c => c.courseId === course.id)
       
-      const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0)
+      // Count modules and lessons for this course
+      const courseModules = modules.filter(m => m.courseId === course.id)
+      const courseLessons = lessons.filter(l => 
+        courseModules.some(m => m.id === l.moduleId)
+      )
 
       return {
         id: course.id,
@@ -112,8 +119,8 @@ export async function GET(request: NextRequest) {
         thumbnail: course.thumbnail,
         duration: course.duration,
         level: course.level,
-        modulesCount: course.modules.length,
-        lessonsCount: totalLessons,
+        modulesCount: courseModules.length,
+        lessonsCount: courseLessons.length,
         isEnrolled: !!enrollment,
         progress: progress?.progress || 0,
         isCompleted: progress?.isCompleted || false,

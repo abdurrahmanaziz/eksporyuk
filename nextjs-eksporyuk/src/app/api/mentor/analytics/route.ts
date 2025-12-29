@@ -112,28 +112,38 @@ export async function GET(request: Request) {
       take: 3,
     })
 
-    // Recent students (last 10 enrollments)
-    const recentStudents = await prisma.courseEnrollment.findMany({
+    // Recent students (last 10 enrollments) - CourseEnrollment has no relations
+    const recentEnrollmentsData = await prisma.courseEnrollment.findMany({
       where: { courseId: { in: courseIds } },
       take: 10,
       orderBy: {
         createdAt: 'desc',
       },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        course: {
-          select: {
-            title: true,
-          },
-        },
-      },
     })
+
+    // Fetch user and course data separately
+    const recentUserIds = [...new Set(recentEnrollmentsData.map(e => e.userId))]
+    const recentCourseIds = [...new Set(recentEnrollmentsData.map(e => e.courseId))]
+    
+    const [recentUsers, recentCourses] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: recentUserIds } },
+        select: { id: true, name: true, email: true, avatar: true }
+      }),
+      prisma.course.findMany({
+        where: { id: { in: recentCourseIds } },
+        select: { id: true, title: true }
+      })
+    ])
+    
+    const recentUserMap = new Map(recentUsers.map(u => [u.id, u]))
+    const recentCourseMap = new Map(recentCourses.map(c => [c.id, c]))
+    
+    const recentStudents = recentEnrollmentsData.map(enrollment => ({
+      ...enrollment,
+      user: recentUserMap.get(enrollment.userId) || { name: 'Unknown', email: '', avatar: null },
+      course: recentCourseMap.get(enrollment.courseId) || { title: 'Unknown Course' }
+    }))
 
     // Enrollment trends (last 30 days)
     const thirtyDaysAgo = new Date()

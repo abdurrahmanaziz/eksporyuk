@@ -40,68 +40,53 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Get all courses by this mentor
+    // Get all courses by this mentor (Course has no relations - query separately)
     const courses = await prisma.course.findMany({
       where: {
         mentorId: session.user.id
-      },
-      include: {
-        _count: {
-          select: {
-            enrollments: true,
-            reviews: true
-          }
-        }
       }
     })
+
+    const courseIds = courses.map(c => c.id)
 
     // Calculate course status counts
     const publishedCourses = courses.filter(c => c.status === 'PUBLISHED').length
     const pendingCourses = courses.filter(c => c.status === 'PENDING').length
     const draftCourses = courses.filter(c => c.status === 'DRAFT').length
 
-    // Calculate total students (unique enrollments across all courses)
+    // Calculate total students (CourseEnrollment has no relations - use courseId in)
     const totalStudents = await prisma.courseEnrollment.count({
       where: {
-        course: {
-          mentorId: session.user.id
-        }
+        courseId: { in: courseIds }
       }
     })
 
-    // Calculate active students (students who accessed course in last 30 days)
+    // Calculate active students (UserCourseProgress has no relations - use courseId in)
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
     const activeStudents = await prisma.userCourseProgress.count({
       where: {
-        course: {
-          mentorId: session.user.id
-        },
+        courseId: { in: courseIds },
         lastAccessedAt: {
           gte: thirtyDaysAgo
         }
       }
     })
 
-    // Calculate total revenue
+    // Calculate total revenue - get enrollments and map prices from courses
     const enrollments = await prisma.courseEnrollment.findMany({
       where: {
-        course: {
-          mentorId: session.user.id
-        }
-      },
-      include: {
-        course: {
-          select: {
-            price: true
-          }
-        }
+        courseId: { in: courseIds }
       }
     })
 
+    // Create course price map
+    const coursePriceMap = new Map(courses.map(c => [c.id, Number(c.price) || 0]))
+    const courseTitleMap = new Map(courses.map(c => [c.id, c.title]))
+
     const totalRevenue = enrollments.reduce((sum, enrollment) => {
-      return sum + Number(enrollment.course.price)
+      return sum + (coursePriceMap.get(enrollment.courseId) || 0)
     }, 0)
 
     // Calculate monthly revenue (current month)
@@ -111,32 +96,21 @@ export async function GET(request: NextRequest) {
 
     const monthlyEnrollments = await prisma.courseEnrollment.findMany({
       where: {
-        course: {
-          mentorId: session.user.id
-        },
+        courseId: { in: courseIds },
         createdAt: {
           gte: startOfMonth
-        }
-      },
-      include: {
-        course: {
-          select: {
-            price: true
-          }
         }
       }
     })
 
     const monthlyRevenue = monthlyEnrollments.reduce((sum, enrollment) => {
-      return sum + Number(enrollment.course.price)
+      return sum + (coursePriceMap.get(enrollment.courseId) || 0)
     }, 0)
 
-    // Calculate average rating
+    // Calculate average rating (CourseReview has no relations - use courseId in)
     const reviews = await prisma.courseReview.findMany({
       where: {
-        course: {
-          mentorId: session.user.id
-        }
+        courseId: { in: courseIds }
       }
     })
 
@@ -147,9 +121,7 @@ export async function GET(request: NextRequest) {
     // Calculate completion rate
     const completedEnrollments = await prisma.courseEnrollment.count({
       where: {
-        course: {
-          mentorId: session.user.id
-        },
+        courseId: { in: courseIds },
         completed: true
       }
     })
@@ -158,30 +130,31 @@ export async function GET(request: NextRequest) {
       ? (completedEnrollments / totalStudents) * 100
       : 0
 
-    // Get recent enrollments
-    const recentEnrollments = await prisma.courseEnrollment.findMany({
+    // Get recent enrollments (without relations - query users separately)
+    const recentEnrollmentsData = await prisma.courseEnrollment.findMany({
       where: {
-        course: {
-          mentorId: session.user.id
-        }
-      },
-      include: {
-        user: {
-          select: {
-            name: true
-          }
-        },
-        course: {
-          select: {
-            title: true
-          }
-        }
+        courseId: { in: courseIds }
       },
       orderBy: {
         createdAt: 'desc'
       },
       take: 5
     })
+
+    // Get user names for recent enrollments
+    const userIds = [...new Set(recentEnrollmentsData.map(e => e.userId))]
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true }
+    })
+    const userNameMap = new Map(users.map(u => [u.id, u.name]))
+
+    const recentEnrollments = recentEnrollmentsData.map(enrollment => ({
+      id: enrollment.id,
+      courseName: courseTitleMap.get(enrollment.courseId) || 'Unknown Course',
+      studentName: userNameMap.get(enrollment.userId) || 'Unknown Student',
+      enrolledAt: enrollment.createdAt.toISOString()
+    }))
 
     return NextResponse.json({
       totalCourses: courses.length,
@@ -195,12 +168,7 @@ export async function GET(request: NextRequest) {
       averageRating,
       totalReviews: reviews.length,
       completionRate,
-      recentEnrollments: recentEnrollments.map(enrollment => ({
-        id: enrollment.id,
-        courseName: enrollment.course.title,
-        studentName: enrollment.user.name,
-        enrolledAt: enrollment.createdAt.toISOString()
-      }))
+      recentEnrollments
     })
 
   } catch (error) {

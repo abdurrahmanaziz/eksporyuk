@@ -64,10 +64,12 @@ export async function POST(
     if (!userProgress) {
       userProgress = await prisma.userCourseProgress.create({
         data: {
+          id: `progress_${Date.now()}_${Math.random().toString(36).substring(7)}`,
           userId: session.user.id,
           courseId: course.id,
           completedLessons: [lessonId],
-          lastAccessedAt: new Date()
+          lastAccessedAt: new Date(),
+          updatedAt: new Date()
         }
       })
     } else {
@@ -80,7 +82,8 @@ export async function POST(
           where: { id: userProgress.id },
           data: {
             completedLessons: completedLessons,
-            lastAccessedAt: new Date()
+            lastAccessedAt: new Date(),
+            updatedAt: new Date()
           }
         })
       }
@@ -124,6 +127,7 @@ export async function POST(
         // Create certificate
         certificate = await prisma.certificate.create({
           data: {
+            id: `cert_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: session.user.id,
             courseId: course.id,
             certificateNumber,

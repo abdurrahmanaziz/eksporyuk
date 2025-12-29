@@ -43,26 +43,35 @@ export async function GET(
       orderBy = { rating: 'desc' }
     }
 
-    // Get reviews
-    const [reviews, total] = await Promise.all([
+    // Get reviews (no relations on CourseReview model)
+    const [reviewsRaw, total] = await Promise.all([
       prisma.courseReview.findMany({
         where,
         orderBy,
         skip,
-        take: limit,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true
-            }
-          }
-        }
+        take: limit
       }),
       prisma.courseReview.count({ where })
     ])
+
+    // Fetch users separately
+    const userIds = [...new Set(reviewsRaw.map(r => r.userId))]
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true
+      }
+    })
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    // Combine reviews with user data
+    const reviews = reviewsRaw.map(review => ({
+      ...review,
+      user: userMap.get(review.userId) || null
+    }))
 
     // Get rating statistics
     const stats = await prisma.courseReview.groupBy({
@@ -186,25 +195,24 @@ export async function POST(
     })
 
     if (existingReview) {
-      // Update existing review
-      const updatedReview = await prisma.courseReview.update({
+      // Update existing review (CourseReview requires manual updatedAt)
+      const updatedReviewData = await prisma.courseReview.update({
         where: { id: existingReview.id },
         data: {
           rating,
           review: review.trim(),
-          isVerified: enrollment.completed
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true
-            }
-          }
+          isVerified: enrollment.completed,
+          updatedAt: new Date()
         }
       })
+
+      // Fetch user data separately
+      const reviewUser = await prisma.user.findUnique({
+        where: { id: updatedReviewData.userId },
+        select: { id: true, name: true, email: true, avatar: true }
+      })
+
+      const updatedReview = { ...updatedReviewData, user: reviewUser }
 
       // Update course rating
       await updateCourseRating(courseId)
@@ -215,27 +223,27 @@ export async function POST(
       })
     }
 
-    // Create new review
-    const newReview = await prisma.courseReview.create({
+    // Create new review (CourseReview requires manual updatedAt)
+    const newReviewData = await prisma.courseReview.create({
       data: {
+        id: `review_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         userId: session.user.id,
         courseId: courseId,
         rating,
         review: review.trim(),
         isVerified: enrollment.completed,
-        isApproved: true // Auto-approve by default
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        }
+        isApproved: true, // Auto-approve by default
+        updatedAt: new Date()
       }
     })
+
+    // Fetch user data separately
+    const newReviewUser = await prisma.user.findUnique({
+      where: { id: newReviewData.userId },
+      select: { id: true, name: true, email: true, avatar: true }
+    })
+
+    const newReview = { ...newReviewData, user: newReviewUser }
 
     // Update course rating
     await updateCourseRating(courseId)

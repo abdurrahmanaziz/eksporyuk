@@ -35,33 +35,53 @@ export async function GET(req: NextRequest) {
     const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-    // Find users with inactive courses (not accessed in 3+ days)
-    const inactiveProgress = await prisma.userCourseProgress.findMany({
+    // Find users with inactive courses (not accessed in 3+ days) - UserCourseProgress has no relations
+    const inactiveProgressData = await prisma.userCourseProgress.findMany({
       where: {
         hasAccess: true,
         isCompleted: false,
         lastAccessedAt: {
           lt: threeDaysAgo
         }
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true
-          }
-        },
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true
-          }
-        }
       }
     })
+
+    // Get unique user and course IDs
+    const userIds = [...new Set(inactiveProgressData.map(p => p.userId))]
+    const courseIds = [...new Set(inactiveProgressData.map(p => p.courseId))]
+
+    // Fetch users and courses separately
+    const [users, courses] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true
+        }
+      }),
+      prisma.course.findMany({
+        where: { id: { in: courseIds } },
+        select: {
+          id: true,
+          title: true,
+          slug: true
+        }
+      })
+    ])
+
+    const userMap = new Map(users.map(u => [u.id, u]))
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+
+    // Build enriched progress data
+    const inactiveProgress = inactiveProgressData
+      .filter(p => userMap.has(p.userId) && courseMap.has(p.courseId))
+      .map(p => ({
+        ...p,
+        user: userMap.get(p.userId)!,
+        course: courseMap.get(p.courseId)!
+      }))
 
     let remindersSent = 0
     let emailsSent = 0

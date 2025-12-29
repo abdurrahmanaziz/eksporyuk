@@ -33,47 +33,45 @@ export async function PUT(
       )
     }
 
-    const review = await prisma.courseReview.findUnique({
-      where: { id: params.id },
-      include: {
-        course: true,
-        user: true
-      }
+    // Get review (no relations)
+    const reviewData = await prisma.courseReview.findUnique({
+      where: { id: params.id }
     })
 
-    if (!review) {
+    if (!reviewData) {
       return NextResponse.json(
         { error: 'Review not found' },
         { status: 404 }
       )
     }
 
+    // Fetch course and user separately
+    const [course, user] = await Promise.all([
+      prisma.course.findUnique({
+        where: { id: reviewData.courseId },
+        select: { id: true, title: true, slug: true }
+      }),
+      prisma.user.findUnique({
+        where: { id: reviewData.userId },
+        select: { id: true, name: true, email: true, avatar: true }
+      })
+    ])
+
+    const review = { ...reviewData, course, user }
+
     // Update review
-    const updatedReview = await prisma.courseReview.update({
+    const updatedReviewData = await prisma.courseReview.update({
       where: { id: params.id },
       data: {
         isApproved: action === 'approve',
         moderatedBy: session.user.id,
         moderatedAt: new Date(),
-        moderationNote: moderationNote || null
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        course: {
-          select: {
-            id: true,
-            title: true
-          }
-        }
+        moderationNote: moderationNote || null,
+        updatedAt: new Date()
       }
     })
+
+    const updatedReview = { ...updatedReviewData, user, course }
 
     // Recalculate course rating
     await updateCourseRating(review.courseId)
@@ -84,8 +82,8 @@ export async function PUT(
         userId: review.userId,
         type: 'SYSTEM',
         title: `Review ${action === 'approve' ? 'Approved' : 'Rejected'}`,
-        message: `Your review for "${review.course.title}" has been ${action === 'approve' ? 'approved' : 'rejected'} by admin.${moderationNote ? ` Note: ${moderationNote}` : ''}`,
-        link: `/courses/${review.course.slug || review.course.id}`
+        message: `Your review for "${course?.title || 'Course'}" has been ${action === 'approve' ? 'approved' : 'rejected'} by admin.${moderationNote ? ` Note: ${moderationNote}` : ''}`,
+        link: `/courses/${course?.slug || course?.id || reviewData.courseId}`
       }
     })
 

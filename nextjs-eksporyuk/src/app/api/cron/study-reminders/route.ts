@@ -38,43 +38,74 @@ export async function GET(request: NextRequest) {
       `🔍 Checking for inactive students (last activity > ${reminderThresholdDays} days)`
     )
 
-    // Find enrollments with no progress update in X days
-    const inactiveEnrollments = await prisma.courseEnrollment.findMany({
+    // Find progress records with no activity in X days (UserCourseProgress has no relations)
+    const inactiveProgress = await prisma.userCourseProgress.findMany({
       where: {
-        status: 'ACTIVE',
-        progress: {
-          OR: [
-            { lastAccessedAt: { lt: thresholdDate } },
-            { lastAccessedAt: null },
-          ],
-        },
-      },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            isPublished: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phoneNumber: true,
-            emailNotifications: true,
-            whatsappNotifications: true,
-          },
-        },
-        progress: {
-          select: {
-            lastAccessedAt: true,
-            progress: true,
-          },
-        },
-      },
+        OR: [
+          { lastAccessedAt: { lt: thresholdDate } },
+          { lastAccessedAt: null },
+        ],
+      }
     })
+
+    // Get unique user and course IDs
+    const userIds = [...new Set(inactiveProgress.map(p => p.userId))]
+    const courseIds = [...new Set(inactiveProgress.map(p => p.courseId))]
+
+    // Fetch users and courses separately
+    const [users, courses, enrollments] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phoneNumber: true,
+          emailNotifications: true,
+          whatsappNotifications: true,
+        }
+      }),
+      prisma.course.findMany({
+        where: { id: { in: courseIds } },
+        select: {
+          id: true,
+          title: true,
+          isPublished: true,
+        }
+      }),
+      prisma.courseEnrollment.findMany({
+        where: {
+          userId: { in: userIds },
+          courseId: { in: courseIds }
+        },
+        select: {
+          userId: true,
+          courseId: true
+        }
+      })
+    ])
+
+    const userMap = new Map(users.map(u => [u.id, u]))
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+    const enrollmentSet = new Set(enrollments.map(e => `${e.userId}_${e.courseId}`))
+
+    // Build inactive enrollments list
+    const inactiveEnrollments = inactiveProgress
+      .filter(p => {
+        const course = courseMap.get(p.courseId)
+        // Only include if user is enrolled and course is published
+        return course?.isPublished && enrollmentSet.has(`${p.userId}_${p.courseId}`)
+      })
+      .map(p => ({
+        userId: p.userId,
+        courseId: p.courseId,
+        user: userMap.get(p.userId)!,
+        course: courseMap.get(p.courseId)!,
+        progress: {
+          lastAccessedAt: p.lastAccessedAt,
+          progress: p.progress
+        }
+      }))
 
     console.log(`📚 Found ${inactiveEnrollments.length} inactive enrollments`)
 

@@ -58,7 +58,8 @@ export async function POST(
         data: {
           helpfulCount: {
             decrement: 1
-          }
+          },
+          updatedAt: new Date()
         }
       })
 
@@ -67,9 +68,10 @@ export async function POST(
         helpful: false
       })
     } else {
-      // Add vote
+      // Add vote (CourseReviewHelpful requires manual id)
       await prisma.courseReviewHelpful.create({
         data: {
+          id: `helpful_${Date.now()}_${Math.random().toString(36).substring(7)}`,
           reviewId: params.reviewId,
           userId: session.user.id
         }
@@ -81,7 +83,8 @@ export async function POST(
         data: {
           helpfulCount: {
             increment: 1
-          }
+          },
+          updatedAt: new Date()
         }
       })
 

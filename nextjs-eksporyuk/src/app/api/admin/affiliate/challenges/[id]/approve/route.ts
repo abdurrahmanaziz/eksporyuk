@@ -35,24 +35,34 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid action. Must be "approve" or "reject"' }, { status: 400 })
     }
 
-    // Get progress with challenge and affiliate data
+    // Get progress - AffiliateChallengeProgress has no relations
     const progress = await prisma.affiliateChallengeProgress.findUnique({
-      where: { id: progressId },
-      include: {
-        challenge: true,
-        affiliate: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true }
-            }
-          }
-        }
-      }
+      where: { id: progressId }
     })
 
     if (!progress) {
       return NextResponse.json({ error: 'Progress not found' }, { status: 404 })
     }
+
+    // Get challenge and affiliate data separately
+    const [challenge, affiliate] = await Promise.all([
+      prisma.affiliateChallenge.findUnique({
+        where: { id: progress.challengeId }
+      }),
+      prisma.affiliate.findUnique({
+        where: { id: progress.affiliateId }
+      })
+    ])
+
+    if (!challenge || !affiliate) {
+      return NextResponse.json({ error: 'Challenge or affiliate not found' }, { status: 404 })
+    }
+
+    // Get user data for affiliate
+    const affiliateUser = await prisma.user.findUnique({
+      where: { id: affiliate.userId },
+      select: { id: true, name: true, email: true }
+    })
 
     if (!progress.completed) {
       return NextResponse.json({ error: 'Challenge not completed' }, { status: 400 })
@@ -76,7 +86,8 @@ export async function POST(
           rewardStatus: 'REJECTED',
           approvedBy: session.user.id,
           approvedAt: new Date(),
-          rejectionReason: rejectionReason.trim()
+          rejectionReason: rejectionReason.trim(),
+          updatedAt: new Date()
         }
       })
 
@@ -88,8 +99,6 @@ export async function POST(
     }
 
     // APPROVE - Process reward
-    const challenge = progress.challenge
-    const affiliate = progress.affiliate
     const rewardValue = Number(challenge.rewardValue)
 
     if (challenge.rewardType === 'BONUS_COMMISSION') {
@@ -143,7 +152,8 @@ export async function POST(
             rewardStatus: 'APPROVED',
             rewardClaimed: true,
             approvedBy: session.user.id,
-            approvedAt: new Date()
+            approvedAt: new Date(),
+            updatedAt: new Date()
           }
         })
       })
@@ -164,7 +174,8 @@ export async function POST(
             rewardStatus: 'APPROVED',
             rewardClaimed: true,
             approvedBy: session.user.id,
-            approvedAt: new Date()
+            approvedAt: new Date(),
+            updatedAt: new Date()
           }
         })
       })
@@ -176,7 +187,8 @@ export async function POST(
           rewardStatus: 'APPROVED',
           rewardClaimed: true,
           approvedBy: session.user.id,
-          approvedAt: new Date()
+          approvedAt: new Date(),
+          updatedAt: new Date()
         }
       })
     }
@@ -187,7 +199,7 @@ export async function POST(
       status: 'APPROVED',
       rewardType: challenge.rewardType,
       rewardValue,
-      affiliateName: affiliate.user.name
+      affiliateName: affiliateUser?.name || 'Unknown'
     })
   } catch (error) {
     console.error('Approve/reject reward error:', error)

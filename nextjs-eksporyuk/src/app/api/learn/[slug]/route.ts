@@ -107,6 +107,9 @@ export async function GET(
     // PRD: Check roleAccess - validasi akses berdasarkan role
     const courseRoleAccess = courseWithRelations.roleAccess || 'PUBLIC'
     
+    // Track access for affiliate training auto-enroll
+    let affiliateAutoEnrolled = false
+    
     // AFFILIATE course - hanya affiliate yang bisa akses
     if (courseRoleAccess === 'AFFILIATE' || courseWithRelations.affiliateOnly || courseWithRelations.isAffiliateTraining || courseWithRelations.isAffiliateMaterial) {
       if (session.user.role !== 'ADMIN' && session.user.role !== 'AFFILIATE' && session.user.role !== 'MENTOR') {
@@ -136,7 +139,7 @@ export async function GET(
             }
           })
           console.log(`✅ AUTO-ENROLLED AFFILIATE to training: ${session.user.email}`)
-          hasAccess = true
+          affiliateAutoEnrolled = true
         }
       }
     }
@@ -189,9 +192,11 @@ export async function GET(
       if (!existingEnrollment) {
         await prisma.courseEnrollment.create({
           data: {
+            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: session.user.id,
             courseId: courseWithRelations.id,
-            progress: 0
+            progress: 0,
+            updatedAt: new Date()
           }
         })
         console.log(`✅ Auto-enrolled ${session.user.role}: ${session.user.email}`)
@@ -255,10 +260,11 @@ export async function GET(
         if (!existingEnrollment) {
           await prisma.courseEnrollment.create({
             data: {
+              id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
               userId: session.user.id,
               courseId: courseWithRelations.id,
-              enrolledAt: new Date(),
-              progress: 0
+              progress: 0,
+              updatedAt: new Date()
             }
           })
         }
@@ -291,10 +297,11 @@ export async function GET(
         if (!existingEnrollment) {
           await prisma.courseEnrollment.create({
             data: {
+              id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
               userId: session.user.id,
               courseId: courseWithRelations.id,
-              enrolledAt: new Date(),
-              progress: 0
+              progress: 0,
+              updatedAt: new Date()
             }
           })
         }

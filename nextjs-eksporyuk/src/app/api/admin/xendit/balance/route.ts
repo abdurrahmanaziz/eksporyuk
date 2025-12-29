@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
         data: null,
         message: 'Xendit tidak dikonfigurasi. Silakan konfigurasi di halaman Integrasi atau tambahkan XENDIT_SECRET_KEY ke environment variables.',
         isConfigurationError: true
-      }, { status: 400 })
+      }, { status: 200 }) // Return 200 to prevent UI error, configuration error handled in body
     }
     
     try {

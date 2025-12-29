@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { sendChallengeJoinedEmail } from '@/lib/challenge-email-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -53,58 +54,91 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Get all challenges
+    // Get all challenges - AffiliateChallenge has no relations, so query separately
     const challenges = await prisma.affiliateChallenge.findMany({
       where: whereCondition,
-      include: {
-        membership: {
-          select: { id: true, name: true, slug: true, checkoutSlug: true }
-        },
-        product: {
-          select: { id: true, name: true, slug: true, checkoutSlug: true }
-        },
-        course: {
-          select: { id: true, title: true, slug: true, checkoutSlug: true }
-        },
-        progress: {
-          where: { affiliateId: affiliateProfile.id },
-          take: 1
-        },
-        _count: {
-          select: {
-            progress: true
-          }
-        }
-      },
       orderBy: { startDate: 'desc' },
       ...(limit && { take: limit })
     })
 
+    // Get related data separately
+    const membershipIds = [...new Set(challenges.filter(c => c.membershipId).map(c => c.membershipId!))]
+    const productIds = [...new Set(challenges.filter(c => c.productId).map(c => c.productId!))]
+    const courseIds = [...new Set(challenges.filter(c => c.courseId).map(c => c.courseId!))]
+    const challengeIds = challenges.map(c => c.id)
+
+    const [memberships, products, courses, userProgressList, progressCounts] = await Promise.all([
+      membershipIds.length > 0 ? prisma.membership.findMany({
+        where: { id: { in: membershipIds } },
+        select: { id: true, name: true, slug: true, checkoutSlug: true }
+      }) : [],
+      productIds.length > 0 ? prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true, name: true, slug: true, checkoutSlug: true }
+      }) : [],
+      courseIds.length > 0 ? prisma.course.findMany({
+        where: { id: { in: courseIds } },
+        select: { id: true, title: true, slug: true, checkoutSlug: true }
+      }) : [],
+      prisma.affiliateChallengeProgress.findMany({
+        where: { 
+          challengeId: { in: challengeIds },
+          affiliateId: affiliateProfile.id
+        }
+      }),
+      prisma.affiliateChallengeProgress.groupBy({
+        by: ['challengeId'],
+        where: { challengeId: { in: challengeIds } },
+        _count: true
+      })
+    ])
+
+    const membershipMap = new Map(memberships.map(m => [m.id, m]))
+    const productMap = new Map(products.map(p => [p.id, p]))
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+    const userProgressMap = new Map(userProgressList.map(p => [p.challengeId, p]))
+    const progressCountMap = new Map(progressCounts.map(p => [p.challengeId, p._count]))
+
     // Get leaderboard for each challenge (top 10)
     const challengesWithLeaderboard = await Promise.all(
       challenges.map(async (challenge) => {
-        const leaderboard = await prisma.affiliateChallengeProgress.findMany({
+        // Get leaderboard progress entries
+        const leaderboardProgress = await prisma.affiliateChallengeProgress.findMany({
           where: { challengeId: challenge.id },
           orderBy: { currentValue: 'desc' },
-          take: 10,
-          include: {
-            affiliate: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    avatar: true
-                  }
-                }
-              }
-            }
+          take: 10
+        })
+
+        // Get affiliate profiles for leaderboard
+        const affiliateIds = leaderboardProgress.map(p => p.affiliateId)
+        const affiliates = affiliateIds.length > 0 ? await prisma.affiliateProfile.findMany({
+          where: { id: { in: affiliateIds } }
+        }) : []
+        const userIds = affiliates.map(a => a.userId)
+        const users = userIds.length > 0 ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, name: true, avatar: true }
+        }) : []
+        
+        const affiliateMap = new Map(affiliates.map(a => [a.id, a]))
+        const userMap = new Map(users.map(u => [u.id, u]))
+
+        const leaderboard = leaderboardProgress.map((entry, idx) => {
+          const affiliate = affiliateMap.get(entry.affiliateId)
+          const user = affiliate ? userMap.get(affiliate.userId) : null
+          return {
+            rank: idx + 1,
+            affiliateId: entry.affiliateId,
+            name: user?.name || 'Unknown',
+            avatar: user?.avatar || null,
+            currentValue: Number(entry.currentValue),
+            completed: entry.completed
           }
         })
 
         // Get user's rank
         let userRank = null
-        const userProgress = (challenge as any).progress[0]
+        const userProgress = userProgressMap.get(challenge.id)
         if (userProgress) {
           const higherRanked = await prisma.affiliateChallengeProgress.count({
             where: {
@@ -114,6 +148,11 @@ export async function GET(req: NextRequest) {
           })
           userRank = higherRanked + 1
         }
+
+        // Get related membership/product/course
+        const membership = challenge.membershipId ? membershipMap.get(challenge.membershipId) : null
+        const product = challenge.productId ? productMap.get(challenge.productId) : null
+        const course = challenge.courseId ? courseMap.get(challenge.courseId) : null
 
         // Get affiliate link for this product/membership/course
         let affiliateLink = null
@@ -132,8 +171,8 @@ export async function GET(req: NextRequest) {
           linkTarget = {
             type: 'membership',
             id: challenge.membershipId,
-            name: (challenge as any).membership?.name,
-            slug: (challenge as any).membership?.checkoutSlug || (challenge as any).membership?.slug
+            name: membership?.name,
+            slug: membership?.checkoutSlug || membership?.slug
           }
         } else if (challenge.productId) {
           const existingLink = await prisma.affiliateLink.findFirst({
@@ -148,8 +187,8 @@ export async function GET(req: NextRequest) {
           linkTarget = {
             type: 'product',
             id: challenge.productId,
-            name: (challenge as any).product?.name,
-            slug: (challenge as any).product?.checkoutSlug || (challenge as any).product?.slug
+            name: product?.name,
+            slug: product?.checkoutSlug || product?.slug
           }
         } else if (challenge.courseId) {
           const existingLink = await prisma.affiliateLink.findFirst({
@@ -164,13 +203,16 @@ export async function GET(req: NextRequest) {
           linkTarget = {
             type: 'course',
             id: challenge.courseId,
-            name: (challenge as any).course?.title,
-            slug: (challenge as any).course?.checkoutSlug || (challenge as any).course?.slug
+            name: course?.title,
+            slug: course?.checkoutSlug || course?.slug
           }
         }
 
         return {
           ...challenge,
+          membership,
+          product,
+          course,
           hasJoined: !!userProgress, // Explicit hasJoined flag
           userProgress: userProgress ? {
             currentValue: Number(userProgress.currentValue),
@@ -181,15 +223,8 @@ export async function GET(req: NextRequest) {
           userRank,
           affiliateLink,
           linkTarget,
-          leaderboard: leaderboard.map((entry, idx) => ({
-            rank: idx + 1,
-            affiliateId: entry.affiliateId,
-            name: entry.affiliate.user.name,
-            avatar: entry.affiliate.user.avatar,
-            currentValue: Number(entry.currentValue),
-            completed: entry.completed
-          })),
-          participantsCount: (challenge as any)._count.progress,
+          leaderboard,
+          participantsCount: progressCountMap.get(challenge.id) || 0,
           status: challenge.startDate > now ? 'upcoming' : challenge.endDate < now ? 'ended' : 'active',
           daysRemaining: Math.ceil((challenge.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
         }
@@ -266,6 +301,34 @@ export async function POST(req: NextRequest) {
         currentValue: 0
       }
     })
+
+    // Send challenge joined email in background (don't wait for it)
+    try {
+      const user = await prisma.user.findUnique({ where: { id: session.user.id } })
+      const daysRemaining = Math.ceil((challenge.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      
+      if (user?.email) {
+        sendChallengeJoinedEmail({
+          email: user.email,
+          name: affiliateProfile.displayName || user.name || 'Affiliate',
+          challengeName: challenge.title,
+          challengeDescription: challenge.description || '',
+          targetValue: Number(challenge.targetValue),
+          targetType: challenge.targetType.replace(/_/g, ' '),
+          rewardValue: Number(challenge.rewardValue),
+          rewardType: challenge.rewardType.replace(/_/g, ' '),
+          currentValue: 0,
+          startDate: challenge.startDate.toLocaleDateString('id-ID'),
+          endDate: challenge.endDate.toLocaleDateString('id-ID'),
+          daysRemaining
+        }).catch(err => {
+          console.error('Failed to send challenge joined email:', err)
+        })
+      }
+    } catch (emailErr) {
+      console.error('Error sending challenge joined email:', emailErr)
+      // Don't fail the request if email fails
+    }
 
     return NextResponse.json({ progress }, { status: 201 })
   } catch (error) {

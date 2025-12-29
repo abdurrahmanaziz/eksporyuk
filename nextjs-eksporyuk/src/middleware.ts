@@ -67,6 +67,14 @@ const authMiddleware = withAuth(
 
     // Redirect /dashboard based on role - with multi-role support
     if (pathname === '/dashboard') {
+      // Check if user explicitly selected this dashboard (bypass selection)
+      const selectedDashboard = request.nextUrl.searchParams.get('selected')
+      
+      // If user explicitly selected member dashboard, let them through
+      if (selectedDashboard === 'member') {
+        return NextResponse.next()
+      }
+      
       // Check if user needs dashboard selection
       const needsSelection = checkIfUserNeedsDashboardSelection(role, token)
       

@@ -29,105 +29,130 @@ export async function GET(
 
     const { id } = await params
 
+    // AffiliateChallenge has no relations - query separately
     const challenge = await prisma.affiliateChallenge.findUnique({
-      where: { id },
-      include: {
-        membership: {
-          select: { id: true, name: true, slug: true }
-        },
-        product: {
-          select: { id: true, name: true, slug: true }
-        },
-        course: {
-          select: { id: true, title: true, slug: true }
-        },
-        progress: {
-          orderBy: { currentValue: 'desc' },
-          include: {
-            affiliate: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    avatar: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      where: { id }
     })
 
     if (!challenge) {
       return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
     }
 
+    // Get related data separately
+    const [membership, product, course, progressData] = await Promise.all([
+      challenge.membershipId 
+        ? prisma.membership.findUnique({
+            where: { id: challenge.membershipId },
+            select: { id: true, name: true, slug: true }
+          })
+        : null,
+      challenge.productId
+        ? prisma.product.findUnique({
+            where: { id: challenge.productId },
+            select: { id: true, name: true, slug: true }
+          })
+        : null,
+      challenge.courseId
+        ? prisma.course.findUnique({
+            where: { id: challenge.courseId },
+            select: { id: true, title: true, slug: true }
+          })
+        : null,
+      // AffiliateChallengeProgress has no relations - query separately  
+      prisma.affiliateChallengeProgress.findMany({
+        where: { challengeId: id },
+        orderBy: { currentValue: 'desc' }
+      })
+    ])
+
+    // Get affiliate data for progress
+    const affiliateIds = [...new Set(progressData.map(p => p.affiliateId))]
+    const affiliates = affiliateIds.length > 0 
+      ? await prisma.affiliate.findMany({
+          where: { id: { in: affiliateIds } }
+        })
+      : []
+    const affiliateMap = new Map(affiliates.map(a => [a.id, a]))
+
+    // Get user data for affiliates
+    const userIds = [...new Set(affiliates.map(a => a.userId))]
+    const users = userIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, name: true, email: true, avatar: true }
+        })
+      : []
+    const userMap = new Map(users.map(u => [u.id, u]))
+
     // Calculate stats
-    const completedCount = challenge.progress.filter(p => p.completed).length
-    const claimedCount = challenge.progress.filter(p => p.rewardClaimed).length
-    const pendingCount = challenge.progress.filter(p => p.rewardStatus === 'PENDING').length
-    const approvedCount = challenge.progress.filter(p => p.rewardStatus === 'APPROVED').length
-    const rejectedCount = challenge.progress.filter(p => p.rewardStatus === 'REJECTED').length
-    const totalProgressValue = challenge.progress.reduce(
+    const completedCount = progressData.filter(p => p.completed).length
+    const claimedCount = progressData.filter(p => p.rewardClaimed).length
+    const pendingCount = progressData.filter(p => p.rewardStatus === 'PENDING').length
+    const approvedCount = progressData.filter(p => p.rewardStatus === 'APPROVED').length
+    const rejectedCount = progressData.filter(p => p.rewardStatus === 'REJECTED').length
+    const totalProgressValue = progressData.reduce(
       (sum, p) => sum + Number(p.currentValue),
       0
     )
 
     // Format participants with progress
-    const participants = challenge.progress.map((p, idx) => ({
-      rank: idx + 1,
-      affiliateId: p.affiliateId,
-      userId: p.affiliate.user.id,
-      name: p.affiliate.user.name,
-      email: p.affiliate.user.email,
-      avatar: p.affiliate.user.avatar,
-      tier: p.affiliate.tier,
-      currentValue: Number(p.currentValue),
-      progress: Number(challenge.targetValue) > 0 
-        ? Math.min((Number(p.currentValue) / Number(challenge.targetValue)) * 100, 100)
-        : 0,
-      completed: p.completed,
-      completedAt: p.completedAt,
-      rewardClaimed: p.rewardClaimed,
-      claimedAt: p.claimedAt,
-      rewardStatus: p.rewardStatus,
-      approvedBy: p.approvedBy,
-      approvedAt: p.approvedAt,
-      rejectionReason: p.rejectionReason,
-      joinedAt: p.createdAt
-    }))
+    const participants = progressData.map((p, idx) => {
+      const affiliate = affiliateMap.get(p.affiliateId)
+      const affiliateUser = affiliate ? userMap.get(affiliate.userId) : null
+      
+      return {
+        rank: idx + 1,
+        affiliateId: p.affiliateId,
+        userId: affiliateUser?.id || '',
+        name: affiliateUser?.name || 'Unknown',
+        email: affiliateUser?.email || '',
+        avatar: affiliateUser?.avatar || null,
+        tier: affiliate?.tier || 'BRONZE',
+        currentValue: Number(p.currentValue),
+        progress: Number(challenge.targetValue) > 0 
+          ? Math.min((Number(p.currentValue) / Number(challenge.targetValue)) * 100, 100)
+          : 0,
+        completed: p.completed,
+        completedAt: p.completedAt,
+        rewardClaimed: p.rewardClaimed,
+        claimedAt: p.claimedAt,
+        rewardStatus: p.rewardStatus,
+        approvedBy: p.approvedBy,
+        approvedAt: p.approvedAt,
+        rejectionReason: p.rejectionReason,
+        joinedAt: p.createdAt
+      }
+    })
 
     const now = new Date()
     const isOngoing = challenge.isActive && 
       challenge.startDate <= now && 
       challenge.endDate >= now
     const isUpcoming = challenge.startDate > now
-    const hasEnded = challenge.endDate < now
 
     return NextResponse.json({
       challenge: {
         ...challenge,
+        membership,
+        product,
+        course,
         targetValue: Number(challenge.targetValue),
         rewardValue: Number(challenge.rewardValue),
-        status: isOngoing ? 'active' : isUpcoming ? 'upcoming' : 'ended',
-        progress: undefined // Remove raw progress from challenge object
+        status: isOngoing ? 'active' : isUpcoming ? 'upcoming' : 'ended'
       },
       stats: {
-        participantsCount: challenge.progress.length,
+        participantsCount: progressData.length,
         completedCount,
         claimedCount,
         pendingCount,
         approvedCount,
         rejectedCount,
         totalProgressValue,
-        averageProgress: challenge.progress.length > 0 
-          ? totalProgressValue / challenge.progress.length 
+        averageProgress: progressData.length > 0 
+          ? totalProgressValue / progressData.length 
           : 0,
-        completionRate: challenge.progress.length > 0 
-          ? ((completedCount / challenge.progress.length) * 100).toFixed(1)
+        completionRate: progressData.length > 0 
+          ? ((completedCount / progressData.length) * 100).toFixed(1)
           : '0.0'
       },
       participants
@@ -164,16 +189,19 @@ export async function PUT(
     const { id } = await params
     const body = await req.json()
 
+    // AffiliateChallenge has no relations - query separately
     const challenge = await prisma.affiliateChallenge.findUnique({
-      where: { id },
-      include: {
-        _count: { select: { progress: true } }
-      }
+      where: { id }
     })
 
     if (!challenge) {
       return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
     }
+
+    // Count progress records separately
+    const progressCount = await prisma.affiliateChallengeProgress.count({
+      where: { challengeId: id }
+    })
 
     // Prepare update data
     const updateData: any = {}
@@ -188,7 +216,7 @@ export async function PUT(
     if (body.courseId !== undefined) updateData.courseId = body.courseId || null
 
     // Only allow updating target/reward if no participants yet
-    if (challenge._count.progress === 0) {
+    if (progressCount === 0) {
       if (body.targetType !== undefined) updateData.targetType = body.targetType
       if (body.targetValue !== undefined) updateData.targetValue = parseFloat(body.targetValue)
       if (body.rewardType !== undefined) updateData.rewardType = body.rewardType
@@ -216,6 +244,9 @@ export async function PUT(
         )
       }
     }
+
+    // AffiliateChallenge requires manual updatedAt
+    updateData.updatedAt = new Date()
 
     const updatedChallenge = await prisma.affiliateChallenge.update({
       where: { id },
@@ -261,21 +292,25 @@ export async function DELETE(
 
     const { id } = await params
 
+    // AffiliateChallenge has no relations - query separately
     const challenge = await prisma.affiliateChallenge.findUnique({
-      where: { id },
-      include: {
-        progress: {
-          where: { completed: true }
-        }
-      }
+      where: { id }
     })
 
     if (!challenge) {
       return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
     }
 
+    // Check for completed participants separately
+    const completedProgress = await prisma.affiliateChallengeProgress.findMany({
+      where: { 
+        challengeId: id,
+        completed: true 
+      }
+    })
+
     // Prevent deletion if there are completed participants
-    if (challenge.progress.length > 0) {
+    if (completedProgress.length > 0) {
       return NextResponse.json(
         { error: 'Cannot delete challenge with completed participants. Deactivate it instead.' },
         { status: 400 }

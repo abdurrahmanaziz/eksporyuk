@@ -136,22 +136,22 @@ export async function POST(
       })
 
       if (groupCourses.length > 0) {
-        const enrollmentsToCreate = groupCourses.map((course) => ({
-          userId: userId,
-          courseId: course.id,
-          status: 'ACTIVE' as const,
-        }))
-
-        for (const enrollment of enrollmentsToCreate) {
+        for (const course of groupCourses) {
           const existing = await prisma.courseEnrollment.findFirst({
             where: {
-              userId: enrollment.userId,
-              courseId: enrollment.courseId,
+              userId: userId,
+              courseId: course.id,
             },
           })
           if (!existing) {
             await prisma.courseEnrollment.create({
-              data: enrollment,
+              data: {
+                id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+                userId: userId,
+                courseId: course.id,
+                status: 'ACTIVE',
+                updatedAt: new Date(),
+              },
             })
           }
         }
@@ -245,22 +245,22 @@ export async function POST(
     })
 
     if (groupCourses.length > 0) {
-      const enrollmentsToCreate = groupCourses.map((course) => ({
-        userId: session.user.id,
-        courseId: course.id,
-        status: 'ACTIVE' as const,
-      }))
-
-      for (const enrollment of enrollmentsToCreate) {
+      for (const course of groupCourses) {
         const existing = await prisma.courseEnrollment.findFirst({
           where: {
-            userId: enrollment.userId,
-            courseId: enrollment.courseId,
+            userId: session.user.id,
+            courseId: course.id,
           },
         })
         if (!existing) {
           await prisma.courseEnrollment.create({
-            data: enrollment,
+            data: {
+              id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+              userId: session.user.id,
+              courseId: course.id,
+              status: 'ACTIVE',
+              updatedAt: new Date(),
+            },
           })
         }
       }

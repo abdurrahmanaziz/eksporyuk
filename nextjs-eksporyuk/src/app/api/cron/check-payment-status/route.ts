@@ -479,10 +479,12 @@ async function activatePurchase(transaction: any) {
       if (!existingEnrollment) {
         await prisma.courseEnrollment.create({
           data: {
+            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId: transaction.userId,
             courseId: transaction.courseId,
             progress: 0,
             transactionId: transaction.id,
+            updatedAt: new Date(),
           },
         })
         console.log('[CRON] ✅ Course enrollment created')
