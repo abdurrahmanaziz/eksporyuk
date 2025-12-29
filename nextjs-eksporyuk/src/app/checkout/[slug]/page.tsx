@@ -666,9 +666,10 @@ export default function CheckoutPage() {
       if (res.ok && data.paymentUrl) {
         console.log('[DEBUG] ✅ Checkout SUCCESS! Redirecting to:', data.paymentUrl)
         toast.success('Mengarahkan ke halaman pembayaran...')
-        // Use router.push for Next.js navigation instead of window.location.href
+        // Use window.location.href for external URL redirect (Xendit checkout)
+        // router.push only works for internal Next.js routes
         setTimeout(() => {
-          router.push(data.paymentUrl)
+          window.location.href = data.paymentUrl
         }, 500)
       } else {
         console.error('[DEBUG] ❌ Checkout failed - No paymentUrl:', data)
@@ -678,12 +679,8 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      
-      // BYPASS: Tetap redirect ke payment page walaupun error
-      const tempTransactionId = `TEMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      const paymentUrl = `/payment/va/${tempTransactionId}`
-      console.log('[DEBUG] BYPASS redirect:', paymentUrl)
-      window.location.href = paymentUrl
+      toast.error('Terjadi kesalahan saat memproses pembayaran')
+      setProcessing(false)
     }
   }
 

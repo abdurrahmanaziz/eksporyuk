@@ -282,11 +282,41 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // === XENDIT PAYMENT INTEGRATION ===
-    // Always use Invoice for redirect to Xendit checkout page
+    // === PAYMENT INTEGRATION ===
     let paymentUrl = ''
     let xenditData: any = null
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://eksporyuk.com'
 
+    // === MANUAL PAYMENT - Skip Xendit, redirect to manual payment page ===
+    if (paymentMethod === 'manual') {
+      console.log('[Simple Checkout] Manual payment selected - skipping Xendit')
+      
+      // Update transaction for manual payment
+      await prisma.transaction.update({
+        where: { id: transaction.id },
+        data: {
+          paymentProvider: 'MANUAL',
+          paymentMethod: 'MANUAL_TRANSFER',
+          paymentUrl: `${appUrl}/payment/manual/${transaction.id}`,
+          metadata: {
+            ...(transaction.metadata as any),
+            paymentType: 'manual',
+            manualBankCode: paymentChannel,
+          }
+        }
+      })
+
+      return NextResponse.json({
+        success: true,
+        transactionId: transaction.id,
+        paymentUrl: `${appUrl}/payment/manual/${transaction.id}`,
+        amount: amountNum,
+        invoiceNumber: invoiceNumber,
+        paymentType: 'manual'
+      })
+    }
+
+    // === XENDIT PAYMENT - Create Invoice for redirect to Xendit checkout ===
     try {
       console.log('[Simple Checkout] Creating Xendit Invoice for redirect...')
       
