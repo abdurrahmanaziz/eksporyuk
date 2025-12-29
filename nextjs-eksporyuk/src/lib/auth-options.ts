@@ -41,6 +41,7 @@ const providers: any[] = [
             suspendReason: true,
             isActive: true,
             affiliateMenuEnabled: true,
+            preferredDashboard: true,
           }
         })
         
@@ -107,6 +108,7 @@ const providers: any[] = [
           emailVerified: user.emailVerified,
           affiliateMenuEnabled: user.affiliateMenuEnabled,
           hasAffiliateProfile: !!affiliateProfile && affiliateProfile.isActive,
+          preferredDashboard: user.preferredDashboard,
         }
       } catch (error: any) {
         console.error('[AUTH] Authorization error:', error.message)
@@ -380,6 +382,7 @@ export const authOptions: NextAuthOptions = {
         token.emailVerified = user.emailVerified ? true : false
         token.affiliateMenuEnabled = (user as any).affiliateMenuEnabled || false
         token.hasAffiliateProfile = (user as any).hasAffiliateProfile || false
+        token.preferredDashboard = (user as any).preferredDashboard || null
       }
       
       // For Google OAuth, always fetch fresh user data from database
@@ -400,6 +403,7 @@ export const authOptions: NextAuthOptions = {
               memberCode: true,
               // isAuthorizedSupplierReviewer: true,  // Field not in current DB schema
               affiliateMenuEnabled: true,
+              preferredDashboard: true,
             }
           })
           
@@ -432,6 +436,7 @@ export const authOptions: NextAuthOptions = {
             // token.isAuthorizedSupplierReviewer = dbUser.isAuthorizedSupplierReviewer  // Field not in current DB schema
             token.affiliateMenuEnabled = dbUser.affiliateMenuEnabled
             token.hasAffiliateProfile = !!dbAffiliateProfile && dbAffiliateProfile.isActive
+            token.preferredDashboard = dbUser.preferredDashboard || null
           } else {
             console.error(`[AUTH ${timestamp}] JWT - User not found in database for email:`, token.email)
           }
@@ -475,6 +480,7 @@ export const authOptions: NextAuthOptions = {
         // session.user.isAuthorizedSupplierReviewer = token.isAuthorizedSupplierReviewer as boolean || false  // Field not in current DB schema
         session.user.affiliateMenuEnabled = token.affiliateMenuEnabled as boolean || false
         session.user.hasAffiliateProfile = token.hasAffiliateProfile as boolean || false
+        session.user.preferredDashboard = token.preferredDashboard as string || null
         
         console.log(`[AUTH ${timestamp}] SESSION - Set session user:`, {
           id: session.user.id,

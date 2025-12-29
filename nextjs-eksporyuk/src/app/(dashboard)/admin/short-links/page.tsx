@@ -178,6 +178,60 @@ export default function AdminShortLinkDomainsPage() {
     }
   }
 
+  const verifyDNS = async (domain: ShortLinkDomain) => {
+    try {
+      const loadingToast = toast.loading('Checking DNS record...')
+      
+      const res = await fetch(`/api/admin/short-link-domains/${domain.id}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: false })
+      })
+      
+      const data = await res.json()
+      toast.dismiss(loadingToast)
+      
+      if (res.ok && data.verified) {
+        await fetchDomains()
+        toast.success('✅ DNS verified! Domain is now verified.')
+      } else if (res.ok) {
+        // DNS check might have failed, show details
+        toast.error(`❌ DNS verification failed: ${data.message}`)
+      } else {
+        toast.error(data.message || 'DNS verification failed')
+      }
+    } catch (error) {
+      console.error('Error verifying DNS:', error)
+      toast.error('Failed to verify DNS')
+    }
+  }
+
+  const forceVerifyDNS = async (domain: ShortLinkDomain) => {
+    if (!confirm('Force verify this domain? Make sure you\'ve set up the DNS record in Cloudflare first.')) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/admin/short-link-domains/${domain.id}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: true })
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok) {
+        await fetchDomains()
+        toast.success('✅ Domain marked as verified!')
+      } else {
+        toast.error(data.message || 'Failed to verify domain')
+      }
+    } catch (error) {
+      console.error('Error force verifying DNS:', error)
+      toast.error('Failed to verify domain')
+    }
+  }
+
   if (session?.user?.role !== 'ADMIN') {
     return (
       <ResponsivePageWrapper>
@@ -372,17 +426,33 @@ export default function AdminShortLinkDomainsPage() {
                     {domain.isActive ? 'Active' : 'Inactive'}
                   </button>
                   
-                  <button
-                    onClick={() => toggleStatus(domain, 'isVerified')}
-                    className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                      domain.isVerified 
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                        : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                    }`}
-                  >
-                    <Shield className="w-4 h-4" />
-                    {domain.isVerified ? 'Verified' : 'Verify'}
-                  </button>
+                  {!domain.isVerified ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => verifyDNS(domain)}
+                        className="px-4 py-2 rounded-lg flex items-center gap-2 bg-blue-100 text-blue-700 hover:bg-blue-200 flex-1"
+                        title="Automatically check if DNS is set up correctly"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Verify DNS
+                      </button>
+                      <button
+                        onClick={() => forceVerifyDNS(domain)}
+                        className="px-3 py-2 rounded-lg text-xs bg-blue-50 text-blue-700 hover:bg-blue-100"
+                        title="Manually mark as verified if DNS is already configured"
+                      >
+                        Force
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      disabled
+                      className="px-4 py-2 rounded-lg flex items-center gap-2 bg-blue-100 text-blue-700"
+                    >
+                      <Shield className="w-4 h-4" />
+                      ✓ Verified
+                    </button>
+                  )}
                   
                   <button
                     onClick={() => toggleStatus(domain, 'isDefault')}

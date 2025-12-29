@@ -64,6 +64,7 @@ const authMiddleware = withAuth(
     }
 
     const role = token.role as string
+    const preferredDashboard = token.preferredDashboard as string | null
 
     // Redirect /dashboard based on role - with multi-role support
     if (pathname === '/dashboard') {
@@ -79,6 +80,22 @@ const authMiddleware = withAuth(
       const needsSelection = checkIfUserNeedsDashboardSelection(role, token)
       
       if (needsSelection) {
+        // If user has a saved preference, auto-redirect to that dashboard
+        if (preferredDashboard) {
+          console.log('[MIDDLEWARE] User has saved preference:', preferredDashboard)
+          switch (preferredDashboard) {
+            case 'member':
+              return NextResponse.next() // Stay on /dashboard
+            case 'affiliate':
+              return NextResponse.redirect(new URL('/affiliate/dashboard', request.url))
+            case 'mentor':
+              return NextResponse.redirect(new URL('/mentor/dashboard', request.url))
+            case 'admin':
+              return NextResponse.redirect(new URL('/admin', request.url))
+          }
+        }
+        
+        // No saved preference - show selection page
         return NextResponse.redirect(new URL('/dashboard-selector', request.url))
       }
       

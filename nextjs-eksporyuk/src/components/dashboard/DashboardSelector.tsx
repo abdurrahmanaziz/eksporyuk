@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { User, DollarSign, GraduationCap, Shield, BarChart3, HelpCircle, UserCircle, LogOut } from 'lucide-react'
@@ -16,64 +16,126 @@ interface DashboardOption {
   bgColor: string
 }
 
+interface ApiDashboardOption {
+  id: string
+  title: string
+  description: string
+  href: string
+  icon: string
+  color: string
+  bgColor: string
+}
+
+// Map icon string to component
+const iconMap: Record<string, React.ComponentType<any>> = {
+  User,
+  DollarSign,
+  GraduationCap,
+  Shield,
+  BarChart3
+}
+
 export default function DashboardSelector() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
+  const [dashboardOptions, setDashboardOptions] = useState<DashboardOption[]>([])
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true)
+  const [allRoles, setAllRoles] = useState<string[]>([])
   
   const userRole = session?.user?.role || ''
   
-  // Define available dashboards based on user roles - use useMemo to avoid recalculating
-  // NOTE: Admin should NOT reach this page - they go straight to /admin via middleware
-  const dashboardOptions = useMemo((): DashboardOption[] => {
-    if (!userRole) return []
+  // Fetch dashboard options from API based on ALL user roles in database
+  useEffect(() => {
+    const fetchDashboardOptions = async () => {
+      if (!session?.user?.id) return
+      
+      try {
+        const response = await fetch('/api/user/dashboard-options')
+        const data = await response.json()
+        
+        if (data.success && data.dashboardOptions) {
+          // Convert API options to component format with icon components
+          const options: DashboardOption[] = data.dashboardOptions.map((opt: ApiDashboardOption) => ({
+            ...opt,
+            icon: iconMap[opt.icon] || User
+          }))
+          
+          setDashboardOptions(options)
+          setAllRoles(data.allRoles || [])
+          
+          // If user has preferred dashboard and it's available, redirect
+          if (data.preferredDashboard) {
+            const preferred = options.find((o: DashboardOption) => o.id === data.preferredDashboard)
+            if (preferred) {
+              router.push(preferred.href)
+              return
+            }
+          }
+          
+          // Auto-redirect if only one option
+          if (options.length === 1) {
+            setTimeout(() => {
+              router.push(options[0].href)
+            }, 500)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard options:', error)
+        // Fallback to primary role only
+        setDashboardOptions(getFallbackOptions(userRole))
+      } finally {
+        setIsLoadingOptions(false)
+      }
+    }
     
-    // Admin should not see this selector - redirect via useEffect below
-    if (userRole === 'ADMIN') return []
-    
+    if (session?.user?.id) {
+      fetchDashboardOptions()
+    }
+  }, [session?.user?.id, userRole, router])
+  
+  // Fallback function in case API fails
+  const getFallbackOptions = (role: string): DashboardOption[] => {
     const options: DashboardOption[] = []
     
-    // Member dashboard for member/affiliate/mentor roles
-    if (['MEMBER_FREE', 'MEMBER_PREMIUM', 'AFFILIATE', 'MENTOR'].includes(userRole)) {
+    if (['MEMBER_FREE', 'MEMBER_PREMIUM', 'AFFILIATE', 'MENTOR'].includes(role)) {
       options.push({
         id: 'member',
-        title: 'Member Dashboard', 
+        title: 'Member Dashboard',
         description: 'Akses kursus, materi, dan fitur membership Anda',
         icon: User,
-        href: '/dashboard?selected=member', // Add query param to bypass selection check
+        href: '/dashboard?selected=member',
         color: 'text-blue-600',
         bgColor: 'bg-blue-50 border-blue-200'
       })
     }
     
-    // Affiliate dashboard
-    if (userRole === 'AFFILIATE') {
+    if (role === 'AFFILIATE') {
       options.push({
         id: 'affiliate',
         title: 'Rich Affiliate',
         description: 'Kelola affiliate earnings, track referral links, dan lihat komisi Anda',
         icon: DollarSign,
-        href: '/affiliate/dashboard', 
+        href: '/affiliate/dashboard',
         color: 'text-green-600',
         bgColor: 'bg-green-50 border-green-200'
       })
     }
     
-    // Mentor dashboard
-    if (userRole === 'MENTOR') {
+    if (role === 'MENTOR') {
       options.push({
         id: 'mentor',
         title: 'Mentor Hub',
         description: 'Buat kursus, kelola siswa, dan pantau progress pembelajaran',
         icon: GraduationCap,
         href: '/mentor/dashboard',
-        color: 'text-purple-600', 
+        color: 'text-purple-600',
         bgColor: 'bg-purple-50 border-purple-200'
       })
     }
     
     return options
-  }, [userRole])
+  }
   
   // Admin redirect - they shouldn't be here, send to /admin
   useEffect(() => {
@@ -82,16 +144,6 @@ export default function DashboardSelector() {
     }
   }, [userRole, router])
   
-  // Auto-redirect if only one option - hook BEFORE conditional returns
-  useEffect(() => {
-    if (dashboardOptions.length === 1) {
-      const timer = setTimeout(() => {
-        router.push(dashboardOptions[0].href)
-      }, 500)
-      return () => clearTimeout(timer)
-    }
-  }, [dashboardOptions, router])
-  
   // Redirect to login if no session - after all hooks
   useEffect(() => {
     if (status !== 'loading' && !session?.user) {
@@ -99,10 +151,13 @@ export default function DashboardSelector() {
     }
   }, [status, session, router])
   
-  // Loading state
-  if (status === 'loading') {
+  // Loading state - session loading or options loading
+  if (status === 'loading' || isLoadingOptions) {
     return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600 text-sm">Memuat dashboard options...</p>
+      </div>
     </div>
   }
 
@@ -123,9 +178,25 @@ export default function DashboardSelector() {
     </div>
   }
 
-  const handleDashboardSelect = (option: DashboardOption) => {
+  const handleDashboardSelect = async (option: DashboardOption) => {
     setLoading(option.id)
-    // Direct navigation - no need for API call
+    
+    try {
+      // Save preference to database via API
+      const response = await fetch('/api/user/set-preferred-dashboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dashboardType: option.id })
+      })
+      
+      if (!response.ok) {
+        console.error('Failed to save dashboard preference')
+      }
+    } catch (error) {
+      console.error('Error saving preference:', error)
+    }
+    
+    // Navigate to selected dashboard
     router.push(option.href)
   }
 
@@ -149,10 +220,22 @@ export default function DashboardSelector() {
   // Get user display name
   const displayName = session.user.name?.split(' ')[0] || 'User'
   const fullName = session.user.name || session.user.email || 'User'
-  const roleBadge = userRole === 'MEMBER_PREMIUM' ? 'Premium Member' : 
-                   userRole === 'MEMBER_FREE' ? 'Free Member' :
-                   userRole === 'AFFILIATE' ? 'Affiliate' :
-                   userRole === 'MENTOR' ? 'Mentor' : 'Member'
+  
+  // Get role badge text based on all roles
+  const getRoleBadges = () => {
+    const badges: string[] = []
+    
+    if (allRoles.includes('MEMBER_PREMIUM')) badges.push('Premium')
+    else if (allRoles.includes('MEMBER_FREE')) badges.push('Member')
+    
+    if (allRoles.includes('AFFILIATE')) badges.push('Affiliate')
+    if (allRoles.includes('MENTOR')) badges.push('Mentor')
+    if (allRoles.includes('ADMIN')) badges.push('Admin')
+    
+    return badges.length > 0 ? badges : ['Member']
+  }
+  
+  const roleBadges = getRoleBadges()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
@@ -168,10 +251,16 @@ export default function DashboardSelector() {
             
             {/* User Info - Mobile Optimized */}
             <div className="text-right">
-              <div className="text-xs sm:text-sm font-medium text-gray-900 flex items-center gap-1 sm:gap-2">
+              <div className="text-xs sm:text-sm font-medium text-gray-900 flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
                 <span className="truncate max-w-[100px] sm:max-w-none">{fullName.split(' ')[0]}</span>
                 <span className="text-gray-400 hidden sm:inline">•</span>
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{roleBadge}</span>
+                <div className="flex gap-1">
+                  {roleBadges.map((badge, index) => (
+                    <span key={index} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      {badge}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

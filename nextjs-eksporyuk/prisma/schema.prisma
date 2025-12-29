@@ -2854,6 +2854,7 @@ model User {
   withdrawalPin                   String?
   withdrawalPinSetAt              DateTime?
   coverImage                      String?
+  preferredDashboard              String?           // Stores user's preferred dashboard: 'member', 'affiliate', 'mentor', 'admin'
   CommentReaction                 CommentReaction[]
   Follow_Follow_followerIdToUser  Follow[]          @relation("Follow_followerIdToUser")
   Follow_Follow_followingIdToUser Follow[]          @relation("Follow_followingIdToUser")

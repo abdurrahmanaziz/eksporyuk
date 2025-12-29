@@ -15,6 +15,7 @@ declare module 'next-auth' {
       isAuthorizedSupplierReviewer?: boolean
       affiliateMenuEnabled?: boolean
       hasAffiliateProfile?: boolean
+      preferredDashboard?: string | null
     }
     createdAt?: string
     trialEndsAt?: string
@@ -33,6 +34,7 @@ declare module 'next-auth' {
     isAuthorizedSupplierReviewer?: boolean
     affiliateMenuEnabled?: boolean
     hasAffiliateProfile?: boolean
+    preferredDashboard?: string | null
   }
 }
 
@@ -47,6 +49,7 @@ declare module 'next-auth/jwt' {
     isAuthorizedSupplierReviewer?: boolean
     affiliateMenuEnabled?: boolean
     hasAffiliateProfile?: boolean
+    preferredDashboard?: string | null
     createdAt?: string
     trialEndsAt?: string
     hasMembership?: boolean
