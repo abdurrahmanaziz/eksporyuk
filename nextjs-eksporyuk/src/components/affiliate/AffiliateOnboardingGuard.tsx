@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
@@ -35,7 +35,6 @@ export default function AffiliateOnboardingGuard({
   const pathname = usePathname()
   const [loading, setLoading] = useState(true)
   const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus | null>(null)
-  const checkedRef = useRef(false)
 
   // Pages that are allowed during onboarding
   const allowedDuringOnboarding = [
@@ -105,13 +104,7 @@ export default function AffiliateOnboardingGuard({
 
     // If on allowed path, don't block - but still check status for reference
     const doCheck = async () => {
-      // Prevent multiple checks
-      if (checkedRef.current && onboardingStatus) {
-        setLoading(false)
-        return
-      }
-      
-      checkedRef.current = true
+      // Always do fresh check (removed caching that caused issues)
       const status = await checkOnboardingStatus()
       setOnboardingStatus(status)
       setLoading(false)

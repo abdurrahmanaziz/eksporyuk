@@ -56,92 +56,93 @@ interface OnboardingStatus {
 type RequirementKey = 'emailVerified' | 'profileCompleted' | 'trainingCompleted' | 'firstLinkCreated'
 
 // Feature requirements mapping - COMPREHENSIVE
+// Note: emailVerified removed - now optional, only profileCompleted is mandatory
 const FEATURE_REQUIREMENTS: Record<FeatureType, { 
   requires: RequirementKey[];
   title: string;
   description: string;
 }> = {
-  // Core features - require all 3
+  // Core features - only require profile completion
   links: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Fitur Belum Tersedia',
-    description: 'Selesaikan verifikasi email, lengkapi profil, dan training untuk membuat link affiliate.',
+    description: 'Lengkapi profil untuk membuat link affiliate.',
   },
   'short-links': {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted', 'firstLinkCreated'],
+    requires: ['profileCompleted', 'firstLinkCreated'],
     title: 'Fitur Belum Tersedia',
-    description: 'Selesaikan semua langkah dan buat link pertama untuk menggunakan short link.',
+    description: 'Lengkapi profil dan buat link pertama untuk menggunakan short link.',
   },
   
-  // Stats & Reports - require training
+  // Stats & Reports - only require profile
   earnings: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Laporan Pendapatan Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk melihat laporan pendapatan.',
+    description: 'Lengkapi profil untuk melihat laporan pendapatan.',
   },
   conversions: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Data Konversi Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk melihat data konversi.',
+    description: 'Lengkapi profil untuk melihat data konversi.',
   },
   statistics: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Statistik Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk melihat statistik lengkap.',
+    description: 'Lengkapi profil untuk melihat statistik lengkap.',
   },
   performance: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Laporan Performa Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk melihat performa Anda.',
+    description: 'Lengkapi profil untuk melihat performa Anda.',
   },
   reports: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Laporan Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk melihat semua laporan.',
+    description: 'Lengkapi profil untuk melihat semua laporan.',
   },
   
-  // Marketing Tools - require training
+  // Marketing Tools - only require profile
   leads: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Leads Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk mengelola leads.',
+    description: 'Lengkapi profil untuk mengelola leads.',
   },
   materials: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Materi Promosi Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk akses materi promosi.',
+    description: 'Lengkapi profil untuk akses materi promosi.',
   },
   templates: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Template Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk menggunakan template.',
+    description: 'Lengkapi profil untuk menggunakan template.',
   },
   broadcast: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Broadcast Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk mengirim broadcast.',
+    description: 'Lengkapi profil untuk mengirim broadcast.',
   },
   automation: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Automation Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk menggunakan automation.',
+    description: 'Lengkapi profil untuk menggunakan automation.',
   },
   bio: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Bio Link Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk membuat bio link.',
+    description: 'Lengkapi profil untuk membuat bio link.',
   },
   'optin-forms': {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Opt-in Forms Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk membuat opt-in forms.',
+    description: 'Lengkapi profil untuk membuat opt-in forms.',
   },
   
   // Challenges
   challenges: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Tantangan Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk ikut tantangan.',
+    description: 'Lengkapi profil untuk ikut tantangan.',
   },
   
   // Financial - always accessible for viewing
@@ -151,19 +152,19 @@ const FEATURE_REQUIREMENTS: Record<FeatureType, {
     description: '',
   },
   credits: {
-    requires: ['emailVerified', 'profileCompleted'],
+    requires: ['profileCompleted'],
     title: 'Credits Terkunci',
-    description: 'Verifikasi email dan lengkapi profil untuk menggunakan credits.',
+    description: 'Lengkapi profil untuk menggunakan credits.',
   },
   payouts: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Payout Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk request payout.',
+    description: 'Lengkapi profil untuk request payout.',
   },
   coupons: {
-    requires: ['emailVerified', 'profileCompleted', 'trainingCompleted'],
+    requires: ['profileCompleted'],
     title: 'Kupon Terkunci',
-    description: 'Selesaikan verifikasi dan training untuk membuat kupon diskon.',
+    description: 'Lengkapi profil untuk membuat kupon diskon.',
   },
 }
 
