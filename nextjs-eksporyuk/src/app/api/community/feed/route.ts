@@ -317,8 +317,8 @@ export async function POST(request: NextRequest) {
     const finalBackgroundId = hasMedia ? null : (backgroundId || null)
 
     // Create the post with atomic transaction for data consistency
-    const [post, author, group] = await prisma.$transaction([
-      prisma.post.create({
+    const result = await prisma.$transaction(async (tx) => {
+      const post = await tx.post.create({
         data: {
           id: createId(),
           content: content.trim(),
@@ -333,16 +333,22 @@ export async function POST(request: NextRequest) {
           approvalStatus: 'APPROVED',
           updatedAt: new Date(),
         }
-      }),
-      prisma.user.findUnique({
+      })
+
+      const author = await tx.user.findUnique({
         where: { id: session.user.id },
         select: { id: true, name: true, avatar: true }
-      }),
-      groupId ? prisma.group.findUnique({
+      })
+
+      const group = groupId ? await tx.group.findUnique({
         where: { id: groupId },
         select: { id: true, name: true, slug: true }
-      }) : Promise.resolve(null)
-    ])
+      }) : null
+
+      return { post, author, group }
+    })
+
+    const { post, author, group } = result
 
     const postWithDetails = { ...post, author, group }
 
