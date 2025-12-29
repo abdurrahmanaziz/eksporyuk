@@ -555,7 +555,9 @@ export default function IntegrationsPage() {
                 <CardTitle className="text-lg">Layanan</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {Object.entries(integrations).map(([key, config]) => {
+                {Object.entries(integrations)
+                  .filter(([, config]) => config != null)
+                  .map(([key, config]) => {
                   const status = serviceStatus[key] || 'not-configured'
                   return (
                     <button
@@ -567,9 +569,9 @@ export default function IntegrationsPage() {
                           : 'hover:bg-gray-100 text-gray-700'
                       }`}
                     >
-                      <span className="text-lg">{config.icon}</span>
+                      <span className="text-lg">{config?.icon || '•'}</span>
                       <div className="flex-1">
-                        <div className="font-medium text-sm">{config.name}</div>
+                        <div className="font-medium text-sm">{config?.name || 'Unknown'}</div>
                         <div className="text-xs text-gray-500">
                           <Badge
                             variant="outline"
