@@ -258,6 +258,58 @@ export class XenditProxyService {
   }
 
   /**
+   * Create E-Wallet Payment
+   */
+  async createEWalletPayment(params: {
+    reference_id: string;
+    currency: string;
+    amount: number;
+    checkout_method: string;
+    channel_code: string;
+    channel_properties?: {
+      success_redirect_url?: string;
+      failure_redirect_url?: string;
+      mobile_number?: string;
+    };
+  }) {
+    console.log('[XenditProxy] Creating E-Wallet Payment:', params.reference_id, params.channel_code);
+
+    const payload = {
+      reference_id: params.reference_id,
+      currency: params.currency || 'IDR',
+      amount: params.amount,
+      checkout_method: params.checkout_method || 'ONE_TIME_PAYMENT',
+      channel_code: params.channel_code,
+      channel_properties: params.channel_properties,
+    };
+
+    return this.request('/ewallets/charges', 'POST', payload);
+  }
+
+  /**
+   * Create QR Code (QRIS)
+   */
+  async createQRCode(params: {
+    reference_id: string;
+    type: string;
+    currency: string;
+    amount: number;
+    expires_at?: string;
+  }) {
+    console.log('[XenditProxy] Creating QR Code:', params.reference_id);
+
+    const payload = {
+      reference_id: params.reference_id,
+      type: params.type || 'DYNAMIC',
+      currency: params.currency || 'IDR',
+      amount: params.amount,
+      expires_at: params.expires_at,
+    };
+
+    return this.request('/qr_codes', 'POST', payload);
+  }
+
+  /**
    * Create Disbursement (Payout)
    */
   async createDisbursement(params: {
