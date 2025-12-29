@@ -2866,6 +2866,7 @@ model User {
   SavedPost                       SavedPost[]
   UserProduct                     UserProduct[]
   userRoles                       UserRole[]
+  wallet                          Wallet?
 
   @@index([city])
   @@index([district])
@@ -2972,14 +2973,16 @@ model UserRole {
 }
 
 model Wallet {
-  id             String   @id
+  id             String   @id @default(cuid())
   userId         String   @unique
   balance        Decimal  @default(0)
   balancePending Decimal  @default(0)
   totalEarnings  Decimal  @default(0)
   totalPayout    Decimal  @default(0)
   createdAt      DateTime @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
