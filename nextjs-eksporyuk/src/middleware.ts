@@ -1,39 +1,6 @@
 import { withAuth, NextRequestWithAuth } from 'next-auth/middleware'
 import { NextResponse, NextRequest } from 'next/server'
 
-/**
- * Check if user has multiple dashboard options and needs selection
- * Returns false for single-role users, true for multi-role users
- */
-function checkIfUserNeedsDashboardSelection(role: string, token: any): boolean {
-  // Admin goes straight to admin panel - no selection needed
-  if (role === 'ADMIN') return false
-  
-  // Supplier goes straight to supplier panel
-  if (role === 'SUPPLIER') return false
-  
-  // Check multi-role scenarios for non-admin users
-  const hasAffiliateAccess = token?.affiliateMenuEnabled && token?.hasAffiliateProfile
-  const isAffiliate = role === 'AFFILIATE'
-  const hasMentorAccess = role === 'MENTOR'
-  const hasMemberAccess = ['MEMBER_FREE', 'MEMBER_PREMIUM'].includes(role)
-  
-  let dashboardCount = 0
-  
-  // Member dashboard available for members, affiliates, and mentors
-  if (hasMemberAccess || isAffiliate || hasMentorAccess) dashboardCount++
-  
-  // Affiliate dashboard - count only if ACTUALLY has affiliate access (not just member)
-  if (isAffiliate || hasAffiliateAccess) dashboardCount++
-  
-  // Mentor dashboard  
-  if (hasMentorAccess) dashboardCount++
-  
-  console.log('[MIDDLEWARE] Dashboard count check:', { role, hasAffiliateAccess, dashboardCount })
-  
-  return dashboardCount > 1
-}
-
 // Handle /login redirect before auth middleware
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -76,51 +43,19 @@ const authMiddleware = withAuth(
     }
 
     const role = token.role as string
-    const preferredDashboard = token.preferredDashboard as string | null
 
-    // Redirect /dashboard based on role - with multi-role support
+    // Redirect /dashboard based on role - direct to primary dashboard
     if (pathname === '/dashboard') {
-      // Check if user explicitly selected this dashboard (bypass selection)
-      const selectedDashboard = request.nextUrl.searchParams.get('selected')
-      
-      // If user explicitly selected member dashboard, let them through
-      if (selectedDashboard === 'member') {
-        return NextResponse.next()
-      }
-      
-      // Check if user needs dashboard selection
-      const needsSelection = checkIfUserNeedsDashboardSelection(role, token)
-      
-      if (needsSelection) {
-        // If user has a saved preference, auto-redirect to that dashboard
-        if (preferredDashboard) {
-          console.log('[MIDDLEWARE] User has saved preference:', preferredDashboard)
-          switch (preferredDashboard) {
-            case 'member':
-              return NextResponse.next() // Stay on /dashboard
-            case 'affiliate':
-              return NextResponse.redirect(new URL('/affiliate/dashboard', request.url))
-            case 'mentor':
-              return NextResponse.redirect(new URL('/mentor/dashboard', request.url))
-            case 'admin':
-              return NextResponse.redirect(new URL('/admin', request.url))
-          }
-        }
-        
-        // No saved preference - show selection page
-        return NextResponse.redirect(new URL('/dashboard-selector', request.url))
-      }
-      
-      // Auto-redirect single-role users
+      // Auto-redirect based on primary role - RoleSwitcher available in sidebar for multi-role users
       switch (role) {
         case 'ADMIN':
           return NextResponse.redirect(new URL('/admin', request.url))
+        case 'SUPPLIER':
+          return NextResponse.redirect(new URL('/supplier/dashboard', request.url))
         case 'MENTOR':
           return NextResponse.redirect(new URL('/mentor/dashboard', request.url))
         case 'AFFILIATE':
           return NextResponse.redirect(new URL('/affiliate/dashboard', request.url))
-        case 'SUPPLIER':
-          return NextResponse.redirect(new URL('/supplier/dashboard', request.url))
         default:
           // MEMBER_PREMIUM & MEMBER_FREE stay on /dashboard
           return NextResponse.next()
@@ -216,7 +151,6 @@ const authMiddleware = withAuth(
 export const config = {
   matcher: [
     '/login', // Handle /login redirect
-    '/dashboard-selector',
     '/dashboard/:path*',
     '/admin/:path*',
     '/mentor/:path*',
