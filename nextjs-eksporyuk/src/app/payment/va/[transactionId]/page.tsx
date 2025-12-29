@@ -108,6 +108,15 @@ export default function VirtualAccountPage() {
 
   useEffect(() => {
     fetchVADetails()
+    
+    // Set up polling interval for payment status check (every 5 seconds)
+    const pollInterval = setInterval(() => {
+      if (vaDetails?.status === 'PENDING') {
+        fetchVADetails()
+      }
+    }, 5000) // Check every 5 seconds for faster detection
+    
+    return () => clearInterval(pollInterval)
   }, [params.transactionId])
 
   const fetchVADetails = async () => {
@@ -128,13 +137,17 @@ export default function VirtualAccountPage() {
         return
       }
 
+      // ✅ AUTO-REDIRECT: If payment SUCCESS, redirect to dashboard immediately
+      if (data.status === 'SUCCESS' || data.status === 'PAID') {
+        console.log('[VA Page] Payment successful! Redirecting to dashboard...')
+        // Small delay for UX
+        setTimeout(() => {
+          router.push('/dashboard?payment=success')
+        }, 1500)
+      }
+
       setVaDetails(data)
       setLoading(false)
-
-      // Auto-refresh status every 30 seconds if pending
-      if (data.status === 'PENDING') {
-        setTimeout(fetchVADetails, 30000)
-      }
     } catch (err) {
       console.error('Error fetching VA details:', err)
       setError('Gagal memuat detail pembayaran')
@@ -271,8 +284,13 @@ export default function VirtualAccountPage() {
     )
   }
 
-  // Check if payment is completed
+  // Check if payment is completed - AUTO REDIRECT
   if (vaDetails.status === 'PAID' || vaDetails.status === 'SUCCESS') {
+    // Auto redirect to dashboard after 2 seconds
+    setTimeout(() => {
+      router.push('/dashboard?payment=success')
+    }, 2000)
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-blue-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -281,12 +299,16 @@ export default function VirtualAccountPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Pembayaran Berhasil!</h2>
           <p className="text-gray-600 mb-2">Transaksi Anda telah dikonfirmasi</p>
-          <p className="text-sm text-gray-500 mb-6">No. Invoice: {vaDetails.invoiceNumber}</p>
+          <p className="text-sm text-gray-500 mb-4">No. Invoice: {vaDetails.invoiceNumber}</p>
+          <div className="flex items-center justify-center gap-2 text-blue-600 mb-6">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            <span className="text-sm">Mengalihkan ke dashboard...</span>
+          </div>
           <button
             onClick={() => router.push('/dashboard')}
             className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition font-semibold"
           >
-            Lihat Dashboard
+            Lihat Dashboard Sekarang
           </button>
         </div>
       </div>

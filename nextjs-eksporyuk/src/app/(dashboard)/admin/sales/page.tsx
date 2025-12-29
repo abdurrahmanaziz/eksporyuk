@@ -1022,13 +1022,13 @@ export default function AdminSalesPage() {
                         <TableCell>
                           <div className="flex items-start gap-2">
                             <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                            <div className="font-medium text-sm">{tx.customerName || tx.user.name}</div>
+                            <div className="font-medium text-sm">{tx.customerName || tx.user?.name || '-'}</div>
                           </div>
                         </TableCell>
 
                         {/* Affiliate */}
                         <TableCell className="text-sm">
-                          {tx.affiliateConversion ? (
+                          {tx.affiliateConversion && tx.affiliateConversion.affiliate?.user?.name ? (
                             <div className="font-medium text-gray-900">
                               {tx.affiliateConversion.affiliate.user.name}
                             </div>
@@ -1083,7 +1083,7 @@ export default function AdminSalesPage() {
 
                         {/* Follow Up */}
                         <TableCell>
-                          {(tx.customerPhone || tx.user.whatsapp || tx.user.phone) && ['SUCCESS', 'PENDING'].includes(tx.status) ? (
+                          {(tx.customerPhone || tx.user?.whatsapp || tx.user?.phone) && ['SUCCESS', 'PENDING'].includes(tx.status) ? (
                             <Button
                               size="sm"
                               variant="outline"

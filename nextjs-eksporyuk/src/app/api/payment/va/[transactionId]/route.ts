@@ -59,6 +59,9 @@ export async function GET(
     // Extract VA details from metadata
     const metadata = transaction.metadata as any
     
+    // Check if this is a fallback/manual VA (not real Xendit VA)
+    const isFallbackVA = metadata?.xenditFallback === 'manual' || metadata?.xenditPaymentMethod === 'MANUAL' || metadata?._fallback === 'manual'
+    
     // Check if we have VA number
     const vaNumber = metadata?.vaNumber || metadata?.accountNumber || metadata?.xenditVANumber
     
@@ -69,6 +72,43 @@ export async function GET(
         redirectUrl: vaNumber,
         message: 'VA tidak tersedia, gunakan Xendit checkout',
       })
+    }
+    
+    // If this is a fallback VA (not valid for actual payment), inform user
+    if (isFallbackVA && vaNumber) {
+      // Try to create a real Xendit invoice as alternative
+      try {
+        const { xenditService } = await import('@/lib/xendit')
+        const isConfigured = await xenditService.isConfigured()
+        
+        if (isConfigured) {
+          // Create invoice for checkout
+          const invoice = await xenditService.createInvoice({
+            external_id: transaction.externalId || transaction.id,
+            amount: Number(transaction.amount),
+            payer_email: transaction.customerEmail || user?.email || 'customer@eksporyuk.com',
+            description: transaction.description || 'Pembayaran',
+            invoice_duration: paymentExpiryHours * 3600,
+          })
+          
+          if (invoice?.invoiceUrl) {
+            // Update transaction with invoice URL
+            await prisma.transaction.update({
+              where: { id: transaction.id },
+              data: { paymentUrl: invoice.invoiceUrl }
+            })
+            
+            return NextResponse.json({
+              redirect: true,
+              redirectUrl: invoice.invoiceUrl,
+              message: 'Silakan selesaikan pembayaran melalui Xendit',
+            })
+          }
+        }
+      } catch (invoiceError) {
+        console.error('[VA API] Failed to create invoice fallback:', invoiceError)
+        // Continue to show the VA (even if fallback)
+      }
     }
     
     if (!vaNumber) {
