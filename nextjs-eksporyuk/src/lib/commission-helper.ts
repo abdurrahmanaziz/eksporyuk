@@ -139,6 +139,24 @@ export async function processTransactionCommission(
             totalConversions: { increment: 1 },
           },
         })
+        
+        // 🔥 CRITICAL: Create AffiliateConversion record for admin dashboard aggregation
+        // This ensures admin page shows same data as user wallet
+        await prisma.affiliateConversion.create({
+          data: {
+            affiliateId: affiliateProfile.id,
+            transactionId,
+            commissionAmount: commission.affiliateCommission,
+            commissionRate: affiliateCommissionRate,
+            commissionType,
+            paidOut: false, // Mark as not yet paid out (pending payout)
+          },
+        }).catch(err => {
+          // Ignore if duplicate (transaction already has a conversion record)
+          if (err.code !== 'P2002') {
+            throw err
+          }
+        })
       }
     }
     
