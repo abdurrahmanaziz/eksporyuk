@@ -93,6 +93,7 @@ export async function PUT(request: NextRequest) {
       postalCode,
       latitude,
       longitude,
+      oneSignalPlayerId,
     } = body
 
     // Check if username is taken by another user
@@ -129,6 +130,7 @@ export async function PUT(request: NextRequest) {
         longitude: longitude ? parseFloat(longitude) : null,
         locationVerified: !!(latitude && longitude),
         profileCompleted: isProfileComplete,
+        oneSignalPlayerId: oneSignalPlayerId || undefined,
       },
       select: {
         id: true,

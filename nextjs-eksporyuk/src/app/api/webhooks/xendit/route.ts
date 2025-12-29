@@ -334,6 +334,15 @@ async function handleInvoicePaid(data: any) {
               },
             })
 
+            // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
+            if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+              await prisma.user.update({
+                where: { id: transaction.userId },
+                data: { role: 'MEMBER_PREMIUM' }
+              })
+              console.log(`[Xendit Webhook] ✅ User role upgraded to MEMBER_PREMIUM: ${transaction.userId}`)
+            }
+
             // Add user to Mailketing list if configured
             if (membership.mailketingListId && membership.autoAddToList) {
               try {
@@ -479,6 +488,15 @@ async function handleInvoicePaid(data: any) {
               activatedAt: new Date(),
             },
           })
+
+          // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
+          if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+            await prisma.user.update({
+              where: { id: transaction.userId },
+              data: { role: 'MEMBER_PREMIUM' }
+            })
+            console.log(`[Xendit Webhook] ✅ User role upgraded to MEMBER_PREMIUM (reactivate): ${transaction.userId}`)
+          }
 
           console.log(`UserMembership activated for user ${transaction.userId}`)
         }
@@ -1072,6 +1090,15 @@ async function handleVAPaymentComplete(data: any) {
               },
             })
 
+            // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
+            if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+              await prisma.user.update({
+                where: { id: transaction.userId },
+                data: { role: 'MEMBER_PREMIUM' }
+              })
+              console.log(`[Xendit Webhook] ✅ User role upgraded to MEMBER_PREMIUM (VA): ${transaction.userId}`)
+            }
+
             console.log('[Xendit Webhook] ✅ UserMembership created:', membershipId)
 
             // Auto-join groups, courses, products (using VA fetched data)
@@ -1152,6 +1179,16 @@ async function handleVAPaymentComplete(data: any) {
               activatedAt: new Date(),
             },
           })
+          
+          // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
+          if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+            await prisma.user.update({
+              where: { id: transaction.userId },
+              data: { role: 'MEMBER_PREMIUM' }
+            })
+            console.log(`[Xendit Webhook] ✅ User role upgraded to MEMBER_PREMIUM (VA reactivate): ${transaction.userId}`)
+          }
+          
           console.log('[Xendit Webhook] ✅ UserMembership activated')
         }
       }

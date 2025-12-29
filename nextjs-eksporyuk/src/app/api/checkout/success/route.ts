@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { activateMembership, activateProduct } from '@/lib/membership-helper'
 import { processTransactionCommission, getAffiliateFromCode } from '@/lib/commission-helper'
 import { updateChallengeProgress } from '@/lib/challenge-helper'
+import { smartNotificationService } from '@/lib/services/smartNotificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -173,6 +174,35 @@ export async function POST(request: NextRequest) {
         productId: type === 'PRODUCT' ? productId : null,
         transactionAmount: Number(amount)
       })
+    }
+
+    // 9. Send purchase notification to user
+    const productName = type === 'MEMBERSHIP' 
+      ? (await prisma.membership.findUnique({ where: { id: membershipId }, select: { name: true } }))?.name 
+      : (await prisma.product.findUnique({ where: { id: productId }, select: { name: true } }))?.name
+
+    try {
+      await smartNotificationService.send({
+        userId: session.user.id,
+        type: 'PAYMENT',
+        title: 'Payment Confirmed ✅',
+        message: `Your purchase of ${productName || 'item'} has been confirmed. Thank you!`,
+        link: '/wallet',
+        data: {
+          transactionId: transaction.id,
+          amount: Number(amount),
+          productName,
+          type
+        },
+        channels: {
+          pusher: true,
+          onesignal: true
+        },
+        priority: 'high'
+      })
+    } catch (notifError) {
+      // Don't fail transaction if notification fails
+      console.error('[PAYMENT_NOTIFICATION_ERROR]', notifError)
     }
 
     return NextResponse.json({

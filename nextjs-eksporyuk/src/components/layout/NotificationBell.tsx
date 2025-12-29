@@ -16,6 +16,7 @@ import { id as idLocale } from 'date-fns/locale'
 import { useSession } from 'next-auth/react'
 import Pusher from 'pusher-js'
 import FloatingNotification from '@/components/notifications/FloatingNotification'
+import { usePusherNotification } from '@/hooks/use-pusher-notification'
 
 interface Notification {
   id: string
@@ -124,7 +125,7 @@ export default function NotificationBell() {
   useEffect(() => {
     fetchNotifications()
 
-    // Setup Pusher real-time notifications
+    // Setup Pusher real-time notifications (keep existing logic)
     if (session?.user?.id) {
       const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
       if (!pusherKey) {
@@ -156,6 +157,30 @@ export default function NotificationBell() {
       }
     }
   }, [session?.user?.id])
+
+  // Also use the new hook for enhanced notification handling
+  usePusherNotification(session?.user?.id, useCallback((notification) => {
+    // Convert PusherNotification to Notification format if needed
+    const formattedNotif: Notification = {
+      id: notification.id,
+      type: notification.type.toUpperCase(),
+      title: notification.title,
+      message: notification.content,
+      link: notification.url,
+      isRead: false,
+      createdAt: new Date(notification.timestamp).toISOString()
+    }
+
+    // Add to list if not already there
+    setNotifications(prev => {
+      const exists = prev.some(n => n.id === formattedNotif.id)
+      if (exists) return prev
+      return [formattedNotif, ...prev.slice(0, 9)]
+    })
+    
+    setUnreadCount(prev => prev + 1)
+    setFloatingNotification(formattedNotif)
+  }, []))
 
   // Mark notification as read and navigate
   const handleNotificationClick = async (notification: Notification) => {

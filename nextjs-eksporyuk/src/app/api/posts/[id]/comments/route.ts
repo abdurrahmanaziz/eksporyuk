@@ -208,7 +208,25 @@ export async function POST(
       }
     }
 
-    // 🔔 NOTIFICATION: Mention notifications
+    // 🔔 NOTIFICATION: Post author notification (main comment, not reply)
+    if (!parentId && post.authorId !== session.user.id) {
+      try {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        fetch(`${appUrl}/api/notifications/comment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cookie': request.headers.get('cookie') || '' },
+          body: JSON.stringify({ 
+            postId: id, 
+            commentId: comment.id,
+            commentText: content
+          })
+        }).catch(err => console.error('Failed to send comment notification:', err))
+      } catch (err) {
+        console.error('Error triggering comment notification:', err)
+      }
+    }
+
+    // 🔔 NOTIFICATION: Parent comment author notification (reply)
     if (mentions && mentions.length > 0) {
       // Get user IDs from usernames
       const mentionedUsers = await prisma.user.findMany({

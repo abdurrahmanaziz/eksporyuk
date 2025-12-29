@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
+import { useOneSignal } from '@/hooks/use-onesignal'
 
 declare global {
   interface Window {
@@ -15,6 +16,9 @@ export default function OneSignalComponent() {
   const { data: session } = useSession()
   const initRef = useRef(false)
   const syncRef = useRef(false)
+
+  // Hook to capture and sync Player ID
+  useOneSignal()
 
   useEffect(() => {
     const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID
@@ -35,7 +39,32 @@ export default function OneSignalComponent() {
           await OneSignal.init({
             appId,
             allowLocalhostAsSecureOrigin: true,
-            notifyButton: { enable: false }
+            // Service Worker untuk push notifications
+            serviceWorkerPath: '/OneSignalSDKWorker.js',
+            serviceWorkerUpdater: '/OneSignalSDKUpdaterWorker.js',
+            // Notify Button - Bell icon popup untuk notifikasi
+            notifyButton: {
+              enable: true,
+              position: 'bottom-right',
+              size: 'medium',
+              displayPredicate: () => {
+                // Tampilkan bell hanya jika user sudah login
+                return !!window.OneSignal?.User?.onesignalId
+              }
+            },
+            // In-App Messages - Popup notifikasi dalam aplikasi
+            inAppMessages: {
+              enable: true,
+              autoPrompt: false
+            },
+            // Web Push Notifications Configuration
+            pushNotifications: {
+              enable: true,
+              delta: true
+            },
+            // Auto permission prompt settings
+            autoResubscribe: true,
+            allowLocalhostAsSecureOrigin: true
           })
 
           window.oneSignalInitialized = true
@@ -45,6 +74,14 @@ export default function OneSignalComponent() {
             
             // Auto-tag user dengan data comprehensive untuk segmentasi
             await updateUserTags(OneSignal, session.user)
+
+            // Auto-request notification permission saat login (non-blocking)
+            // User dapat dismiss ini kapan saja
+            OneSignal.Notifications.requestPermission()
+              .catch((err: any) => console.log('[OneSignal] Permission request dismissed:', err))
+
+            // Setup listeners untuk push notification events
+            setupPushNotificationListeners(OneSignal)
 
             // Setup subscription change listener untuk sync Player ID
             setupSubscriptionListener(OneSignal, session.user)
@@ -228,5 +265,94 @@ async function setupSubscriptionListener(OneSignal: any, user: any) {
     }
   } catch (error) {
     console.error('[OneSignal] Failed to setup subscription listener:', error)
+  }
+}
+
+/**
+ * Export trigger function untuk in-app messages
+ * Digunakan dari component/page lain untuk trigger popup notifications
+ */
+export function triggerInAppMessage(triggerId: string) {
+  if (typeof window === 'undefined' || !window.OneSignal) {
+    console.warn('[OneSignal] SDK not initialized yet')
+    return
+  }
+
+  try {
+    window.OneSignal.inAppMessages.triggerPage(triggerId)
+    console.log('[OneSignal] In-app message triggered:', triggerId)
+  } catch (error) {
+    console.error('[OneSignal] Failed to trigger in-app message:', error)
+  }
+}
+
+/**
+ * Export function untuk show notification bell programmatically
+ */
+export function showNotificationBell() {
+  if (typeof window === 'undefined' || !window.OneSignal) {
+    console.warn('[OneSignal] SDK not initialized yet')
+    return
+  }
+
+  try {
+    window.OneSignal.notifyButton?.showBell()
+    console.log('[OneSignal] Notification bell shown')
+  } catch (error) {
+    console.error('[OneSignal] Failed to show bell:', error)
+  }
+}
+
+/**
+ * Setup event listeners untuk push notifications
+ * Menangani notifikasi yang diterima dan diklik
+ */
+async function setupPushNotificationListeners(OneSignal: any) {
+  try {
+    // Listener ketika notifikasi diterima di browser
+    OneSignal.Notifications.addEventListener('notificationDisplay', (event: any) => {
+      const notification = event.notification
+      console.log('[OneSignal] Notification displayed:', {
+        title: notification.title,
+        body: notification.body,
+        id: notification.id
+      })
+      
+      // Optional: Log ke analytics
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'push_notification_received', {
+          title: notification.title,
+          timestamp: new Date().toISOString()
+        })
+      }
+    })
+
+    // Listener ketika user klik notifikasi
+    OneSignal.Notifications.addEventListener('click', (event: any) => {
+      const notification = event.notification
+      const actionUrl = notification.launchURL
+      
+      console.log('[OneSignal] Notification clicked:', {
+        title: notification.title,
+        actionUrl: actionUrl
+      })
+
+      // Redirect ke URL jika ada
+      if (actionUrl) {
+        window.open(actionUrl, '_self')
+      }
+
+      // Optional: Log ke analytics
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'push_notification_clicked', {
+          title: notification.title,
+          timestamp: new Date().toISOString()
+        })
+      }
+    })
+
+    console.log('[OneSignal] Push notification listeners setup complete')
+  } catch (error) {
+    console.error('[OneSignal] Failed to setup push listeners:', error)
   }
 }

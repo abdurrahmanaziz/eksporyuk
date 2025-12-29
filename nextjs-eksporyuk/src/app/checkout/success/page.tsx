@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +15,8 @@ import {
   Star,
   Gift,
   Users,
-  BookOpen
+  BookOpen,
+  Loader2
 } from 'lucide-react'
 import Link from 'next/link'
 import { UpsaleModal } from '@/components/UpsaleModal'
@@ -22,11 +24,42 @@ import { UpsaleModal } from '@/components/UpsaleModal'
 function SuccessPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { data: session, status } = useSession()
   const [transaction, setTransaction] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [showUpsale, setShowUpsale] = useState(false)
   const [product, setProduct] = useState<any>(null)
   const [memberships, setMemberships] = useState<any[]>([])
+  const [countdown, setCountdown] = useState(10) // Auto-redirect countdown
+  const [autoRedirect, setAutoRedirect] = useState(true)
+
+  // Auto-redirect to dashboard after countdown
+  useEffect(() => {
+    if (!loading && autoRedirect && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(prev => prev - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+    
+    if (countdown === 0 && autoRedirect) {
+      // Redirect based on user role and transaction type
+      const dashboardUrl = getDashboardUrl()
+      router.push(dashboardUrl)
+    }
+  }, [countdown, loading, autoRedirect, router])
+
+  // Determine dashboard URL based on session/transaction
+  const getDashboardUrl = () => {
+    if (transaction?.type === 'PRODUCT') {
+      return '/my-products'
+    }
+    if (transaction?.type === 'COURSE') {
+      return '/my-courses'
+    }
+    // Default: membership dashboard
+    return '/my-dashboard'
+  }
 
   useEffect(() => {
     const fetchTransactionData = async () => {
@@ -133,6 +166,26 @@ function SuccessPageContent() {
             <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border">
               <span className="text-sm text-gray-500">Transaction ID:</span>
               <span className="font-mono font-bold text-orange-500">{transaction.id}</span>
+            </div>
+          )}
+          
+          {/* Auto-redirect countdown */}
+          {autoRedirect && (
+            <div className="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4 max-w-md mx-auto">
+              <div className="flex items-center justify-center gap-3">
+                <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
+                <p className="text-orange-700">
+                  Mengarahkan ke dashboard dalam <span className="font-bold">{countdown}</span> detik...
+                </p>
+              </div>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="mt-2 text-orange-600"
+                onClick={() => setAutoRedirect(false)}
+              >
+                Batalkan auto-redirect
+              </Button>
             </div>
           )}
         </div>
@@ -260,11 +313,12 @@ function SuccessPageContent() {
           </Button>
           
           <Button
-            onClick={() => router.push('/my-dashboard')}
+            onClick={() => router.push(getDashboardUrl())}
             className="bg-orange-500 hover:bg-orange-600 text-white"
           >
             <BookOpen className="w-4 h-4 mr-2" />
-            Akses Portal Member
+            Akses Dashboard Sekarang
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
 
