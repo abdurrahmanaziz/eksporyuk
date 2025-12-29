@@ -69,9 +69,9 @@ export default function AffiliateOnboardingGuard({
       if (data.success) {
         // Determine if user needs onboarding
         // User needs onboarding if:
-        // 1. Profile is not completed OR
-        // 2. Bank info is not completed
-        const needsOnboarding = !data.data.profileCompleted || !data.data.bankInfoCompleted
+        // 1. Profile is not completed
+        // Note: Bank info is optional - can be added later during withdrawal
+        const needsOnboarding = !data.data.profileCompleted
         
         return {
           ...data.data,
