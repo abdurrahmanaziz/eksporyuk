@@ -162,18 +162,30 @@ export async function POST(request: NextRequest) {
           console.log('💳 Created new wallet')
         }
 
-        // Check if bank info already exists
-        const existingPayout = await prisma.payout.findFirst({
+        // Get the most recent payout record with bank info for this wallet (regardless of status)
+        const existingBankPayout = await prisma.payout.findFirst({
           where: {
             walletId: wallet.id,
-            bankName: bankAccount.bankName,
-            accountName: bankAccount.accountName,
-            accountNumber: bankAccount.accountNumber,
+            bankName: { not: null },
           },
+          orderBy: { createdAt: 'desc' },
         })
 
-        if (!existingPayout) {
-          // Create a payout record to store bank info
+        if (existingBankPayout) {
+          // Update the existing payout record with new bank details
+          await prisma.payout.update({
+            where: { id: existingBankPayout.id },
+            data: {
+              bankName: bankAccount.bankName,
+              accountName: bankAccount.accountName,
+              accountNumber: bankAccount.accountNumber,
+              notes: 'Bank account info for affiliate - updated',
+              updatedAt: new Date(),
+            },
+          })
+          console.log('🏦 Bank account info updated')
+        } else {
+          // Create a new payout record to store bank info
           await prisma.payout.create({
             data: {
               walletId: wallet.id,
@@ -182,13 +194,11 @@ export async function POST(request: NextRequest) {
               bankName: bankAccount.bankName,
               accountName: bankAccount.accountName,
               accountNumber: bankAccount.accountNumber,
-              notes: 'Bank account info for affiliate onboarding',
+              notes: 'Bank account info for affiliate',
               paidAt: new Date(),
             },
           })
-          console.log('🏦 Bank account info saved')
-        } else {
-          console.log('🏦 Bank account info already exists')
+          console.log('🏦 Bank account info created')
         }
         
         bankAccountSaved = true
@@ -316,8 +326,7 @@ export async function PUT(request: NextRequest) {
       })
     }
 
-    // Create a payout record with bank info (status: PENDING, amount: 0)
-    // This is just to store bank account info for future payouts
+    // Get the most recent payout record with bank info for this wallet
     const latestPayout = await prisma.payout.findFirst({
       where: {
         walletId: wallet.id,
@@ -328,13 +337,21 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    // If bank info different from latest, create new record
-    if (
-      !latestPayout ||
-      latestPayout.bankName !== bankAccount.bankName ||
-      latestPayout.accountName !== bankAccount.accountName ||
-      latestPayout.accountNumber !== bankAccount.accountNumber
-    ) {
+    // Update existing or create new bank info record
+    if (latestPayout) {
+      // Update the existing record with new bank details
+      await prisma.payout.update({
+        where: { id: latestPayout.id },
+        data: {
+          bankName: bankAccount.bankName,
+          accountName: bankAccount.accountName,
+          accountNumber: bankAccount.accountNumber,
+          notes: 'Bank account info update',
+          updatedAt: new Date(),
+        },
+      })
+    } else {
+      // Create new record if none exists
       await prisma.payout.create({
         data: {
           walletId: wallet.id,

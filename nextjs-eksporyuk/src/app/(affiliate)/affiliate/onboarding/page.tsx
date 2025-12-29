@@ -21,8 +21,11 @@ import {
   MapPin,
   Building2,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  Mail,
+  AlertCircle
 } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface OnboardingData {
   profileCompleted: boolean
@@ -37,6 +40,9 @@ export default function AffiliateOnboardingPage() {
   const [saving, setSaving] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
+  const [bankAlreadyCompleted, setBankAlreadyCompleted] = useState(false)
+  const [emailVerified, setEmailVerified] = useState(false)
+  const [sendingVerificationEmail, setSendingVerificationEmail] = useState(false)
   
   // Form data state
   const [avatar, setAvatar] = useState<string | null>(null)
@@ -65,6 +71,11 @@ export default function AffiliateOnboardingPage() {
     try {
       setLoading(true)
       
+      // Check email verified status from session
+      if (session?.user?.emailVerified) {
+        setEmailVerified(true)
+      }
+      
       // Fetch profile data
       const profileRes = await fetch('/api/affiliate/profile')
       const profileData = await profileRes.json()
@@ -82,6 +93,7 @@ export default function AffiliateOnboardingPage() {
         })
         if (profileData.bankAccount) {
           setBankData(profileData.bankAccount)
+          setBankAlreadyCompleted(true)
         }
       }
       
@@ -92,10 +104,21 @@ export default function AffiliateOnboardingPage() {
       if (onboardingResult.success) {
         setOnboardingData(onboardingResult.data)
         
+        // If bank info is already completed, track it
+        if (onboardingResult.data.bankInfoCompleted) {
+          setBankAlreadyCompleted(true)
+        }
+        
         // If both profile and bank info are completed, redirect to dashboard
         if (onboardingResult.data.profileCompleted && onboardingResult.data.bankInfoCompleted) {
           router.push('/affiliate/dashboard')
           return
+        }
+        
+        // If bank info is already completed, remove requirement for bank refill
+        if (onboardingResult.data.bankInfoCompleted && profileData.bankAccount) {
+          // Bank is already done, just need profile info
+          console.log('Bank info already completed, showing only profile form')
         }
       }
     } catch (error) {
@@ -162,6 +185,54 @@ export default function AffiliateOnboardingPage() {
     }
   }
 
+  const handleSendVerificationEmail = async () => {
+    try {
+      setSendingVerificationEmail(true)
+      
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        toast.success('Email verifikasi telah dikirim! Cek inbox Anda.')
+      } else {
+        toast.error(data.error || 'Gagal mengirim email verifikasi')
+      }
+    } catch (error) {
+      console.error('Error sending verification email:', error)
+      toast.error('Gagal mengirim email verifikasi')
+    } finally {
+      setSendingVerificationEmail(false)
+    }
+  }
+
+  const handleMarkEmailVerified = async () => {
+    try {
+      // For Gmail emails, auto-verify without needing token
+      const response = await fetch('/api/affiliate/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 'email',
+          completed: true
+        })
+      })
+
+      if (response.ok) {
+        setEmailVerified(true)
+        toast.success('Email Anda terverifikasi!')
+      } else {
+        toast.error('Gagal memverifikasi email')
+      }
+    } catch (error) {
+      console.error('Error marking email verified:', error)
+      toast.error('Gagal memverifikasi email')
+    }
+  }
+
   const validateForm = () => {
     // Profile validation
     if (!formData.name.trim()) {
@@ -177,18 +248,20 @@ export default function AffiliateOnboardingPage() {
       return false
     }
     
-    // Bank validation
-    if (!bankData.bankName.trim()) {
-      toast.error('Nama bank wajib diisi')
-      return false
-    }
-    if (!bankData.accountName.trim()) {
-      toast.error('Nama pemilik rekening wajib diisi')
-      return false
-    }
-    if (!bankData.accountNumber.trim()) {
-      toast.error('Nomor rekening wajib diisi')
-      return false
+    // Bank validation - only if bank not already completed
+    if (!bankAlreadyCompleted) {
+      if (!bankData.bankName.trim()) {
+        toast.error('Nama bank wajib diisi')
+        return false
+      }
+      if (!bankData.accountName.trim()) {
+        toast.error('Nama pemilik rekening wajib diisi')
+        return false
+      }
+      if (!bankData.accountNumber.trim()) {
+        toast.error('Nomor rekening wajib diisi')
+        return false
+      }
     }
     
     return true
@@ -203,10 +276,14 @@ export default function AffiliateOnboardingPage() {
       console.log('🚀 Starting form submission...')
       
       // Submit all data to profile API (it handles both profile and bank data)
-      const allData = {
+      const allData: Record<string, unknown> = {
         avatar,
         ...formData,
-        bankAccount: bankData
+      }
+      
+      // Only add bank data if it's not already completed or if data changed
+      if (!bankAlreadyCompleted) {
+        allData.bankAccount = bankData
       }
       
       console.log('📝 Submitting all data:', allData)
@@ -237,14 +314,17 @@ export default function AffiliateOnboardingPage() {
         })
       })
 
-      await fetch('/api/affiliate/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          step: 'bank',
-          completed: true
+      // Only mark bank as completed if we just submitted it
+      if (!bankAlreadyCompleted) {
+        await fetch('/api/affiliate/onboarding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            step: 'bank',
+            completed: true
+          })
         })
-      })
+      }
 
       toast.success('Selamat! Setup akun affiliate berhasil 🎉')
       router.push('/affiliate/dashboard')
@@ -283,6 +363,76 @@ export default function AffiliateOnboardingPage() {
 
         {/* Single Form */}
         <div className="space-y-8">
+          {/* Email Verification Section */}
+          {!emailVerified && (
+            <Card className="shadow-lg border-amber-100">
+              <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b">
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-amber-600" />
+                  Verifikasi Email
+                </CardTitle>
+                <CardDescription>
+                  Verifikasi email Anda untuk melanjutkan
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <Alert className="mb-4 border-amber-200 bg-amber-50">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-amber-800">
+                    Email Anda (<strong>{session?.user?.email}</strong>) harus diverifikasi sebelum melanjutkan.
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="flex flex-col gap-3">
+                  <Button
+                    onClick={handleSendVerificationEmail}
+                    disabled={sendingVerificationEmail}
+                    className="bg-amber-500 hover:bg-amber-600 text-white"
+                  >
+                    {sendingVerificationEmail ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Mengirim Email Verifikasi...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Kirim Email Verifikasi
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    onClick={handleMarkEmailVerified}
+                    variant="outline"
+                    className="border-amber-200 text-amber-700 hover:bg-amber-50"
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Email Sudah Terverifikasi?
+                  </Button>
+                  
+                  <p className="text-xs text-gray-600 mt-2">
+                    Klik tombol di atas untuk mengirim link verifikasi ke email Anda atau klik "Email Sudah Terverifikasi?" jika Anda sudah memverifikasi email.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {emailVerified && (
+            <Card className="shadow-lg border-green-100 bg-green-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold text-green-900">Email Terverifikasi</p>
+                    <p className="text-sm text-green-700">{session?.user?.email}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           {/* Profile Section */}
           <Card className="shadow-lg border-purple-100">
             <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
@@ -439,17 +589,18 @@ export default function AffiliateOnboardingPage() {
           </Card>
 
           {/* Bank Section */}
-          <Card className="shadow-lg border-purple-100">
-            <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-green-600" />
-                Informasi Rekening Bank
-              </CardTitle>
-              <CardDescription>
-                Untuk pencairan komisi affiliate Anda
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+          {!bankAlreadyCompleted ? (
+            <Card className="shadow-lg border-purple-100">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-green-600" />
+                  Informasi Rekening Bank
+                </CardTitle>
+                <CardDescription>
+                  Untuk pencairan komisi affiliate Anda
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-6">
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-amber-800">
                   <strong>Penting:</strong> Pastikan data rekening sesuai dengan identitas Anda untuk kelancaran pencairan komisi.
@@ -499,7 +650,25 @@ export default function AffiliateOnboardingPage() {
                 />
               </div>
             </CardContent>
-          </Card>
+            </Card>
+          ) : (
+            <Card className="shadow-lg border-green-100 bg-green-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold text-green-900">Informasi Rekening Bank Sudah Tersimpan</p>
+                    <p className="text-sm text-green-700 mt-1">
+                      {bankData.bankName} - {bankData.accountNumber}
+                    </p>
+                    <p className="text-xs text-green-600 mt-2">
+                      Anda dapat mengubahnya di halaman profil affiliate jika diperlukan
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Submit Button */}
           <div className="flex justify-center pt-4 pb-8">

@@ -192,6 +192,40 @@ export async function checkEmailVerification(userId: string): Promise<boolean> {
   return user?.emailVerified || false
 }
 
+// Auto-verify Gmail email (skip manual verification)
+export async function autoVerifyGmailEmail(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, emailVerified: true }
+  })
+
+  if (!user) {
+    return false
+  }
+
+  // Only auto-verify if it's a Gmail email
+  if (!isValidGmailEmail(user.email)) {
+    return false
+  }
+
+  // Mark as verified if not already
+  if (!user.emailVerified) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { emailVerified: true }
+    })
+
+    // Clean up any pending tokens
+    await prisma.emailVerificationToken.deleteMany({
+      where: { identifier: userId }
+    })
+
+    return true
+  }
+
+  return user.emailVerified
+}
+
 // Resend verification email
 export async function resendVerificationEmail(userId: string) {
   const user = await prisma.user.findUnique({

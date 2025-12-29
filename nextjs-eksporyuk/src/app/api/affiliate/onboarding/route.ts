@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
+import { autoVerifyGmailEmail, isValidGmailEmail } from '@/lib/email-verification'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -246,6 +247,22 @@ export async function POST(request: Request) {
       case 'profile':
         updateData.profileCompleted = completed
         if (completed) updateData.profileCompletedAt = new Date()
+        break
+      case 'email':
+        // For email step, auto-verify if Gmail and mark as completed
+        if (completed) {
+          const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { email: true }
+          })
+          
+          if (user && isValidGmailEmail(user.email)) {
+            // Auto-verify Gmail email
+            await autoVerifyGmailEmail(session.user.id)
+          }
+        }
+        updateData.emailVerified = completed
+        if (completed) updateData.emailVerifiedAt = new Date()
         break
       case 'bank':
         updateData.bankInfoCompleted = completed
