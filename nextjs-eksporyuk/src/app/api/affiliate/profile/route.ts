@@ -46,25 +46,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Affiliate profile not found' }, { status: 404 })
     }
 
-    // Get bank account from latest payout
-    const wallet = await prisma.wallet.findUnique({
-      where: { userId: session.user.id },
-    })
-
-    const latestPayout = await prisma.payout.findFirst({
-      where: {
-        walletId: wallet?.id,
-        bankName: { not: null },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
-
-    const bankAccount = latestPayout ? {
-      bankName: latestPayout.bankName || '',
-      accountName: latestPayout.accountName || '',
-      accountNumber: latestPayout.accountNumber || '',
+    // Get bank account directly from affiliate profile
+    const bankAccount = affiliateProfile.bankName ? {
+      bankName: affiliateProfile.bankName || '',
+      accountName: affiliateProfile.bankAccountName || '',
+      accountNumber: affiliateProfile.bankAccountNumber || '',
     } : null
 
     // Build URLs
@@ -141,66 +127,22 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ User updated successfully')
 
-    // Handle bank account data if provided
+    // Handle bank account data if provided - save directly to AffiliateProfile
     let bankAccountSaved = false
     if (bankAccount && bankAccount.bankName && bankAccount.accountName && bankAccount.accountNumber) {
       console.log('🏦 Processing bank account data:', bankAccount)
       
       try {
-        // Get or create wallet
-        let wallet = await prisma.wallet.findUnique({
+        // Update bank account directly in AffiliateProfile
+        await prisma.affiliateProfile.update({
           where: { userId: session.user.id },
-        })
-
-        if (!wallet) {
-          wallet = await prisma.wallet.create({
-            data: {
-              userId: session.user.id,
-              balance: 0,
-            },
-          })
-          console.log('💳 Created new wallet')
-        }
-
-        // Get the most recent payout record with bank info for this wallet (regardless of status)
-        const existingBankPayout = await prisma.payout.findFirst({
-          where: {
-            walletId: wallet.id,
-            bankName: { not: null },
+          data: {
+            bankName: bankAccount.bankName,
+            bankAccountName: bankAccount.accountName,
+            bankAccountNumber: bankAccount.accountNumber,
           },
-          orderBy: { createdAt: 'desc' },
         })
-
-        if (existingBankPayout) {
-          // Update the existing payout record with new bank details
-          await prisma.payout.update({
-            where: { id: existingBankPayout.id },
-            data: {
-              bankName: bankAccount.bankName,
-              accountName: bankAccount.accountName,
-              accountNumber: bankAccount.accountNumber,
-              notes: 'Bank account info for affiliate - updated',
-              updatedAt: new Date(),
-            },
-          })
-          console.log('🏦 Bank account info updated')
-        } else {
-          // Create a new payout record to store bank info
-          await prisma.payout.create({
-            data: {
-              walletId: wallet.id,
-              amount: 0,
-              status: 'PAID', // Set as paid so it won't show in payout list
-              bankName: bankAccount.bankName,
-              accountName: bankAccount.accountName,
-              accountNumber: bankAccount.accountNumber,
-              notes: 'Bank account info for affiliate',
-              paidAt: new Date(),
-            },
-          })
-          console.log('🏦 Bank account info created')
-        }
-        
+        console.log('🏦 Bank account info saved to AffiliateProfile')
         bankAccountSaved = true
       } catch (bankError) {
         console.error('❌ Error saving bank account:', bankError)
@@ -312,59 +254,15 @@ export async function PUT(request: NextRequest) {
       })
     }
 
-    // Get or create wallet
-    let wallet = await prisma.wallet.findUnique({
+    // Update bank account directly in AffiliateProfile
+    await prisma.affiliateProfile.update({
       where: { userId: session.user.id },
-    })
-
-    if (!wallet) {
-      wallet = await prisma.wallet.create({
-        data: {
-          userId: session.user.id,
-          balance: 0,
-        },
-      })
-    }
-
-    // Get the most recent payout record with bank info for this wallet
-    const latestPayout = await prisma.payout.findFirst({
-      where: {
-        walletId: wallet.id,
-        bankName: { not: null },
-      },
-      orderBy: {
-        createdAt: 'desc',
+      data: {
+        bankName: bankAccount.bankName,
+        bankAccountName: bankAccount.accountName,
+        bankAccountNumber: bankAccount.accountNumber,
       },
     })
-
-    // Update existing or create new bank info record
-    if (latestPayout) {
-      // Update the existing record with new bank details
-      await prisma.payout.update({
-        where: { id: latestPayout.id },
-        data: {
-          bankName: bankAccount.bankName,
-          accountName: bankAccount.accountName,
-          accountNumber: bankAccount.accountNumber,
-          notes: 'Bank account info update',
-          updatedAt: new Date(),
-        },
-      })
-    } else {
-      // Create new record if none exists
-      await prisma.payout.create({
-        data: {
-          walletId: wallet.id,
-          amount: 0,
-          status: 'PAID', // Set as paid so it won't show in payout list
-          bankName: bankAccount.bankName,
-          accountName: bankAccount.accountName,
-          accountNumber: bankAccount.accountNumber,
-          notes: 'Bank account info update',
-          paidAt: new Date(),
-        },
-      })
-    }
 
     return NextResponse.json({
       success: true,
