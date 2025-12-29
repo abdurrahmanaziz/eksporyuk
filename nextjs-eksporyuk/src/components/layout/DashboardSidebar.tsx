@@ -8,6 +8,7 @@ import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { useSettings } from '@/components/providers/SettingsProvider'
 import RoleSwitcher from '@/components/dashboard/RoleSwitcher'
+import { usePendingTransactions } from '@/hooks/usePendingTransactions'
 import Pusher from 'pusher-js'
 import {
   Home,
@@ -429,6 +430,7 @@ export default function DashboardSidebar() {
   const [hasAffiliateProfile, setHasAffiliateProfile] = useState(false)
   const [affiliateStatus, setAffiliateStatus] = useState<string | null>(null)
   const [darkMode, setDarkMode] = useState(false)
+  const { hasPending, transactions, loading: pendingLoading } = usePendingTransactions()
   
   const userRole = session?.user?.role || 'MEMBER_FREE'
   const { settings } = useSettings()
@@ -559,6 +561,24 @@ export default function DashboardSidebar() {
 
   // Get base navigation by role
   let baseNavigation = navigationByRole[userRole as keyof typeof navigationByRole] || navigationByRole.MEMBER_FREE
+  
+  // For MEMBER_FREE users with pending transactions: show payment continuation instead of upgrade
+  if (userRole === 'MEMBER_FREE' && hasPending && transactions.length > 0 && !pendingLoading) {
+    const membershipCategory = baseNavigation.find(cat => cat.title === 'MEMBERSHIP')
+    if (membershipCategory) {
+      // Replace upgrade item with payment continuation link to first pending transaction
+      const firstPending = transactions[0]
+      membershipCategory.items = membershipCategory.items.map(item => 
+        item.href === '/dashboard/upgrade'
+          ? { 
+              name: '💳 Lanjutkan Pembayaran', 
+              href: `/checkout/payment/${firstPending.id}`, 
+              icon: CreditCard 
+            }
+          : item
+      )
+    }
+  }
   
   // Add affiliate menu for non-affiliate users if enabled
   if (affiliateMenuEnabled && userRole !== 'AFFILIATE') {
