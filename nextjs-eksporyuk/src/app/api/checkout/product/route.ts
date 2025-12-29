@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
 // Force this route to be dynamic
@@ -266,28 +266,24 @@ export async function POST(request: NextRequest) {
     let xenditSuccess = false
     
     try {
-      const invoiceResult = await xenditService.createInvoice({
-        externalId: externalId,
-        payerEmail: email || session.user.email || '',
+      const invoiceResult = await xenditProxy.createInvoice({
+        external_id: externalId,
+        payer_email: email || session.user.email || '',
         description: `Product: ${product.name}`,
         amount: amount,
         currency: 'IDR',
-        invoiceDuration: expiryHours * 3600, // Convert hours to seconds
-        successRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?transaction_id=${transaction.id}`,
-        failureRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failed?transaction_id=${transaction.id}`,
-        customerName: name || session.user.name || '',
-        customerEmail: email || session.user.email || '',
-        customerPhone: whatsapp || phone || '',
-        items: [{
-          name: product.name,
-          quantity: 1,
-          price: amount,
-          category: 'Product'
-        }]
+        invoice_duration: expiryHours * 3600, // Convert hours to seconds
+        success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?transaction_id=${transaction.id}`,
+        failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failed?transaction_id=${transaction.id}`,
+        customer: {
+          given_names: name || session.user.name || '',
+          email: email || session.user.email || '',
+          mobile_number: whatsapp || phone || ''
+        }
       })
 
-      if (invoiceResult.success && invoiceResult.data) {
-        paymentUrl = invoiceResult.data.invoiceUrl
+      if (invoiceResult && invoiceResult.invoice_url) {
+        paymentUrl = invoiceResult.invoice_url
         xenditSuccess = true
         
         // Update transaction with Xendit invoice URL
@@ -295,13 +291,13 @@ export async function POST(request: NextRequest) {
           where: { id: transaction.id },
           data: {
             paymentUrl: paymentUrl,
-            reference: invoiceResult.data.id,
+            reference: invoiceResult.id,
             expiredAt: new Date(Date.now() + expiryHours * 60 * 60 * 1000)
           }
         })
         console.log('[API Checkout Product] ✅ Xendit invoice created')
       } else {
-        console.error('[API Checkout Product] Failed to create Xendit invoice:', invoiceResult.error)
+        console.error('[API Checkout Product] Failed to create Xendit invoice: no invoice_url returned')
       }
     } catch (xenditError) {
       console.error('[API Checkout Product] Xendit integration error:', xenditError)

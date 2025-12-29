@@ -183,7 +183,7 @@ export async function POST(request: Request) {
       // Create Invoice (general payment with all methods) - Same as membership system
       console.log('🧾 Creating Invoice for general payment')
       
-      xenditPayment = await xenditService.createInvoice({
+      const invoiceData = await xenditProxy.createInvoice({
         external_id: transaction.id,
         payer_email: affiliate.user.email,
         description: `Top up ${credits} kredit broadcast email - ${packageId}`,
@@ -197,8 +197,17 @@ export async function POST(request: Request) {
         }
       })
 
-      if (!xenditPayment.success) {
-        console.error('Failed to create Xendit invoice:', xenditPayment.error)
+      if (!invoiceData || !invoiceData.invoice_url) {
+        console.error('Failed to create Xendit invoice')
+        xenditPayment = { success: false, error: 'No invoice_url returned' }
+      } else {
+        xenditPayment = { 
+          success: true, 
+          data: {
+            id: invoiceData.id,
+            invoiceUrl: invoiceData.invoice_url
+          }
+        }
       }
 
       // Update transaction with Xendit invoice info

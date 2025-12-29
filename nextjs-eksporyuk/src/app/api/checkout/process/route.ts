@@ -319,7 +319,7 @@ export async function POST(request: NextRequest) {
         paymentMethods = [paymentChannel] // ALFAMART, INDOMARET
       }
       
-      const invoiceResult = await xenditService.createInvoice({
+      const invoiceResult = await xenditProxy.createInvoice({
         external_id: transaction.id,
         amount: finalAmount,
         payer_email: customerEmail,
@@ -336,7 +336,7 @@ export async function POST(request: NextRequest) {
 
       console.log('[Checkout Process] Invoice result:', JSON.stringify(invoiceResult, null, 2))
 
-      if (!invoiceResult || (!invoiceResult.invoiceUrl && !invoiceResult.invoice_url)) {
+      if (!invoiceResult || !invoiceResult.invoice_url) {
         console.error('[Checkout Process] Invoice creation failed')
         await prisma.transaction.delete({ where: { id: transaction.id } })
         return NextResponse.json(
@@ -345,10 +345,10 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      paymentUrl = invoiceResult.invoiceUrl || invoiceResult.invoice_url
+      paymentUrl = invoiceResult.invoice_url
       xenditReference = invoiceResult.id
-      xenditExternalId = invoiceResult.externalId || invoiceResult.external_id
-      xenditExpiryDate = invoiceResult.expiryDate || invoiceResult.expiry_date
+      xenditExternalId = invoiceResult.external_id
+      xenditExpiryDate = invoiceResult.expiry_date
 
       // Update transaction with Xendit invoice data
       await prisma.transaction.update({

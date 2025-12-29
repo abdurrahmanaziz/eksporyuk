@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
 import { TransactionType } from '@prisma/client'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 import { getNextInvoiceNumber } from '@/lib/invoice-generator'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     let paymentUrl = ''
     
     try {
-      const invoiceResult = await xenditService.createInvoice({
+      const invoiceResult = await xenditProxy.createInvoice({
         external_id: transaction.externalId!,
         amount: finalAmount,
         payer_email: email || session?.user?.email || '',
@@ -143,14 +143,14 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      if (invoiceResult && (invoiceResult as any).invoice_url) {
-        paymentUrl = (invoiceResult as any).invoice_url
+      if (invoiceResult && invoiceResult.invoice_url) {
+        paymentUrl = invoiceResult.invoice_url
         
         await prisma.transaction.update({
           where: { id: transaction.id },
           data: {
             paymentUrl: paymentUrl,
-            reference: (invoiceResult as any).id,
+            reference: invoiceResult.id,
             expiredAt: new Date(Date.now() + expiryHours * 60 * 60 * 1000)
           }
         })

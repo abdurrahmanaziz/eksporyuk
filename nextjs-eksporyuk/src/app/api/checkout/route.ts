@@ -446,7 +446,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Create Invoice (general payment with all methods)
-      xenditPayment = await xenditService.createInvoice({
+      const invoiceData = await xenditProxy.createInvoice({
         external_id: transaction.id,
         payer_email: customer.email,
         description: transaction.description || 'Purchase',
@@ -460,8 +460,17 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      if (!xenditPayment.success) {
-        console.error('Failed to create Xendit invoice:', xenditPayment.error)
+      if (!invoiceData || !invoiceData.invoice_url) {
+        console.error('Failed to create Xendit invoice')
+        xenditPayment = { success: false, error: 'No invoice_url returned' }
+      } else {
+        xenditPayment = { 
+          success: true, 
+          data: {
+            id: invoiceData.id,
+            invoiceUrl: invoiceData.invoice_url
+          }
+        }
       }
 
       // Update transaction with Xendit invoice info

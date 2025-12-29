@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditService } from '@/lib/xendit'
+import { xenditProxy } from '@/lib/xendit-proxy'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -218,13 +218,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const invoiceData = await xenditService.createInvoice(invoicePayload)
+    const invoiceData = await xenditProxy.createInvoice(invoicePayload)
 
     // 9. Save payment URL
     await prisma.transaction.update({
       where: { id: transaction.id },
       data: {
-        paymentUrl: invoiceData.invoiceUrl,
+        paymentUrl: invoiceData.invoice_url,
         reference: invoiceData.id
       }
     })
@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       status: 'PENDING_PAYMENT',
       transactionId: transaction.id,
-      paymentUrl: invoiceData.invoiceUrl,
+      paymentUrl: invoiceData.invoice_url,
       amount: finalPrice,
       eventId: eventId
     })

@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { useSettings } from '@/components/providers/SettingsProvider'
+import RoleSwitcher from '@/components/dashboard/RoleSwitcher'
 import Pusher from 'pusher-js'
 import {
   Home,
@@ -780,7 +781,8 @@ export default function DashboardSidebar() {
 
         {/* Footer Section */}
         <div className="border-t border-gray-200 p-3 space-y-2">
-          {/* Dark mode toggle removed */}
+          {/* Role Switcher - only shows for multi-role users */}
+          <RoleSwitcher collapsed={collapsed} />
 
           {/* User Profile */}
           <div className={cn(

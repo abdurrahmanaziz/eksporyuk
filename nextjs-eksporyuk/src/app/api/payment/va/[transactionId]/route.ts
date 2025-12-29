@@ -78,12 +78,12 @@ export async function GET(
     if (isFallbackVA && vaNumber) {
       // Try to create a real Xendit invoice as alternative
       try {
-        const { xenditService } = await import('@/lib/xendit')
-        const isConfigured = await xenditService.isConfigured()
+        const { xenditProxy } = await import('@/lib/xendit-proxy')
+        const isConfigured = await xenditProxy.isConfigured()
         
         if (isConfigured) {
           // Create invoice for checkout
-          const invoice = await xenditService.createInvoice({
+          const invoice = await xenditProxy.createInvoice({
             external_id: transaction.externalId || transaction.id,
             amount: Number(transaction.amount),
             payer_email: transaction.customerEmail || user?.email || 'customer@eksporyuk.com',
@@ -91,16 +91,16 @@ export async function GET(
             invoice_duration: paymentExpiryHours * 3600,
           })
           
-          if (invoice?.invoiceUrl) {
+          if (invoice?.invoice_url) {
             // Update transaction with invoice URL
             await prisma.transaction.update({
               where: { id: transaction.id },
-              data: { paymentUrl: invoice.invoiceUrl }
+              data: { paymentUrl: invoice.invoice_url }
             })
             
             return NextResponse.json({
               redirect: true,
-              redirectUrl: invoice.invoiceUrl,
+              redirectUrl: invoice.invoice_url,
               message: 'Silakan selesaikan pembayaran melalui Xendit',
             })
           }

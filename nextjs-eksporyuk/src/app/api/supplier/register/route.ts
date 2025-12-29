@@ -305,10 +305,10 @@ export async function POST(request: Request) {
 
       // Create Xendit invoice
       try {
-        const { xenditService } = await import('@/lib/xendit')
+        const { xenditProxy } = await import('@/lib/xendit-proxy')
         console.log('[SUPPLIER_REGISTER] Creating Xendit invoice...')
         
-        const xenditResult = await xenditService.createInvoice({
+        const xenditResult = await xenditProxy.createInvoice({
           external_id: transaction.id,
           payer_email: session.user.email || email,
           description: `Supplier Membership: ${selectedPackage.name}`,
@@ -325,7 +325,7 @@ export async function POST(request: Request) {
         console.log('[SUPPLIER_REGISTER] Xendit result:', xenditResult?.id)
 
         if (xenditResult && xenditResult.id) {
-          const invoiceUrl = (xenditResult as any).invoice_url || (xenditResult as any).invoiceUrl
+          const invoiceUrl = xenditResult.invoice_url
           
           // Update transaction with Xendit reference
           await prisma.transaction.update({
