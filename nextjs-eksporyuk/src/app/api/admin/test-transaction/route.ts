@@ -151,28 +151,29 @@ export async function POST(req: NextRequest) {
         })
 
         const xenditInvoice = await xenditService.createInvoice({
-          externalId: transaction.id,
-          payerEmail: adminUser.email!,
+          external_id: transaction.id,
+          payer_email: adminUser.email!,
           description: `Membership: ${membership.name}`,
           amount,
           currency: 'IDR',
-          invoiceDuration: 86400,
-          successRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=true`,
-          failureRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=false`,
-          customerName: adminUser.name!,
-          customerEmail: adminUser.email!,
-          items: [{ name: `Membership: ${membership.name}`, quantity: 1, price: amount, category: 'Membership' }]
+          invoice_duration: 86400,
+          success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=true`,
+          failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=false`,
+          customer: {
+            given_names: adminUser.name!,
+            email: adminUser.email!,
+          }
         })
 
-        if (!xenditInvoice.success) {
-          return NextResponse.json({ error: 'Xendit invoice failed', details: xenditInvoice.error }, { status: 500 })
+        if (!xenditInvoice) {
+          return NextResponse.json({ error: 'Xendit invoice failed' }, { status: 500 })
         }
 
         await prisma.transaction.update({
           where: { id: transaction.id },
           data: {
-            reference: xenditInvoice.data?.id,
-            paymentUrl: xenditInvoice.data?.invoiceUrl
+            reference: xenditInvoice.id,
+            paymentUrl: xenditInvoice.invoiceUrl
           }
         })
 
@@ -180,7 +181,7 @@ export async function POST(req: NextRequest) {
           success: true,
           demoMode: false,
           message: `Invoice Xendit created for ${membership.name}`,
-          paymentUrl: xenditInvoice.data?.invoiceUrl
+          paymentUrl: xenditInvoice.invoiceUrl
         })
       }
     }
@@ -326,28 +327,29 @@ export async function POST(req: NextRequest) {
         })
 
         const xenditInvoice = await xenditService.createInvoice({
-          externalId: transaction.id,
-          payerEmail: adminUser.email!,
+          external_id: transaction.id,
+          payer_email: adminUser.email!,
           description: `Product: ${product.name}`,
           amount,
           currency: 'IDR',
-          invoiceDuration: 86400,
-          successRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=true`,
-          failureRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=false`,
-          customerName: adminUser.name!,
-          customerEmail: adminUser.email!,
-          items: [{ name: `Product: ${product.name}`, quantity: 1, price: amount, category: 'Product' }]
+          invoice_duration: 86400,
+          success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=true`,
+          failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=false`,
+          customer: {
+            given_names: adminUser.name!,
+            email: adminUser.email!,
+          }
         })
 
-        if (!xenditInvoice.success) {
+        if (!xenditInvoice) {
           return NextResponse.json({ error: 'Xendit invoice failed' }, { status: 500 })
         }
 
         await prisma.transaction.update({
           where: { id: transaction.id },
           data: {
-            reference: xenditInvoice.data?.id,
-            paymentUrl: xenditInvoice.data?.invoiceUrl
+            reference: xenditInvoice.id,
+            paymentUrl: xenditInvoice.invoiceUrl
           }
         })
 
@@ -355,7 +357,7 @@ export async function POST(req: NextRequest) {
           success: true,
           demoMode: false,
           message: `Invoice Xendit created for ${product.name}`,
-          paymentUrl: xenditInvoice.data?.invoiceUrl
+          paymentUrl: xenditInvoice.invoiceUrl
         })
       }
     }
@@ -499,28 +501,29 @@ export async function POST(req: NextRequest) {
         })
 
         const xenditInvoice = await xenditService.createInvoice({
-          externalId: transaction.id,
-          payerEmail: adminUser.email!,
+          external_id: transaction.id,
+          payer_email: adminUser.email!,
           description: `Course: ${course.title}`,
           amount,
           currency: 'IDR',
-          invoiceDuration: 86400,
-          successRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=true`,
-          failureRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=false`,
-          customerName: adminUser.name!,
-          customerEmail: adminUser.email!,
-          items: [{ name: `Course: ${course.title}`, quantity: 1, price: amount, category: 'Course' }]
+          invoice_duration: 86400,
+          success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=true`,
+          failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/integrations?success=false`,
+          customer: {
+            given_names: adminUser.name!,
+            email: adminUser.email!,
+          }
         })
 
-        if (!xenditInvoice.success) {
+        if (!xenditInvoice) {
           return NextResponse.json({ error: 'Xendit invoice failed' }, { status: 500 })
         }
 
         await prisma.transaction.update({
           where: { id: transaction.id },
           data: {
-            reference: xenditInvoice.data?.id,
-            paymentUrl: xenditInvoice.data?.invoiceUrl
+            reference: xenditInvoice.id,
+            paymentUrl: xenditInvoice.invoiceUrl
           }
         })
 
@@ -528,7 +531,7 @@ export async function POST(req: NextRequest) {
           success: true,
           demoMode: false,
           message: `Invoice Xendit created for ${course.title}`,
-          paymentUrl: xenditInvoice.data?.invoiceUrl
+          paymentUrl: xenditInvoice.invoiceUrl
         })
       }
     }
