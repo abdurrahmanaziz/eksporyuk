@@ -20,10 +20,10 @@ export async function GET(request: NextRequest) {
     
     // Export critical data as JSON
     const [users, memberships, transactions, affiliates, settings] = await Promise.all([
-      prisma.user.findMany({ take: 10000 }),
-      prisma.membership.findMany({ take: 5000 }),
-      prisma.transaction.findMany({ take: 10000, orderBy: { createdAt: 'desc' } }),
-      prisma.affiliateProfile.findMany({ take: 5000 }),
+      prisma.user.findMany(),
+      prisma.membership.findMany(),
+      prisma.transaction.findMany({ orderBy: { createdAt: 'desc' } }),
+      prisma.affiliateProfile.findMany(),
       prisma.settings.findMany()
     ])
     
