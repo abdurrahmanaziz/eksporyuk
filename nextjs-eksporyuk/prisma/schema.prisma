@@ -1724,7 +1724,7 @@ model MembershipProduct {
 }
 
 model MembershipReminder {
-  id              String          @id
+  id              String          @id @default(cuid())
   membershipId    String
   title           String
   description     String?
@@ -1766,7 +1766,7 @@ model MembershipReminder {
   clickedCount    Int             @default(0)
   failedCount     Int             @default(0)
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime        @updatedAt
 
   @@unique([membershipId, title])
   @@index([isActive])
