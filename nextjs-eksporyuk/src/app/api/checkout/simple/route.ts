@@ -3,8 +3,12 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { xenditService } from '@/lib/xendit'
+import { randomBytes } from 'crypto'
 
 import { generateTransactionId, getCurrentTimestamp } from '@/lib/transaction-helper'
+
+// Helper to generate unique ID
+const createId = () => randomBytes(12).toString('hex')
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
