@@ -132,7 +132,15 @@ export async function POST(request: NextRequest) {
     })
 
     console.log(`✅ Coupon created successfully: ${newCoupon.code}`)
-    return NextResponse.json({ coupon: newCoupon }, { status: 201 })
+    
+    // Convert Decimal fields to strings for JSON serialization
+    const response = {
+      ...newCoupon,
+      discountValue: newCoupon.discountValue.toString(),
+      minPurchase: newCoupon.minPurchase?.toString() || null
+    }
+    
+    return NextResponse.json({ coupon: response }, { status: 201 })
   } catch (error) {
     console.error('❌ Error generating coupon:', error)
     
