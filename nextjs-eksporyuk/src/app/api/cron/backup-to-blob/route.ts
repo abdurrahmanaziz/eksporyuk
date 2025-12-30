@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     
     // Upload to Vercel Blob
     const blob = await put(fileName, backupJson, {
-      access: 'private',
+      access: 'public',
       contentType: 'application/json',
     })
     
