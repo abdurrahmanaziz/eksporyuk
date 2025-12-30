@@ -337,6 +337,14 @@ export default function VirtualAccountPage() {
   }
 
   const hasDiscount = vaDetails.originalAmount > vaDetails.amount
+  
+  // Calculate discount amount and percentage correctly
+  const calculatedDiscountAmount = vaDetails.discountAmount > 0 
+    ? vaDetails.discountAmount 
+    : vaDetails.originalAmount - vaDetails.amount
+  const discountPercentage = vaDetails.originalAmount > 0 
+    ? Math.round((calculatedDiscountAmount / vaDetails.originalAmount) * 100) 
+    : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-6 px-4">
@@ -351,20 +359,22 @@ export default function VirtualAccountPage() {
         {/* VA Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
           {/* Bank Header */}
-          <div className={`bg-gradient-to-r ${getBankColor(vaDetails.bankCode)} p-5 text-white`}>
+          <div className={`bg-gradient-to-r ${getBankColor(vaDetails.bankCode)} p-5`}>
             <div className="flex items-center justify-between">
-              <div>
+              <div className="text-white">
                 <p className="text-sm opacity-90 mb-1">Virtual Account</p>
                 <h2 className="text-xl font-bold">{vaDetails.bankName || vaDetails.bankCode}</h2>
               </div>
-              <img 
-                src={getBankLogo(vaDetails.bankCode)} 
-                alt={vaDetails.bankCode || 'Bank'}
-                className="h-10 w-auto bg-white rounded-lg p-1.5"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
+              <div className="bg-white rounded-lg p-2 shadow-md">
+                <img 
+                  src={getBankLogo(vaDetails.bankCode)} 
+                  alt={vaDetails.bankCode || 'Bank'}
+                  className="h-8 w-auto object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              </div>
             </div>
           </div>
 
@@ -406,7 +416,7 @@ export default function VirtualAccountPage() {
                         {formatCurrency(vaDetails.originalAmount)}
                       </p>
                       <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-semibold">
-                        HEMAT {Math.round((vaDetails.discountAmount / vaDetails.originalAmount) * 100)}%
+                        HEMAT {discountPercentage}%
                       </span>
                     </div>
                     <p className="text-2xl font-bold text-green-600">
@@ -417,7 +427,7 @@ export default function VirtualAccountPage() {
                   <p className="text-2xl font-bold text-gray-900">
                     {formatCurrency(vaDetails.amount)}
                   </p>
-                )}
+                )}}
               </div>
               <button
                 onClick={() => copyToClipboard(vaDetails.amount.toString(), 'amount')}
@@ -548,7 +558,7 @@ export default function VirtualAccountPage() {
                       </span>
                     )}
                   </span>
-                  <span className="font-semibold text-green-600">-{formatCurrency(vaDetails.discountAmount)}</span>
+                  <span className="font-semibold text-green-600">-{formatCurrency(calculatedDiscountAmount)}</span>
                 </div>
               )}
               

@@ -169,10 +169,20 @@ export async function GET(
       bankCode: metadata?.bankCode || metadata?.xenditBankCode,
       bankName: getBankName(metadata?.bankCode || metadata?.xenditBankCode),
       
-      // Amount Details
+      // Amount Details - Calculate discount properly
       amount: Number(transaction.amount),
       originalAmount: Number(transaction.originalAmount || metadata?.originalAmount || transaction.amount),
-      discountAmount: Number(transaction.discountAmount || metadata?.discountAmount || 0),
+      discountAmount: (() => {
+        // If discountAmount is stored, use it
+        const storedDiscount = Number(transaction.discountAmount || metadata?.discountAmount || 0)
+        if (storedDiscount > 0) return storedDiscount
+        
+        // Otherwise calculate from originalAmount - amount
+        const original = Number(transaction.originalAmount || metadata?.originalAmount || transaction.amount)
+        const final = Number(transaction.amount)
+        const calculated = original - final
+        return calculated > 0 ? calculated : 0
+      })(),
       
       // Invoice Details
       invoiceNumber: transaction.invoiceNumber || transaction.id.slice(0, 8).toUpperCase(),
