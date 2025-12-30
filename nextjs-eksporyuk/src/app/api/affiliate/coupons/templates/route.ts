@@ -16,12 +16,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get all active coupons that are affiliate-enabled and created by admin
+    // Get all active coupons that are affiliate-enabled and have basedOnCoupon === null (they are templates)
     const templates = await prisma.coupon.findMany({
       where: {
         isActive: true,
         isAffiliateEnabled: true,
-        createdBy: null, // Admin coupons only
+        basedOnCouponId: null, // These are templates, not generated coupons
       },
       select: {
         id: true,
@@ -37,7 +37,13 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ templates })
+    // Convert Decimal to string for JSON response
+    const templatesWithStrings = templates.map(t => ({
+      ...t,
+      discountValue: t.discountValue.toString()
+    }))
+
+    return NextResponse.json({ templates: templatesWithStrings })
   } catch (error) {
     console.error('Error fetching coupon templates:', error)
     return NextResponse.json(
