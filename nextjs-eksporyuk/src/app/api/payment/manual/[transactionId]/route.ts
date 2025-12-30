@@ -10,35 +10,7 @@ export async function GET(
 
     // Get transaction details
     const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            whatsapp: true,
-            phone: true
-          }
-        },
-        membership: {
-          select: {
-            name: true,
-            duration: true
-          }
-        },
-        product: {
-          select: {
-            name: true
-          }
-        },
-        coupon: {
-          select: {
-            code: true,
-            discountType: true,
-            discountValue: true
-          }
-        }
-      }
+      where: { id: transactionId }
     })
 
     if (!transaction) {
@@ -46,6 +18,126 @@ export async function GET(
         { error: 'Transaction not found' },
         { status: 404 }
       )
+    }
+
+    const metadata = transaction.metadata as any
+    
+    // CHECK: If this should be automated payment (VA/E-wallet), create Xendit invoice instead
+    const paymentMethodType = metadata?.paymentMethodType
+    const paymentChannel = metadata?.paymentChannel
+    
+    // If it's bank_transfer with specific channel (BCA, BRI, etc) and no Xendit reference,
+    // this should go through Xendit invoice flow, not manual
+    if (paymentMethodType === 'bank_transfer' && 
+        paymentChannel && 
+        paymentChannel !== 'manual' && 
+        !transaction.reference) {
+      
+      console.log(`🔄 [Manual Payment API] Transaction ${transactionId} should use Xendit, creating invoice...`)
+      
+      try {
+        const { xenditProxy } = await import('@/lib/xendit-proxy')
+        
+        // Get user details
+        const user = await prisma.user.findUnique({
+          where: { id: transaction.userId },
+          select: { name: true, email: true, phone: true }
+        })
+        
+        if (!user) {
+          console.error('[Manual Payment API] User not found for transaction')
+        } else {
+          // Create Xendit invoice
+          const invoiceData = await xenditProxy.createInvoice({
+            external_id: transaction.id,
+            payer_email: user.email,
+            description: transaction.description || 'Payment',
+            amount: Number(transaction.amount),
+            currency: 'IDR',
+            invoice_duration: 24 * 3600, // 24 hours
+            customer: {
+              given_names: user.name || 'Customer',
+              email: user.email,
+              mobile_number: user.phone || '',
+            },
+            // Add payment method hint
+            payment_methods: [`BANK_${paymentChannel}`],
+          })
+
+          if (invoiceData?.invoice_url) {
+            // Update transaction with Xendit details
+            await prisma.transaction.update({
+              where: { id: transactionId },
+              data: {
+                reference: invoiceData.id,
+                paymentUrl: invoiceData.invoice_url,
+                paymentProvider: 'XENDIT',
+                paymentMethod: `INVOICE_${paymentChannel}`,
+                metadata: {
+                  ...metadata,
+                  xenditInvoiceId: invoiceData.id,
+                  xenditInvoiceUrl: invoiceData.invoice_url,
+                  redirectedFromManual: true
+                }
+              }
+            })
+            
+            console.log(`✅ [Manual Payment API] Created Xendit invoice for ${transactionId}: ${invoiceData.invoice_url}`)
+            
+            // Return redirect instruction
+            return NextResponse.json({
+              shouldRedirectToXendit: true,
+              xenditUrl: invoiceData.invoice_url,
+              transactionId: transactionId,
+              message: 'Redirecting to Xendit payment...'
+            })
+          }
+        }
+      } catch (xenditError) {
+        console.error('[Manual Payment API] Failed to create Xendit invoice:', xenditError)
+        // Fall through to manual payment
+      }
+    }
+
+    // Get user data manually
+    const user = await prisma.user.findUnique({
+      where: { id: transaction.userId },
+      select: {
+        name: true,
+        email: true,
+        whatsapp: true,
+        phone: true
+      }
+    })
+
+    // Get membership/product data if applicable
+    let membership = null
+    let product = null
+    let coupon = null
+    
+    if (metadata?.membershipId) {
+      membership = await prisma.membership.findUnique({
+        where: { id: metadata.membershipId },
+        select: { name: true, duration: true }
+      })
+    }
+    
+    if (metadata?.productId) {
+      product = await prisma.product.findUnique({
+        where: { id: metadata.productId },
+        select: { name: true }
+      })
+    }
+    
+    if (transaction.couponId) {
+      coupon = await prisma.coupon.findUnique({
+        where: { id: transaction.couponId },
+        select: {
+          code: true,
+          discountType: true,
+          discountValue: true
+        }
+      })
     }
 
     // Get manual bank accounts from payment methods
@@ -80,16 +172,15 @@ export async function GET(
     const paymentExpiryHours = settings?.paymentExpiryHours || 72
 
     // Calculate amounts
-    const metadata = transaction.metadata as any
     const originalAmount = metadata?.originalAmount || transaction.amount
     const discountAmount = metadata?.discountAmount || 0
 
     // Get item name
     let itemName = 'Unknown Product'
-    if (transaction.membership) {
-      itemName = transaction.membership.name
-    } else if (transaction.product) {
-      itemName = transaction.product.name
+    if (membership) {
+      itemName = membership.name
+    } else if (product) {
+      itemName = product.name
     } else if (metadata?.itemName) {
       itemName = metadata.itemName
     }
@@ -109,9 +200,9 @@ export async function GET(
       description: transaction.description || '',
       
       // Customer Details
-      customerName: transaction.user?.name || metadata?.customerName || 'Customer',
-      customerEmail: transaction.user?.email || metadata?.customerEmail || '',
-      customerWhatsapp: transaction.user?.whatsapp || transaction.user?.phone || metadata?.customerWhatsapp || '',
+      customerName: user?.name || metadata?.customerName || 'Customer',
+      customerEmail: user?.email || metadata?.customerEmail || '',
+      customerWhatsapp: user?.whatsapp || user?.phone || metadata?.customerWhatsapp || '',
       
       // Time Details
       createdAt: transaction.createdAt.toISOString(),
@@ -119,10 +210,10 @@ export async function GET(
       paymentExpiryHours,
       
       // Coupon Details
-      coupon: transaction.coupon ? {
-        code: transaction.coupon.code,
-        discountType: transaction.coupon.discountType,
-        discountValue: Number(transaction.coupon.discountValue)
+      coupon: coupon ? {
+        code: coupon.code,
+        discountType: coupon.discountType,
+        discountValue: Number(coupon.discountValue)
       } : null,
       
       // Bank Accounts

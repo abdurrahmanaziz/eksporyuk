@@ -44,6 +44,10 @@ interface ManualPaymentDetails {
   }[]
   
   selectedBankCode?: string
+  
+  // Redirect details for Xendit
+  redirecting?: boolean
+  redirectMessage?: string
 }
 
 interface TimeLeft {
@@ -93,6 +97,25 @@ export default function ManualPaymentPage() {
 
       if (!response.ok) {
         setError(data.error || 'Failed to load payment details')
+        return
+      }
+
+      // Check if should redirect to Xendit
+      if (data.shouldRedirectToXendit && data.xenditUrl) {
+        console.log('🔄 Auto-redirecting to Xendit:', data.xenditUrl)
+        // Show brief message then redirect
+        setError('')
+        setDetails(null)
+        setTimeout(() => {
+          window.location.href = data.xenditUrl
+        }, 1500)
+        
+        // Show loading message
+        setDetails({
+          ...data,
+          redirecting: true,
+          redirectMessage: data.message || 'Redirecting to secure payment...'
+        })
         return
       }
 
@@ -186,6 +209,19 @@ export default function ManualPaymentPage() {
           >
             Back to Home
           </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (details?.redirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Redirecting to Payment</h1>
+          <p className="text-gray-600 mb-4">{details.redirectMessage}</p>
+          <p className="text-sm text-gray-500">You will be redirected to Xendit secure payment page...</p>
         </div>
       </div>
     )
