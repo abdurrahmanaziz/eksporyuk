@@ -305,10 +305,10 @@ export async function POST(request: Request) {
 
       // Create Xendit invoice
       try {
-        const { xenditProxy } = await import('@/lib/xendit-proxy')
+        const { xenditService } = await import('@/lib/xendit')
         console.log('[SUPPLIER_REGISTER] Creating Xendit invoice...')
         
-        const xenditResult = await xenditProxy.createInvoice({
+        const xenditResult = await xenditService.createInvoice({
           external_id: transaction.id,
           payer_email: session.user.email || email,
           description: `Supplier Membership: ${selectedPackage.name}`,

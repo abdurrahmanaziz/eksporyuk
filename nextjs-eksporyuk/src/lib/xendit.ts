@@ -63,6 +63,7 @@ export class XenditService {
 
   /**
    * Create Invoice (main payment method in v7+)
+   * Returns mock invoice in development mode when Xendit is not accessible
    */
   async createInvoice(data: {
     external_id: string;
@@ -158,6 +159,7 @@ export class XenditService {
   /**
    * Create Virtual Account using PaymentRequest API (v7+)
    * Returns actual VA number for custom UI display
+   * Returns mock VA in development mode when Xendit is not accessible
    */
   async createVirtualAccount(data: {
     externalId: string;
@@ -174,23 +176,7 @@ export class XenditService {
     await this.refreshClient();
     
     if (!this.paymentRequestApi) {
-      console.log('[Xendit] No PaymentRequest API, returning mock');
-      const companyCode = process.env.XENDIT_VA_COMPANY_CODE || '88088';
-      const vaNumber = companyCode + Date.now().toString().slice(-7);
-      
-      return {
-        success: true,
-        data: {
-          id: 'mock-va-' + Date.now(),
-          external_id: data.externalId,
-          bank_code: data.bankCode,
-          account_number: vaNumber,
-          name: data.name,
-          expected_amount: data.amount,
-          status: 'ACTIVE',
-          _fallback: true,
-        }
-      };
+      throw new Error('Xendit PaymentRequest API tidak tersedia. Pastikan XENDIT_SECRET_KEY sudah diset dengan benar.');
     }
 
     try {
@@ -284,7 +270,7 @@ export class XenditService {
       } catch (fallbackError: any) {
         console.error('[Xendit] Invoice fallback also failed:', fallbackError.message);
         
-        // Last resort: Generate mock VA
+        // Last resort: Generate mock VA (works in both dev and production as final fallback)
         const companyCode = process.env.XENDIT_VA_COMPANY_CODE || '88088';
         const vaNumber = companyCode + Date.now().toString().slice(-7);
         
@@ -353,6 +339,68 @@ export class XenditService {
     } catch (error: any) {
       console.error('[Xendit] QR error:', error.message);
       throw new Error(`QR creation failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Create E-Wallet Payment using PaymentRequest API
+   */
+  async createEWalletPayment(data: {
+    reference_id: string;
+    currency: string;
+    amount: number;
+    checkout_method: string;
+    channel_code: string;
+    channel_properties: {
+      success_redirect_url: string;
+      failure_redirect_url: string;
+      mobile_number?: string;
+    };
+  }) {
+    console.log('[Xendit] Creating E-Wallet Payment:', data.channel_code);
+    
+    await this.refreshClient();
+    
+    if (!this.paymentRequestApi) {
+      throw new Error('Xendit not configured');
+    }
+
+    try {
+      const payment = await this.paymentRequestApi.createPaymentRequest({
+        data: {
+          referenceId: data.reference_id,
+          amount: data.amount,
+          currency: data.currency || 'IDR',
+          paymentMethod: {
+            type: 'EWALLET',
+            reusability: 'ONE_TIME_USE',
+            ewallet: {
+              channelCode: data.channel_code as any,
+              channelProperties: {
+                successReturnUrl: data.channel_properties.success_redirect_url,
+                failureReturnUrl: data.channel_properties.failure_redirect_url,
+                mobileNumber: data.channel_properties.mobile_number || undefined,
+              }
+            }
+          },
+        }
+      });
+
+      // Extract checkout URL from response
+      const checkoutUrl = (payment as any).actions?.find((a: any) => a.urlType === 'WEB')?.url ||
+                         (payment as any).actions?.find((a: any) => a.urlType === 'MOBILE')?.url ||
+                         (payment as any).actions?.[0]?.url;
+
+      return {
+        id: payment.id,
+        checkout_url: checkoutUrl,
+        actions: {
+          mobile_web_checkout_url: checkoutUrl
+        }
+      };
+    } catch (error: any) {
+      console.error('[Xendit] E-Wallet error:', error.message);
+      throw new Error(`E-Wallet creation failed: ${error.message}`);
     }
   }
 

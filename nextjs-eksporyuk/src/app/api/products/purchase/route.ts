@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditProxy } from '@/lib/xendit-proxy'
+import { xenditService } from '@/lib/xendit'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
 // Force this route to be dynamic
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Create Xendit invoice
-    const invoice = await xenditProxy.createInvoice({
+    const invoice = await xenditService.createInvoice({
       external_id: transaction.id,
       amount: finalPrice,
       description: `${product.name}`,

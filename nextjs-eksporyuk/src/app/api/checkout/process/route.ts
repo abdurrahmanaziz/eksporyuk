@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditProxy } from '@/lib/xendit-proxy'
+import { xenditService } from '@/lib/xendit'
+import { generateTransactionId, getCurrentTimestamp } from '@/lib/transaction-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -204,6 +205,7 @@ export async function POST(request: NextRequest) {
     // Create transaction
     const transaction = await prisma.transaction.create({
       data: {
+        id: generateTransactionId(),
         invoiceNumber,
         userId: session.user.id,
         type: transactionType,
@@ -218,6 +220,7 @@ export async function POST(request: NextRequest) {
         paymentProvider: 'XENDIT',
         description: `Pembelian ${itemName}`,
         metadata: transactionMetadata,
+        updatedAt: getCurrentTimestamp(),
         ...(itemTypeLower === 'product' && { productId: itemId }),
         ...(itemTypeLower === 'course' && { courseId: itemId }),
         ...(validCoupon && { couponId: validCoupon.id }),
@@ -237,73 +240,76 @@ export async function POST(request: NextRequest) {
     if (paymentMethod === 'bank_transfer' && paymentChannel) {
       console.log('[Checkout Process] Creating Virtual Account for bank:', paymentChannel)
       
-      const vaResult = await xenditProxy.createVirtualAccount({
-        external_id: transaction.id,
-        bank_code: paymentChannel, // BCA, MANDIRI, BNI, BRI, PERMATA, BSI
-        name: customerName,
-        amount: finalAmount,
-        is_single_use: true,
-        expiration_date: new Date(Date.now() + expiryDurationMs).toISOString() // From payment settings
-      })
+      try {
+        const vaResult = await xenditService.createVirtualAccount({
+          externalId: transaction.id,
+          bankCode: paymentChannel, // BCA, MANDIRI, BNI, BRI, PERMATA, BSI
+          name: customerName,
+          amount: finalAmount,
+          isSingleUse: true,
+          expirationDate: new Date(Date.now() + expiryDurationMs) // From payment settings
+        })
 
-      console.log('[Checkout Process] VA Result:', JSON.stringify(vaResult, null, 2))
+        console.log('[Checkout Process] VA Result:', JSON.stringify(vaResult, null, 2))
 
-      if (!vaResult.success || !vaResult.data) {
-        console.error('[Checkout Process] VA creation failed')
+        if (!vaResult) {
+          throw new Error('Gagal membuat Virtual Account (Empty response)')
+        }
+
+        const vaData = vaResult
+        xenditReference = vaData.id
+        xenditExternalId = vaData.external_id || transaction.id
+        xenditExpiryDate = vaData.expiration_date
+        
+        // For VA, redirect to our custom page that shows VA number
+        paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payment/va/${transaction.id}`
+
+        // Check if VA number is a URL (fallback to Invoice)
+        const vaNumber = vaData.account_number
+        const isInvoiceFallback = vaNumber && vaNumber.startsWith('http')
+
+        // Update transaction with VA details
+        await prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            reference: xenditReference,
+            externalId: xenditExternalId,
+            paymentUrl: isInvoiceFallback ? vaNumber : paymentUrl,
+            paymentMethod: `VA_${paymentChannel}`,
+            expiredAt: xenditExpiryDate ? new Date(xenditExpiryDate) : undefined,
+            metadata: {
+              ...transactionMetadata,
+              vaNumber: vaNumber,
+              bankCode: paymentChannel,
+              bankName: getPaymentChannelName(paymentChannel),
+              accountNumber: vaNumber,
+              vaId: vaData.id,
+              xenditVANumber: vaNumber,
+              xenditBankCode: paymentChannel,
+              xenditPaymentMethod: 'VIRTUAL_ACCOUNT',
+            }
+          }
+        })
+
+        // If fallback to invoice, redirect to Xendit checkout
+        if (isInvoiceFallback) {
+          paymentUrl = vaNumber
+        }
+
+        console.log('[Checkout Process] ✅ VA Created:', {
+          vaNumber: vaNumber,
+          bank: paymentChannel,
+          redirectUrl: paymentUrl,
+          isFallback: isInvoiceFallback
+        })
+      } catch (error) {
+        console.error('[Checkout Process] VA creation failed:', error)
         await prisma.transaction.delete({ where: { id: transaction.id } })
         return NextResponse.json(
           { error: 'Gagal membuat Virtual Account' },
           { status: 500 }
         )
       }
-
-      const vaData = vaResult.data
-      xenditReference = vaData.id
-      xenditExternalId = vaData.external_id || transaction.id
-      xenditExpiryDate = vaData.expiration_date || vaData.expirationDate
-      
-      // For VA, redirect to our custom page that shows VA number
-      paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payment/va/${transaction.id}`
-
-      // Check if VA number is a URL (fallback to Invoice)
-      const vaNumber = vaData.account_number
-      const isInvoiceFallback = vaNumber && vaNumber.startsWith('http')
-
-      // Update transaction with VA details
-      await prisma.transaction.update({
-        where: { id: transaction.id },
-        data: {
-          reference: xenditReference,
-          externalId: xenditExternalId,
-          paymentUrl: isInvoiceFallback ? vaNumber : paymentUrl,
-          paymentMethod: `VA_${paymentChannel}`,
-          expiredAt: xenditExpiryDate ? new Date(xenditExpiryDate) : undefined,
-          metadata: {
-            ...transactionMetadata,
-            vaNumber: vaNumber,
-            bankCode: paymentChannel,
-            bankName: getPaymentChannelName(paymentChannel),
-            accountNumber: vaNumber,
-            vaId: vaData.id,
-            xenditVANumber: vaNumber,
-            xenditBankCode: paymentChannel,
-            xenditPaymentMethod: vaData.payment_method || 'VIRTUAL_ACCOUNT',
-            xenditFallback: vaData._fallback || false,
-          }
-        }
-      })
-
-      // If fallback to invoice, redirect to Xendit checkout
-      if (isInvoiceFallback) {
-        paymentUrl = vaNumber
-      }
-
-      console.log('[Checkout Process] ✅ VA Created:', {
-        vaNumber: vaNumber,
-        bank: paymentChannel,
-        redirectUrl: paymentUrl,
-        isFallback: isInvoiceFallback
-      })
 
     } else {
       // Handle Invoice (e-wallet, QRIS, or general payment)
@@ -319,58 +325,64 @@ export async function POST(request: NextRequest) {
         paymentMethods = [paymentChannel] // ALFAMART, INDOMARET
       }
       
-      const invoiceResult = await xenditProxy.createInvoice({
-        external_id: transaction.id,
-        amount: finalAmount,
-        payer_email: customerEmail,
-        description: `Pembelian ${itemName}`,
-        invoice_duration: paymentExpiryHours * 60 * 60, // From payment settings (in seconds)
-        currency: 'IDR',
-        payment_methods: paymentMethods.length > 0 ? paymentMethods : undefined,
-        customer: {
-          given_names: customerName,
-          email: customerEmail,
-          mobile_number: customerWhatsapp
+      try {
+        const invoiceResult = await xenditService.createInvoice({
+          external_id: transaction.id,
+          amount: finalAmount,
+          payer_email: customerEmail,
+          description: `Pembelian ${itemName}`,
+          invoice_duration: paymentExpiryHours * 60 * 60, // From payment settings (in seconds)
+          currency: 'IDR',
+          payment_methods: paymentMethods.length > 0 ? paymentMethods : undefined,
+          customer: {
+            given_names: customerName,
+            email: customerEmail,
+            mobile_number: customerWhatsapp
+          },
+          success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?transaction_id=${transaction.id}`,
+          failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failed?transaction_id=${transaction.id}`
+        })
+
+        console.log('[Checkout Process] Invoice result:', JSON.stringify(invoiceResult, null, 2))
+
+        if (!invoiceResult || !invoiceResult.invoice_url) {
+          throw new Error('Invoice creation failed - no invoice_url')
         }
-      })
 
-      console.log('[Checkout Process] Invoice result:', JSON.stringify(invoiceResult, null, 2))
+        paymentUrl = invoiceResult.invoice_url
+        xenditReference = invoiceResult.id
+        xenditExternalId = invoiceResult.external_id
+        xenditExpiryDate = invoiceResult.expiry_date
 
-      if (!invoiceResult || !invoiceResult.invoice_url) {
-        console.error('[Checkout Process] Invoice creation failed')
+        // Update transaction with Xendit invoice data
+        await prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            reference: xenditReference,
+            externalId: xenditExternalId,
+            paymentUrl: paymentUrl,
+            expiredAt: xenditExpiryDate ? new Date(xenditExpiryDate) : undefined,
+            metadata: {
+              ...transactionMetadata,
+              xenditInvoiceUrl: paymentUrl,
+              xenditInvoiceId: xenditReference,
+            }
+          }
+        })
+
+        console.log('[Checkout Process] ✅ Invoice Created:', {
+          invoiceUrl: paymentUrl,
+          paymentMethod: paymentMethod,
+          paymentChannel: paymentChannel
+        })
+      } catch (error) {
+        console.error('[Checkout Process] Invoice creation failed:', error)
         await prisma.transaction.delete({ where: { id: transaction.id } })
         return NextResponse.json(
           { error: 'Gagal membuat invoice pembayaran' },
           { status: 500 }
         )
       }
-
-      paymentUrl = invoiceResult.invoice_url
-      xenditReference = invoiceResult.id
-      xenditExternalId = invoiceResult.external_id
-      xenditExpiryDate = invoiceResult.expiry_date
-
-      // Update transaction with Xendit invoice data
-      await prisma.transaction.update({
-        where: { id: transaction.id },
-        data: {
-          reference: xenditReference,
-          externalId: xenditExternalId,
-          paymentUrl: paymentUrl,
-          expiredAt: xenditExpiryDate ? new Date(xenditExpiryDate) : undefined,
-          metadata: {
-            ...transactionMetadata,
-            xenditInvoiceUrl: paymentUrl,
-            xenditInvoiceId: xenditReference,
-          }
-        }
-      })
-
-      console.log('[Checkout Process] ✅ Invoice Created:', {
-        invoiceUrl: paymentUrl,
-        paymentMethod: paymentMethod,
-        paymentChannel: paymentChannel
-      })
     }
 
     console.log('[Checkout Process] ✅ Success:', {

@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditProxy } from '@/lib/xendit-proxy'
-import { randomBytes } from 'crypto'
+import { xenditService } from '@/lib/xendit'
 
-const createId = () => randomBytes(16).toString('hex')
+import { generateTransactionId, getCurrentTimestamp } from '@/lib/transaction-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -233,7 +232,7 @@ export async function POST(request: NextRequest) {
       
       transaction = await prisma.transaction.create({
         data: {
-          id: createId(),
+          id: generateTransactionId(),
           invoiceNumber: invoiceNumber,
           userId: session.user.id,
           type: 'MEMBERSHIP',
@@ -247,7 +246,7 @@ export async function POST(request: NextRequest) {
           customerWhatsapp: whatsapp || phone || '',
           description: `Membership: ${plan.name} - ${priceOption?.label || ''}`,
           externalId: `TXN-${Date.now()}-${session.user.id.slice(0, 8)}`, // For Xendit
-          updatedAt: new Date(),
+          updatedAt: getCurrentTimestamp(),
           metadata: {
             membershipId: plan.id,
             membershipSlug: membershipSlug || plan.slug,
@@ -321,7 +320,7 @@ export async function POST(request: NextRequest) {
       console.log('[Simple Checkout] Creating Xendit Invoice for redirect...')
       
       // Create Xendit Invoice - this will redirect to Xendit checkout page
-      const invoice = await xenditProxy.createInvoice({
+      const invoice = await xenditService.createInvoice({
         external_id: transaction.externalId!,
         amount: amountNum,
         payer_email: email || session.user.email || 'customer@eksporyuk.com',
@@ -337,10 +336,11 @@ export async function POST(request: NextRequest) {
         failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failed?transaction_id=${transaction.id}`
       })
 
+
+      console.log('[Simple Checkout] Invoice response:', invoice);
       if (invoice && invoice.invoice_url) {
-        xenditData = invoice
-        paymentUrl = invoice.invoice_url
-        
+        xenditData = invoice;
+        paymentUrl = invoice.invoice_url;
         // Update transaction with Xendit invoice info
         await prisma.transaction.update({
           where: { id: transaction.id },
@@ -360,21 +360,24 @@ export async function POST(request: NextRequest) {
               preferredPaymentChannel: paymentChannel,
             }
           }
-        })
-
-        console.log('[Simple Checkout] ✅ Xendit Invoice created:', invoice.id)
-        console.log('[Simple Checkout] ✅ Payment URL:', invoice.invoice_url)
+        });
+        console.log('[Simple Checkout] ✅ Xendit Invoice created:', invoice.id);
+        console.log('[Simple Checkout] ✅ Payment URL:', invoice.invoice_url);
       } else {
-        console.error('[Simple Checkout] ❌ Xendit Invoice creation failed - no invoice_url')
-        // Fallback to manual payment
-        paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/manual/${transaction.id}`
+        throw new Error('Xendit Invoice creation failed - no invoice_url');
       }
 
     } catch (xenditError: any) {
       console.error('[Simple Checkout] ❌ Xendit Invoice error:', xenditError.message)
       console.error('[Simple Checkout] ❌ Error stack:', xenditError.stack)
-      // Fallback to manual payment
-      paymentUrl = `${appUrl}/payment/manual/${transaction.id}`
+      
+      // Delete transaction if Xendit fails
+      await prisma.transaction.delete({ where: { id: transaction.id } })
+      
+      return NextResponse.json(
+        { error: 'Gagal membuat invoice pembayaran Xendit', details: xenditError.message },
+        { status: 500 }
+      )
     }
 
     // Return payment URL
@@ -383,7 +386,7 @@ export async function POST(request: NextRequest) {
     console.log('[Simple Checkout] Using appUrl:', appUrl)
     
     if (!paymentUrl) {
-      paymentUrl = `${appUrl}/payment/manual/${transaction.id}`
+      throw new Error('Payment URL not generated')
     }
     
     console.log('[Simple Checkout] Payment URL:', paymentUrl)

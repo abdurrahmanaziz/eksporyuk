@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditProxy } from '@/lib/xendit-proxy'
+import { xenditService } from '@/lib/xendit'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 import { getXenditConfig } from '@/lib/integration-config'
 
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
     // Always use Invoice flow (works for all payment methods including VA)
     console.log('🧾 Creating Invoice for affiliate credits payment')
     
-    const invoiceData = await xenditProxy.createInvoice({
+    const invoiceData = await xenditService.createInvoice({
       external_id: transaction.id,
       payer_email: affiliate.user.email,
       description: `Top up ${credits} kredit broadcast email - ${packageId}`,

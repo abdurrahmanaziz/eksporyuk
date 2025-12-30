@@ -209,10 +209,10 @@ export async function POST(request: NextRequest) {
 
     // Create Xendit invoice
     try {
-      const { xenditProxy } = await import('@/lib/xendit-proxy')
+      const { xenditService } = await import('@/lib/xendit')
       console.log('[SUPPLIER_UPGRADE] Creating Xendit invoice...')
 
-      const xenditResult = await xenditProxy.createInvoice({
+      const xenditResult = await xenditService.createInvoice({
         external_id: transaction.id,
         payer_email: session.user.email || '',
         description: `Upgrade to ${targetPackage.name}${creditAmount > 0 ? ` (Credit: Rp ${creditAmount.toLocaleString('id-ID')})` : ''}`,

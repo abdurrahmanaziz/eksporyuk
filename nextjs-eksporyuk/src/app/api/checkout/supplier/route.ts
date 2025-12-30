@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { TransactionType } from '@prisma/client'
-import { xenditProxy } from '@/lib/xendit-proxy'
+import { xenditService } from '@/lib/xendit'
 import { getNextInvoiceNumber } from '@/lib/invoice-generator'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     let paymentUrl = ''
     
     try {
-      const invoiceResult = await xenditProxy.createInvoice({
+      const invoiceResult = await xenditService.createInvoice({
         external_id: transaction.externalId!,
         amount: finalAmount,
         payer_email: email || session?.user?.email || '',

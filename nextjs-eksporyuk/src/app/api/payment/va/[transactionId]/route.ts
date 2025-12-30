@@ -78,12 +78,12 @@ export async function GET(
     if (isFallbackVA && vaNumber) {
       // Try to create a real Xendit invoice as alternative
       try {
-        const { xenditProxy } = await import('@/lib/xendit-proxy')
-        const isConfigured = await xenditProxy.isConfigured()
+        const { xenditService } = await import('@/lib/xendit')
+        const isConfigured = await xenditService.isConfigured()
         
         if (isConfigured) {
           // Create invoice for checkout
-          const invoice = await xenditProxy.createInvoice({
+          const invoice = await xenditService.createInvoice({
             external_id: transaction.externalId || transaction.id,
             amount: Number(transaction.amount),
             payer_email: transaction.customerEmail || user?.email || 'customer@eksporyuk.com',

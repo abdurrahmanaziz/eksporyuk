@@ -46,7 +46,7 @@ export async function GET(
       console.log(`🔄 [Manual Payment API] Transaction ${transactionId} should use Xendit, creating invoice...`)
       
       try {
-        const { xenditProxy } = await import('@/lib/xendit-proxy')
+        const { xenditService } = await import('@/lib/xendit')
         
         // Get user details
         const user = await prisma.user.findUnique({
@@ -58,7 +58,7 @@ export async function GET(
           console.error('[Manual Payment API] User not found for transaction')
         } else {
           // Create Xendit invoice
-          const invoiceData = await xenditProxy.createInvoice({
+          const invoiceData = await xenditService.createInvoice({
             external_id: transaction.id,
             payer_email: user.email,
             description: transaction.description || 'Payment',

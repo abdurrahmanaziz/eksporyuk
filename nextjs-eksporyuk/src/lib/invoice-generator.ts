@@ -56,10 +56,10 @@ export async function generateInvoiceNumber(): Promise<string> {
 }
 
 /**
- * Check if invoice number already exists
+ * Check if an invoice number already exists
  */
 export async function invoiceExists(invoiceNumber: string): Promise<boolean> {
-  const transaction = await prisma.transaction.findUnique({
+  const transaction = await prisma.transaction.findFirst({
     where: { invoiceNumber: invoiceNumber }
   })
   return !!transaction

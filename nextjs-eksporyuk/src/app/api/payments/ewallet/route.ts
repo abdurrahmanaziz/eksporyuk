@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { xenditProxy } from '@/lib/xendit-proxy'
+import { xenditService } from '@/lib/xendit'
 import { prisma } from '@/lib/prisma'
 
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const formattedPhone = formatPhoneNumber(phoneNumber)
 
     // Create eWallet payment via Xendit Proxy
-    const paymentResult = await xenditProxy.createEWalletPayment({
+    const paymentResult = await xenditService.createEWalletPayment({
       reference_id: transactionId,
       currency: 'IDR',
       amount: Number(transaction.amount),

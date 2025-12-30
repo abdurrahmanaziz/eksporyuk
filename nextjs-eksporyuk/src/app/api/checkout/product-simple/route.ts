@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditProxy } from '@/lib/xendit-proxy'
+import { xenditService } from '@/lib/xendit'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -291,7 +291,7 @@ export async function POST(request: NextRequest) {
         // Create Virtual Account
         console.log('[Product Simple Checkout] Creating Xendit VA for bank:', paymentChannel)
         
-        const vaResult = await xenditProxy.createVirtualAccount({
+        const vaResult = await xenditService.createVirtualAccount({
           external_id: transaction.externalId!,
           bank_code: paymentChannel,
           name: name || session.user.name || 'Customer',
@@ -351,7 +351,7 @@ export async function POST(request: NextRequest) {
         // Create E-Wallet Payment
         console.log('[Product Simple Checkout] Creating Xendit E-Wallet payment:', paymentChannel)
         
-        const ewalletResult = await xenditProxy.createEWalletPayment({
+        const ewalletResult = await xenditService.createEWalletPayment({
           reference_id: transaction.externalId!,
           currency: 'IDR',
           amount: amountNum,
@@ -395,12 +395,10 @@ export async function POST(request: NextRequest) {
         // Create QRIS Payment
         console.log('[Product Simple Checkout] Creating Xendit QRIS payment')
         
-        const qrisResult = await xenditProxy.createQRCode({
-          reference_id: transaction.externalId!,
-          type: 'DYNAMIC',
-          currency: 'IDR',
-          amount: amountNum
-        })
+        const qrisResult = await xenditService.createQRCode(
+          transaction.externalId!,
+          amountNum
+        )
 
         if (qrisResult && qrisResult.id) {
           xenditData = qrisResult

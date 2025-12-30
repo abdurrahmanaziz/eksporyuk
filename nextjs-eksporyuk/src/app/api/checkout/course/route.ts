@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { xenditProxy } from '@/lib/xendit-proxy'
+import { xenditService } from '@/lib/xendit'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
 // Force this route to be dynamic
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
     let paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
     
     try {
-      const invoiceResult = await xenditProxy.createInvoice({
+      const invoiceResult = await xenditService.createInvoice({
         external_id: externalId,
         amount: amount,
         payer_email: email || session.user.email || '',
