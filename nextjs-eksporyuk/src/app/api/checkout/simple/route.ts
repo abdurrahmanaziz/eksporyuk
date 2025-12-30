@@ -374,11 +374,10 @@ export async function POST(request: NextRequest) {
       console.error('[Simple Checkout] ❌ Xendit Invoice error:', xenditError.message)
       console.error('[Simple Checkout] ❌ Error stack:', xenditError.stack)
       // Fallback to our payment page
-      paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
+      paymentUrl = `${appUrl}/payment/va/${transaction.id}`
     }
 
     // Return payment URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000'
     console.log('[Simple Checkout] ENV - NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
     console.log('[Simple Checkout] ENV - APP_URL:', process.env.APP_URL)
     console.log('[Simple Checkout] Using appUrl:', appUrl)

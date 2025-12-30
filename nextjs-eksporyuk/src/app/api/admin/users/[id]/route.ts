@@ -14,6 +14,13 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
+    console.log('[ADMIN USERS] Session data:', {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      userRole: session?.user?.role,
+      userEmail: session?.user?.email
+    })
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -23,7 +30,14 @@ export async function GET(
       select: { role: true },
     })
 
+    console.log('[ADMIN USERS] Admin user check:', {
+      sessionUserId: session.user.id,
+      dbUserRole: adminUser?.role,
+      sessionRole: session?.user?.role
+    })
+
     if (adminUser?.role !== 'ADMIN') {
+      console.log('[ADMIN USERS] Access denied - not admin role')
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

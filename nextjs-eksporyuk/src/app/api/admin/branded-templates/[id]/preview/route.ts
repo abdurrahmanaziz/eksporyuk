@@ -9,9 +9,9 @@ export const dynamic = 'force-dynamic'
 
 
 interface Props {
-  params: Promise<{
+  params: {
     id: string
-  }>
+  }
 }
 
 /**
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest, { params }: Props) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = await params
+    const { id } = params
     const template = await prisma.brandedTemplate.findUnique({
       where: { id }
     })
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest, { params }: Props) {
           ctaText: template.ctaText,
           ctaLink: template.ctaLink,
           backgroundDesign: backgroundDesign,
-          htmlPreview: htmlContent,
+          html: htmlContent,
           previewData
         }
       })
@@ -96,6 +96,29 @@ export async function POST(request: NextRequest, { params }: Props) {
       })
     }
 
+    // Generate Push preview
+    if (template.type === 'PUSH') {
+      const { processShortcodes } = await import('@/lib/branded-template-engine')
+
+      const processedTitle = processShortcodes(template.subject, previewData)
+      const processedContent = processShortcodes(template.content, previewData)
+      const processedCtaLink = template.ctaLink ? processShortcodes(template.ctaLink, previewData) : undefined
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          type: 'PUSH',
+          title: template.subject,
+          content: template.content,
+          ctaLink: template.ctaLink,
+          processedTitle,
+          processedContent,
+          processedCtaLink,
+          previewData,
+        }
+      })
+    }
+
     return NextResponse.json(
       { error: 'Unsupported template type' },
       { status: 400 }
@@ -121,7 +144,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = await params
+    const { id } = params
     const template = await prisma.brandedTemplate.findUnique({
       where: { id }
     })
@@ -130,15 +153,83 @@ export async function GET(request: NextRequest, { params }: Props) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 })
     }
 
-    const sampleData = createSampleData()
+    const sampleData = template.previewData || createSampleData()
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        template,
-        sampleData
-      }
-    })
+    if (template.type === 'EMAIL') {
+      const brandConfig = await getBrandConfig()
+      const customBranding: any = template.customBranding || {}
+      const backgroundDesign = customBranding.backgroundDesign || 'simple'
+
+      const htmlContent = createSimpleBrandedEmail(
+        template.subject,
+        template.content,
+        template.ctaText || undefined,
+        template.ctaLink || undefined,
+        backgroundDesign,
+        sampleData,
+        brandConfig
+      )
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          type: 'EMAIL',
+          subject: template.subject,
+          content: template.content,
+          ctaText: template.ctaText,
+          ctaLink: template.ctaLink,
+          backgroundDesign,
+          html: htmlContent,
+          previewData: sampleData
+        }
+      })
+    }
+
+    if (template.type === 'WHATSAPP') {
+      const { processShortcodes } = await import('@/lib/branded-template-engine')
+      const processedContent = processShortcodes(template.content, sampleData)
+      const processedCtaText = template.ctaText ? processShortcodes(template.ctaText, sampleData) : undefined
+      const processedCtaLink = template.ctaLink ? processShortcodes(template.ctaLink, sampleData) : undefined
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          type: 'WHATSAPP',
+          content: template.content,
+          ctaText: template.ctaText,
+          ctaLink: template.ctaLink,
+          processedContent,
+          processedCtaText,
+          processedCtaLink,
+          previewData: sampleData,
+          characterCount: processedContent.length,
+          maxLength: 4096
+        }
+      })
+    }
+
+    if (template.type === 'PUSH') {
+      const { processShortcodes } = await import('@/lib/branded-template-engine')
+      const processedTitle = processShortcodes(template.subject, sampleData)
+      const processedContent = processShortcodes(template.content, sampleData)
+      const processedCtaLink = template.ctaLink ? processShortcodes(template.ctaLink, sampleData) : undefined
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          type: 'PUSH',
+          title: template.subject,
+          content: template.content,
+          ctaLink: template.ctaLink,
+          processedTitle,
+          processedContent,
+          processedCtaLink,
+          previewData: sampleData
+        }
+      })
+    }
+
+    return NextResponse.json({ error: 'Unsupported template type' }, { status: 400 })
 
   } catch (error) {
     console.error('[Branded Template Preview API] GET Error:', error)

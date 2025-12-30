@@ -207,7 +207,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <p className="text-sm text-gray-500 mb-1">
-                          Di {post.group.name}
+                          Di {post.group?.name || 'Grup Tidak Diketahui'}
                         </p>
                         <p className="text-gray-700 line-clamp-2">{post.content}</p>
                         <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
@@ -248,7 +248,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
                     className="block p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <p className="text-sm text-gray-500 mb-1">
-                      Mengomentari di {comment.post.group.name}
+                      Mengomentari di {comment.post?.group?.name || 'Grup Tidak Diketahui'}
                     </p>
                     <p className="text-gray-700">{comment.content}</p>
                     <p className="text-sm text-gray-500 mt-2">

@@ -6,6 +6,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
 
 // Interface for email settings from database
 interface EmailSettings {
@@ -1074,6 +1075,7 @@ export async function renderBrandedTemplateBySlug(
   slug: string,
   data: TemplateData = {},
   options?: {
+    type?: string
     fallbackSubject?: string
     fallbackContent?: string
     fallbackCtaText?: string
@@ -1081,14 +1083,19 @@ export async function renderBrandedTemplateBySlug(
   }
 ) {
   // Ensure template exists (auto-create from defaults when available)
-  let template = await prisma.brandedTemplate.findUnique({ where: { slug } })
+  const where: any = { slug, isActive: true }
+  where.type = options?.type || 'EMAIL'
+
+  let template = await prisma.brandedTemplate.findFirst({ where })
 
   if (!template && DEFAULT_BRANDED_TEMPLATES[slug]) {
     try {
       template = await prisma.brandedTemplate.create({
         data: {
+          id: randomBytes(16).toString('hex'),
           ...DEFAULT_BRANDED_TEMPLATES[slug],
           slug,
+          updatedAt: new Date(),
         },
       })
       console.log('🧩 Auto-created default branded template:', slug)

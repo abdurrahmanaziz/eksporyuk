@@ -135,18 +135,29 @@ export async function GET(request: NextRequest, { params }: Props) {
       }
     })
 
-    // Daily usage for last 30 days
+    // Daily usage for last 30 days (DB-agnostic, safe aggregation)
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    const dailyUsage = await prisma.$queryRaw`
-      SELECT DATE(created_at) as date, COUNT(*) as usage_count
-      FROM BrandedTemplateUsage 
-      WHERE template_id = ${params.id} 
-      AND created_at >= ${thirtyDaysAgo}
-      GROUP BY DATE(created_at) 
-      ORDER BY DATE(created_at)
-    `
+    const recentUsages = await prisma.brandedTemplateUsage.findMany({
+      where: {
+        templateId: params.id,
+        createdAt: { gte: thirtyDaysAgo }
+      },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' }
+    })
+
+    const dailyMap = new Map<string, number>()
+    for (const u of recentUsages) {
+      const d = new Date(u.createdAt)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      dailyMap.set(key, (dailyMap.get(key) || 0) + 1)
+    }
+
+    const dailyUsage = Array.from(dailyMap.entries())
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([date, usage_count]) => ({ date, usage_count }))
 
     return NextResponse.json({
       success: true,

@@ -260,7 +260,11 @@ function UnifiedCheckoutContent() {
       selectedPackage,
       packagesCount: packages.length,
       found: pkg?.name || 'NOT FOUND',
-      allPackageIds: packages.filter(p => p).map(p => ({ id: p.id, slug: p.slug, name: p.name }))
+      allPackageIds: packages.filter(p => p).map(p => ({ 
+        id: p?.id || '', 
+        slug: p?.slug || '', 
+        name: p?.name || 'Unknown Package' 
+      }))
     })
     return pkg
   }, [packages, selectedPackage])

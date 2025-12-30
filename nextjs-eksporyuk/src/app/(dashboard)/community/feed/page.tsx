@@ -842,7 +842,7 @@ export default function CommunityFeedPage() {
                                         className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
                                       >
                                         {getGroupTypeIcon(post.group.type)}
-                                        <span>{post.group.name}</span>
+                                        <span>{post.group?.name || 'Grup Tidak Diketahui'}</span>
                                       </Link>
                                     </>
                                   )}
@@ -1069,15 +1069,15 @@ export default function CommunityFeedPage() {
                       {suggestedGroups.map(group => (
                         <div key={group.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                           <Avatar className="w-10 h-10 flex-shrink-0">
-                            <AvatarImage src={group.avatar} alt={group.name} />
-                            <AvatarFallback>{group.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage src={group.avatar} alt={group?.name || 'Group'} />
+                            <AvatarFallback>{group?.name?.charAt(0) || 'G'}</AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <Link
                               href={`/community/groups/${group.slug}`}
                               className="font-semibold text-sm text-gray-900 hover:text-blue-600 block truncate"
                             >
-                              {group.name}
+                              {group?.name || 'Grup Tidak Diketahui'}
                             </Link>
                             <p className="text-xs text-gray-500 mb-2 line-clamp-2">
                               {group.description}

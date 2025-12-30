@@ -11,9 +11,17 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: NextRequest) {
   try {
+    console.log('[DASHBOARD OPTIONS] API called')
     const session = await getServerSession(authOptions)
     
+    console.log('[DASHBOARD OPTIONS] Session check:', {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      userRole: session?.user?.role
+    })
+    
     if (!session?.user?.id) {
+      console.log('[DASHBOARD OPTIONS] Unauthorized - no session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

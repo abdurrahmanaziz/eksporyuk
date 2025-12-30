@@ -84,9 +84,18 @@ async function getPostWithDetails(post: any) {
 // GET /api/community/feed - Get personalized community feed
 export async function GET(request: NextRequest) {
   try {
+    console.log('[COMMUNITY FEED] API called')
     const session = await getServerSession(authOptions)
     
+    console.log('[COMMUNITY FEED] Session check:', {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      userEmail: session?.user?.email,
+      userRole: session?.user?.role
+    })
+    
     if (!session?.user?.id) {
+      console.log('[COMMUNITY FEED] Unauthorized - no session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

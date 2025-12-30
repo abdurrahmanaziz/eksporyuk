@@ -137,100 +137,69 @@ export async function POST(request: Request) {
 
     console.log('💳 Transaction created:', transaction.id)
 
-    // 9. Create Xendit payment (VA or Invoice) - Same pattern as membership
+    // 9. Create Xendit payment (Invoice only) - Avoid IP allowlist issues
     let xenditPayment: any
     let paymentUrl: string
     
-    console.log('💳 Creating payment for channel:', paymentChannel)
+    console.log('💳 Creating invoice payment for channel:', paymentChannel || 'all methods')
     
-    if (paymentChannel) {
-      // Create Virtual Account for specific bank (same as membership system)
-      console.log('🏦 Creating Virtual Account for:', paymentChannel)
-      
-      xenditPayment = await xenditProxy.createVirtualAccount({
-        external_id: transaction.id,
-        bank_code: paymentChannel,
-        name: affiliate.user.name,
-        amount: price,
-        is_single_use: true,
+    // Always use Invoice flow (works for all payment methods including VA)
+    console.log('🧾 Creating Invoice for affiliate credits payment')
+    
+    const invoiceData = await xenditProxy.createInvoice({
+      external_id: transaction.id,
+      payer_email: affiliate.user.email,
+      description: `Top up ${credits} kredit broadcast email - ${packageId}`,
+      amount: price,
+      currency: 'IDR',
+      invoice_duration: expiryHours * 3600,
+      customer: {
+        given_names: affiliate.user.name || 'Customer',
+        email: affiliate.user.email,
+        mobile_number: affiliate.user.phone || '',
+      },
+      // Add payment method hint for VA
+      ...(paymentChannel && {
+        payment_methods: [`BANK_${paymentChannel}`],
+        success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/affiliate/credits?success=true`,
+        failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/affiliate/credits?error=payment_failed`
       })
+    })
 
-      console.log('✅ Xendit VA Response:', xenditPayment)
-
-      if (xenditPayment.success && xenditPayment.data) {
-        const currentMetadata = transaction.metadata as any || {}
-        await prisma.transaction.update({
-          where: { id: transaction.id },
-          data: {
-            reference: xenditPayment.data.id,
-            paymentUrl: `/payment/va/${transaction.id}`, // Show VA number on our page
-            metadata: {
-              ...currentMetadata,
-              xenditVAId: xenditPayment.data.id,
-              xenditVANumber: xenditPayment.data.accountNumber || xenditPayment.data.account_number,
-              xenditBankCode: paymentChannel,
-              xenditVAData: xenditPayment.data
-            }
-          }
-        })
-        paymentUrl = `/payment/va/${transaction.id}` // Will show VA details
-        console.log('✅ VA Created successfully:', xenditPayment.data.accountNumber || xenditPayment.data.account_number)
-      } else {
-        console.error('❌ Failed to create Xendit VA:', xenditPayment.error)
-        paymentUrl = `/payment/va/${transaction.id}`
-      }
+    if (!invoiceData || !invoiceData.invoice_url) {
+      console.error('Failed to create Xendit invoice')
+      xenditPayment = { success: false, error: 'No invoice_url returned' }
     } else {
-      // Create Invoice (general payment with all methods) - Same as membership system
-      console.log('🧾 Creating Invoice for general payment')
-      
-      const invoiceData = await xenditProxy.createInvoice({
-        external_id: transaction.id,
-        payer_email: affiliate.user.email,
-        description: `Top up ${credits} kredit broadcast email - ${packageId}`,
-        amount: price,
-        currency: 'IDR',
-        invoice_duration: expiryHours * 3600,
-        customer: {
-          given_names: affiliate.user.name || 'Customer',
-          email: affiliate.user.email,
-          mobile_number: affiliate.user.phone || '',
+      xenditPayment = { 
+        success: true, 
+        data: {
+          id: invoiceData.id,
+          invoiceUrl: invoiceData.invoice_url
+        }
+      }
+    }
+
+    // Update transaction with Xendit invoice info
+    if (xenditPayment.success && xenditPayment.data) {
+      const currentMetadata = transaction.metadata as any || {}
+      await prisma.transaction.update({
+        where: { id: transaction.id },
+        data: {
+          reference: xenditPayment.data.id,
+          paymentUrl: xenditPayment.data.invoiceUrl,
+          metadata: {
+            ...currentMetadata,
+            xenditInvoiceId: xenditPayment.data.id,
+            xenditInvoiceUrl: xenditPayment.data.invoiceUrl,
+            preferredPaymentMethod: paymentChannel || 'all'
+          }
         }
       })
-
-      if (!invoiceData || !invoiceData.invoice_url) {
-        console.error('Failed to create Xendit invoice')
-        xenditPayment = { success: false, error: 'No invoice_url returned' }
-      } else {
-        xenditPayment = { 
-          success: true, 
-          data: {
-            id: invoiceData.id,
-            invoiceUrl: invoiceData.invoice_url
-          }
-        }
-      }
-
-      // Update transaction with Xendit invoice info
-      if (xenditPayment.success && xenditPayment.data) {
-        const currentMetadata = transaction.metadata as any || {}
-        await prisma.transaction.update({
-          where: { id: transaction.id },
-          data: {
-            reference: xenditPayment.data.id,
-            paymentUrl: xenditPayment.data.invoiceUrl,
-            metadata: {
-              ...currentMetadata,
-              xenditInvoiceId: xenditPayment.data.id,
-              xenditInvoiceUrl: xenditPayment.data.invoiceUrl
-            }
-          }
-        })
-      }
-
-      paymentUrl = xenditPayment.success && xenditPayment.data 
-        ? xenditPayment.data.invoiceUrl 
-        : `/payment/va/${transaction.id}`
     }
+
+    paymentUrl = xenditPayment.success && xenditPayment.data 
+      ? xenditPayment.data.invoiceUrl 
+      : `/payment/manual/${transaction.id}` // Fallback to manual payment
 
     console.log('✅ Credit checkout successful! Payment URL:', paymentUrl)
 
@@ -243,9 +212,8 @@ export async function POST(request: Request) {
       paymentUrl,
       xenditData: (xenditPayment.success && xenditPayment.data) ? {
         id: xenditPayment.data.id,
-        url: paymentChannel ? `/payment/va/${transaction.id}` : xenditPayment.data.invoiceUrl,
-        accountNumber: xenditPayment.data.accountNumber,
-        bankCode: paymentChannel
+        url: xenditPayment.data.invoiceUrl,
+        preferredMethod: paymentChannel || 'all'
       } : null,
       customer: {
         id: affiliate.userId,
