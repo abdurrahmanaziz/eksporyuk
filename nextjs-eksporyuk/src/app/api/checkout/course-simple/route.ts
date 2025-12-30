@@ -398,13 +398,13 @@ export async function POST(request: NextRequest) {
             console.log('[Course Simple Checkout] ⚠️ Using Xendit checkout link:', paymentUrl);
           } else {
             // Show VA number on our payment page (same as membership)
-            paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`;
+            paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/manual/${transaction.id}`;
             console.log('[Course Simple Checkout] ✅ Xendit VA created:', vaResult.data.account_number);
           }
         } else {
           console.error('[Course Simple Checkout] ❌ Xendit VA creation failed:', vaResult.error)
           // Fallback to manual payment page
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
+          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/manual/${transaction.id}`
         }
 
       } else if (paymentChannel && paymentMethod === 'ewallet') {
@@ -448,7 +448,7 @@ export async function POST(request: NextRequest) {
           console.log('[Course Simple Checkout] ✅ Xendit E-Wallet created, checkout URL:', paymentUrl)
         } else {
           console.error('[Course Simple Checkout] ❌ Xendit E-Wallet creation failed')
-          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
+          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/manual/${transaction.id}`
         }
 
       } else if (paymentChannel === 'QRIS' && paymentMethod === 'qris') {

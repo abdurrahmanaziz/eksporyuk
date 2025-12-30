@@ -366,15 +366,15 @@ export async function POST(request: NextRequest) {
         console.log('[Simple Checkout] ✅ Payment URL:', invoice.invoice_url)
       } else {
         console.error('[Simple Checkout] ❌ Xendit Invoice creation failed - no invoice_url')
-        // Fallback to our payment page
-        paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/va/${transaction.id}`
+        // Fallback to manual payment
+        paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/manual/${transaction.id}`
       }
 
     } catch (xenditError: any) {
       console.error('[Simple Checkout] ❌ Xendit Invoice error:', xenditError.message)
       console.error('[Simple Checkout] ❌ Error stack:', xenditError.stack)
-      // Fallback to our payment page
-      paymentUrl = `${appUrl}/payment/va/${transaction.id}`
+      // Fallback to manual payment
+      paymentUrl = `${appUrl}/payment/manual/${transaction.id}`
     }
 
     // Return payment URL
@@ -383,7 +383,7 @@ export async function POST(request: NextRequest) {
     console.log('[Simple Checkout] Using appUrl:', appUrl)
     
     if (!paymentUrl) {
-      paymentUrl = `${appUrl}/payment/va/${transaction.id}`
+      paymentUrl = `${appUrl}/payment/manual/${transaction.id}`
     }
     
     console.log('[Simple Checkout] Payment URL:', paymentUrl)
