@@ -105,10 +105,11 @@ export async function POST(request: NextRequest) {
     console.log('🚀 Creating new coupon...')
     const newCoupon = await prisma.coupon.create({
       data: {
+        id: `coupon-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         code: customCode.toUpperCase(),
         description: template.description || `Kupon diskon ${template.discountValue}${template.discountType === 'PERCENTAGE' ? '%' : 'K'}`,
         discountType: template.discountType,
-        discountValue: new Prisma.Decimal(String(template.discountValue)), // Convert to Decimal
+        discountValue: new Prisma.Decimal(String(template.discountValue)),
         usageLimit: template.maxUsagePerCoupon || null,
         usageCount: 0,
         validUntil: template.validUntil || null,

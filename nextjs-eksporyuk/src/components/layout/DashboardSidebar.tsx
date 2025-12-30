@@ -333,7 +333,8 @@ const navigationByRole = {
       items: [
         { name: 'My Membership', href: '/dashboard/my-membership', icon: Crown },
         { name: 'Produk Saya', href: '/my-products', icon: Package },
-        { name: 'Riwayat Transaksi', href: '/dashboard/transactions', icon: Receipt },
+        { name: 'Tagihan Saya', href: '/dashboard/billing', icon: Receipt },
+        { name: 'Riwayat Transaksi', href: '/dashboard/transactions', icon: CreditCard },
         { name: 'Upgrade', href: '/dashboard/upgrade', icon: Zap },
       ]
     },
@@ -384,6 +385,7 @@ const navigationByRole = {
       title: 'MEMBERSHIP',
       items: [
         { name: 'My Membership', href: '/dashboard/my-membership', icon: Crown },
+        { name: 'Tagihan Saya', href: '/dashboard/billing', icon: Receipt },
         { name: '🚀 Upgrade Premium', href: '/dashboard/upgrade', icon: Zap, badge: '🔥' },
       ]
     },
