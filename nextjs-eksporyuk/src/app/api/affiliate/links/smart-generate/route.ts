@@ -44,17 +44,20 @@ export async function POST(request: NextRequest) {
     let selectedCoupon = null
     if (couponId) {
       selectedCoupon = await prisma.coupon.findUnique({
-        where: { 
-          id: couponId,
-          createdBy: session.user.id, // Ensure it's affiliate's own coupon
-          isActive: true
-        }
+        where: { id: couponId }
       })
       
-      if (!selectedCoupon) {
+      if (!selectedCoupon || !selectedCoupon.isActive) {
         return NextResponse.json({ 
           error: 'Kupon tidak ditemukan atau tidak aktif' 
         }, { status: 404 })
+      }
+      
+      // Allow both affiliate's own coupons and admin coupons
+      if (selectedCoupon.createdBy !== session.user.id && selectedCoupon.createdBy !== 'ADMIN') {
+        return NextResponse.json({ 
+          error: 'Anda tidak berhak menggunakan kupon ini' 
+        }, { status: 403 })
       }
     }
 
@@ -174,16 +177,32 @@ export async function POST(request: NextRequest) {
           })
 
           if (!existingLink) {
-            // Generate short code
+            // Generate short code with max retries
             let shortCode
+            let shortCodeRetries = 0
             do {
               shortCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+              shortCodeRetries++
+              if (shortCodeRetries > 100) {
+                console.error('❌ Could not generate unique shortCode after 100 retries')
+                return NextResponse.json({ 
+                  error: 'Gagal generate link - terlalu banyak link yang sudah ada' 
+                }, { status: 500 })
+              }
             } while (await prisma.affiliateLink.findUnique({ where: { shortCode } }))
 
-            // Generate link code  
+            // Generate link code with max retries
             let linkCode
+            let codeRetries = 0
             do {
               linkCode = `${affiliateCode}-${shortCode}`
+              codeRetries++
+              if (codeRetries > 100) {
+                console.error('❌ Could not generate unique linkCode after 100 retries')
+                return NextResponse.json({ 
+                  error: 'Gagal generate link - terlalu banyak link yang sudah ada' 
+                }, { status: 500 })
+              }
             } while (await prisma.affiliateLink.findUnique({ where: { code: linkCode } }))
 
             // Build URLs
