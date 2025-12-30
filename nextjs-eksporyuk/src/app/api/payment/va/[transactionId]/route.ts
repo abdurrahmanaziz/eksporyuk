@@ -93,10 +93,10 @@ export async function GET(
           
           if (invoice?.invoiceUrl) {
             // Update transaction with invoice URL
-            await prisma.transaction.update(
+            await prisma.transaction.update({
               where: { id: transaction.id },
               data: { paymentUrl: invoice.invoiceUrl }
-            )
+            })
             
             return NextResponse.json({
               redirect: true,
