@@ -116,9 +116,8 @@ export default function PricingPage() {
   }
 
   const getCheckoutUrl = (pkg: MembershipPackage) => {
-    if (pkg.checkoutSlug) return '/' + pkg.checkoutSlug
-    if (pkg.slug) return '/checkout/membership/' + pkg.slug
-    return '/checkout-unified?package=' + pkg.id
+    // Always use slug for checkout URL - realtime from database
+    return `/checkout/membership/${pkg.slug}`
   }
 
   const parseFeatures = (features: any): string[] => {
@@ -304,88 +303,6 @@ export default function PricingPage() {
             )
           })}
         </div>
-
-        {/* Trust Badges */}
-        <Card className="border-0 shadow-lg shadow-blue-100/50 bg-gradient-to-br from-blue-50 to-indigo-50 mb-10">
-          <CardContent className="py-8">
-            <h3 className="text-center text-lg font-bold text-gray-900 mb-8">
-              Dipercaya oleh 10,000+ Member Aktif
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto bg-blue-100 rounded-2xl flex items-center justify-center mb-3">
-                  <Crown className="w-7 h-7 text-blue-600" />
-                </div>
-                <div className="text-3xl font-bold text-blue-600">500+</div>
-                <div className="text-sm text-gray-600">Kursus Premium</div>
-              </div>
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto bg-green-100 rounded-2xl flex items-center justify-center mb-3">
-                  <Users className="w-7 h-7 text-green-600" />
-                </div>
-                <div className="text-3xl font-bold text-green-600">50+</div>
-                <div className="text-sm text-gray-600">Mentor Expert</div>
-              </div>
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto bg-purple-100 rounded-2xl flex items-center justify-center mb-3">
-                  <Star className="w-7 h-7 text-purple-600" />
-                </div>
-                <div className="text-3xl font-bold text-purple-600">4.9/5</div>
-                <div className="text-sm text-gray-600">Rating Member</div>
-              </div>
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto bg-orange-100 rounded-2xl flex items-center justify-center mb-3">
-                  <Shield className="w-7 h-7 text-orange-600" />
-                </div>
-                <div className="text-3xl font-bold text-orange-600">100%</div>
-                <div className="text-sm text-gray-600">Garansi Uang Kembali</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* FAQ Section */}
-        <Card className="border-0 shadow-lg shadow-gray-100/50">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
-              Pertanyaan Yang Sering Ditanyakan
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 max-w-3xl mx-auto">
-            <details className="bg-gray-50 rounded-xl p-5 cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                Apa yang terjadi setelah periode membership berakhir?
-                <Clock className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
-              </summary>
-              <p className="mt-4 text-gray-600 leading-relaxed">
-                Anda tetap bisa akses materi yang sudah Anda download, tapi tidak bisa akses kursus baru 
-                dan grup VIP. Anda bisa renew kapan saja dengan harga special member.
-              </p>
-            </details>
-            
-            <details className="bg-gray-50 rounded-xl p-5 cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                Apakah ada garansi uang kembali?
-                <Shield className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
-              </summary>
-              <p className="mt-4 text-gray-600 leading-relaxed">
-                Ya! Kami memberikan garansi 100% uang kembali dalam 7 hari pertama jika Anda tidak puas 
-                dengan platform kami. No questions asked.
-              </p>
-            </details>
-            
-            <details className="bg-gray-50 rounded-xl p-5 cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                Bagaimana cara mendapatkan komisi affiliate?
-                <Zap className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
-              </summary>
-              <p className="mt-4 text-gray-600 leading-relaxed">
-                Setelah jadi member, Anda bisa apply jadi affiliate di dashboard. Dapatkan link referral 
-                unik dan komisi 30% flat untuk setiap penjualan yang berhasil!
-              </p>
-            </details>
-          </CardContent>
-        </Card>
 
       </div>
     </div>

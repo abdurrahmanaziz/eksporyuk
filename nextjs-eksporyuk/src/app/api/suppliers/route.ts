@@ -7,10 +7,6 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     
-    const search = searchParams.get('search') || ''
-    const province = searchParams.get('province') || ''
-    const city = searchParams.get('city') || ''
-    const category = searchParams.get('category') || ''
     const verified = searchParams.get('verified') === 'true'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -18,40 +14,7 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: any = {
-      isSuspended: false,
-      user: {
-        role: {
-          in: ['MEMBER_FREE', 'MEMBER_PRO']
-        }
-      }
-    }
-
-    if (search) {
-      where.companyName = {
-        contains: search,
-        mode: 'insensitive'
-      }
-    }
-
-    if (province) {
-      where.province = {
-        contains: province,
-        mode: 'insensitive'
-      }
-    }
-
-    if (city) {
-      where.city = {
-        contains: city,
-        mode: 'insensitive'
-      }
-    }
-
-    if (category) {
-      where.businessCategory = {
-        contains: category,
-        mode: 'insensitive'
-      }
+      isSuspended: false
     }
 
     if (verified) {
@@ -61,7 +24,7 @@ export async function GET(request: NextRequest) {
     // Get total count
     const total = await prisma.supplierProfile.count({ where })
 
-    // Get suppliers
+    // Get suppliers - simplified without complex relations
     const suppliers = await prisma.supplierProfile.findMany({
       where,
       select: {
@@ -75,19 +38,7 @@ export async function GET(request: NextRequest) {
         province: true,
         isVerified: true,
         viewCount: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        _count: {
-          select: {
-            products: true
-          }
-        }
+        createdAt: true
       },
       orderBy: [
         { isVerified: 'desc' },
@@ -110,8 +61,7 @@ export async function GET(request: NextRequest) {
           isSuspended: false,
           isVerified: true
         }
-      }),
-      byProvince: []
+      })
     }
 
     return NextResponse.json({
