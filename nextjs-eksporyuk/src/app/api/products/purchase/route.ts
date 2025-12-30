@@ -207,11 +207,11 @@ export async function POST(request: NextRequest) {
       where: { id: transaction.id },
       data: {
         externalId: invoice.id,
-        paymentUrl: invoice.invoice_url,
+        paymentUrl: invoice.invoiceUrl,
         metadata: {
           ...(transaction.metadata as any),
           xenditInvoiceId: invoice.id,
-          xenditInvoiceUrl: invoice.invoice_url
+          xenditInvoiceUrl: invoice.invoiceUrl
         }
       }
     })
@@ -235,7 +235,7 @@ export async function POST(request: NextRequest) {
         amount: finalPrice,
         status: transaction.status
       },
-      paymentUrl: invoice.invoice_url
+      paymentUrl: invoice.invoiceUrl
     })
 
   } catch (error) {

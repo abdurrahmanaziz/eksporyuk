@@ -338,9 +338,9 @@ export async function POST(request: NextRequest) {
 
 
       console.log('[Simple Checkout] Invoice response:', invoice);
-      if (invoice && invoice.invoice_url) {
+      if (invoice && invoice.invoiceUrl) {
         xenditData = invoice;
-        paymentUrl = invoice.invoice_url;
+        paymentUrl = invoice.invoiceUrl;
         // Update transaction with Xendit invoice info
         await prisma.transaction.update({
           where: { id: transaction.id },
@@ -348,21 +348,21 @@ export async function POST(request: NextRequest) {
             reference: invoice.id,
             paymentProvider: 'XENDIT',
             paymentMethod: 'INVOICE',
-            paymentUrl: invoice.invoice_url,
-            expiredAt: invoice.expiry_date ? new Date(invoice.expiry_date) : new Date(Date.now() + 72 * 60 * 60 * 1000),
+            paymentUrl: invoice.invoiceUrl,
+            expiredAt: invoice.expiryDate ? new Date(invoice.expiryDate) : new Date(Date.now() + 72 * 60 * 60 * 1000),
             metadata: {
               ...(transaction.metadata as any),
               xenditInvoiceId: invoice.id,
-              xenditInvoiceUrl: invoice.invoice_url,
-              xenditExternalId: invoice.external_id,
-              xenditExpiry: invoice.expiry_date,
+              xenditInvoiceUrl: invoice.invoiceUrl,
+              xenditExternalId: invoice.externalId,
+              xenditExpiry: invoice.expiryDate,
               preferredPaymentMethod: paymentMethod,
               preferredPaymentChannel: paymentChannel,
             }
           }
         });
         console.log('[Simple Checkout] ✅ Xendit Invoice created:', invoice.id);
-        console.log('[Simple Checkout] ✅ Payment URL:', invoice.invoice_url);
+        console.log('[Simple Checkout] ✅ Payment URL:', invoice.invoiceUrl);
       } else {
         throw new Error('Xendit Invoice creation failed - no invoice_url');
       }

@@ -91,16 +91,16 @@ export async function GET(
             invoice_duration: paymentExpiryHours * 3600,
           })
           
-          if (invoice?.invoice_url) {
+          if (invoice?.invoiceUrl) {
             // Update transaction with invoice URL
-            await prisma.transaction.update({
+            await prisma.transaction.update(
               where: { id: transaction.id },
-              data: { paymentUrl: invoice.invoice_url }
-            })
+              data: { paymentUrl: invoice.invoiceUrl }
+            )
             
             return NextResponse.json({
               redirect: true,
-              redirectUrl: invoice.invoice_url,
+              redirectUrl: invoice.invoiceUrl,
               message: 'Silakan selesaikan pembayaran melalui Xendit',
             })
           }
