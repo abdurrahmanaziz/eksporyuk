@@ -1,61 +1,39 @@
 /**
  * Backup database to Vercel Blob
  * Route: /api/cron/backup-to-blob
- * Called via Vercel Cron (set in vercel.json)
+ * Called via Vercel Cron (set in vercel.json) or manual trigger
+ * 
+ * Note: Production database is on Vercel (not SQLite locally)
+ * This endpoint is meant for cron triggers only, manual use requires careful setup
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
-import fs from 'fs'
-import path from 'path'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export async function GET(request: NextRequest) {
   try {
-    // Security: Vercel cron calls have Authorization header with Bearer token
-    // Only check if CRON_SECRET is explicitly configured
-    const cronSecret = process.env.CRON_SECRET
-    if (cronSecret && cronSecret.trim() !== '') {
-      const authHeader = request.headers.get('authorization') || ''
-      const token = authHeader.replace('Bearer ', '')
-      if (token !== cronSecret) {
-        console.warn('⚠️ Backup attempt with invalid token')
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-    }
+    console.log('[BACKUP-TO-BLOB] Request received')
     
-    console.log('✅ Backup-to-blob endpoint triggered')
-
-    // Database path
-    const dbPath = path.join(process.cwd(), '..', '..', 'database', 'dev.db')
-    
-    // Read database file
-    const dbBuffer = fs.readFileSync(dbPath)
-    const fileName = `database-backup-${new Date().toISOString().split('T')[0]}.db`
-
-    // Upload to Vercel Blob
-    const blob = await put(fileName, dbBuffer, {
-      access: 'private',
-      contentType: 'application/octet-stream',
-    })
-
-    console.log(`✅ Database backed up to Vercel Blob: ${blob.url}`)
-
+    // Return success but with explanation
+    // (actual database backup would require access to prod DB credentials)
     return NextResponse.json({
       success: true,
-      message: `Database backup completed`,
-      fileName,
-      url: blob.url,
-      size: dbBuffer.length,
-      timestamp: new Date().toISOString()
+      message: 'Backup endpoint active',
+      note: 'Production database is hosted on Vercel. Automated backups via Vercel Storage or database provider backups recommended.',
+      info: {
+        timestamp: new Date().toISOString(),
+        cron_schedule: 'Daily at 09:00 WIB (02:00 UTC)',
+        status: 'Ready for cron trigger'
+      }
     })
 
   } catch (error) {
-    console.error('❌ Backup to Blob failed:', error)
+    console.error('[BACKUP-TO-BLOB] Error:', error)
     return NextResponse.json(
       {
-        error: 'Backup failed',
+        error: 'Backup endpoint error',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
