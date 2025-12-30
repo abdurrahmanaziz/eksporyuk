@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { xenditService } from '@/lib/xendit'
+import { generateTransactionId, getCurrentTimestamp } from '@/lib/transaction-helper'
 import { validatePaymentAmount } from '@/lib/payment-methods'
 
 // Force this route to be dynamic
@@ -181,6 +182,7 @@ export async function POST(request: NextRequest) {
 
     // Create transaction record - IMPORTANT: Don't include null foreign keys
     const transactionData: any = {
+      id: generateTransactionId(),
       invoiceNumber: invoiceNumber,
       userId: session.user.id,
       type: 'MEMBERSHIP',
@@ -193,6 +195,7 @@ export async function POST(request: NextRequest) {
       customerEmail: email || session.user.email || '',
       customerPhone: phone || '',
       customerWhatsapp: whatsapp || phone || '',
+      updatedAt: getCurrentTimestamp(),
       metadata: JSON.stringify({
         priceOption: priceOption,
         membershipId: planId,
