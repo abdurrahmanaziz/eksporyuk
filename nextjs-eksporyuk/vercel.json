@@ -37,6 +37,10 @@
     {
       "path": "/api/cron/auto-backup",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/backup-to-blob",
+      "schedule": "0 2 * * *"
     }
   ]
 }
