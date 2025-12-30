@@ -9,47 +9,65 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Required fields for member profile completion
+ * Note: phone/whatsapp cukup salah satu yang terisi
+ * Avatar bersifat opsional (tidak wajib untuk profile completion)
  */
 const REQUIRED_PROFILE_FIELDS = {
   name: { label: 'Nama Lengkap', required: true },
-  avatar: { label: 'Foto Profil', required: true },
-  phone: { label: 'Nomor Telepon', required: true },
-  whatsapp: { label: 'WhatsApp', required: true },
+  avatar: { label: 'Foto Profil', required: false }, // Opsional
+  phone: { label: 'Nomor Telepon', required: false }, // Salah satu dengan WhatsApp
+  whatsapp: { label: 'WhatsApp', required: false }, // Salah satu dengan Phone  
   province: { label: 'Provinsi', required: true },
   city: { label: 'Kota/Kabupaten', required: true },
 }
 
 /**
  * Check if a user has completed their profile
+ * Logic:
+ * - name, province, city WAJIB
+ * - phone ATAU whatsapp cukup salah satu
+ * - avatar opsional
  */
 export function checkProfileCompletion(user: any) {
   const missingFields: string[] = []
   
+  // Nama wajib
   if (!user.name || user.name.trim() === '') {
     missingFields.push('name')
   }
-  if (!user.avatar) {
-    missingFields.push('avatar')
+  
+  // Avatar opsional - tidak dihitung sebagai missing field
+  // if (!user.avatar) {
+  //   missingFields.push('avatar')
+  // }
+  
+  // Phone ATAU WhatsApp - cukup salah satu
+  const hasPhone = user.phone && user.phone.trim() !== ''
+  const hasWhatsapp = user.whatsapp && user.whatsapp.trim() !== ''
+  if (!hasPhone && !hasWhatsapp) {
+    missingFields.push('whatsapp') // Tampilkan sebagai 'whatsapp' saja
   }
-  if (!user.phone) {
-    missingFields.push('phone')
-  }
-  if (!user.whatsapp) {
-    missingFields.push('whatsapp')
-  }
-  if (!user.province) {
+  
+  // Provinsi wajib
+  if (!user.province || user.province.trim() === '') {
     missingFields.push('province')
   }
-  if (!user.city) {
+  
+  // Kota wajib
+  if (!user.city || user.city.trim() === '') {
     missingFields.push('city')
   }
+  
+  // Total required fields yang dihitung: name, whatsapp (OR phone), province, city = 4
+  const totalRequired = 4
+  const completedCount = totalRequired - missingFields.length
   
   return {
     isComplete: missingFields.length === 0,
     missingFields,
-    completedFields: Object.keys(REQUIRED_PROFILE_FIELDS).filter(f => !missingFields.includes(f)),
-    totalRequired: Object.keys(REQUIRED_PROFILE_FIELDS).length,
-    completedCount: Object.keys(REQUIRED_PROFILE_FIELDS).length - missingFields.length,
+    completedFields: ['name', 'whatsapp', 'province', 'city'].filter(f => !missingFields.includes(f)),
+    totalRequired,
+    completedCount,
   }
 }
 
