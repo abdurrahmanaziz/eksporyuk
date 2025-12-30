@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
     const blob = await put(fileName, backupJson, {
       access: 'public',
       contentType: 'application/json',
+      addRandomSuffix: true
     })
     
     console.log(`✅ Database backed up to Vercel Blob: ${blob.url}`)

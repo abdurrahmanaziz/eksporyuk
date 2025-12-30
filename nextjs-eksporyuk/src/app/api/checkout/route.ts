@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
-import { xenditProxy } from '@/lib/xendit-proxy'
+import { xenditService } from '@/lib/xendit'
 import { prisma } from '@/lib/prisma'
 import { getNextInvoiceNumber } from '@/lib/invoice-generator'
 import { isPaymentMethodAvailable, validatePaymentAmount } from '@/lib/payment-methods'
@@ -420,7 +420,7 @@ export async function POST(request: NextRequest) {
     
     try {
       // Create Invoice (works for all payment methods including VA)
-      const invoiceData = await xenditProxy.createInvoice({
+      const invoiceData = await xenditService.createInvoice({
         external_id: transaction.id,
         payer_email: customer.email,
         description: transaction.description || 'Purchase',
@@ -435,39 +435,45 @@ export async function POST(request: NextRequest) {
         // Add payment method hint for VA
         ...(paymentChannel && {
           payment_methods: [`BANK_${paymentChannel}`],
-          success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/success?transaction_id=${transaction.id}`,
-          failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/failed?transaction_id=${transaction.id}`
-        })
+        }),
+        success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/success?transaction_id=${transaction.id}`,
+        failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/failed?transaction_id=${transaction.id}`
       })
 
-      if (!invoiceData || !invoiceData.invoice_url) {
-        console.error('❌ [Xendit] Failed to create invoice - no invoice_url returned:', invoiceData)
-        xenditPayment = { success: false, error: 'No invoice_url returned from Xendit' }
+      if (!invoiceData || !invoiceData.invoiceUrl) {
+        console.error('❌ [Xendit] Failed to create invoice - no invoiceUrl returned:', invoiceData)
+        xenditPayment = { success: false, error: 'No invoiceUrl returned from Xendit' }
       } else {
         console.log('✅ [Xendit] Invoice created successfully:', {
           id: invoiceData.id,
-          invoice_url: invoiceData.invoice_url,
+          invoice_url: invoiceData.invoiceUrl,
           status: invoiceData.status
         })
         xenditPayment = { 
           success: true, 
           data: {
             id: invoiceData.id,
-            invoiceUrl: invoiceData.invoice_url
+            invoiceUrl: invoiceData.invoiceUrl
           }
         }
       }
     } catch (xenditError: any) {
       console.error('❌ [Xendit] Error creating invoice:', {
         message: xenditError.message,
-        response: xenditError.response?.data,
-        status: xenditError.response?.status,
         transactionId: transaction.id
       })
       xenditPayment = { 
         success: false, 
         error: `Xendit API error: ${xenditError.message}` 
       }
+    }
+
+    // If Xendit failed, return error immediately (NO FALLBACK)
+    if (!xenditPayment.success) {
+       return NextResponse.json({ 
+        success: false, 
+        error: xenditPayment.error || 'Failed to create payment invoice'
+      }, { status: 500 })
     }
 
     // Update transaction with Xendit invoice info
@@ -499,24 +505,20 @@ export async function POST(request: NextRequest) {
       } catch (dbError: any) {
         console.error('❌ [Database] Failed to update transaction:', dbError.message)
       }
-    } else {
-      console.error('❌ [Xendit] Cannot update transaction - no valid invoice data:', xenditPayment)
     }
 
-    paymentUrl = xenditPayment.success && xenditPayment.data 
-      ? xenditPayment.data.invoiceUrl 
-      : `/payment/manual/${transaction.id}` // Fallback to manual payment
+    paymentUrl = xenditPayment.data.invoiceUrl
 
     return NextResponse.json({
       success: true,
       transactionId: transaction.id,
       amount: finalAmount,
       paymentUrl,
-      xenditData: (xenditPayment.success && xenditPayment.data) ? {
+      xenditData: {
         id: xenditPayment.data.id,
         url: xenditPayment.data.invoiceUrl,
         preferredMethod: paymentChannel || 'all'
-      } : null,
+      },
       customer: {
         id: customer.id,
         name: customer.name,

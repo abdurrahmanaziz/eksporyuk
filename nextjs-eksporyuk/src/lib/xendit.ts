@@ -77,6 +77,8 @@ export class XenditService {
       email?: string;
       mobile_number?: string;
     };
+    success_redirect_url?: string;
+    failure_redirect_url?: string;
   }) {
     console.log('[Xendit] Creating Invoice:', JSON.stringify(data, null, 2));
     
@@ -104,6 +106,14 @@ export class XenditService {
 
       if (data.customer) {
         payload.customer = data.customer;
+      }
+
+      if (data.success_redirect_url) {
+        payload.successRedirectUrl = data.success_redirect_url;
+      }
+
+      if (data.failure_redirect_url) {
+        payload.failureRedirectUrl = data.failure_redirect_url;
       }
 
       const invoice = await this.invoiceApi.createInvoice({ data: payload });
