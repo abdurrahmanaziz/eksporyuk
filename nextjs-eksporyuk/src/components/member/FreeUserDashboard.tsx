@@ -95,16 +95,48 @@ const membershipBenefits = [
 export default function FreeUserDashboard() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [daysRemaining, setDaysRemaining] = useState(3)
+  const [countdownLoaded, setCountdownLoaded] = useState(false)
+  const [daysRemaining, setDaysRemaining] = useState(0)
   const [hoursRemaining, setHoursRemaining] = useState(0)
   const [minutesRemaining, setMinutesRemaining] = useState(0)
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
+
+  // Fetch user data to get accurate trialEndsAt from createdAt
+  useEffect(() => {
+    const fetchTrialInfo = async () => {
+      try {
+        const res = await fetch('/api/user/trial-info')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && data.trialEndsAt) {
+            setTrialEndsAt(data.trialEndsAt)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching trial info:', error)
+        // Fallback to session if API fails
+        if (session?.trialEndsAt) {
+          setTrialEndsAt(session.trialEndsAt)
+        }
+      }
+    }
+
+    if (session?.user?.id) {
+      // Try session first for immediate display
+      if (session.trialEndsAt) {
+        setTrialEndsAt(session.trialEndsAt)
+      }
+      // Then fetch fresh data from API
+      fetchTrialInfo()
+    }
+  }, [session])
 
   // Calculate trial countdown
   useEffect(() => {
-    if (session?.trialEndsAt) {
+    if (trialEndsAt) {
       const updateCountdown = () => {
         const now = new Date()
-        const trialEnd = new Date(session.trialEndsAt!)
+        const trialEnd = new Date(trialEndsAt)
         const diff = trialEnd.getTime() - now.getTime()
         
         if (diff > 0) {
@@ -116,17 +148,19 @@ export default function FreeUserDashboard() {
           setHoursRemaining(hours)
           setMinutesRemaining(minutes)
         } else {
+          // Trial sudah berakhir
           setDaysRemaining(0)
           setHoursRemaining(0)
           setMinutesRemaining(0)
         }
+        setCountdownLoaded(true)
       }
       
       updateCountdown()
       const interval = setInterval(updateCountdown, 60000) // Update setiap menit
       return () => clearInterval(interval)
     }
-  }, [session])
+  }, [trialEndsAt])
 
   const userName = session?.user?.name || 'Member'
 

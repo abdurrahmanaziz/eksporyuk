@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
             paymentMethodType: paymentMethod || 'bank_transfer',
             paymentChannel: paymentChannel || 'MANDIRI',
             paymentChannelName: getPaymentChannelName(paymentChannel || 'MANDIRI'),
-            expiryHours: 72 // 3 days default
+            expiryHours: paymentExpiryHours // Use dynamic expiry from settings
           }
         }
       })
@@ -292,30 +292,36 @@ export async function POST(request: NextRequest) {
     let xenditData: any = null
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://eksporyuk.com'
 
+    // Get payment expiry settings from database
+    const globalSettings = await prisma.settings.findFirst({
+      select: {
+        paymentExpiryHours: true,
+        paymentUniqueCodeEnabled: true,
+        paymentUniqueCodeType: true,
+        paymentUniqueCodeMin: true,
+        paymentUniqueCodeMax: true,
+      }
+    })
+    const paymentExpiryHours = globalSettings?.paymentExpiryHours || 72 // Default 72 hours (3 days)
+    const paymentExpiryMs = paymentExpiryHours * 60 * 60 * 1000
+    const paymentExpirySeconds = paymentExpiryHours * 60 * 60
+    
+    console.log('[Simple Checkout] Payment expiry hours:', paymentExpiryHours)
+
     // === MANUAL PAYMENT - Skip Xendit, redirect to manual payment page ===
     if (paymentMethod === 'manual') {
       console.log('[Simple Checkout] Manual payment selected - skipping Xendit')
-      
-      // Get unique code settings
-      const paymentSettings = await prisma.settings.findFirst({
-        select: {
-          paymentUniqueCodeEnabled: true,
-          paymentUniqueCodeType: true,
-          paymentUniqueCodeMin: true,
-          paymentUniqueCodeMax: true,
-        }
-      })
       
       // Generate unique code if enabled
       let uniqueCode = 0
       let finalAmount = amountNum
       
-      if (paymentSettings?.paymentUniqueCodeEnabled) {
-        const min = paymentSettings.paymentUniqueCodeMin || 1
-        const max = paymentSettings.paymentUniqueCodeMax || 999
+      if (globalSettings?.paymentUniqueCodeEnabled) {
+        const min = globalSettings.paymentUniqueCodeMin || 1
+        const max = globalSettings.paymentUniqueCodeMax || 999
         uniqueCode = Math.floor(Math.random() * (max - min + 1)) + min
         
-        if (paymentSettings.paymentUniqueCodeType === 'subtract') {
+        if (globalSettings.paymentUniqueCodeType === 'subtract') {
           finalAmount = amountNum - uniqueCode
         } else {
           finalAmount = amountNum + uniqueCode
@@ -332,13 +338,15 @@ export async function POST(request: NextRequest) {
           paymentProvider: 'MANUAL',
           paymentMethod: 'MANUAL_TRANSFER',
           paymentUrl: `${appUrl}/payment/manual/${transaction.id}`,
+          expiredAt: new Date(Date.now() + paymentExpiryMs),
           metadata: {
             ...(transaction.metadata as any),
             paymentType: 'manual',
             manualBankCode: paymentChannel,
             uniqueCode: uniqueCode,
-            uniqueCodeType: paymentSettings?.paymentUniqueCodeType || 'add',
+            uniqueCodeType: globalSettings?.paymentUniqueCodeType || 'add',
             originalAmountBeforeUniqueCode: amountNum,
+            paymentExpiryHours: paymentExpiryHours,
           }
         }
       })
@@ -366,7 +374,7 @@ export async function POST(request: NextRequest) {
           name: name || session.user.name || 'Customer',
           amount: amountNum,
           isSingleUse: true,
-          expirationDate: new Date(Date.now() + 72 * 60 * 60 * 1000) // 72 hours
+          expirationDate: new Date(Date.now() + paymentExpiryMs) // Use dynamic expiry
         })
 
         console.log('[Simple Checkout] VA Result:', JSON.stringify(vaResult, null, 2))
@@ -394,7 +402,7 @@ export async function POST(request: NextRequest) {
             paymentProvider: 'XENDIT',
             paymentMethod: `VA_${paymentChannel}`,
             paymentUrl: isInvoiceFallback ? vaNumber : `${appUrl}/payment/va/${transaction.id}`,
-            expiredAt: vaData.expiration_date ? new Date(vaData.expiration_date) : new Date(Date.now() + 72 * 60 * 60 * 1000),
+            expiredAt: vaData.expiration_date ? new Date(vaData.expiration_date) : new Date(Date.now() + paymentExpiryMs),
             metadata: {
               ...(existingMetadata as any),
               vaNumber: vaNumber,
@@ -454,7 +462,7 @@ export async function POST(request: NextRequest) {
         amount: amountNum,
         payer_email: email || session.user.email || 'customer@eksporyuk.com',
         description: `Membership: ${plan.name} - ${priceOption?.label || ''}`,
-        invoice_duration: 72 * 3600, // 72 hours in seconds
+        invoice_duration: paymentExpirySeconds, // Use dynamic expiry from settings
         currency: 'IDR',
         customer: {
           given_names: name || session.user.name || 'Customer',
@@ -484,7 +492,7 @@ export async function POST(request: NextRequest) {
             paymentProvider: 'XENDIT',
             paymentMethod: 'INVOICE',
             paymentUrl: invoice.invoiceUrl,
-            expiredAt: invoice.expiryDate ? new Date(invoice.expiryDate) : new Date(Date.now() + 72 * 60 * 60 * 1000),
+            expiredAt: invoice.expiryDate ? new Date(invoice.expiryDate) : new Date(Date.now() + paymentExpiryMs),
             metadata: {
               ...(existingMetadata as any),
               xenditInvoiceId: invoice.id,

@@ -35,28 +35,42 @@ export async function GET(request: NextRequest) {
         affiliateId: affiliateProfile.id,
         ...(showArchived ? {} : { isArchived: false }),
       },
-      include: {
-        membership: {
-          select: { id: true, name: true, slug: true }
-        },
-        product: {
-          select: { id: true, name: true, slug: true }
-        },
-        course: {
-          select: { id: true, title: true }
-        },
-        supplier: {
-          select: { id: true, companyName: true, province: true, city: true }
-        },
-      },
       orderBy: {
         createdAt: 'desc',
       },
     })
 
+    // Fetch related data separately
+    const membershipIds = [...new Set(links.map(l => l.membershipId).filter(Boolean))]
+    const productIds = [...new Set(links.map(l => l.productId).filter(Boolean))]
+    const courseIds = [...new Set(links.map(l => l.courseId).filter(Boolean))]
+    const supplierIds = [...new Set(links.map(l => l.supplierId).filter(Boolean))]
+
+    const memberships = membershipIds.length > 0 
+      ? await prisma.membership.findMany({ where: { id: { in: membershipIds } } })
+      : []
+    const products = productIds.length > 0
+      ? await prisma.product.findMany({ where: { id: { in: productIds } } })
+      : []
+    const courses = courseIds.length > 0
+      ? await prisma.course.findMany({ where: { id: { in: courseIds } } })
+      : []
+    const suppliers = supplierIds.length > 0
+      ? await prisma.supplierProfile.findMany({ where: { id: { in: supplierIds } } })
+      : []
+
+    const membershipMap = new Map(memberships.map(m => [m.id, m]))
+    const productMap = new Map(products.map(p => [p.id, p]))
+    const courseMap = new Map(courses.map(c => [c.id, c]))
+    const supplierMap = new Map(suppliers.map(s => [s.id, s]))
+
     // Get conversion counts for each link
     const linksWithStats = links.map((link) => {
       const conversions = link.conversions || 0
+      const membership = link.membershipId ? membershipMap.get(link.membershipId) : null
+      const product = link.productId ? productMap.get(link.productId) : null
+      const course = link.courseId ? courseMap.get(link.courseId) : null
+      const supplier = link.supplierId ? supplierMap.get(link.supplierId) : null
 
       return {
         id: link.id,
@@ -66,12 +80,12 @@ export async function GET(request: NextRequest) {
         couponCode: link.couponCode,
         clicks: link.clicks,
         conversions,
-        revenue: 0, // Calculate if needed
+        revenue: 0,
         isArchived: link.isArchived,
-        membership: link.membership,
-        product: link.product,
-        course: link.course,
-        supplier: link.supplier,
+        membership: membership ? { id: membership.id, name: membership.name, slug: membership.slug } : null,
+        product: product ? { id: product.id, name: product.name, slug: product.slug } : null,
+        course: course ? { id: course.id, title: course.title } : null,
+        supplier: supplier ? { id: supplier.id, companyName: supplier.companyName, province: supplier.province, city: supplier.city } : null,
         createdAt: link.createdAt.toISOString(),
       }
     })

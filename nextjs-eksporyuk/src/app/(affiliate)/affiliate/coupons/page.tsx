@@ -169,9 +169,9 @@ export default function AffiliateCouponsPage() {
         setSelectedTemplate(null)
         fetchData()
       } else {
-        const errorData = await response.json()
-        console.error('Generate coupon error:', errorData)
-        toast.error(errorData.error || 'Gagal membuat kupon')
+        // Data sudah di-parse, gunakan langsung
+        console.error('Generate coupon error:', data)
+        toast.error(data.error || 'Gagal membuat kupon')
       }
     } catch (error) {
       console.error('Error generating coupon:', error)

@@ -16,6 +16,7 @@ export default function RegisterPage() {
     name: '',
     email: '',
     username: '',
+    whatsapp: '',
     password: '',
     confirmPassword: '',
   })
@@ -39,6 +40,7 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           username: formData.username,
+          whatsapp: formData.whatsapp,
           password: formData.password,
         }),
       })
@@ -105,15 +107,19 @@ export default function RegisterPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="username">Username (opsional)</Label>
+              <Label htmlFor="whatsapp">Nomor WhatsApp</Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="johndoe"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                id="whatsapp"
+                type="tel"
+                placeholder="08xxxxxxxxxx"
+                value={formData.whatsapp}
+                onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                required
                 disabled={isLoading}
               />
+              <p className="text-xs text-muted-foreground">
+                Gunakan format 08xx atau +628xx
+              </p>
             </div>
             
             <div className="space-y-2">
