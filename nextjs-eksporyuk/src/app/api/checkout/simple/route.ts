@@ -6,6 +6,8 @@ import { xenditService } from '@/lib/xendit'
 import { randomBytes } from 'crypto'
 
 import { generateTransactionId, getCurrentTimestamp } from '@/lib/transaction-helper'
+import { notificationService } from '@/lib/services/notificationService'
+import { mailketingService } from '@/lib/services/mailketingService'
 
 // Helper to generate unique ID
 const createId = () => randomBytes(12).toString('hex')
@@ -525,6 +527,73 @@ export async function POST(request: NextRequest) {
     
     console.log('[Simple Checkout] Payment URL:', paymentUrl)
     console.log('[Simple Checkout] END')
+
+    // === SEND NOTIFICATIONS ===
+    // Send welcome + payment pending notifications
+    try {
+      const userName = name || session.user.name || 'Member'
+      const userEmail = email || session.user.email || ''
+      
+      // 1. In-App & Push Notification via Pusher/OneSignal
+      await notificationService.send({
+        userId: session.user.id,
+        type: 'TRANSACTION',
+        title: '🎉 Pesanan Berhasil Dibuat!',
+        message: `Hai ${userName}, pesanan ${plan.name} sudah dibuat. Segera selesaikan pembayaran sebelum kadaluarsa.`,
+        link: paymentUrl,
+        transactionId: transaction.id,
+        channels: ['pusher', 'onesignal'],
+        metadata: {
+          invoiceNumber,
+          amount: amountNum,
+          planName: plan.name,
+        }
+      })
+      
+      // 2. Email Notification - Payment Pending
+      if (userEmail) {
+        const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount)
+        
+        await mailketingService.sendEmail({
+          to: userEmail,
+          subject: `[EksporYuk] Pesanan #${invoiceNumber} - Menunggu Pembayaran`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #f97316, #ea580c); border-radius: 12px 12px 0 0;">
+                <h1 style="color: white; margin: 0;">Pesanan Berhasil Dibuat!</h1>
+              </div>
+              <div style="background: #fff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+                <p style="font-size: 16px; color: #374151;">Hai <strong>${userName}</strong>,</p>
+                <p style="color: #6b7280;">Terima kasih sudah mendaftar di EksporYuk! Pesanan Anda sudah berhasil dibuat.</p>
+                
+                <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <h3 style="margin: 0 0 15px; color: #111827;">Detail Pesanan:</h3>
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px 0; color: #6b7280;">No. Invoice</td><td style="text-align: right; font-weight: bold;">${invoiceNumber}</td></tr>
+                    <tr><td style="padding: 8px 0; color: #6b7280;">Produk</td><td style="text-align: right; font-weight: bold;">${plan.name}</td></tr>
+                    <tr><td style="padding: 8px 0; color: #6b7280;">Total Bayar</td><td style="text-align: right; font-weight: bold; color: #059669;">${formatCurrency(amountNum)}</td></tr>
+                  </table>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${paymentUrl}" style="display: inline-block; padding: 14px 32px; background-color: #f97316; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Bayar Sekarang</a>
+                </div>
+                
+                <p style="color: #ef4444; font-size: 14px; text-align: center;">⚠️ Selesaikan pembayaran dalam 72 jam sebelum kadaluarsa</p>
+              </div>
+              <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
+                <p>EksporYuk - Platform Pembelajaran Ekspor #1 Indonesia</p>
+              </div>
+            </div>
+          `
+        })
+      }
+      
+      console.log('[Simple Checkout] ✅ Notifications sent successfully')
+    } catch (notifError) {
+      // Don't fail checkout if notification fails
+      console.error('[Simple Checkout] ⚠️ Notification error (non-blocking):', notifError)
+    }
 
     return NextResponse.json({
       success: true,

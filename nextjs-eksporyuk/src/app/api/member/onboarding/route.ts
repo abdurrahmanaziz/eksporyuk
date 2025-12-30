@@ -123,7 +123,7 @@ export async function GET() {
     }
 
     // Manually fetch related data
-    const [userMemberships, courseEnrollments, groupMemberships] = await Promise.all([
+    const [userMemberships, courseEnrollments, groupMemberships, pendingTransactions] = await Promise.all([
       prisma.userMembership.findMany({
         where: {
           userId: user.id,
@@ -148,6 +148,25 @@ export async function GET() {
         where: { userId: user.id },
         select: { id: true },
         take: 1
+      }),
+      // Check for pending transactions (membership)
+      prisma.transaction.findFirst({
+        where: {
+          userId: user.id,
+          type: 'MEMBERSHIP',
+          status: 'PENDING',
+          expiredAt: { gt: new Date() }, // Not expired yet
+        },
+        select: {
+          id: true,
+          invoiceNumber: true,
+          amount: true,
+          paymentUrl: true,
+          expiredAt: true,
+          metadata: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
       })
     ])
 
@@ -231,6 +250,17 @@ export async function GET() {
           duration: activeMembership.membership.duration,
           startDate: activeMembership.startDate,
           endDate: activeMembership.endDate,
+        } : null,
+
+        // Pending Transaction (untuk menampilkan "Bayar Tagihan" jika ada)
+        pendingTransaction: pendingTransactions ? {
+          id: pendingTransactions.id,
+          invoiceNumber: pendingTransactions.invoiceNumber,
+          amount: pendingTransactions.amount,
+          paymentUrl: pendingTransactions.paymentUrl,
+          expiredAt: pendingTransactions.expiredAt,
+          createdAt: pendingTransactions.createdAt,
+          membershipName: (pendingTransactions.metadata as any)?.membershipName || 'Membership',
         } : null,
 
         // User profile data for form

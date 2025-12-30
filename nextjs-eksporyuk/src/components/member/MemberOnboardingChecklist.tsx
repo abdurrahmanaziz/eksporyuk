@@ -41,6 +41,15 @@ interface OnboardingData {
     name: string
     slug: string
   } | null
+  pendingTransaction?: {
+    id: string
+    invoiceNumber: string
+    amount: number
+    paymentUrl: string | null
+    expiredAt: string
+    createdAt: string
+    membershipName: string
+  } | null
 }
 
 interface ChecklistItem {
@@ -137,14 +146,20 @@ export default function MemberOnboardingChecklist({
     },
     {
       id: 'membership',
-      title: 'Aktifkan Membership',
+      title: data.pendingTransaction 
+        ? 'Bayar Tagihan' 
+        : 'Aktifkan Membership',
       description: data.steps.hasMembership 
         ? `Member ${data.membership?.name || 'aktif'}` 
-        : 'Pilih paket membership',
+        : data.pendingTransaction 
+          ? `Menunggu pembayaran ${data.pendingTransaction.membershipName}`
+          : 'Pilih paket membership',
       icon: <Award className="w-5 h-5" />,
-      href: '/checkout/pro',
+      href: data.pendingTransaction?.paymentUrl 
+        ? data.pendingTransaction.paymentUrl 
+        : '/checkout/pro',
       isCompleted: data.steps.hasMembership,
-      action: 'Pilih Paket',
+      action: data.pendingTransaction ? 'Bayar Sekarang' : 'Pilih Paket',
       priority: 'required',
     },
     {
@@ -368,19 +383,35 @@ export default function MemberOnboardingChecklist({
 
                 {/* Action Button */}
                 {!item.isCompleted && !item.isLocked && (
-                  <Link href={item.href}>
-                    <Button
-                      size="sm"
-                      className={
-                        item.priority === 'required'
-                          ? 'bg-orange-500 hover:bg-orange-600'
-                          : 'bg-gray-600 hover:bg-gray-700'
-                      }
-                    >
-                      {item.action}
-                      <ExternalLink className="w-3 h-3 ml-1" />
-                    </Button>
-                  </Link>
+                  item.href.startsWith('http') ? (
+                    <a href={item.href} target="_blank" rel="noopener noreferrer">
+                      <Button
+                        size="sm"
+                        className={
+                          item.priority === 'required'
+                            ? 'bg-orange-500 hover:bg-orange-600'
+                            : 'bg-gray-600 hover:bg-gray-700'
+                        }
+                      >
+                        {item.action}
+                        <ExternalLink className="w-3 h-3 ml-1" />
+                      </Button>
+                    </a>
+                  ) : (
+                    <Link href={item.href}>
+                      <Button
+                        size="sm"
+                        className={
+                          item.priority === 'required'
+                            ? 'bg-orange-500 hover:bg-orange-600'
+                            : 'bg-gray-600 hover:bg-gray-700'
+                        }
+                      >
+                        {item.action}
+                        <ExternalLink className="w-3 h-3 ml-1" />
+                      </Button>
+                    </Link>
+                  )
                 )}
                 {item.isCompleted && (
                   <Link
