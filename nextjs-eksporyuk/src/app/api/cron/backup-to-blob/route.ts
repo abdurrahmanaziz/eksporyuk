@@ -13,11 +13,19 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    // Security: verify cron secret if provided (allow if not set, Vercel auto-validates cron calls)
-    const token = request.headers.get('authorization')?.split(' ')[1]
-    if (process.env.CRON_SECRET && process.env.CRON_SECRET.length > 0 && token !== process.env.CRON_SECRET) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Security: Vercel cron calls have Authorization header with Bearer token
+    // Only check if CRON_SECRET is explicitly configured
+    const cronSecret = process.env.CRON_SECRET
+    if (cronSecret && cronSecret.trim() !== '') {
+      const authHeader = request.headers.get('authorization') || ''
+      const token = authHeader.replace('Bearer ', '')
+      if (token !== cronSecret) {
+        console.warn('⚠️ Backup attempt with invalid token')
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
     }
+    
+    console.log('✅ Backup-to-blob endpoint triggered')
 
     // Database path
     const dbPath = path.join(process.cwd(), '..', '..', 'database', 'dev.db')
