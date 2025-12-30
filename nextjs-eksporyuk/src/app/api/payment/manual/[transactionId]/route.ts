@@ -26,6 +26,16 @@ export async function GET(
     const paymentMethodType = metadata?.paymentMethodType
     const paymentChannel = metadata?.paymentChannel
     
+    console.log(`🔍 [Manual Payment API] Checking auto-redirect for ${transactionId}:`, {
+      paymentMethodType,
+      paymentChannel,
+      hasReference: !!transaction.reference,
+      shouldRedirect: paymentMethodType === 'bank_transfer' && 
+                     paymentChannel && 
+                     paymentChannel !== 'manual' && 
+                     !transaction.reference
+    })
+    
     // If it's bank_transfer with specific channel (BCA, BRI, etc) and no Xendit reference,
     // this should go through Xendit invoice flow, not manual
     if (paymentMethodType === 'bank_transfer' && 
@@ -94,7 +104,23 @@ export async function GET(
           }
         }
       } catch (xenditError) {
-        console.error('[Manual Payment API] Failed to create Xendit invoice:', xenditError)
+        console.error('[Manual Payment API] Failed to create Xendit invoice:', {
+          transactionId,
+          error: xenditError.message,
+          stack: xenditError.stack,
+          response: xenditError.response?.data
+        })
+        
+        // Return debug info in development
+        if (process.env.NODE_ENV === 'development') {
+          return NextResponse.json({
+            error: 'Xendit invoice creation failed',
+            details: xenditError.message,
+            transactionId,
+            shouldRedirect: false
+          }, { status: 500 })
+        }
+        
         // Fall through to manual payment
       }
     }
