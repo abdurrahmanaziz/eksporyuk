@@ -319,6 +319,93 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // === BANK TRANSFER (VA) - Use PaymentRequest API for direct VA number ===
+    if (paymentMethod === 'bank_transfer' && paymentChannel) {
+      console.log('[Simple Checkout] Creating Virtual Account for bank:', paymentChannel)
+      
+      try {
+        const vaResult = await xenditService.createVirtualAccount({
+          externalId: transaction.externalId!,
+          bankCode: paymentChannel, // BCA, MANDIRI, BNI, BRI, PERMATA, BSI
+          name: name || session.user.name || 'Customer',
+          amount: amountNum,
+          isSingleUse: true,
+          expirationDate: new Date(Date.now() + 72 * 60 * 60 * 1000) // 72 hours
+        })
+
+        console.log('[Simple Checkout] VA Result:', JSON.stringify(vaResult, null, 2))
+
+        if (!vaResult) {
+          throw new Error('Gagal membuat Virtual Account (Empty response)')
+        }
+
+        const vaData = vaResult
+        const vaNumber = vaData.account_number
+        const isInvoiceFallback = vaNumber && vaNumber.startsWith('http')
+
+        // Prepare metadata
+        const existingMetadata = typeof transaction.metadata === 'object' && transaction.metadata !== null 
+          ? transaction.metadata 
+          : {}
+
+        // Update transaction with VA details
+        await prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            reference: vaData.id,
+            externalId: vaData.external_id || transaction.externalId,
+            paymentProvider: 'XENDIT',
+            paymentMethod: `VA_${paymentChannel}`,
+            paymentUrl: isInvoiceFallback ? vaNumber : `${appUrl}/payment/va/${transaction.id}`,
+            expiredAt: vaData.expiration_date ? new Date(vaData.expiration_date) : new Date(Date.now() + 72 * 60 * 60 * 1000),
+            metadata: {
+              ...(existingMetadata as any),
+              vaNumber: vaNumber,
+              bankCode: paymentChannel,
+              bankName: getPaymentChannelName(paymentChannel),
+              accountNumber: vaNumber,
+              vaId: vaData.id,
+              xenditVANumber: vaNumber,
+              xenditBankCode: paymentChannel,
+              xenditPaymentMethod: 'VIRTUAL_ACCOUNT',
+            }
+          }
+        })
+
+        // If VA number is actually an invoice URL (fallback), redirect there
+        if (isInvoiceFallback) {
+          paymentUrl = vaNumber
+        } else {
+          // Otherwise, redirect to our custom VA page
+          paymentUrl = `${appUrl}/payment/va/${transaction.id}`
+        }
+
+        console.log('[Simple Checkout] ✅ VA Created:', {
+          vaNumber: vaNumber,
+          bank: paymentChannel,
+          redirectUrl: paymentUrl,
+          isFallback: isInvoiceFallback
+        })
+
+        return NextResponse.json({
+          success: true,
+          transactionId: transaction.id,
+          paymentUrl: paymentUrl,
+          amount: amountNum,
+          invoiceNumber: invoiceNumber,
+          paymentType: 'virtual_account',
+          vaNumber: isInvoiceFallback ? null : vaNumber,
+          bankCode: paymentChannel,
+          bankName: getPaymentChannelName(paymentChannel)
+        })
+
+      } catch (vaError: any) {
+        console.error('[Simple Checkout] VA creation failed:', vaError.message)
+        console.log('[Simple Checkout] Falling back to Invoice...')
+        // Fall through to Invoice creation as fallback
+      }
+    }
+
     // === XENDIT PAYMENT - Create Invoice for redirect to Xendit checkout ===
     try {
       console.log('[Simple Checkout] Creating Xendit Invoice for redirect...')
