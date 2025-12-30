@@ -335,11 +335,12 @@ export async function POST(request: NextRequest) {
 
         console.log('[Simple Checkout] VA Result:', JSON.stringify(vaResult, null, 2))
 
-        if (!vaResult) {
+        if (!vaResult || !vaResult.success) {
           throw new Error('Gagal membuat Virtual Account (Empty response)')
         }
 
-        const vaData = vaResult
+        // Extract data from nested response { success: true, data: {...} }
+        const vaData = vaResult.data
         const vaNumber = vaData.account_number
         const isInvoiceFallback = vaNumber && vaNumber.startsWith('http')
 

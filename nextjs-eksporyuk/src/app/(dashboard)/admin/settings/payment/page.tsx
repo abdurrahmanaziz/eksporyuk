@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Plus, Edit, Trash2, CreditCard, Building2, Wallet, DollarSign, Settings2, Image, Check, User } from 'lucide-react'
+import { Plus, Edit, Trash2, CreditCard, Building2, Wallet, DollarSign, Settings2, Image, Check, User, Phone } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 
@@ -135,6 +135,10 @@ export default function PaymentSettingsPage() {
     paymentExpiryHours: 72,
     minAmount: 10000,
     maxAmount: 100000000,
+    contactWhatsapp: '',
+    contactEmail: '',
+    contactPhone: '',
+    contactName: 'Customer Service',
   })
 
   useEffect(() => {
@@ -479,6 +483,65 @@ export default function PaymentSettingsPage() {
                 }
                 placeholder="100000000"
               />
+            </div>
+          </div>
+
+          {/* Payment Contact Section */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Phone className="h-5 w-5" />
+              Kontak Pembayaran
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Kontak yang akan ditampilkan di halaman pembayaran untuk konfirmasi
+            </p>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <Label>Nama Kontak</Label>
+                <Input
+                  value={paymentSettings.contactName}
+                  onChange={(e) =>
+                    setPaymentSettings({ ...paymentSettings, contactName: e.target.value })
+                  }
+                  placeholder="Customer Service"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Contoh: Customer Service, Admin, dll</p>
+              </div>
+              
+              <div>
+                <Label>Nomor WhatsApp</Label>
+                <Input
+                  value={paymentSettings.contactWhatsapp}
+                  onChange={(e) =>
+                    setPaymentSettings({ ...paymentSettings, contactWhatsapp: e.target.value })
+                  }
+                  placeholder="628123456789"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Format: 628xxx tanpa + atau 0</p>
+              </div>
+              
+              <div>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={paymentSettings.contactEmail}
+                  onChange={(e) =>
+                    setPaymentSettings({ ...paymentSettings, contactEmail: e.target.value })
+                  }
+                  placeholder="cs@eksporyuk.com"
+                />
+              </div>
+              
+              <div>
+                <Label>Nomor Telepon</Label>
+                <Input
+                  value={paymentSettings.contactPhone}
+                  onChange={(e) =>
+                    setPaymentSettings({ ...paymentSettings, contactPhone: e.target.value })
+                  }
+                  placeholder="021-1234567"
+                />
+              </div>
             </div>
           </div>
         </CardContent>

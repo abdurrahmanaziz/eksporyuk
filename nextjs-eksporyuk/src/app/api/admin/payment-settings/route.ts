@@ -27,6 +27,10 @@ export async function GET(request: NextRequest) {
         paymentExpiryHours: true,
         paymentMinAmount: true,
         paymentMaxAmount: true,
+        paymentContactWhatsapp: true,
+        paymentContactEmail: true,
+        paymentContactPhone: true,
+        paymentContactName: true,
       }
     })
 
@@ -86,6 +90,10 @@ export async function GET(request: NextRequest) {
         paymentExpiryHours: settings?.paymentExpiryHours ?? defaultSettings.paymentExpiryHours,
         minAmount: settings?.paymentMinAmount ?? defaultSettings.paymentMinAmount,
         maxAmount: settings?.paymentMaxAmount ?? defaultSettings.paymentMaxAmount,
+        contactWhatsapp: settings?.paymentContactWhatsapp ?? '',
+        contactEmail: settings?.paymentContactEmail ?? '',
+        contactPhone: settings?.paymentContactPhone ?? '',
+        contactName: settings?.paymentContactName ?? 'Customer Service',
       }
     }
 
@@ -123,6 +131,10 @@ export async function POST(request: NextRequest) {
       paymentExpiryHours: settings?.paymentExpiryHours ?? settings?.expiryHours ?? 72,
       paymentMinAmount: settings?.minAmount ?? 10000,
       paymentMaxAmount: settings?.maxAmount ?? 100000000,
+      paymentContactWhatsapp: settings?.contactWhatsapp ?? null,
+      paymentContactEmail: settings?.contactEmail ?? null,
+      paymentContactPhone: settings?.contactPhone ?? null,
+      paymentContactName: settings?.contactName ?? 'Customer Service',
     }
 
     if (existingSettings) {

@@ -41,9 +41,18 @@ interface ManualPaymentDetails {
     accountNumber: string
     accountName: string
     logoUrl?: string
+    customLogoUrl?: string
   }[]
   
   selectedBankCode?: string
+  
+  // Contact Info for confirmation
+  contactInfo?: {
+    name: string
+    whatsapp: string | null
+    email: string | null
+    phone: string | null
+  }
   
   // Redirect details for Xendit
   redirecting?: boolean
@@ -421,17 +430,61 @@ export default function ManualPaymentPage() {
           </ol>
         </div>
 
+        {/* Contact Info */}
+        {details?.contactInfo && (details.contactInfo.whatsapp || details.contactInfo.email || details.contactInfo.phone) && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-gray-800 mb-2">Hubungi {details.contactInfo.name}</h4>
+            <div className="space-y-2 text-sm">
+              {details.contactInfo.whatsapp && (
+                <a 
+                  href={`https://wa.me/${details.contactInfo.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-green-600 hover:text-green-700"
+                >
+                  <Phone className="h-4 w-4" />
+                  WhatsApp: {details.contactInfo.whatsapp}
+                </a>
+              )}
+              {details.contactInfo.email && (
+                <a 
+                  href={`mailto:${details.contactInfo.email}`}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                >
+                  <Mail className="h-4 w-4" />
+                  {details.contactInfo.email}
+                </a>
+              )}
+              {details.contactInfo.phone && (
+                <a 
+                  href={`tel:${details.contactInfo.phone}`}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-700"
+                >
+                  <Phone className="h-4 w-4" />
+                  {details.contactInfo.phone}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="space-y-3">
-          <a
-            href={`https://wa.me/6281234567890?text=Halo,%20saya%20sudah%20transfer%20untuk%20invoice%20${details?.invoiceNumber}%20sebesar%20${formatCurrency(details?.amount || 0)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-medium"
-          >
-            <Phone className="h-5 w-5" />
-            Konfirmasi via WhatsApp
-          </a>
+          {details?.contactInfo?.whatsapp ? (
+            <a
+              href={`https://wa.me/${details.contactInfo.whatsapp}?text=Halo,%20saya%20sudah%20transfer%20untuk%20invoice%20${details?.invoiceNumber}%20sebesar%20${formatCurrency(details?.amount || 0)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-medium"
+            >
+              <Phone className="h-5 w-5" />
+              Konfirmasi via WhatsApp
+            </a>
+          ) : (
+            <p className="text-center text-gray-500 text-sm py-3">
+              Kontak pembayaran belum dikonfigurasi. Silakan hubungi admin.
+            </p>
+          )}
           
           <button
             onClick={() => router.push('/')}

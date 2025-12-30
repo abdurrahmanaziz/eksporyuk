@@ -166,36 +166,49 @@ export async function GET(
       })
     }
 
-    // Get manual bank accounts from payment methods
-    const paymentMethodsConfig = await prisma.integrationConfig.findFirst({
-      where: { service: 'payment_methods' }
+    // Get settings including bank accounts and contact info
+    const settings = await prisma.settings.findFirst({
+      select: {
+        paymentBankAccounts: true,
+        paymentExpiryHours: true,
+        paymentContactWhatsapp: true,
+        paymentContactEmail: true,
+        paymentContactPhone: true,
+        paymentContactName: true,
+      }
     })
+    const paymentExpiryHours = settings?.paymentExpiryHours || 72
 
+    // Get bank accounts from settings
     let bankAccounts: any[] = []
-    if (paymentMethodsConfig?.config) {
-      const config = paymentMethodsConfig.config as any
-      if (config.manual?.bankAccounts) {
-        bankAccounts = config.manual.bankAccounts.filter((acc: any) => acc.isActive)
+    if (settings?.paymentBankAccounts) {
+      const accounts = typeof settings.paymentBankAccounts === 'string' 
+        ? JSON.parse(settings.paymentBankAccounts)
+        : settings.paymentBankAccounts
+      
+      if (Array.isArray(accounts)) {
+        bankAccounts = accounts.filter((acc: any) => acc.isActive)
       }
     }
 
-    // If no bank accounts from config, use default
+    // If no bank accounts from settings, try legacy config
     if (bankAccounts.length === 0) {
-      bankAccounts = [
-        {
-          id: 'default-bca',
-          bankName: 'BCA',
-          bankCode: 'BCA',
-          accountNumber: '1234567890',
-          accountName: 'PT Ekspor Yuk Indonesia',
-          isActive: true
+      const paymentMethodsConfig = await prisma.integrationConfig.findFirst({
+        where: { service: 'payment_methods' }
+      })
+
+      if (paymentMethodsConfig?.config) {
+        const config = paymentMethodsConfig.config as any
+        if (config.manual?.bankAccounts) {
+          bankAccounts = config.manual.bankAccounts.filter((acc: any) => acc.isActive)
         }
-      ]
+      }
     }
 
-    // Get settings for expiry
-    const settings = await prisma.settings.findUnique({ where: { id: 1 } })
-    const paymentExpiryHours = settings?.paymentExpiryHours || 72
+    // If still no bank accounts, show warning (no default dummy data)
+    if (bankAccounts.length === 0) {
+      console.warn('[Manual Payment API] No bank accounts configured!')
+    }
 
     // Calculate amounts
     const originalAmount = metadata?.originalAmount || transaction.amount
@@ -213,6 +226,14 @@ export async function GET(
 
     // Get selected bank code from metadata
     const selectedBankCode = metadata?.manualBankCode || metadata?.paymentChannel || bankAccounts[0]?.bankCode
+
+    // Build contact info
+    const contactInfo = {
+      name: settings?.paymentContactName || 'Customer Service',
+      whatsapp: settings?.paymentContactWhatsapp || null,
+      email: settings?.paymentContactEmail || null,
+      phone: settings?.paymentContactPhone || null,
+    }
 
     return NextResponse.json({
       transactionId: transaction.id,
@@ -244,7 +265,10 @@ export async function GET(
       
       // Bank Accounts
       bankAccounts,
-      selectedBankCode
+      selectedBankCode,
+      
+      // Contact Info for confirmation
+      contactInfo
     })
 
   } catch (error) {

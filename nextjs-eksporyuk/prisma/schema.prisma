@@ -2510,6 +2510,10 @@ model Settings {
   paymentAutoActivation           Boolean  @default(true)
   paymentMinAmount                Int      @default(10000)
   paymentMaxAmount                Int      @default(100000000)
+  paymentContactWhatsapp          String?
+  paymentContactEmail             String?
+  paymentContactPhone             String?
+  paymentContactName              String?  @default("Customer Service")
   createdAt                       DateTime @default(now())
   updatedAt                       DateTime
   emailFooterAddress              String?
