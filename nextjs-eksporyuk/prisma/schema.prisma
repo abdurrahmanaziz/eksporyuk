@@ -2514,6 +2514,10 @@ model Settings {
   paymentContactEmail             String?
   paymentContactPhone             String?
   paymentContactName              String?  @default("Customer Service")
+  paymentUniqueCodeEnabled        Boolean  @default(true)
+  paymentUniqueCodeType           String?  @default("add") // 'add' or 'subtract'
+  paymentUniqueCodeMin            Int      @default(1)
+  paymentUniqueCodeMax            Int      @default(999)
   createdAt                       DateTime @default(now())
   updatedAt                       DateTime
   emailFooterAddress              String?

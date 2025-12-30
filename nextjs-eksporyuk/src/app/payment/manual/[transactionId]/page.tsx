@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Copy, Check, AlertCircle, Clock, CreditCard, User, Mail, Phone, FileText, Tag, Calendar, Timer, CheckCircle, Building2, Upload } from 'lucide-react'
+import { Copy, Check, AlertCircle, Clock, User, Mail, Phone, FileText, Timer, CheckCircle, Building2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ManualPaymentDetails {
@@ -15,6 +15,11 @@ interface ManualPaymentDetails {
   type: string
   itemName: string
   description: string
+  
+  // Unique Code
+  uniqueCode: number
+  uniqueCodeType: 'add' | 'subtract'
+  originalAmountBeforeUniqueCode: number
   
   // Customer Details
   customerName: string
@@ -53,10 +58,6 @@ interface ManualPaymentDetails {
     email: string | null
     phone: string | null
   }
-  
-  // Redirect details for Xendit
-  redirecting?: boolean
-  redirectMessage?: string
 }
 
 interface TimeLeft {
@@ -76,7 +77,6 @@ export default function ManualPaymentPage() {
   const [error, setError] = useState('')
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 })
   const [selectedBank, setSelectedBank] = useState<string>('')
-  const [uploadingProof, setUploadingProof] = useState(false)
 
   // Calculate time remaining
   const calculateTimeLeft = useCallback((expiredAt: string): TimeLeft => {
@@ -109,22 +109,9 @@ export default function ManualPaymentPage() {
         return
       }
 
-      // Check if should redirect to Xendit
+      // If should redirect to Xendit
       if (data.shouldRedirectToXendit && data.xenditUrl) {
-        console.log('🔄 Auto-redirecting to Xendit:', data.xenditUrl)
-        // Show brief message then redirect
-        setError('')
-        setDetails(null)
-        setTimeout(() => {
-          window.location.href = data.xenditUrl
-        }, 1500)
-        
-        // Show loading message
-        setDetails({
-          ...data,
-          redirecting: true,
-          redirectMessage: data.message || 'Redirecting to secure payment...'
-        })
+        window.location.href = data.xenditUrl
         return
       }
 
@@ -134,21 +121,18 @@ export default function ManualPaymentPage() {
       } else if (data.bankAccounts?.length > 0) {
         setSelectedBank(data.bankAccounts[0].bankCode)
       }
-      
+
+      // Calculate initial time left
       if (data.expiredAt) {
         setTimeLeft(calculateTimeLeft(data.expiredAt))
       }
     } catch (err) {
       console.error('Error fetching payment details:', err)
-      setError('Failed to load payment details')
+      setError('Gagal memuat detail pembayaran')
     } finally {
       setLoading(false)
     }
   }, [params.transactionId, calculateTimeLeft])
-
-  useEffect(() => {
-    fetchDetails()
-  }, [fetchDetails])
 
   // Countdown timer
   useEffect(() => {
@@ -157,348 +141,371 @@ export default function ManualPaymentPage() {
     const timer = setInterval(() => {
       const newTimeLeft = calculateTimeLeft(details.expiredAt)
       setTimeLeft(newTimeLeft)
-      
+
       if (newTimeLeft.total <= 0) {
         clearInterval(timer)
-        fetchDetails()
       }
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [details?.expiredAt, calculateTimeLeft, fetchDetails])
+  }, [details?.expiredAt, calculateTimeLeft])
 
-  // Copy to clipboard
+  useEffect(() => {
+    fetchDetails()
+  }, [fetchDetails])
+
   const copyToClipboard = async (text: string, field: string) => {
     try {
       await navigator.clipboard.writeText(text)
       setCopiedField(field)
-      toast.success('Copied to clipboard!')
+      toast.success('Berhasil disalin!')
       setTimeout(() => setCopiedField(null), 2000)
     } catch (err) {
-      toast.error('Failed to copy')
+      toast.error('Gagal menyalin')
     }
   }
 
-  // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount)
   }
 
+  const formatTimeUnit = (value: number) => {
+    return value.toString().padStart(2, '0')
+  }
+
   // Get selected bank details
-  const getSelectedBankDetails = () => {
-    if (!details?.bankAccounts || !selectedBank) return null
-    return details.bankAccounts.find(b => b.bankCode === selectedBank)
+  const selectedBankDetails = details?.bankAccounts?.find(b => b.bankCode === selectedBank)
+
+  // Calculate discount percentage
+  const hasDiscount = details && details.originalAmount > details.originalAmountBeforeUniqueCode
+  const discountAmount = hasDiscount ? details.originalAmount - details.originalAmountBeforeUniqueCode : 0
+  const discountPercentage = hasDiscount && details.originalAmount > 0 
+    ? Math.round((discountAmount / details.originalAmount) * 100) 
+    : 0
+
+  // Generate WhatsApp message
+  const generateWhatsAppMessage = () => {
+    if (!details || !selectedBankDetails) return ''
+    return encodeURIComponent(
+      `Halo, saya sudah transfer untuk:\n\n` +
+      `Invoice: ${details.invoiceNumber}\n` +
+      `Produk: ${details.itemName}\n` +
+      `Nominal: ${formatCurrency(details.amount)}\n` +
+      `Bank: ${selectedBankDetails.bankName}\n\n` +
+      `Mohon diverifikasi. Terima kasih!`
+    )
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading payment details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-slate-600">Memuat detail pembayaran...</p>
         </div>
       </div>
     )
   }
 
-  if (error) {
+  if (error || !details) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Error</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Terjadi Kesalahan</h2>
+          <p className="text-slate-600 mb-6">{error || 'Data pembayaran tidak ditemukan'}</p>
           <button
             onClick={() => router.push('/')}
-            className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700"
-          >
-            Back to Home
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (details?.redirecting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Redirecting to Payment</h1>
-          <p className="text-gray-600 mb-4">{details.redirectMessage}</p>
-          <p className="text-sm text-gray-500">You will be redirected to Xendit secure payment page...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (details?.status === 'SUCCESS' || details?.status === 'PAID') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Payment Confirmed!</h1>
-          <p className="text-gray-600 mb-6">Your payment has been verified. Thank you!</p>
-          <button
-            onClick={() => router.push('/my-dashboard')}
-            className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700"
-          >
-            Go to Dashboard
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  const selectedBankDetails = getSelectedBankDetails()
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Transfer Manual</h1>
-          <p className="text-gray-600 mt-2">Silakan transfer ke rekening di bawah ini</p>
-        </div>
-
-        {/* Timer */}
-        {timeLeft.total > 0 && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-center gap-2 text-orange-800">
-              <Timer className="h-5 w-5" />
-              <span className="font-medium">Bayar sebelum:</span>
-              <span className="font-bold">
-                {timeLeft.days > 0 && `${timeLeft.days}d `}
-                {String(timeLeft.hours).padStart(2, '0')}:
-                {String(timeLeft.minutes).padStart(2, '0')}:
-                {String(timeLeft.seconds).padStart(2, '0')}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Amount Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="text-center">
-            <p className="text-gray-600 text-sm">Total Pembayaran</p>
-            <p className="text-3xl font-bold text-orange-600 mt-1">
-              {formatCurrency(details?.amount || 0)}
-            </p>
-            {details?.discountAmount && details.discountAmount > 0 && (
-              <p className="text-sm text-gray-500 mt-1">
-                <span className="line-through">{formatCurrency(details.originalAmount)}</span>
-                <span className="text-green-600 ml-2">-{formatCurrency(details.discountAmount)}</span>
-              </p>
-            )}
-          </div>
-          
-          {/* Copy Amount Button */}
-          <button
-            onClick={() => copyToClipboard(String(details?.amount || 0), 'amount')}
-            className="w-full mt-4 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg transition"
-          >
-            {copiedField === 'amount' ? (
-              <><Check className="h-4 w-4 text-green-600" /> Copied!</>
-            ) : (
-              <><Copy className="h-4 w-4" /> Copy Nominal</>
-            )}
-          </button>
-        </div>
-
-        {/* Bank Selection */}
-        {details?.bankAccounts && details.bankAccounts.length > 1 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Pilih Bank Tujuan</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {details.bankAccounts.map((bank) => (
-                <button
-                  key={bank.bankCode}
-                  onClick={() => setSelectedBank(bank.bankCode)}
-                  className={`p-4 rounded-lg border-2 transition ${
-                    selectedBank === bank.bankCode
-                      ? 'border-orange-500 bg-orange-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Building2 className="h-6 w-6 mx-auto mb-2 text-gray-600" />
-                  <p className="font-medium text-sm">{bank.bankName}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Bank Details */}
-        {selectedBankDetails && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Detail Rekening {selectedBankDetails.bankName}
-            </h3>
-            
-            {/* Account Number */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
-              <p className="text-sm text-gray-600 mb-1">Nomor Rekening</p>
-              <div className="flex items-center justify-between">
-                <p className="text-xl font-mono font-bold text-gray-900">
-                  {selectedBankDetails.accountNumber}
-                </p>
-                <button
-                  onClick={() => copyToClipboard(selectedBankDetails.accountNumber, 'accountNumber')}
-                  className="p-2 hover:bg-gray-200 rounded-lg transition"
-                >
-                  {copiedField === 'accountNumber' ? (
-                    <Check className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <Copy className="h-5 w-5 text-gray-600" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Account Name */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Atas Nama</p>
-              <p className="font-semibold text-gray-900">{selectedBankDetails.accountName}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Order Details */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Detail Pesanan
-          </h3>
-          
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Invoice</span>
-              <span className="font-medium">{details?.invoiceNumber}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Produk</span>
-              <span className="font-medium">{details?.itemName}</span>
-            </div>
-            {details?.coupon && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Kupon</span>
-                <span className="font-medium text-green-600">{details.coupon.code}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Customer Details */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Data Pembeli
-          </h3>
-          
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-gray-400" />
-              <span>{details?.customerName}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-gray-400" />
-              <span>{details?.customerEmail}</span>
-            </div>
-            {details?.customerWhatsapp && (
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-gray-400" />
-                <span>{details.customerWhatsapp}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-          <h3 className="font-semibold text-blue-900 mb-3">Petunjuk Pembayaran</h3>
-          <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
-            <li>Transfer sesuai nominal di atas ke rekening tujuan</li>
-            <li>Pastikan nominal transfer <strong>SAMA PERSIS</strong></li>
-            <li>Simpan bukti transfer</li>
-            <li>Konfirmasi pembayaran via WhatsApp</li>
-            <li>Pembayaran akan diverifikasi dalam 1x24 jam</li>
-          </ol>
-        </div>
-
-        {/* Contact Info */}
-        {details?.contactInfo && (details.contactInfo.whatsapp || details.contactInfo.email || details.contactInfo.phone) && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-            <h4 className="font-medium text-gray-800 mb-2">Hubungi {details.contactInfo.name}</h4>
-            <div className="space-y-2 text-sm">
-              {details.contactInfo.whatsapp && (
-                <a 
-                  href={`https://wa.me/${details.contactInfo.whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-green-600 hover:text-green-700"
-                >
-                  <Phone className="h-4 w-4" />
-                  WhatsApp: {details.contactInfo.whatsapp}
-                </a>
-              )}
-              {details.contactInfo.email && (
-                <a 
-                  href={`mailto:${details.contactInfo.email}`}
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-                >
-                  <Mail className="h-4 w-4" />
-                  {details.contactInfo.email}
-                </a>
-              )}
-              {details.contactInfo.phone && (
-                <a 
-                  href={`tel:${details.contactInfo.phone}`}
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-700"
-                >
-                  <Phone className="h-4 w-4" />
-                  {details.contactInfo.phone}
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          {details?.contactInfo?.whatsapp ? (
-            <a
-              href={`https://wa.me/${details.contactInfo.whatsapp}?text=Halo,%20saya%20sudah%20transfer%20untuk%20invoice%20${details?.invoiceNumber}%20sebesar%20${formatCurrency(details?.amount || 0)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-medium"
-            >
-              <Phone className="h-5 w-5" />
-              Konfirmasi via WhatsApp
-            </a>
-          ) : (
-            <p className="text-center text-gray-500 text-sm py-3">
-              Kontak pembayaran belum dikonfigurasi. Silakan hubungi admin.
-            </p>
-          )}
-          
-          <button
-            onClick={() => router.push('/')}
-            className="w-full py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
+            className="w-full bg-orange-500 text-white py-3 rounded-xl hover:bg-orange-600 transition font-semibold"
           >
             Kembali ke Beranda
           </button>
         </div>
-
-        {/* Footer Note */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Butuh bantuan? Hubungi CS kami di WhatsApp
-        </p>
       </div>
+    )
+  }
+
+  // Payment Success
+  if (details.status === 'PAID' || details.status === 'SUCCESS') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-12 h-12 text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Pembayaran Berhasil!</h2>
+          <p className="text-slate-600 mb-6">Terima kasih, pembayaran Anda sudah dikonfirmasi.</p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition font-semibold"
+          >
+            Ke Dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Expired
+  if (timeLeft.total <= 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center">
+          <Clock className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Pembayaran Kadaluarsa</h2>
+          <p className="text-slate-600 mb-6">Waktu pembayaran sudah habis. Silakan buat transaksi baru.</p>
+          <button
+            onClick={() => router.push('/pricing')}
+            className="w-full bg-orange-500 text-white py-3 rounded-xl hover:bg-orange-600 transition font-semibold"
+          >
+            Buat Transaksi Baru
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-slate-50 min-h-screen flex items-center justify-center py-10 px-4">
+      <main className="w-full max-w-xl">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+          
+          {/* Timer Header */}
+          <div className="bg-orange-50 border-b border-orange-100 py-3 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-orange-500/20">
+              <div className="h-full bg-orange-500 w-3/4 rounded-r-full"></div>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-orange-600 font-medium text-sm pt-1">
+              <Timer className="w-4 h-4" />
+              <span>
+                Selesaikan dalam: <span className="font-bold tabular-nums">
+                  {timeLeft.days}d {formatTimeUnit(timeLeft.hours)}:{formatTimeUnit(timeLeft.minutes)}:{formatTimeUnit(timeLeft.seconds)}
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div className="p-6 md:p-8 space-y-8">
+            
+            {/* Header */}
+            <div className="text-center space-y-6">
+              <div>
+                <h1 className="text-xl font-bold text-slate-900">Menunggu Pembayaran</h1>
+                <p className="text-slate-500 text-sm mt-1">Transfer sesuai nominal di bawah ini</p>
+              </div>
+
+              {/* Total Transfer Box */}
+              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 inline-block w-full">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Total Transfer</p>
+                <div className="flex flex-col items-center">
+                  
+                  {/* Show discount if exists */}
+                  {hasDiscount && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg font-medium text-slate-400 line-through">
+                        {formatCurrency(details.originalAmount)}
+                      </span>
+                      <span className="text-xl font-extrabold text-red-500">
+                        (diskon {discountPercentage}%)
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Final Amount */}
+                  <div className="text-4xl font-bold text-green-600 mb-1 tracking-tight">
+                    {formatCurrency(details.amount)}
+                  </div>
+                  
+                  {/* Unique Code */}
+                  {details.uniqueCode > 0 && (
+                    <div className="text-xs text-slate-400 mb-4">
+                      {details.uniqueCodeType === 'add' ? '+ ' : '- '}kode unik: {details.uniqueCode}
+                    </div>
+                  )}
+                  
+                  {/* Copy Button */}
+                  <button 
+                    onClick={() => copyToClipboard(details.amount.toString(), 'amount')}
+                    className="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-orange-300 hover:text-orange-600 text-slate-600 rounded-full text-sm font-medium transition-all shadow-sm hover:shadow-md"
+                  >
+                    {copiedField === 'amount' ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                    <span>Salin Nominal</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Bank Account Card */}
+            {selectedBankDetails && (
+              <div className="relative">
+                <div className="absolute inset-0 bg-blue-500/5 blur-3xl rounded-full pointer-events-none"></div>
+                <div className="relative bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                  
+                  {/* Bank Header */}
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500">Bank Transfer</p>
+                        <p className="font-bold text-slate-900">{selectedBankDetails.bankName}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                        Pengecekan Manual
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Account Number */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Nomor Rekening</p>
+                      <div className="flex items-center gap-2 group cursor-pointer" onClick={() => copyToClipboard(selectedBankDetails.accountNumber, 'account')}>
+                        <span className="text-xl font-mono font-semibold text-slate-800">
+                          {selectedBankDetails.accountNumber}
+                        </span>
+                        {copiedField === 'account' ? (
+                          <Check className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-slate-300 group-hover:text-orange-500 transition-colors" />
+                        )}
+                      </div>
+                      <p className="text-sm font-medium text-slate-700 mt-1">
+                        a.n {selectedBankDetails.accountName}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => copyToClipboard(selectedBankDetails.accountNumber, 'account')}
+                      className="text-orange-600 text-sm font-semibold hover:underline decoration-2 underline-offset-4"
+                    >
+                      Salin
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+              
+              {/* Order Details */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wide opacity-80">
+                  <FileText className="w-4 h-4" />
+                  Detail Pesanan
+                </h3>
+                <ul className="space-y-2 text-slate-600">
+                  <li className="flex justify-between border-b border-slate-100 pb-2 border-dashed">
+                    <span>Invoice</span>
+                    <span className="font-medium text-slate-900">{details.invoiceNumber}</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Produk</span>
+                    <span className="font-medium text-slate-900">{details.itemName}</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Customer Details */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wide opacity-80">
+                  <User className="w-4 h-4" />
+                  Data Pembeli
+                </h3>
+                <ul className="space-y-2 text-slate-600">
+                  <li className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-slate-400" />
+                    <span className="font-medium text-slate-900 truncate">{details.customerName}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-slate-400" />
+                    <span className="truncate">{details.customerEmail}</span>
+                  </li>
+                  {details.customerWhatsapp && (
+                    <li className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-slate-400" />
+                      <span>{details.customerWhatsapp}</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+
+            {/* Payment Guide */}
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <h3 className="font-bold text-slate-900 text-sm mb-3">Panduan Pembayaran</h3>
+              <ol className="space-y-2 text-sm text-slate-600">
+                <li className="flex gap-2">
+                  <span className="font-bold text-orange-500">1.</span>
+                  <span>Transfer ke rekening {selectedBankDetails?.bankName || 'bank'} di atas.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-bold text-orange-500">2.</span>
+                  <span>Pastikan nominal <span className="font-bold text-slate-800">tepat sampai 3 digit terakhir</span>.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-bold text-orange-500">3.</span>
+                  <span>Konfirmasi bukti transfer lewat WhatsApp.</span>
+                </li>
+              </ol>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3 pt-2">
+              {details.contactInfo?.whatsapp ? (
+                <a
+                  href={`https://wa.me/${details.contactInfo.whatsapp}?text=${generateWhatsAppMessage()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all transform hover:-translate-y-0.5 gap-2 group"
+                >
+                  <svg className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                  </svg>
+                  Konfirmasi via WhatsApp
+                </a>
+              ) : (
+                <p className="text-center text-slate-500 text-sm py-3 bg-slate-50 rounded-xl">
+                  Kontak pembayaran belum dikonfigurasi
+                </p>
+              )}
+              
+              <button
+                onClick={() => router.push('/')}
+                className="w-full bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-semibold py-3.5 px-4 rounded-xl transition-colors"
+              >
+                Kembali ke Beranda
+              </button>
+            </div>
+
+            {/* Help Link */}
+            {details.contactInfo?.whatsapp && (
+              <p className="text-center text-xs text-slate-400">
+                Butuh bantuan?{' '}
+                <a 
+                  href={`https://wa.me/${details.contactInfo.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-slate-600"
+                >
+                  Hubungi CS kami
+                </a>
+              </p>
+            )}
+          </div>
+        </div>
+      </main>
     </div>
   )
 }

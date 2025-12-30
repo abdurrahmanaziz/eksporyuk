@@ -139,6 +139,11 @@ export default function PaymentSettingsPage() {
     contactEmail: '',
     contactPhone: '',
     contactName: 'Customer Service',
+    // Unique Code Settings
+    uniqueCodeEnabled: true,
+    uniqueCodeType: 'add' as 'add' | 'subtract', // 'add' = tambah, 'subtract' = kurang
+    uniqueCodeMin: 1,
+    uniqueCodeMax: 999,
   })
 
   useEffect(() => {
@@ -542,6 +547,97 @@ export default function PaymentSettingsPage() {
                   placeholder="021-1234567"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Unique Code Section */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Kode Unik Pembayaran Manual
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Kode unik ditambahkan/dikurangi dari nominal pembayaran untuk memudahkan identifikasi transaksi dan menghindari kesalahan verifikasi.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-6">
+              <div className="col-span-2 flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <Label>Aktifkan Kode Unik</Label>
+                  <p className="text-sm text-muted-foreground">Setiap transaksi manual akan memiliki kode unik berbeda</p>
+                </div>
+                <Switch
+                  checked={paymentSettings.uniqueCodeEnabled}
+                  onCheckedChange={(checked) =>
+                    setPaymentSettings({ ...paymentSettings, uniqueCodeEnabled: checked })
+                  }
+                />
+              </div>
+              
+              {paymentSettings.uniqueCodeEnabled && (
+                <>
+                  <div>
+                    <Label>Tipe Kode Unik</Label>
+                    <Select 
+                      value={paymentSettings.uniqueCodeType}
+                      onValueChange={(value: 'add' | 'subtract') =>
+                        setPaymentSettings({ ...paymentSettings, uniqueCodeType: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih tipe" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="add">Tambah (+) ke nominal</SelectItem>
+                        <SelectItem value="subtract">Kurang (-) dari nominal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {paymentSettings.uniqueCodeType === 'add' 
+                        ? 'Contoh: Rp 100.000 + 123 = Rp 100.123' 
+                        : 'Contoh: Rp 100.000 - 123 = Rp 99.877'}
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Kode Minimum</Label>
+                      <Input
+                        type="number"
+                        value={paymentSettings.uniqueCodeMin}
+                        onChange={(e) =>
+                          setPaymentSettings({ ...paymentSettings, uniqueCodeMin: parseInt(e.target.value) || 1 })
+                        }
+                        placeholder="1"
+                        min={1}
+                      />
+                    </div>
+                    <div>
+                      <Label>Kode Maximum</Label>
+                      <Input
+                        type="number"
+                        value={paymentSettings.uniqueCodeMax}
+                        onChange={(e) =>
+                          setPaymentSettings({ ...paymentSettings, uniqueCodeMax: parseInt(e.target.value) || 999 })
+                        }
+                        placeholder="999"
+                        max={9999}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="col-span-2 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      <strong>Contoh:</strong> Jika harga produk Rp 899.000 dan kode unik 247, maka total yang harus dibayar adalah{' '}
+                      <strong>
+                        {paymentSettings.uniqueCodeType === 'add' 
+                          ? 'Rp 899.247' 
+                          : 'Rp 898.753'}
+                      </strong>
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </CardContent>

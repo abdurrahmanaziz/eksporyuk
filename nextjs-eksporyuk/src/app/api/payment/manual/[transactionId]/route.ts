@@ -234,6 +234,11 @@ export async function GET(
       email: settings?.paymentContactEmail || null,
       phone: settings?.paymentContactPhone || null,
     }
+    
+    // Extract unique code from metadata
+    const uniqueCode = metadata?.uniqueCode || 0
+    const uniqueCodeType = metadata?.uniqueCodeType || 'add'
+    const originalAmountBeforeUniqueCode = metadata?.originalAmountBeforeUniqueCode || Number(transaction.amount)
 
     return NextResponse.json({
       transactionId: transaction.id,
@@ -245,6 +250,11 @@ export async function GET(
       type: transaction.type,
       itemName,
       description: transaction.description || '',
+      
+      // Unique Code
+      uniqueCode,
+      uniqueCodeType,
+      originalAmountBeforeUniqueCode,
       
       // Customer Details
       customerName: user?.name || metadata?.customerName || 'Customer',

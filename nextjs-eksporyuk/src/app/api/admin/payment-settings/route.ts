@@ -31,6 +31,10 @@ export async function GET(request: NextRequest) {
         paymentContactEmail: true,
         paymentContactPhone: true,
         paymentContactName: true,
+        paymentUniqueCodeEnabled: true,
+        paymentUniqueCodeType: true,
+        paymentUniqueCodeMin: true,
+        paymentUniqueCodeMax: true,
       }
     })
 
@@ -94,6 +98,11 @@ export async function GET(request: NextRequest) {
         contactEmail: settings?.paymentContactEmail ?? '',
         contactPhone: settings?.paymentContactPhone ?? '',
         contactName: settings?.paymentContactName ?? 'Customer Service',
+        // Unique Code Settings
+        uniqueCodeEnabled: settings?.paymentUniqueCodeEnabled ?? true,
+        uniqueCodeType: settings?.paymentUniqueCodeType ?? 'add',
+        uniqueCodeMin: settings?.paymentUniqueCodeMin ?? 1,
+        uniqueCodeMax: settings?.paymentUniqueCodeMax ?? 999,
       }
     }
 
@@ -135,6 +144,11 @@ export async function POST(request: NextRequest) {
       paymentContactEmail: settings?.contactEmail ?? null,
       paymentContactPhone: settings?.contactPhone ?? null,
       paymentContactName: settings?.contactName ?? 'Customer Service',
+      // Unique Code Settings
+      paymentUniqueCodeEnabled: settings?.uniqueCodeEnabled ?? true,
+      paymentUniqueCodeType: settings?.uniqueCodeType ?? 'add',
+      paymentUniqueCodeMin: settings?.uniqueCodeMin ?? 1,
+      paymentUniqueCodeMax: settings?.uniqueCodeMax ?? 999,
     }
 
     if (existingSettings) {

@@ -427,7 +427,7 @@ export default function VirtualAccountPage() {
                   <p className="text-2xl font-bold text-gray-900">
                     {formatCurrency(vaDetails.amount)}
                   </p>
-                )}}
+                )}
               </div>
               <button
                 onClick={() => copyToClipboard(vaDetails.amount.toString(), 'amount')}

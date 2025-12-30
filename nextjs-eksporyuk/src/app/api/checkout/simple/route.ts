@@ -294,10 +294,39 @@ export async function POST(request: NextRequest) {
     if (paymentMethod === 'manual') {
       console.log('[Simple Checkout] Manual payment selected - skipping Xendit')
       
-      // Update transaction for manual payment
+      // Get unique code settings
+      const paymentSettings = await prisma.settings.findFirst({
+        select: {
+          paymentUniqueCodeEnabled: true,
+          paymentUniqueCodeType: true,
+          paymentUniqueCodeMin: true,
+          paymentUniqueCodeMax: true,
+        }
+      })
+      
+      // Generate unique code if enabled
+      let uniqueCode = 0
+      let finalAmount = amountNum
+      
+      if (paymentSettings?.paymentUniqueCodeEnabled) {
+        const min = paymentSettings.paymentUniqueCodeMin || 1
+        const max = paymentSettings.paymentUniqueCodeMax || 999
+        uniqueCode = Math.floor(Math.random() * (max - min + 1)) + min
+        
+        if (paymentSettings.paymentUniqueCodeType === 'subtract') {
+          finalAmount = amountNum - uniqueCode
+        } else {
+          finalAmount = amountNum + uniqueCode
+        }
+        
+        console.log(`[Simple Checkout] Unique code generated: ${uniqueCode}, Final amount: ${finalAmount}`)
+      }
+      
+      // Update transaction for manual payment with unique code
       await prisma.transaction.update({
         where: { id: transaction.id },
         data: {
+          amount: finalAmount,
           paymentProvider: 'MANUAL',
           paymentMethod: 'MANUAL_TRANSFER',
           paymentUrl: `${appUrl}/payment/manual/${transaction.id}`,
@@ -305,6 +334,9 @@ export async function POST(request: NextRequest) {
             ...(transaction.metadata as any),
             paymentType: 'manual',
             manualBankCode: paymentChannel,
+            uniqueCode: uniqueCode,
+            uniqueCodeType: paymentSettings?.paymentUniqueCodeType || 'add',
+            originalAmountBeforeUniqueCode: amountNum,
           }
         }
       })
@@ -313,7 +345,9 @@ export async function POST(request: NextRequest) {
         success: true,
         transactionId: transaction.id,
         paymentUrl: `${appUrl}/payment/manual/${transaction.id}`,
-        amount: amountNum,
+        amount: finalAmount,
+        originalAmount: amountNum,
+        uniqueCode: uniqueCode,
         invoiceNumber: invoiceNumber,
         paymentType: 'manual'
       })
