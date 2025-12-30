@@ -318,6 +318,7 @@ export async function POST(request: NextRequest) {
     // === XENDIT PAYMENT - Create Invoice for redirect to Xendit checkout ===
     try {
       console.log('[Simple Checkout] Creating Xendit Invoice for redirect...')
+      console.log('[Simple Checkout] APP_URL:', process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'NOT SET')
       
       // Create Xendit Invoice - this will redirect to Xendit checkout page
       const invoice = await xenditService.createInvoice({
@@ -332,8 +333,8 @@ export async function POST(request: NextRequest) {
           email: email || session.user.email || '',
           mobile_number: whatsapp || phone || ''
         },
-        success_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?transaction_id=${transaction.id}`,
-        failure_redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failed?transaction_id=${transaction.id}`
+        success_redirect_url: `${appUrl}/checkout/success?transaction_id=${transaction.id}`,
+        failure_redirect_url: `${appUrl}/checkout/failed?transaction_id=${transaction.id}`
       })
 
 
@@ -341,6 +342,12 @@ export async function POST(request: NextRequest) {
       if (invoice && invoice.invoiceUrl) {
         xenditData = invoice;
         paymentUrl = invoice.invoiceUrl;
+        
+        // Prepare metadata - ensure it's an object
+        const existingMetadata = typeof transaction.metadata === 'object' && transaction.metadata !== null 
+          ? transaction.metadata 
+          : {};
+        
         // Update transaction with Xendit invoice info
         await prisma.transaction.update({
           where: { id: transaction.id },
@@ -351,7 +358,7 @@ export async function POST(request: NextRequest) {
             paymentUrl: invoice.invoiceUrl,
             expiredAt: invoice.expiryDate ? new Date(invoice.expiryDate) : new Date(Date.now() + 72 * 60 * 60 * 1000),
             metadata: {
-              ...(transaction.metadata as any),
+              ...(existingMetadata as any),
               xenditInvoiceId: invoice.id,
               xenditInvoiceUrl: invoice.invoiceUrl,
               xenditExternalId: invoice.externalId,
@@ -364,7 +371,8 @@ export async function POST(request: NextRequest) {
         console.log('[Simple Checkout] ✅ Xendit Invoice created:', invoice.id);
         console.log('[Simple Checkout] ✅ Payment URL:', invoice.invoiceUrl);
       } else {
-        throw new Error('Xendit Invoice creation failed - no invoice_url');
+        console.error('[Simple Checkout] ❌ Invoice object:', JSON.stringify(invoice, null, 2));
+        throw new Error('Xendit Invoice creation failed - no invoiceUrl in response');
       }
 
     } catch (xenditError: any) {
