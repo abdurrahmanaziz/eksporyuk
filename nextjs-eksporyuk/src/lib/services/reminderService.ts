@@ -92,17 +92,42 @@ class ReminderService {
         },
       })
 
-      // Update reminder statistics
-      if (success) {
+      // Update reminder statistics - try all reminder types
+      // since we don't know which type the reminder is from
+      const incrementField = success ? 'sentCount' : 'failedCount'
+      try {
+        // Try membership reminder first
         await prisma.membershipReminder.update({
           where: { id: config.reminderId },
-          data: { sentCount: { increment: 1 } },
+          data: { [incrementField]: { increment: 1 } },
         })
-      } else {
-        await prisma.membershipReminder.update({
-          where: { id: config.reminderId },
-          data: { failedCount: { increment: 1 } },
-        })
+      } catch {
+        try {
+          // Try course reminder
+          await prisma.courseReminder.update({
+            where: { id: config.reminderId },
+            data: { [incrementField]: { increment: 1 } },
+          })
+        } catch {
+          try {
+            // Try event reminder
+            await prisma.eventReminder.update({
+              where: { id: config.reminderId },
+              data: { [incrementField]: { increment: 1 } },
+            })
+          } catch {
+            try {
+              // Try product reminder
+              await prisma.productReminder.update({
+                where: { id: config.reminderId },
+                data: { [incrementField]: { increment: 1 } },
+              })
+            } catch {
+              // Ignore if reminder not found in any table - stats update is optional
+              console.log(`[ReminderService] Could not update stats for reminder ${config.reminderId}`)
+            }
+          }
+        }
       }
 
       return { success, error: errorMessage }
