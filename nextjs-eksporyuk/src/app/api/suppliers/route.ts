@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
       take: limit
     })
 
-    // Get stats
+    // Get stats - simplified
     const stats = {
       total: await prisma.supplierProfile.count({
         where: {
@@ -111,22 +111,7 @@ export async function GET(request: NextRequest) {
           isVerified: true
         }
       }),
-      byProvince: await prisma.supplierProfile.groupBy({
-        by: ['province'],
-        where: {
-          isSuspended: false,
-          province: {
-            not: null
-          }
-        },
-        _count: true,
-        orderBy: {
-          _count: {
-            province: 'desc'
-          }
-        },
-        take: 5
-      })
+      byProvince: []
     }
 
     return NextResponse.json({

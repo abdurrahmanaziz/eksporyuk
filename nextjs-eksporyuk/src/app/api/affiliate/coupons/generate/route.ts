@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -107,19 +108,17 @@ export async function POST(request: NextRequest) {
         code: customCode.toUpperCase(),
         description: template.description || `Kupon diskon ${template.discountValue}${template.discountType === 'PERCENTAGE' ? '%' : 'K'}`,
         discountType: template.discountType,
-        discountValue: Number(template.discountValue), // Ensure it's a number
-        usageLimit: template.maxUsagePerCoupon || undefined,
+        discountValue: new Prisma.Decimal(String(template.discountValue)), // Convert to Decimal
+        usageLimit: template.maxUsagePerCoupon || null,
         usageCount: 0,
-        validUntil: template.validUntil || undefined,
-        expiresAt: template.expiresAt || undefined,
+        validUntil: template.validUntil || null,
+        expiresAt: template.expiresAt || null,
         isActive: true,
-        minPurchase: template.minPurchase || undefined,
-        productIds: template.productIds || undefined, // Use undefined instead of null
-        membershipIds: template.membershipIds || undefined, // Use undefined instead of null
-        courseIds: template.courseIds || undefined, // Use undefined instead of null
-        isAffiliateEnabled: false, // Generated coupons cannot be templates
-        maxGeneratePerAffiliate: undefined,
-        maxUsagePerCoupon: undefined,
+        minPurchase: template.minPurchase ? new Prisma.Decimal(String(template.minPurchase)) : null,
+        productIds: template.productIds || null,
+        membershipIds: template.membershipIds || null,
+        courseIds: template.courseIds || null,
+        isAffiliateEnabled: false,
         basedOnCouponId: template.id,
         createdBy: session.user.id as string,
       },
