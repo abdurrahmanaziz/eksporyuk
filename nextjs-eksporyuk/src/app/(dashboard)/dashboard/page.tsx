@@ -19,6 +19,7 @@ import MembershipExpiryBanner from '@/components/member/MembershipExpiryBanner'
 import PremiumMemberDashboard from '@/components/dashboard/PremiumMemberDashboard'
 import AdminDashboard from '@/components/dashboard/AdminDashboard'
 import { DashboardStatsSkeleton } from '@/components/ui/loading-skeletons'
+import { usePendingTransactions } from '@/hooks/usePendingTransactions'
 import {
   Users,
   DollarSign,
@@ -45,6 +46,9 @@ export default function DashboardPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [emailVerified, setEmailVerified] = useState(false)
   const [profileCompleted, setProfileCompleted] = useState(false)
+  
+  // Check if user has pending transactions - skip modals if they do
+  const { hasPending: hasPendingTransaction } = usePendingTransactions()
 
   // Use React Query for cached stats
   const { data: stats, isLoading: loading } = useQuery({
@@ -107,11 +111,16 @@ export default function DashboardPage() {
   if (isFreeUser) {
     return (
       <>
-        {/* Step 1: Email Verification Modal - Shows first if email not verified */}
-        <EmailVerificationModal onComplete={handleEmailVerified} />
-        
-        {/* Step 2: Profile Completion Modal - Shows after email verified */}
-        {emailVerified && <ProfileCompletionModal onComplete={handleProfileComplete} />}
+        {/* Skip modals if user has pending transaction - let them focus on payment */}
+        {!hasPendingTransaction && (
+          <>
+            {/* Step 1: Email Verification Modal - Shows first if email not verified */}
+            <EmailVerificationModal onComplete={handleEmailVerified} />
+            
+            {/* Step 2: Profile Completion Modal - Shows after email verified */}
+            {emailVerified && <ProfileCompletionModal onComplete={handleProfileComplete} />}
+          </>
+        )}
         
         {/* Free User Dashboard with upgrade focus */}
         <FreeUserDashboard />

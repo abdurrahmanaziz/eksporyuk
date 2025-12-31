@@ -129,11 +129,34 @@ export async function POST(request: NextRequest) {
     
     // Convert Decimal fields to strings for JSON serialization
     const response = {
-      ...newCoupon,
+      id: newCoupon.id,
+      code: newCoupon.code,
+      description: newCoupon.description,
+      discountType: newCoupon.discountType,
       discountValue: newCoupon.discountValue.toString(),
-      minPurchase: newCoupon.minPurchase?.toString() || null
+      usageLimit: newCoupon.usageLimit,
+      usageCount: newCoupon.usageCount,
+      validUntil: newCoupon.validUntil?.toISOString() || null,
+      expiresAt: newCoupon.expiresAt?.toISOString() || null,
+      isActive: newCoupon.isActive,
+      minPurchase: newCoupon.minPurchase?.toString() || null,
+      validFrom: newCoupon.validFrom?.toISOString() || null,
+      productIds: newCoupon.productIds,
+      membershipIds: newCoupon.membershipIds,
+      courseIds: newCoupon.courseIds,
+      isAffiliateEnabled: newCoupon.isAffiliateEnabled,
+      isForRenewal: newCoupon.isForRenewal,
+      maxGeneratePerAffiliate: newCoupon.maxGeneratePerAffiliate,
+      maxUsagePerCoupon: newCoupon.maxUsagePerCoupon,
+      basedOnCouponId: newCoupon.basedOnCouponId,
+      createdBy: newCoupon.createdBy,
+      createdAt: newCoupon.createdAt.toISOString(),
+      updatedAt: newCoupon.updatedAt.toISOString(),
+      affiliateId: newCoupon.affiliateId,
+      generatedBy: newCoupon.generatedBy,
     }
     
+    console.log('Response object ready:', JSON.stringify(response))
     return NextResponse.json({ coupon: response }, { status: 201 })
   } catch (error) {
     console.error('❌ Error generating coupon:', error)
@@ -145,7 +168,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: 'Failed to generate coupon' },
+      { error: 'Failed to generate coupon', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
