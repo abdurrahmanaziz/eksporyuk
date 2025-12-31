@@ -879,19 +879,27 @@ model ChallengProgress {
 }
 
 model ChatParticipant {
-  id          String    @id
-  roomId      String
-  userId      String
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   lastReadAt  DateTime?
   unreadCount Int       @default(0)
   isMuted     Boolean   @default(false)
   isPinned    Boolean   @default(false)
   joinedAt    DateTime  @default(now())
+  
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([userId])
 }
 
 model ChatRoom {
-  id            String       @id @default(cuid())
-  type          ChatRoomType @default(DIRECT)
+  id            String           @id @default(cuid())
+  type          ChatRoomType     @default(DIRECT)
   name          String?
   avatar        String?
   user1Id       String?
@@ -899,12 +907,16 @@ model ChatRoom {
   groupId       String?
   lastMessageAt DateTime?
   lastMessage   String?
-  isActive      Boolean      @default(true)
+  isActive      Boolean          @default(true)
   
-  // Relations untuk real-time
+  // Relations
+  participants  ChatParticipant[]
   messages      Message[]
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  user1         User?            @relation("ChatRoom_user1", fields: [user1Id], references: [id], onDelete: SetNull)
+  user2         User?            @relation("ChatRoom_user2", fields: [user2Id], references: [id], onDelete: SetNull)
+  
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
   
   @@index([user1Id])
   @@index([user2Id])
@@ -3006,6 +3018,9 @@ model User {
   
   // Chat & Messages
   messagesAsSender                Message[]         @relation("Message_sender")
+  chatParticipants                ChatParticipant[]
+  chatRoomsAsUser1                ChatRoom[]        @relation("ChatRoom_user1")
+  chatRoomsAsUser2                ChatRoom[]        @relation("ChatRoom_user2")
 
   @@index([city])
   @@index([district])
