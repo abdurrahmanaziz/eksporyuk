@@ -48,12 +48,23 @@ export default function FollowButton({
     setLoading(true)
     try {
       const res = await fetch(`/api/users/${userId}/follow`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
       })
 
       if (res.ok) {
         const data = await res.json()
         setIsFollowing(data.isFollowing)
+      } else {
+        const errorData = await res.json()
+        console.error('Follow error response:', { status: res.status, error: errorData })
+        // Still update state if possible
+        if (errorData.isFollowing !== undefined) {
+          setIsFollowing(errorData.isFollowing)
+        }
       }
     } catch (error) {
       console.error('Failed to toggle follow:', error)
