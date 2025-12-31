@@ -7,7 +7,7 @@ import {
   CheckCircle2, ArrowRight, Sparkles, TrendingUp,
   Clock, Gift, Shield, Zap, Target, Play,
   ChevronRight, Heart, MessageCircle, Rocket,
-  CreditCard, Receipt, AlertCircle, ExternalLink
+  CreditCard, Receipt, AlertCircle, ExternalLink, Wallet
 } from 'lucide-react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
@@ -253,10 +253,18 @@ export default function FreeUserDashboard() {
 
   // Show pending transaction UI if exists
   if (!loadingPending && pendingTransaction) {
+    // Clean up membership name - remove duplicate prefix
+    const cleanMembershipName = pendingTransaction.membershipName
+      .replace(/^Membership:\s*/i, '')
+      .replace(/^Membership\s*/i, '')
+    
     return (
       <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
-        {/* Hero Section - Payment Pending */}
-        <section className="rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 text-white p-6 md:p-8 text-center relative overflow-hidden shadow-lg">
+        {/* Hero Section - Payment Pending with gradient */}
+        <section 
+          className="rounded-2xl text-white p-6 md:p-8 text-center relative overflow-hidden shadow-lg"
+          style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)' }}
+        >
           {/* Background effects */}
           <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4"></div>
@@ -274,14 +282,14 @@ export default function FreeUserDashboard() {
               Anda memiliki tagihan yang belum dibayar. Selesaikan pembayaran untuk mengaktifkan membership Anda!
             </p>
             
-            {/* Payment Card */}
-            <div className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl shadow-2xl p-5 w-full max-w-sm mx-auto transform transition-transform hover:scale-[1.01] duration-300">
+            {/* Payment Card - White card inside gradient */}
+            <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl shadow-2xl p-5 w-full max-w-sm mx-auto transform transition-transform hover:scale-[1.01] duration-300">
               <div className="flex items-start gap-3 mb-5">
-                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400">
+                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600">
                   <Receipt className="w-5 h-5" />
                 </div>
                 <div className="text-left flex-1">
-                  <h3 className="font-bold text-sm md:text-base leading-tight">Membership: {pendingTransaction.membershipName}</h3>
+                  <h3 className="font-bold text-sm md:text-base leading-tight">Membership: {cleanMembershipName}</h3>
                   <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 font-mono">#{pendingTransaction.invoiceNumber}</p>
                 </div>
               </div>
@@ -290,20 +298,20 @@ export default function FreeUserDashboard() {
               
               <div className="flex justify-between items-center mb-5">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Tagihan</span>
-                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">{formatPrice(pendingTransaction.amount)}</span>
+                <span className="text-2xl font-bold text-blue-600 tracking-tight">{formatPrice(pendingTransaction.amount)}</span>
               </div>
               
               <div className="flex flex-col gap-2">
                 {pendingTransaction.paymentUrl && (
                   <Link href={pendingTransaction.paymentUrl} target="_blank">
-                    <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg font-bold text-sm shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-2 group active:scale-[0.98] transform hover:-translate-y-0.5">
+                    <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg font-bold text-sm shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98] transform hover:-translate-y-0.5">
                       <CreditCard className="w-4 h-4" />
                       Bayar Sekarang
                     </button>
                   </Link>
                 )}
-                <Link href="/dashboard/billing">
-                  <button className="mx-auto text-xs font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors flex items-center gap-1 py-1 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <Link href="/dashboard/billing" className="w-full">
+                  <button className="mx-auto text-xs font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-1 py-1 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 w-full">
                     <Receipt className="w-4 h-4" />
                     Lihat Detail Tagihan
                   </button>
@@ -325,8 +333,8 @@ export default function FreeUserDashboard() {
             <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-0.5 bg-gray-200 dark:bg-gray-700 -z-10 border-t-2 border-dashed border-gray-300 dark:border-gray-600"></div>
             
             {/* Step 1 */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
-              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-slate-800">1</div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
+              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-gray-800">1</div>
               <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center mb-3">
                 <Receipt className="w-5 h-5" />
               </div>
@@ -337,10 +345,10 @@ export default function FreeUserDashboard() {
             </div>
             
             {/* Step 2 */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
-              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-slate-800">2</div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
+              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-gray-800">2</div>
               <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center mb-3">
-                <CreditCard className="w-5 h-5" />
+                <Wallet className="w-5 h-5" />
               </div>
               <h4 className="font-bold text-sm mb-1 text-gray-900 dark:text-white">Lakukan Pembayaran</h4>
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -349,10 +357,10 @@ export default function FreeUserDashboard() {
             </div>
             
             {/* Step 3 */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
-              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-slate-800">3</div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
+              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-gray-800">3</div>
               <div className="w-10 h-10 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg flex items-center justify-center mb-3">
-                <CheckCircle2 className="w-5 h-5" />
+                <Shield className="w-5 h-5" />
               </div>
               <h4 className="font-bold text-sm mb-1 text-gray-900 dark:text-white">Membership Aktif</h4>
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -372,28 +380,28 @@ export default function FreeUserDashboard() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
               <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mb-2">
                 <BookOpen className="w-5 h-5" />
               </div>
               <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Semua Materi</span>
             </div>
             
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
               <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mb-2">
                 <Users className="w-5 h-5" />
               </div>
               <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Komunitas</span>
             </div>
             
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
               <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center mb-2">
-                <Award className="w-5 h-5" />
+                <Shield className="w-5 h-5" />
               </div>
               <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Sertifikasi</span>
             </div>
             
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
               <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mb-2">
                 <MessageCircle className="w-5 h-5" />
               </div>
