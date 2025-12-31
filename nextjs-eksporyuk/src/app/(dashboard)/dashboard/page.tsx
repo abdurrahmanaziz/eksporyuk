@@ -16,7 +16,7 @@ import EmailVerificationModal from '@/components/member/EmailVerificationModal'
 import TrialReminderBanner from '@/components/member/TrialReminderBanner'
 import FreeUserDashboard from '@/components/member/FreeUserDashboard'
 import MembershipExpiryBanner from '@/components/member/MembershipExpiryBanner'
-import PremiumMemberDashboard from '@/components/dashboard/PremiumMemberDashboard'
+import PremiumDashboardNew from '@/components/dashboard/PremiumDashboardNew'
 import AdminDashboard from '@/components/dashboard/AdminDashboard'
 import { DashboardStatsSkeleton } from '@/components/ui/loading-skeletons'
 import { usePendingTransactions } from '@/hooks/usePendingTransactions'
@@ -141,8 +141,8 @@ export default function DashboardPage() {
         {/* Profile Completion Modal - Shows if profile incomplete */}
         {emailVerified && <ProfileCompletionModal onComplete={handleProfileComplete} />}
         
-        {/* Premium Member Dashboard */}
-        <PremiumMemberDashboard />
+        {/* Premium Member Dashboard - New Design */}
+        <PremiumDashboardNew />
       </>
     )
   }

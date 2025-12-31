@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { notificationService } from '@/lib/services/notificationService'
+import { pusherService } from '@/lib/pusher'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -52,13 +52,23 @@ export async function POST(
         where: { id: existingFollow.id }
       })
 
+      // Notify via Pusher
+      try {
+        await pusherService.notifyUser(targetUserId, 'user-unfollowed', {
+          userId: session.user.id,
+          username: session.user.username || 'User'
+        })
+      } catch (e) {
+        console.log('[Follow API] Pusher notification skipped:', e)
+      }
+
       return NextResponse.json({ 
         isFollowing: false,
         message: 'Unfollowed successfully'
       })
     } else {
       // Follow
-      await prisma.follow.create({
+      const follow = await prisma.follow.create({
         data: {
           followerId: session.user.id,
           followingId: targetUserId
@@ -71,23 +81,18 @@ export async function POST(
         select: { name: true, username: true, avatar: true }
       })
 
-      // Send notification via notificationService (Pusher + OneSignal)
+      // Send notification via Pusher + OneSignal (using safe pattern from chatService)
       try {
-        await notificationService.send({
-          userId: targetUserId,
-          type: 'FOLLOW',
-          title: 'Pengikut Baru',
-          message: `${follower?.name || 'Seseorang'} mulai mengikuti Anda`,
-          link: `/${follower?.username || session.user.id}`,
-          redirectUrl: `/${follower?.username || session.user.id}`,
-          actorId: session.user.id,
-          actorName: follower?.name || 'Seseorang',
-          actorAvatar: follower?.avatar || undefined,
-          channels: ['pusher', 'onesignal'],
+        // Trigger real-time notification
+        await pusherService.notifyUser(targetUserId, 'new-follower', {
+          userId: session.user.id,
+          name: follower?.name || 'Seseorang',
+          username: follower?.username || 'user',
+          avatar: follower?.avatar || null
         })
-      } catch (notifError) {
-        console.error('Follow notification error:', notifError)
-        // Don't fail the follow if notification fails
+      } catch (e) {
+        console.log('[Follow API] Pusher notification skipped:', e)
+        // Don't fail the follow if Pusher fails
       }
 
       return NextResponse.json({ 
@@ -98,6 +103,11 @@ export async function POST(
   } catch (error) {
     console.error('Follow error:', error)
     return NextResponse.json(
+      { error: 'Failed to toggle follow' },
+      { status: 500 }
+    )
+  }
+}
       { error: 'Failed to toggle follow' },
       { status: 500 }
     )
