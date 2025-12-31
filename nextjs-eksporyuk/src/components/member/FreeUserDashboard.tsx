@@ -99,6 +99,7 @@ export default function FreeUserDashboard() {
   const [daysRemaining, setDaysRemaining] = useState(0)
   const [hoursRemaining, setHoursRemaining] = useState(0)
   const [minutesRemaining, setMinutesRemaining] = useState(0)
+  const [secondsRemaining, setSecondsRemaining] = useState(0)
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
 
   // Fetch user data to get accurate trialEndsAt from createdAt
@@ -143,21 +144,24 @@ export default function FreeUserDashboard() {
           const days = Math.floor(diff / (1000 * 60 * 60 * 24))
           const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
           const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000)
           
           setDaysRemaining(days)
           setHoursRemaining(hours)
           setMinutesRemaining(minutes)
+          setSecondsRemaining(seconds)
         } else {
           // Trial sudah berakhir
           setDaysRemaining(0)
           setHoursRemaining(0)
           setMinutesRemaining(0)
+          setSecondsRemaining(0)
         }
         setCountdownLoaded(true)
       }
       
       updateCountdown()
-      const interval = setInterval(updateCountdown, 60000) // Update setiap menit
+      const interval = setInterval(updateCountdown, 1000) // Update setiap detik
       return () => clearInterval(interval)
     }
   }, [trialEndsAt])
@@ -191,25 +195,30 @@ export default function FreeUserDashboard() {
             </p>
             
             {/* Countdown Timer */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-md mx-auto mb-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-lg mx-auto mb-8">
               <p className="text-white/80 text-sm mb-3 flex items-center justify-center gap-2">
                 <Clock className="w-4 h-4" />
                 Penawaran berakhir dalam:
               </p>
-              <div className="flex items-center justify-center gap-3">
-                <div className="bg-white rounded-xl px-4 py-3 min-w-[70px]">
+              <div className="flex items-center justify-center gap-2">
+                <div className="bg-white rounded-xl px-3 py-3 min-w-[60px]">
                   <div className="text-2xl md:text-3xl font-bold text-orange-600">{daysRemaining}</div>
                   <div className="text-xs text-gray-500">Hari</div>
                 </div>
                 <span className="text-white text-2xl font-bold">:</span>
-                <div className="bg-white rounded-xl px-4 py-3 min-w-[70px]">
-                  <div className="text-2xl md:text-3xl font-bold text-orange-600">{hoursRemaining}</div>
+                <div className="bg-white rounded-xl px-3 py-3 min-w-[60px]">
+                  <div className="text-2xl md:text-3xl font-bold text-orange-600">{String(hoursRemaining).padStart(2, '0')}</div>
                   <div className="text-xs text-gray-500">Jam</div>
                 </div>
                 <span className="text-white text-2xl font-bold">:</span>
-                <div className="bg-white rounded-xl px-4 py-3 min-w-[70px]">
-                  <div className="text-2xl md:text-3xl font-bold text-orange-600">{minutesRemaining}</div>
+                <div className="bg-white rounded-xl px-3 py-3 min-w-[60px]">
+                  <div className="text-2xl md:text-3xl font-bold text-orange-600">{String(minutesRemaining).padStart(2, '0')}</div>
                   <div className="text-xs text-gray-500">Menit</div>
+                </div>
+                <span className="text-white text-2xl font-bold">:</span>
+                <div className="bg-white rounded-xl px-3 py-3 min-w-[60px]">
+                  <div className="text-2xl md:text-3xl font-bold text-orange-600">{String(secondsRemaining).padStart(2, '0')}</div>
+                  <div className="text-xs text-gray-500">Detik</div>
                 </div>
               </div>
             </div>

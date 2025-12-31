@@ -72,6 +72,7 @@ type NavItem = {
   href: string
   icon: any
   badge?: string
+  badgeType?: 'pending' | 'new' | 'default'
 }
 
 type NavCategory = {
@@ -556,6 +557,10 @@ export default function DashboardSidebar() {
           if ((item.href === '/notifications') && notifUnread > 0) {
             return { ...item, badge: notifUnread.toString() }
           }
+          // Add badge to Tagihan Saya if there are pending transactions
+          if (item.href === '/dashboard/billing' && hasPending && transactions.length > 0) {
+            return { ...item, badge: transactions.length.toString(), badgeType: 'pending' }
+          }
           return item
         })
       }))
@@ -563,24 +568,6 @@ export default function DashboardSidebar() {
 
   // Get base navigation by role
   let baseNavigation = navigationByRole[userRole as keyof typeof navigationByRole] || navigationByRole.MEMBER_FREE
-  
-  // For MEMBER_FREE users with pending transactions: show payment continuation instead of upgrade
-  if (userRole === 'MEMBER_FREE' && hasPending && transactions.length > 0 && !pendingLoading) {
-    const membershipCategory = baseNavigation.find(cat => cat.title === 'MEMBERSHIP')
-    if (membershipCategory) {
-      // Replace upgrade item with payment continuation link to first pending transaction
-      const firstPending = transactions[0]
-      membershipCategory.items = membershipCategory.items.map(item => 
-        item.href === '/dashboard/upgrade'
-          ? { 
-              name: '💳 Pembayaran', 
-              href: `/payment/va/${firstPending.id}`, 
-              icon: CreditCard 
-            }
-          : item
-      )
-    }
-  }
   
   // Add affiliate menu for non-affiliate users if enabled
   if (affiliateMenuEnabled && userRole !== 'AFFILIATE') {
@@ -780,7 +767,9 @@ export default function DashboardSidebar() {
                               'px-1.5 py-0.5 text-[10px] font-semibold rounded-full',
                               item.badge === 'NEW' || item.badge === '🔥'
                                 ? 'bg-orange-100 text-orange-600'
-                                : 'bg-emerald-100 text-emerald-600'
+                                : (item as any).badgeType === 'pending'
+                                  ? 'bg-red-500 text-white animate-pulse'
+                                  : 'bg-emerald-100 text-emerald-600'
                             )}>
                               {item.badge}
                             </span>

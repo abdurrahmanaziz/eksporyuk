@@ -122,13 +122,6 @@ export async function POST(request: NextRequest) {
         isAffiliateEnabled: false,
         basedOnCouponId: template.id,
         createdBy: session.user.id as string,
-      },
-      include: {
-        basedOnCoupon: {
-          select: {
-            code: true,
-          }
-        }
       }
     })
 

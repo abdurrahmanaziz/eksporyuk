@@ -155,11 +155,11 @@ export default function MemberOnboardingChecklist({
           ? `Menunggu pembayaran ${data.pendingTransaction.membershipName}`
           : 'Pilih paket membership',
       icon: <Award className="w-5 h-5" />,
-      href: data.pendingTransaction?.paymentUrl 
-        ? data.pendingTransaction.paymentUrl 
-        : '/checkout/pro',
+      href: data.pendingTransaction 
+        ? '/dashboard/billing' 
+        : '/pricing',
       isCompleted: data.steps.hasMembership,
-      action: data.pendingTransaction ? 'Bayar Sekarang' : 'Pilih Paket',
+      action: data.pendingTransaction ? 'Lihat Tagihan' : 'Pilih Paket',
       priority: 'required',
     },
     {
