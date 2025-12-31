@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
 
-export const dynamic = 'force-dynamic';
 // GET /api/certificates/verify/[certificateNumber] - Public endpoint to verify certificate
 export async function GET(
   req: NextRequest,
@@ -18,33 +18,10 @@ export async function GET(
       )
     }
 
-    const certificate = await prisma.certificate.findUnique({
+    // Find certificate without relations (no relations in schema)
+    const certificate = await prisma.certificate.findFirst({
       where: {
-        certificateNumber
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            avatar: true
-          }
-        },
-        course: {
-          select: {
-            title: true,
-            thumbnail: true,
-            duration: true,
-            mentor: {
-              select: {
-                user: {
-                  select: {
-                    name: true
-                  }
-                }
-              }
-            }
-          }
-        }
+        certificateNumber: certificateNumber
       }
     })
 
@@ -64,20 +41,55 @@ export async function GET(
           valid: false,
           message: 'Certificate has been revoked or is no longer valid' 
         },
-        { status: 400 }
+        { status: 410 }
       )
+    }
+
+    // Fetch related data manually
+    const [user, course] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: certificate.userId },
+        select: { name: true, avatar: true }
+      }),
+      prisma.course.findUnique({
+        where: { id: certificate.courseId },
+        select: { title: true, thumbnail: true, duration: true, mentorId: true }
+      })
+    ])
+
+    // Get mentor name if course exists
+    let mentorName = 'EksporYuk Team'
+    if (course?.mentorId) {
+      const mentor = await prisma.user.findUnique({
+        where: { id: course.mentorId },
+        select: { name: true }
+      })
+      if (mentor?.name) mentorName = mentor.name
     }
 
     return NextResponse.json({
       valid: true,
       certificate: {
+        id: certificate.id,
         certificateNumber: certificate.certificateNumber,
         studentName: certificate.studentName,
         courseName: certificate.courseName,
+        completedAt: certificate.completedAt,
         completionDate: certificate.completionDate,
         issuedAt: certificate.issuedAt,
-        instructor: certificate.course.mentor?.user.name || 'EksporYuk',
-        duration: certificate.course.duration
+        isValid: certificate.isValid,
+        pdfUrl: certificate.pdfUrl,
+        user: user ? { name: user.name, image: user.avatar } : { name: certificate.studentName, image: null },
+        course: {
+          title: course?.title || certificate.courseName,
+          thumbnail: course?.thumbnail,
+          duration: course?.duration,
+          mentor: {
+            user: {
+              name: mentorName
+            }
+          }
+        }
       }
     })
   } catch (error) {
