@@ -16,26 +16,14 @@ export async function GET(req: NextRequest) {
     const userId = session.user.id
 
     // Get active banners for DASHBOARD placement
-    // For testing: also include upcoming banners (start date within next 7 days)
     const now = new Date()
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
     
     const banners = await prisma.banner.findMany({
       where: {
         isActive: true,
-        placement: { in: ['DASHBOARD', 'HERO', 'ALL'] },
-        OR: [
-          // Currently active banners
-          {
-            startDate: { lte: now },
-            endDate: { gte: now }
-          },
-          // Upcoming banners (within 7 days)
-          {
-            startDate: { lte: sevenDaysFromNow },
-            endDate: { gte: now }
-          }
-        ]
+        placement: 'DASHBOARD',
+        startDate: { lte: now },
+        endDate: { gte: now }
       },
       orderBy: { priority: 'desc' },
       take: 5
