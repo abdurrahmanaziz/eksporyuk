@@ -376,9 +376,9 @@ const navigationByRole = {
     {
       title: 'KOMUNITAS',
       items: [
-        { name: 'Feed', href: '/dashboard/upgrade', icon: MessageSquare, badge: '🔒', condition: () => false },
-        { name: 'Grup', href: '/dashboard/upgrade', icon: UsersRound, badge: '🔒', condition: () => false },
-        { name: 'Acara', href: '/dashboard/upgrade', icon: Calendar, badge: '🔒', condition: () => false },
+        { name: 'Feed', href: '/pricing', icon: MessageSquare, badge: '🔒', condition: () => false },
+        { name: 'Grup', href: '/pricing', icon: UsersRound, badge: '🔒', condition: () => false },
+        { name: 'Acara', href: '/pricing', icon: Calendar, badge: '🔒', condition: () => false },
       ]
     },
     {

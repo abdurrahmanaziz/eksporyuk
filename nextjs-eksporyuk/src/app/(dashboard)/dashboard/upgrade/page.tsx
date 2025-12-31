@@ -112,13 +112,8 @@ export default function UpgradePage() {
       return
     }
 
-    if (plan.checkoutSlug) {
-      router.push(`/${plan.checkoutSlug}`)
-    } else if (plan.slug) {
-      router.push(`/membership/${plan.slug}`)
-    } else {
-      router.push(`/checkout-unified?package=${plan.id}`)
-    }
+    // Use slug for checkout URL directly
+    router.push(`/checkout/${plan.slug}`)
   }
 
   const formatDuration = (duration: string): string => {

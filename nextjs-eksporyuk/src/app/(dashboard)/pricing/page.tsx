@@ -117,7 +117,7 @@ export default function PricingPage() {
 
   const getCheckoutUrl = (pkg: MembershipPackage) => {
     // Always use slug for checkout URL - realtime from database
-    return `/checkout/membership/${pkg.slug}`
+    return `/checkout/${pkg.slug}`
   }
 
   const parseFeatures = (features: any): string[] => {
