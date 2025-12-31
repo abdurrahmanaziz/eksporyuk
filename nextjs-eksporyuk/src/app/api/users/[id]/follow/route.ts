@@ -108,11 +108,6 @@ export async function POST(
     )
   }
 }
-      { error: 'Failed to toggle follow' },
-      { status: 500 }
-    )
-  }
-}
 
 // GET /api/users/[id]/follow - Check if following
 export async function GET(
