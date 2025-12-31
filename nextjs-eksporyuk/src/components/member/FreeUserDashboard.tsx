@@ -257,10 +257,16 @@ export default function FreeUserDashboard() {
 
   // Show pending transaction UI if exists
   if (!loadingPending && pendingTransaction) {
-    // Clean up membership name - remove duplicate prefix
-    const cleanMembershipName = pendingTransaction.membershipName
+    // Clean up membership name - remove duplicate prefix and repeated names
+    let cleanMembershipName = pendingTransaction.membershipName
       .replace(/^Membership:\s*/i, '')
       .replace(/^Membership\s*/i, '')
+    
+    // Handle "Paket 6 Bulan - Paket 6 Bulan" -> "Paket 6 Bulan"
+    const parts = cleanMembershipName.split(' - ')
+    if (parts.length === 2 && parts[0].trim() === parts[1].trim()) {
+      cleanMembershipName = parts[0].trim()
+    }
     
     return (
       <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
