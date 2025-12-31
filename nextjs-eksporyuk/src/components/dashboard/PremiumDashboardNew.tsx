@@ -1,21 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
 import {
   Search,
-  MessageCircle,
-  Bell,
-  LogOut,
   Play,
   Image as ImageIcon,
   Paperclip,
@@ -33,7 +30,8 @@ import {
   GraduationCap,
   Truck,
   DollarSign,
-  ExternalLink,
+  Loader2,
+  Send,
 } from 'lucide-react'
 
 interface Course {
@@ -76,19 +74,23 @@ interface Post {
     role: string
   }
   createdAt: string
-  likes: number
-  comments: number
+  likesCount: number
+  commentsCount: number
   tags: string[]
+  images?: string[]
 }
 
 interface Banner {
   id: string
   title: string
   description: string | null
-  imageUrl: string
-  linkUrl: string | null
-  buttonText: string | null
-  placement: string
+  imageUrl: string | null
+  linkUrl: string
+  linkText: string | null
+  backgroundColor: string | null
+  textColor: string | null
+  buttonColor: string | null
+  buttonTextColor: string | null
 }
 
 interface DashboardData {
@@ -109,8 +111,9 @@ export default function PremiumDashboardNew() {
   const { data: session } = useSession()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<DashboardData | null>(null)
-  const [carouselIndex, setCarouselIndex] = useState(0)
+  const [bannerIndex, setBannerIndex] = useState(0)
   const [newPostContent, setNewPostContent] = useState('')
+  const [posting, setPosting] = useState(false)
   const [feedFilter, setFeedFilter] = useState('Terbaru')
   
   const userName = session?.user?.name?.split(' ')[0] || 'Member'
@@ -119,6 +122,16 @@ export default function PremiumDashboardNew() {
   useEffect(() => {
     fetchDashboardData()
   }, [])
+
+  // Auto-rotate banner every 5 seconds
+  useEffect(() => {
+    if (data?.banners && data.banners.length > 1) {
+      const timer = setInterval(() => {
+        setBannerIndex((prev) => (prev + 1) % data.banners.length)
+      }, 5000)
+      return () => clearInterval(timer)
+    }
+  }, [data?.banners])
 
   const fetchDashboardData = async () => {
     try {
@@ -132,6 +145,39 @@ export default function PremiumDashboardNew() {
       console.error('Error fetching dashboard:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleCreatePost = async () => {
+    if (!newPostContent.trim()) {
+      toast.error('Tulis sesuatu untuk diposting')
+      return
+    }
+
+    try {
+      setPosting(true)
+      const res = await fetch('/api/community/feed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: newPostContent,
+          type: 'PUBLIC'
+        })
+      })
+
+      if (res.ok) {
+        toast.success('Post berhasil dibuat!')
+        setNewPostContent('')
+        fetchDashboardData()
+      } else {
+        const error = await res.json()
+        toast.error(error.error || 'Gagal membuat post')
+      }
+    } catch (error) {
+      console.error('Error creating post:', error)
+      toast.error('Gagal membuat post')
+    } finally {
+      setPosting(false)
     }
   }
 
@@ -159,13 +205,14 @@ export default function PremiumDashboardNew() {
     ? Math.round((data.stats.completedLessons / data.stats.totalLessons) * 100) 
     : 0
 
+  const currentCourse = data?.courses?.[0]
+
   if (loading) {
     return <DashboardSkeleton />
   }
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Main Content */}
       <div className="p-4 md:p-8 pb-24 lg:pb-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           
@@ -182,73 +229,77 @@ export default function PremiumDashboardNew() {
               </p>
             </div>
 
-            {/* Banner Carousel - Only show if banners exist */}
-            {data?.banners && data.banners.length > 0 && (
-              <div className="relative w-full rounded-2xl shadow-lg overflow-hidden group">
-                {/* Banner Slide */}
-                <div className="relative">
-                  {data.banners[carouselIndex % data.banners.length] && (
-                    <div className="relative min-h-[200px] md:min-h-[280px]">
-                      <Image
-                        src={data.banners[carouselIndex % data.banners.length].imageUrl}
-                        alt={data.banners[carouselIndex % data.banners.length].title}
-                        fill
-                        className="object-cover"
-                        priority
-                      />
-                      {/* Overlay gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
-                      
-                      {/* Content overlay */}
-                      <div className="absolute inset-0 flex flex-col justify-center p-6 md:p-12 text-white">
-                        <h2 className="text-xl md:text-3xl font-bold mb-2 max-w-lg">
-                          {data.banners[carouselIndex % data.banners.length].title}
-                        </h2>
-                        {data.banners[carouselIndex % data.banners.length].description && (
-                          <p className="text-sm md:text-base text-white/90 mb-4 max-w-md">
-                            {data.banners[carouselIndex % data.banners.length].description}
-                          </p>
-                        )}
-                        {data.banners[carouselIndex % data.banners.length].linkUrl && (
-                          <Link 
-                            href={data.banners[carouselIndex % data.banners.length].linkUrl!}
-                            className="inline-flex"
-                          >
-                            <Button className="bg-white text-gray-900 hover:bg-gray-100 px-6 py-2 rounded-lg font-semibold text-sm shadow-md gap-2">
-                              {data.banners[carouselIndex % data.banners.length].buttonText || 'Lihat Detail'}
-                              <ExternalLink className="w-4 h-4" />
-                            </Button>
-                          </Link>
-                        )}
+            {/* Hero Banner Card - Blue Gradient */}
+            {data?.banners && data.banners.length > 0 ? (
+              <div 
+                className="relative w-full rounded-2xl shadow-lg overflow-hidden group min-h-[280px] md:min-h-[320px]"
+                style={{ 
+                  background: data.banners[bannerIndex]?.backgroundColor 
+                    ? `linear-gradient(135deg, ${data.banners[bannerIndex].backgroundColor}, #4F46E5)`
+                    : 'linear-gradient(135deg, #2563EB, #4F46E5)'
+                }}
+              >
+                <div className="absolute right-0 top-0 h-full w-1/2 bg-white/5 rounded-l-full blur-3xl transform translate-x-1/4"></div>
+                <div className="absolute right-10 bottom-10 w-24 h-24 bg-purple-400/20 rounded-full blur-2xl"></div>
+
+                <div className="relative z-10 p-6 md:p-12 text-white h-full flex flex-col justify-center">
+                  <div className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium mb-4 w-fit">
+                    <span>🚀</span> <span>Fantastic Progress!</span>
+                  </div>
+                  
+                  <h2 className="text-2xl md:text-3xl font-bold mb-3 leading-tight max-w-lg">
+                    {data.banners[bannerIndex]?.title || 'Mastering Export Logistics in 4 Weeks'}
+                  </h2>
+                  
+                  <p className="text-blue-100 mb-6 text-sm md:text-base max-w-md">
+                    {data.banners[bannerIndex]?.description || `Kamu sudah menyelesaikan ${weeklyProgress}% dari target mingguan. Yuk gas lagi belajarnya!`}
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <Link href={data.banners[bannerIndex]?.linkUrl || '/learn'}>
+                      <Button className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-2.5 rounded-lg font-bold text-sm shadow-md transition-colors flex items-center gap-2">
+                        <Play className="w-4 h-4 fill-current" />
+                        {data.banners[bannerIndex]?.linkText || 'Lanjut Belajar'}
+                      </Button>
+                    </Link>
+                    
+                    <div className="flex-1 w-full sm:max-w-[150px]">
+                      <div className="flex justify-between text-xs mb-1 font-medium">
+                        <span>Progress</span>
+                        <span>{weeklyProgress}%</span>
+                      </div>
+                      <div className="w-full bg-blue-900/30 rounded-full h-1.5">
+                        <div 
+                          className="bg-white h-1.5 rounded-full transition-all duration-500" 
+                          style={{ width: `${Math.max(weeklyProgress, 5)}%` }}
+                        />
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-                
-                {/* Carousel Navigation - only show if more than 1 banner */}
+
                 {data.banners.length > 1 && (
                   <>
                     <button 
-                      onClick={() => setCarouselIndex((prev) => (prev - 1 + data.banners.length) % data.banners.length)}
-                      className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white/20 hover:bg-white/30 rounded-full hidden md:flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => setBannerIndex((prev) => (prev - 1 + data.banners.length) % data.banners.length)}
+                      className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white/10 hover:bg-white/20 rounded-full hidden md:flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <ChevronLeft className="w-5 h-5 text-white" />
                     </button>
                     <button 
-                      onClick={() => setCarouselIndex((prev) => (prev + 1) % data.banners.length)}
-                      className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white/20 hover:bg-white/30 rounded-full hidden md:flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => setBannerIndex((prev) => (prev + 1) % data.banners.length)}
+                      className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white/10 hover:bg-white/20 rounded-full hidden md:flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <ChevronRight className="w-5 h-5 text-white" />
                     </button>
                     
-                    {/* Carousel Dots */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                       {data.banners.map((_, index) => (
                         <button
                           key={index}
-                          onClick={() => setCarouselIndex(index)}
+                          onClick={() => setBannerIndex(index)}
                           className={`h-1.5 rounded-full transition-all ${
-                            carouselIndex % data.banners.length === index 
+                            bannerIndex === index 
                               ? 'w-6 bg-white' 
                               : 'w-1.5 bg-white/40 hover:bg-white/60'
                           }`}
@@ -258,11 +309,51 @@ export default function PremiumDashboardNew() {
                   </>
                 )}
               </div>
+            ) : (
+              <div className="relative w-full rounded-2xl shadow-lg overflow-hidden group min-h-[280px] md:min-h-[320px] bg-gradient-to-br from-blue-600 to-indigo-600">
+                <div className="absolute right-0 top-0 h-full w-1/2 bg-white/5 rounded-l-full blur-3xl transform translate-x-1/4"></div>
+                <div className="absolute right-10 bottom-10 w-24 h-24 bg-purple-400/20 rounded-full blur-2xl"></div>
+
+                <div className="relative z-10 p-6 md:p-12 text-white h-full flex flex-col justify-center">
+                  <div className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium mb-4 w-fit">
+                    <span>🚀</span> <span>Fantastic Progress!</span>
+                  </div>
+                  
+                  <h2 className="text-2xl md:text-3xl font-bold mb-3 leading-tight max-w-lg">
+                    {currentCourse?.title || 'Mastering Export Logistics in 4 Weeks'}
+                  </h2>
+                  
+                  <p className="text-blue-100 mb-6 text-sm md:text-base max-w-md">
+                    Kamu sudah menyelesaikan {weeklyProgress}% dari target mingguan. Yuk gas lagi belajarnya!
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <Link href={currentCourse ? `/learn/${currentCourse.slug}` : '/courses'}>
+                      <Button className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-2.5 rounded-lg font-bold text-sm shadow-md transition-colors flex items-center gap-2">
+                        <Play className="w-4 h-4 fill-current" />
+                        Lanjut Belajar
+                      </Button>
+                    </Link>
+                    
+                    <div className="flex-1 w-full sm:max-w-[150px]">
+                      <div className="flex justify-between text-xs mb-1 font-medium">
+                        <span>Progress</span>
+                        <span>{weeklyProgress}%</span>
+                      </div>
+                      <div className="w-full bg-blue-900/30 rounded-full h-1.5">
+                        <div 
+                          className="bg-white h-1.5 rounded-full transition-all duration-500" 
+                          style={{ width: `${Math.max(weeklyProgress, 5)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Community Feed Section */}
             <div className="space-y-6">
-              {/* Header */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                   <MessageSquare className="w-5 h-5 text-blue-600" />
@@ -292,7 +383,7 @@ export default function PremiumDashboardNew() {
               <Card className="rounded-xl shadow-sm border-gray-100">
                 <CardContent className="p-4">
                   <div className="flex gap-3 md:gap-4">
-                    <Avatar className="w-8 h-8 md:w-10 md:h-10">
+                    <Avatar className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0">
                       <AvatarImage src={session?.user?.image || ''} />
                       <AvatarFallback className="bg-green-500 text-white font-bold">
                         {userInitial}
@@ -302,8 +393,15 @@ export default function PremiumDashboardNew() {
                       <Input
                         value={newPostContent}
                         onChange={(e) => setNewPostContent(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            handleCreatePost()
+                          }
+                        }}
                         placeholder={`Apa yang ingin kamu diskusikan hari ini, ${userName}?`}
                         className="w-full bg-gray-50 border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-blue-500 mb-3 text-sm"
+                        disabled={posting}
                       />
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex gap-1 md:gap-2">
@@ -317,8 +415,19 @@ export default function PremiumDashboardNew() {
                             <Smile className="w-5 h-5" />
                           </button>
                         </div>
-                        <Button className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700">
-                          Post
+                        <Button 
+                          onClick={handleCreatePost}
+                          disabled={posting || !newPostContent.trim()}
+                          className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {posting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Posting...
+                            </>
+                          ) : (
+                            'Post'
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -326,18 +435,12 @@ export default function PremiumDashboardNew() {
                 </CardContent>
               </Card>
 
-              {/* Feed Posts - Limited to 5 with spoiler effect */}
+              {/* Feed Posts */}
               {data?.recentPosts && data.recentPosts.length > 0 ? (
                 <>
-                  {data.recentPosts.slice(0, 5).map((post, index) => (
-                    <Card 
-                      key={post.id} 
-                      className={`rounded-xl shadow-sm border-gray-100 transition-opacity ${
-                        index >= 3 ? 'opacity-60 hover:opacity-100' : ''
-                      }`}
-                    >
+                  {data.recentPosts.map((post, index) => (
+                    <Card key={post.id} className="rounded-xl shadow-sm border-gray-100">
                       <CardContent className="p-4 md:p-6">
-                        {/* Post Header */}
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
                             <Link href={`/profile/${post.author.id}`}>
@@ -354,7 +457,12 @@ export default function PremiumDashboardNew() {
                                   {post.author.name}
                                 </h4>
                               </Link>
-                              <p className="text-xs text-gray-500">{post.author.role} • {formatTimeAgo(post.createdAt)}</p>
+                              <p className="text-xs text-gray-500">
+                                {post.author.role === 'MEMBER_PREMIUM' ? 'Member Premium' : 
+                                 post.author.role === 'ADMIN' ? 'Admin' :
+                                 post.author.role === 'MENTOR' ? 'Mentor' :
+                                 post.author.role} • {formatTimeAgo(post.createdAt)}
+                              </p>
                             </div>
                           </div>
                           <button className="text-gray-400 hover:text-gray-600">
@@ -362,40 +470,46 @@ export default function PremiumDashboardNew() {
                           </button>
                         </div>
 
-                        {/* Post Content - Preview only */}
                         <Link href={`/community/feed?post=${post.id}`}>
                           <div className="mb-4 cursor-pointer hover:text-blue-600 transition-colors">
-                            <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
                               {post.content}
                             </p>
                           </div>
                         </Link>
 
-                        {/* Tags */}
+                        {post.images && post.images.length > 0 && (
+                          <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
+                            {post.images.slice(0, 4).map((img, imgIndex) => (
+                              <div key={imgIndex} className="relative aspect-video bg-gray-100">
+                                <Image src={img} alt={`Post image ${imgIndex + 1}`} fill className="object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
                         {post.tags && post.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-4">
                             {post.tags.map((tag, tagIndex) => (
-                              <span 
-                                key={tagIndex}
-                                className="px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full"
-                              >
+                              <span key={tagIndex} className="px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
                                 #{tag}
                               </span>
                             ))}
                           </div>
                         )}
 
-                        {/* Post Actions */}
                         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                           <div className="flex gap-4 md:gap-6">
                             <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
                               <ThumbsUp className="w-4 h-4" />
-                              <span>{post.likes}<span className="hidden sm:inline"> Likes</span></span>
+                              <span>{post.likesCount}<span className="hidden sm:inline"> Likes</span></span>
                             </button>
-                            <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
-                              <MessageSquare className="w-4 h-4" />
-                              <span>{post.comments}<span className="hidden sm:inline"> Comments</span></span>
-                            </button>
+                            <Link href={`/community/feed?post=${post.id}`}>
+                              <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
+                                <MessageSquare className="w-4 h-4" />
+                                <span>{post.commentsCount}<span className="hidden sm:inline"> Comments</span></span>
+                              </button>
+                            </Link>
                           </div>
                           <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
                             <Share2 className="w-4 h-4" />
@@ -406,13 +520,9 @@ export default function PremiumDashboardNew() {
                     </Card>
                   ))}
                   
-                  {/* View All Button */}
                   <div className="text-center pt-2">
                     <Link href="/community/feed">
-                      <Button 
-                        variant="outline" 
-                        className="w-full sm:w-auto px-8 py-3 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 font-semibold"
-                      >
+                      <Button variant="outline" className="w-full sm:w-auto px-8 py-3 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 font-semibold">
                         Lihat Semua Diskusi
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
@@ -426,9 +536,7 @@ export default function PremiumDashboardNew() {
                     <h4 className="font-semibold text-gray-700 mb-1">Belum ada diskusi</h4>
                     <p className="text-sm text-gray-500 mb-4">Jadilah yang pertama memulai diskusi!</p>
                     <Link href="/community/feed">
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                        Mulai Diskusi
-                      </Button>
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white">Mulai Diskusi</Button>
                     </Link>
                   </CardContent>
                 </Card>
@@ -447,60 +555,39 @@ export default function PremiumDashboardNew() {
                     <GraduationCap className="w-5 h-5 text-orange-500" />
                     Progress Kelas
                   </h3>
-                  <Link href="/learn" className="text-xs font-semibold text-blue-600 hover:underline">
-                    Lihat Semua
-                  </Link>
+                  <Link href="/learn" className="text-xs font-semibold text-blue-600 hover:underline">Lihat Semua</Link>
                 </div>
                 
                 <div className="space-y-5">
                   {data?.courses && data.courses.length > 0 ? (
                     data.courses.slice(0, 2).map((course, index) => (
-                      <Link 
-                        key={course.id} 
-                        href={`/learn/${course.slug}`}
-                        className="block group cursor-pointer"
-                      >
+                      <Link key={course.id} href={`/learn/${course.slug}`} className="block group cursor-pointer">
                         <div className="flex items-start gap-3 mb-2">
-                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                            index === 0 
-                              ? 'bg-blue-100 text-blue-600' 
-                              : 'bg-purple-100 text-purple-600'
-                          }`}>
-                            {index === 0 ? (
+                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${index === 0 ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'}`}>
+                            {course.thumbnail ? (
+                              <Image src={course.thumbnail} alt={course.title} width={48} height={48} className="w-full h-full object-cover rounded-lg" />
+                            ) : index === 0 ? (
                               <Truck className="w-6 h-6" />
                             ) : (
                               <DollarSign className="w-6 h-6" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
-                              {course.title}
-                            </h4>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              Modul {course.currentModule} dari {course.totalModules}
-                            </p>
+                            <h4 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">{course.title}</h4>
+                            <p className="text-xs text-gray-500 mt-0.5">Modul {course.currentModule} dari {course.totalModules}</p>
                           </div>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
-                          <div 
-                            className={`h-1.5 rounded-full ${index === 0 ? 'bg-blue-600' : 'bg-purple-500'}`}
-                            style={{ width: `${course.progress}%` }}
-                          />
+                          <div className={`h-1.5 rounded-full ${index === 0 ? 'bg-blue-600' : 'bg-purple-500'}`} style={{ width: `${course.progress}%` }} />
                         </div>
-                        <div className="flex justify-end text-[10px] text-gray-500 font-medium">
-                          {course.progress}% Selesai
-                        </div>
+                        <div className="flex justify-end text-[10px] text-gray-500 font-medium">{course.progress}% Selesai</div>
                       </Link>
                     ))
                   ) : (
                     <div className="text-center py-4">
                       <GraduationCap className="w-10 h-10 text-gray-300 mx-auto mb-2" />
                       <p className="text-sm text-gray-500">Belum ada kursus yang diikuti</p>
-                      <Link href="/courses">
-                        <Button variant="link" className="text-blue-600 text-sm mt-2">
-                          Jelajahi Kursus →
-                        </Button>
-                      </Link>
+                      <Link href="/courses"><Button variant="link" className="text-blue-600 text-sm mt-2">Jelajahi Kursus →</Button></Link>
                     </div>
                   )}
                 </div>
@@ -524,17 +611,9 @@ export default function PremiumDashboardNew() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 overflow-hidden">
                             {group.thumbnail ? (
-                              <Image 
-                                src={group.thumbnail} 
-                                alt={group.name}
-                                width={40}
-                                height={40}
-                                className="w-full h-full object-cover"
-                              />
+                              <Image src={group.thumbnail} alt={group.name} width={40} height={40} className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-white font-bold">
-                                {group.name.charAt(0)}
-                              </div>
+                              <div className="w-full h-full flex items-center justify-center text-white font-bold">{group.name.charAt(0)}</div>
                             )}
                           </div>
                           <div>
@@ -543,13 +622,7 @@ export default function PremiumDashboardNew() {
                           </div>
                         </div>
                         <Link href={`/community/groups/${group.slug}`}>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full"
-                          >
-                            Gabung
-                          </Button>
+                          <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full">Gabung</Button>
                         </Link>
                       </div>
                     ))
@@ -582,34 +655,20 @@ export default function PremiumDashboardNew() {
                 <div className="space-y-4">
                   {data?.products && data.products.length > 0 ? (
                     data.products.slice(0, 2).map((product) => (
-                      <Link 
-                        key={product.id} 
-                        href={`/products/${product.slug}`}
-                        className="block group"
-                      >
+                      <Link key={product.id} href={`/products/${product.slug}`} className="block group">
                         <div className="flex gap-3">
                           <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0 relative">
                             {product.thumbnail ? (
-                              <Image 
-                                src={product.thumbnail}
-                                alt={product.name}
-                                width={64}
-                                height={64}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              />
+                              <Image src={product.thumbnail} alt={product.name} width={64} height={64} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
-                              {product.name}
-                            </h4>
+                            <h4 className="text-sm font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">{product.name}</h4>
                             <div className="flex items-center gap-1 my-1">
                               <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                              <span className="text-xs text-gray-500">
-                                {product.rating.toFixed(1)} ({product.reviewCount})
-                              </span>
+                              <span className="text-xs text-gray-500">{product.rating.toFixed(1)} ({product.reviewCount})</span>
                             </div>
                             <p className="text-sm font-bold text-blue-600">{formatPrice(product.price)}</p>
                           </div>
@@ -638,8 +697,15 @@ function DashboardSkeleton() {
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         <div className="lg:col-span-8 space-y-6">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-[300px] w-full rounded-2xl" />
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-[320px] w-full rounded-2xl" />
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-8 w-48" />
+          </div>
           <Skeleton className="h-32 w-full rounded-xl" />
           <Skeleton className="h-48 w-full rounded-xl" />
         </div>

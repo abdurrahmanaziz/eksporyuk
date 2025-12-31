@@ -16,20 +16,24 @@ export async function GET(req: NextRequest) {
     const userId = session.user.id
 
     // Get active banners for DASHBOARD placement
+    // For testing: also include upcoming banners (start date within next 7 days)
+    const now = new Date()
+    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    
     const banners = await prisma.banner.findMany({
       where: {
         isActive: true,
         placement: { in: ['DASHBOARD', 'HERO', 'ALL'] },
         OR: [
-          { startDate: null },
-          { startDate: { lte: new Date() } }
-        ],
-        AND: [
+          // Currently active banners
           {
-            OR: [
-              { endDate: null },
-              { endDate: { gte: new Date() } }
-            ]
+            startDate: { lte: now },
+            endDate: { gte: now }
+          },
+          // Upcoming banners (within 7 days)
+          {
+            startDate: { lte: sevenDaysFromNow },
+            endDate: { gte: now }
           }
         ]
       },
@@ -158,19 +162,22 @@ export async function GET(req: NextRequest) {
 
     const postsData = recentPosts.map(p => {
       const author = authorMap.get(p.authorId)
+      // Extract hashtags from content
+      const hashtags = (p.content || '').match(/#\w+/g)?.map(tag => tag.slice(1)) || []
       return {
         id: p.id,
         content: p.content || '',
         author: {
           id: p.authorId,
           name: author?.name || 'Unknown',
-          avatar: author?.avatar,
-          role: author?.role === 'MENTOR' ? 'Expert' : 'Member'
+          avatar: author?.avatar || null,
+          role: author?.role || 'MEMBER_FREE'
         },
         createdAt: p.createdAt.toISOString(),
-        likes: p.likesCount || 0,
-        comments: p.commentsCount || 0,
-        tags: [] // Tags can be extracted from content if needed
+        likesCount: p.likesCount || 0,
+        commentsCount: p.commentsCount || 0,
+        tags: hashtags,
+        images: p.images ? (Array.isArray(p.images) ? p.images : []) : []
       }
     })
 
@@ -181,8 +188,11 @@ export async function GET(req: NextRequest) {
       description: b.description,
       imageUrl: b.imageUrl,
       linkUrl: b.linkUrl,
-      buttonText: b.buttonText,
-      placement: b.placement
+      linkText: b.linkText,
+      backgroundColor: b.backgroundColor,
+      textColor: b.textColor,
+      buttonColor: b.buttonColor,
+      buttonTextColor: b.buttonTextColor
     }))
 
     // Calculate stats
