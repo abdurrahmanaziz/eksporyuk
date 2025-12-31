@@ -311,11 +311,11 @@ export default function FreeUserDashboard() {
                 <div className="flex flex-col items-end">
                   {/* Show discount if originalAmount is higher than final amount */}
                   {pendingTransaction.originalAmount > pendingTransaction.amount && (
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[10px] text-gray-400 line-through decoration-gray-300 dark:decoration-gray-600">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs text-gray-400 line-through decoration-gray-400 dark:decoration-gray-500">
                         {formatPrice(pendingTransaction.originalAmount)}
                       </span>
-                      <span className="bg-red-50 dark:bg-red-500/20 text-red-500 dark:text-red-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-red-100 dark:border-transparent">
+                      <span className="bg-red-50 dark:bg-red-500/20 text-red-500 dark:text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-100 dark:border-transparent">
                         Diskon {Math.round(((pendingTransaction.originalAmount - pendingTransaction.amount) / pendingTransaction.originalAmount) * 100)}%
                       </span>
                     </div>
