@@ -1,50 +1,46 @@
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-async function checkSettings() {
-  console.log('\n🔍 Checking Email Settings...\n')
-  
-  const settings = await prisma.settings.findFirst()
-  
-  if (!settings) {
-    console.log('❌ No settings found - creating default settings...')
-    
-    // Create default settings
-    const defaultSettings = await prisma.settings.create({
-      data: {
-        siteName: 'EksporYuk',
-        siteLogo: 'https://app.eksporyuk.com/logo-eksporyuk.png',
-        emailFooterCompany: 'PT Ekspor Yuk Indonesia',
-        emailFooterAddress: 'Jakarta, Indonesia',
-        emailFooterPhone: '+62 812-3456-7890',
-        emailFooterEmail: 'admin@eksporyuk.com',
-        emailFooterWebsiteUrl: 'https://app.eksporyuk.com',
-        emailFooterInstagramUrl: 'https://instagram.com/eksporyuk',
-        emailFooterFacebookUrl: 'https://facebook.com/eksporyuk',
-        emailFooterCopyrightText: '© 2025 EksporYuk. All rights reserved.',
-        emailFooterText: 'Belajar ekspor dengan mentor berpengalaman'
-      }
-    })
-    
-    console.log('✅ Default settings created')
-    console.log(defaultSettings)
-    return
+async function check() {
+  const settings = await prisma.settings.findFirst();
+  console.log('=== Settings Table ===');
+  if (settings) {
+    console.log('siteLogo:', settings.siteLogo || 'NOT SET');
+    console.log('siteTitle:', settings.siteTitle || 'NOT SET');
+    console.log('emailFooterText:', settings.emailFooterText || 'NOT SET');
+    console.log('emailFooterCompany:', settings.emailFooterCompany || 'NOT SET');
+    console.log('emailFooterEmail:', settings.emailFooterEmail || 'NOT SET');
+  } else {
+    console.log('NO SETTINGS FOUND!');
   }
   
-  console.log('📧 Email Settings:')
-  console.log('  Logo:', settings.siteLogo || '❌ Not set')
-  console.log('  Company:', settings.emailFooterCompany || '❌ Not set')
-  console.log('  Address:', settings.emailFooterAddress || '❌ Not set')
-  console.log('  Phone:', settings.emailFooterPhone || '❌ Not set')
-  console.log('  Email:', settings.emailFooterEmail || '❌ Not set')
-  console.log('  Website:', settings.emailFooterWebsiteUrl || '❌ Not set')
-  console.log('  Instagram:', settings.emailFooterInstagramUrl || '❌ Not set')
-  console.log('  Facebook:', settings.emailFooterFacebookUrl || '❌ Not set')
-  console.log('  LinkedIn:', settings.emailFooterLinkedinUrl || '❌ Not set')
-  console.log('  Footer Text:', settings.emailFooterText || '❌ Not set')
-  console.log('  Copyright:', settings.emailFooterCopyrightText || '❌ Not set')
+  const mailConfig = await prisma.integrationConfig.findFirst({
+    where: { integration: 'MAILKETING' }
+  });
+  console.log('\n=== Mailketing Config ===');
+  if (mailConfig) {
+    console.log('isActive:', mailConfig.isActive);
+    console.log('Has API Key:', !!mailConfig.apiKey);
+    console.log('Settings:', JSON.stringify(mailConfig.settings, null, 2));
+  } else {
+    console.log('NO MAILKETING CONFIG!');
+  }
   
-  await prisma.$disconnect()
+  const welcomeTemplate = await prisma.brandedTemplate.findFirst({
+    where: { slug: 'welcome-email-new-member' }
+  });
+  console.log('\n=== Welcome Template (welcome-email-new-member) ===');
+  if (welcomeTemplate) {
+    console.log('Name:', welcomeTemplate.name);
+    console.log('Subject:', welcomeTemplate.subject);
+    console.log('Content:', welcomeTemplate.content);
+    console.log('CTA Text:', welcomeTemplate.ctaText || 'NOT SET');
+    console.log('CTA Link:', welcomeTemplate.ctaLink || 'NOT SET');
+  } else {
+    console.log('NOT FOUND!');
+  }
+  
+  await prisma.$disconnect();
 }
 
-checkSettings().catch(console.error)
+check().catch(console.error);

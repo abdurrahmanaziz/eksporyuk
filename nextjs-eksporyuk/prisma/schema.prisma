@@ -364,6 +364,13 @@ model AffiliateLink {
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
+  user         User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliate    AffiliateProfile? @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  product      Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  membership   Membership?       @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  course       Course?           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  supplier     SupplierProfile?  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
   @@index([affiliateId])
   @@index([code])
   @@index([shortCode])
@@ -454,6 +461,9 @@ model AffiliateProfile {
   bankInfoCompletedAt   DateTime?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliateLinks        AffiliateLink[]
 
   @@index([affiliateCode])
   @@index([shortLinkUsername])
@@ -633,6 +643,72 @@ model BrandedTemplate {
   createdBy      String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime
+}
+
+// Email Notification Tracking - Real-time system untuk tracking semua email
+model EmailNotificationLog {
+  id                 String   @id @default(cuid())
+  
+  // Email metadata
+  templateId         String   // Reference to BrandedTemplate
+  templateSlug       String   // e.g., "affiliate-commission-received"
+  templateCategory   String   // AFFILIATE, TRANSACTION, SYSTEM
+  
+  // Recipient info
+  recipientId        String   // User ID
+  recipientEmail     String
+  recipientName      String?
+  recipientRole      String?  // AFFILIATE, MENTOR, ADMIN, FOUNDER
+  
+  // Email content
+  subject            String
+  bodyPreview        String?  // First 200 chars untuk quick view
+  variables          Json?    // Variables yang dirender: {amount}, {name}, etc
+  
+  // Delivery tracking
+  status             String   @default("QUEUED") // QUEUED, PENDING, SENT, DELIVERED, FAILED, BOUNCED, SPAM
+  sentAt             DateTime?
+  deliveredAt        DateTime?
+  openedAt           DateTime?
+  clickedAt          DateTime?
+  clickUrl           String?
+  failureReason      String?
+  bounceReason       String?
+  spamReported       Boolean  @default(false)
+  
+  // Engagement metrics
+  openCount          Int      @default(0)
+  clickCount         Int      @default(0)
+  
+  // Technical info
+  externalMessageId  String?  // ID dari Mailketing/Email provider
+  internalTrackingId String   @unique @default(cuid())
+  
+  // Source & context
+  sourceType         String?  // COMMISSION, TRANSACTION, SETTINGS_CHANGE
+  sourceId           String?  // Transaction ID, Pending Revenue ID
+  transactionId      String?
+  
+  // IP & User agent tracking
+  openIpAddress      String?
+  openUserAgent      String?
+  clickIpAddress     String?
+  clickUserAgent     String?
+  
+  // Metadata
+  metadata           Json?    // Any additional data
+  retryCount         Int      @default(0)
+  nextRetryAt        DateTime?
+  
+  // Timestamps
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  @@index([recipientId])
+  @@index([templateSlug])
+  @@index([status])
+  @@index([sourceType])
+  @@index([createdAt])
 }
 
 model BrandedTemplateUsage {
@@ -934,6 +1010,8 @@ model Course {
   isPublicListed          Boolean                @default(true)
   createdAt               DateTime               @default(now())
   updatedAt               DateTime
+
+  affiliateLinks          AffiliateLink[]
 }
 
 model CourseConsent {
@@ -1634,6 +1712,8 @@ model Membership {
   createdAt               DateTime           @default(now())
   updatedAt               DateTime
 
+  affiliateLinks          AffiliateLink[]
+
   @@index([affiliateEnabled])
   @@index([duration])
   @@index([isActive])
@@ -2191,6 +2271,7 @@ model Product {
   User                    User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   Group                   Group?          @relation(fields: [groupId], references: [id])
   UserProduct             UserProduct[]
+  affiliateLinks          AffiliateLink[]
 }
 
 model ProductCourse {
@@ -2523,6 +2604,8 @@ model Settings {
   paymentUniqueCodeType           String?  @default("add") // 'add' or 'subtract'
   paymentUniqueCodeMin            Int      @default(1)
   paymentUniqueCodeMax            Int      @default(999)
+  orderCooldownMinutes            Int      @default(5) // Anti-spam: minimum minutes between orders
+  orderCooldownEnabled            Boolean  @default(true)
   createdAt                       DateTime @default(now())
   updatedAt                       DateTime
   emailFooterAddress              String?
@@ -2768,6 +2851,8 @@ model SupplierProfile {
   totalReviews     Int       @default(0)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime
+
+  affiliateLinks   AffiliateLink[]
 }
 
 model SupplierView {
@@ -2882,6 +2967,8 @@ model User {
   UserProduct                     UserProduct[]
   userRoles                       UserRole[]
   wallet                          Wallet?
+  affiliateProfile                AffiliateProfile?
+  affiliateLinks                  AffiliateLink[]
 
   @@index([city])
   @@index([district])

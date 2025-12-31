@@ -103,6 +103,9 @@ export async function GET(request: NextRequest) {
         uniqueCodeType: settings?.paymentUniqueCodeType ?? 'add',
         uniqueCodeMin: settings?.paymentUniqueCodeMin ?? 1,
         uniqueCodeMax: settings?.paymentUniqueCodeMax ?? 999,
+        // Order Cooldown Settings (Anti-spam)
+        orderCooldownEnabled: settings?.orderCooldownEnabled ?? true,
+        orderCooldownMinutes: settings?.orderCooldownMinutes ?? 5,
       }
     }
 
@@ -148,6 +151,9 @@ export async function POST(request: NextRequest) {
       paymentUniqueCodeEnabled: settings?.uniqueCodeEnabled ?? true,
       paymentUniqueCodeType: settings?.uniqueCodeType ?? 'add',
       paymentUniqueCodeMin: settings?.uniqueCodeMin ?? 1,
+      // Order Cooldown Settings (Anti-spam)
+      orderCooldownEnabled: settings?.orderCooldownEnabled ?? true,
+      orderCooldownMinutes: settings?.orderCooldownMinutes ?? 5,
       paymentUniqueCodeMax: settings?.uniqueCodeMax ?? 999,
     }
 

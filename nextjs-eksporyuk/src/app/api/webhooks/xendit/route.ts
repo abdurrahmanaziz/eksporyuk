@@ -265,6 +265,29 @@ async function handleInvoicePaid(data: any) {
             })
             console.log(`[Xendit Webhook] Deactivated old memberships for user ${transaction.userId}`)
 
+            // 🔒 CANCEL OTHER PENDING MEMBERSHIP TRANSACTIONS
+            // When one membership is paid, cancel all other pending membership transactions
+            const cancelledTransactions = await prisma.transaction.updateMany({
+              where: {
+                userId: transaction.userId,
+                type: 'MEMBERSHIP',
+                status: 'PENDING',
+                id: { not: transaction.id } // Don't cancel the current transaction
+              },
+              data: {
+                status: 'CANCELLED',
+                metadata: {
+                  cancelledAt: new Date().toISOString(),
+                  cancelReason: 'Auto-cancelled: Another membership was purchased',
+                  cancelledByTransactionId: transaction.id
+                }
+              }
+            })
+            
+            if (cancelledTransactions.count > 0) {
+              console.log(`[Xendit Webhook] ✅ Auto-cancelled ${cancelledTransactions.count} pending membership transactions for user ${transaction.userId}`)
+            }
+
             // Fetch related data separately
             const [membershipGroups, membershipCourses, membershipProducts] = await Promise.all([
               prisma.membershipGroup.findMany({

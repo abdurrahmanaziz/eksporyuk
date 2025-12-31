@@ -369,15 +369,26 @@ class NotificationService {
    * Get user notification preferences
    */
   private async getUserPreferences(userId: string): Promise<any> {
-    let preferences = await prisma.notificationPreference.findUnique({
+    let preferences = await prisma.notificationPreference.findFirst({
       where: { userId }
     })
     
     // Create default preferences if not exist
     if (!preferences) {
-      preferences = await prisma.notificationPreference.create({
-        data: { userId }
-      })
+      try {
+        preferences = await prisma.notificationPreference.create({
+          data: { 
+            id: `notif_pref_${userId}_${Date.now()}`,
+            userId,
+            updatedAt: new Date()
+          }
+        })
+      } catch (err) {
+        // If creation fails (race condition), try to find again
+        preferences = await prisma.notificationPreference.findFirst({
+          where: { userId }
+        })
+      }
     }
     
     return preferences

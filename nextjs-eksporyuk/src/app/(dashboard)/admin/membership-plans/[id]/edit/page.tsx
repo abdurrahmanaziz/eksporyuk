@@ -652,6 +652,40 @@ export default function EditMembershipPlanPage() {
         </Card>
       </div>
 
+      {/* Quick Actions - Link ke Follow-ups dan Reminders */}
+      <div className="mb-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              <Link href={`/admin/membership-plans/${membershipId}/follow-ups`}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <MessageCircle className="h-4 w-4 text-green-600" />
+                  Follow-up WA
+                </Button>
+              </Link>
+              <Link href={`/admin/membership-plans/${membershipId}/reminders`}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Bell className="h-4 w-4 text-blue-600" />
+                  Reminders
+                </Button>
+              </Link>
+              <Link href={`/checkout/${formData.slug}`} target="_blank">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Globe className="h-4 w-4 text-purple-600" />
+                  Preview Checkout
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <Tabs defaultValue="basic" className="space-y-6">
           <TabsList className="grid grid-cols-8 w-full">

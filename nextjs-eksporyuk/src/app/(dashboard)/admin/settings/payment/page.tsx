@@ -144,6 +144,9 @@ export default function PaymentSettingsPage() {
     uniqueCodeType: 'add' as 'add' | 'subtract', // 'add' = tambah, 'subtract' = kurang
     uniqueCodeMin: 1,
     uniqueCodeMax: 999,
+    // Order Cooldown Settings (Anti-spam)
+    orderCooldownEnabled: true,
+    orderCooldownMinutes: 5,
   })
 
   useEffect(() => {
@@ -639,6 +642,63 @@ export default function PaymentSettingsPage() {
                 </>
               )}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Order Cooldown / Anti-Spam Settings */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings2 className="h-5 w-5" />
+            Anti-Spam Order
+          </CardTitle>
+          <CardDescription>
+            Batasi user agar tidak bisa spam order dalam waktu singkat. Ini mencegah user membuat banyak transaksi pending.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Aktifkan Anti-Spam Order</Label>
+                <p className="text-sm text-muted-foreground">User harus menunggu sebelum membuat order baru</p>
+              </div>
+              <Switch
+                checked={paymentSettings.orderCooldownEnabled}
+                onCheckedChange={(checked) =>
+                  setPaymentSettings({ ...paymentSettings, orderCooldownEnabled: checked })
+                }
+              />
+            </div>
+
+            {paymentSettings.orderCooldownEnabled && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Jeda Waktu Order (Menit)</Label>
+                  <Input
+                    type="number"
+                    value={paymentSettings.orderCooldownMinutes}
+                    onChange={(e) =>
+                      setPaymentSettings({ ...paymentSettings, orderCooldownMinutes: parseInt(e.target.value) || 5 })
+                    }
+                    placeholder="5"
+                    min={1}
+                    max={60}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Minimal waktu tunggu antara order (1-60 menit)
+                  </p>
+                </div>
+                
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
+                    <strong>Info:</strong> User harus menunggu <strong>{paymentSettings.orderCooldownMinutes} menit</strong> sebelum bisa membuat transaksi baru. 
+                    Ini membantu mencegah spam dan transaksi pending yang menumpuk.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

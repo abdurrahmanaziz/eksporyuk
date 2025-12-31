@@ -1,4 +1,5 @@
 import { prisma } from './prisma'
+import { sendPendingRevenueNotification } from './commission-notification-service'
 
 /**
  * Configuration untuk pembagian revenue
@@ -270,7 +271,7 @@ export async function approvePendingRevenue(
 ) {
   const pendingRevenue = await prisma.pendingRevenue.findUnique({
     where: { id: pendingRevenueId },
-    include: { wallet: true },
+    include: { wallet: { include: { user: true } } },
   })
   
   if (!pendingRevenue) throw new Error('Pending revenue not found')
@@ -311,6 +312,23 @@ export async function approvePendingRevenue(
     })
   })
   
+  // 📧 Send notification email to user
+  try {
+    await sendPendingRevenueNotification({
+      type: 'APPROVED',
+      userId: pendingRevenue.wallet.userId,
+      userName: pendingRevenue.wallet.user?.name,
+      userEmail: pendingRevenue.wallet.user?.email,
+      amount: finalAmount,
+      revenueType: pendingRevenue.type as 'ADMIN_FEE' | 'FOUNDER_SHARE' | 'COFOUNDER_SHARE',
+      status: 'APPROVED',
+      transactionId: pendingRevenue.transactionId || undefined,
+    })
+  } catch (error) {
+    console.error('Error sending approval notification:', error)
+    // Don't throw - notification failure shouldn't block the approval
+  }
+  
   return { success: true, originalAmount, finalAmount, adjusted: adjustedAmount !== undefined }
 }
 
@@ -324,6 +342,7 @@ export async function rejectPendingRevenue(
 ) {
   const pendingRevenue = await prisma.pendingRevenue.findUnique({
     where: { id: pendingRevenueId },
+    include: { wallet: { include: { user: true } } },
   })
   
   if (!pendingRevenue) throw new Error('Pending revenue not found')
@@ -349,6 +368,24 @@ export async function rejectPendingRevenue(
       },
     })
   })
+  
+  // 📧 Send notification email to user
+  try {
+    await sendPendingRevenueNotification({
+      type: 'REJECTED',
+      userId: pendingRevenue.wallet.userId,
+      userName: pendingRevenue.wallet.user?.name,
+      userEmail: pendingRevenue.wallet.user?.email,
+      amount,
+      revenueType: pendingRevenue.type as 'ADMIN_FEE' | 'FOUNDER_SHARE' | 'COFOUNDER_SHARE',
+      status: 'REJECTED',
+      adjustmentNote: note,
+      transactionId: pendingRevenue.transactionId || undefined,
+    })
+  } catch (error) {
+    console.error('Error sending rejection notification:', error)
+    // Don't throw - notification failure shouldn't block the rejection
+  }
   
   return { success: true, rejectedAmount: amount }
 }

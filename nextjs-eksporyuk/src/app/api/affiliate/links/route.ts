@@ -2,9 +2,90 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import validator from 'validator'
+import DOMPurify from 'isomorphic-dompurify'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+
+// Security functions
+function isValidUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url)
+    
+    // Block dangerous protocols
+    const dangerousProtocols = ['javascript:', 'data:', 'file:', 'vbscript:']
+    if (dangerousProtocols.some(protocol => url.toLowerCase().startsWith(protocol))) {
+      return false
+    }
+    
+    // Only allow HTTP/HTTPS
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      return false
+    }
+    
+    // Block localhost and private IPs in production
+    if (process.env.NODE_ENV === 'production') {
+      const hostname = urlObj.hostname
+      if (hostname === 'localhost' || 
+          hostname.startsWith('127.') || 
+          hostname.startsWith('192.168.') ||
+          hostname.startsWith('10.') ||
+          hostname.match(/^172\.(1[6-9]|2\d|3[01])\./)) {
+        return false
+      }
+    }
+    
+    return true
+  } catch {
+    return false
+  }
+}
+
+function sanitizeInput(input: string): string {
+  if (typeof input !== 'string') return input
+  
+  // Remove XSS payloads
+  let sanitized = DOMPurify.sanitize(input, { 
+    ALLOWED_TAGS: [], 
+    ALLOWED_ATTR: [] 
+  })
+  
+  // Additional sanitization
+  sanitized = validator.escape(sanitized)
+  
+  return sanitized
+}
+
+// Rate limiting
+class RateLimiter {
+  private requests = new Map<string, number[]>()
+  
+  isAllowed(identifier: string, maxRequests = 10, windowMs = 60000): boolean {
+    const now = Date.now()
+    const windowStart = now - windowMs
+    
+    if (!this.requests.has(identifier)) {
+      this.requests.set(identifier, [])
+    }
+    
+    const userRequests = this.requests.get(identifier)!
+    
+    // Remove old requests
+    const validRequests = userRequests.filter(time => time > windowStart)
+    
+    if (validRequests.length >= maxRequests) {
+      return false
+    }
+    
+    validRequests.push(now)
+    this.requests.set(identifier, validRequests)
+    
+    return true
+  }
+}
+
+const rateLimiter = new RateLimiter()
 
 
 // GET /api/affiliate/links - Get user's affiliate links
@@ -16,62 +97,77 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get or create affiliate profile
+    // Parse query parameters for pagination and filtering
+    const { searchParams } = new URL(request.url)
+    const showArchived = searchParams.get('archived') === 'true'
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50) // Max 50 items
+    const skip = (page - 1) * limit
+
+    // Get or create affiliate profile with minimal data
     let affiliateProfile = await prisma.affiliateProfile.findUnique({
       where: { userId: session.user.id },
+      select: { id: true } // Only get the ID we need
     })
 
     if (!affiliateProfile) {
-      return NextResponse.json({ links: [] })
+      return NextResponse.json({ 
+        links: [], 
+        pagination: { page, limit, total: 0, totalPages: 0 }
+      })
     }
 
-    // Get filter from query params
-    const { searchParams } = new URL(request.url)
-    const showArchived = searchParams.get('archived') === 'true'
+    // Get total count for pagination (separate query for performance)
+    const totalCount = await prisma.affiliateLink.count({
+      where: {
+        affiliateId: affiliateProfile.id,
+        ...(showArchived ? {} : { isArchived: false }),
+      },
+    })
     
-    // Get affiliate's links
+    // Get affiliate's links with pagination and optimized includes
     const links = await prisma.affiliateLink.findMany({
       where: {
         affiliateId: affiliateProfile.id,
         ...(showArchived ? {} : { isArchived: false }),
       },
+      select: {
+        id: true,
+        code: true,
+        fullUrl: true,
+        clicks: true,
+        linkType: true,
+        couponCode: true,
+        conversions: true,
+        isArchived: true,
+        createdAt: true,
+        membershipId: true,
+        productId: true,
+        courseId: true,
+        supplierId: true,
+        // Optimized relations - only select needed fields
+        membership: {
+          select: { id: true, name: true, slug: true }
+        },
+        product: {
+          select: { id: true, name: true, slug: true }
+        },
+        course: {
+          select: { id: true, title: true }
+        },
+        supplier: {
+          select: { id: true, companyName: true, province: true, city: true }
+        }
+      },
       orderBy: {
         createdAt: 'desc',
       },
+      take: limit,
+      skip: skip,
     })
 
-    // Fetch related data separately
-    const membershipIds = [...new Set(links.map(l => l.membershipId).filter(Boolean))]
-    const productIds = [...new Set(links.map(l => l.productId).filter(Boolean))]
-    const courseIds = [...new Set(links.map(l => l.courseId).filter(Boolean))]
-    const supplierIds = [...new Set(links.map(l => l.supplierId).filter(Boolean))]
-
-    const memberships = membershipIds.length > 0 
-      ? await prisma.membership.findMany({ where: { id: { in: membershipIds } } })
-      : []
-    const products = productIds.length > 0
-      ? await prisma.product.findMany({ where: { id: { in: productIds } } })
-      : []
-    const courses = courseIds.length > 0
-      ? await prisma.course.findMany({ where: { id: { in: courseIds } } })
-      : []
-    const suppliers = supplierIds.length > 0
-      ? await prisma.supplierProfile.findMany({ where: { id: { in: supplierIds } } })
-      : []
-
-    const membershipMap = new Map(memberships.map(m => [m.id, m]))
-    const productMap = new Map(products.map(p => [p.id, p]))
-    const courseMap = new Map(courses.map(c => [c.id, c]))
-    const supplierMap = new Map(suppliers.map(s => [s.id, s]))
-
-    // Get conversion counts for each link
+    // Build optimized response with pagination
     const linksWithStats = links.map((link) => {
-      const conversions = link.conversions || 0
-      const membership = link.membershipId ? membershipMap.get(link.membershipId) : null
-      const product = link.productId ? productMap.get(link.productId) : null
-      const course = link.courseId ? courseMap.get(link.courseId) : null
-      const supplier = link.supplierId ? supplierMap.get(link.supplierId) : null
-
       return {
         id: link.id,
         code: link.code,
@@ -79,19 +175,29 @@ export async function GET(request: NextRequest) {
         linkType: link.linkType,
         couponCode: link.couponCode,
         clicks: link.clicks,
-        conversions,
-        revenue: 0,
+        conversions: link.conversions || 0,
+        revenue: 0, // Calculate separately if needed
         isArchived: link.isArchived,
-        membership: membership ? { id: membership.id, name: membership.name, slug: membership.slug } : null,
-        product: product ? { id: product.id, name: product.name, slug: product.slug } : null,
-        course: course ? { id: course.id, title: course.title } : null,
-        supplier: supplier ? { id: supplier.id, companyName: supplier.companyName, province: supplier.province, city: supplier.city } : null,
+        membership: link.membership,
+        product: link.product,
+        course: link.course,
+        supplier: link.supplier,
         createdAt: link.createdAt.toISOString(),
       }
     })
 
+    const totalPages = Math.ceil(totalCount / limit)
+
     return NextResponse.json({
       links: linksWithStats,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
     })
   } catch (error) {
     console.error('Error fetching affiliate links:', error)
@@ -109,6 +215,12 @@ export async function POST(request: NextRequest) {
     
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limiting check
+    const userIdentifier = session.user.id
+    if (!rateLimiter.isAllowed(userIdentifier, 10, 60000)) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
     }
 
     // Get or create affiliate profile
@@ -149,10 +261,30 @@ export async function POST(request: NextRequest) {
       targetUrl = null 
     } = body
 
-    console.log('📝 Generate link request:', { linkType, targetType, targetId, couponCode })
+    // Input validation and sanitization
+    if (targetUrl && !isValidUrl(targetUrl)) {
+      return NextResponse.json({ error: 'Invalid target URL provided' }, { status: 400 })
+    }
+
+    const sanitizedCouponCode = couponCode ? sanitizeInput(couponCode) : null
+    
+    // Validate linkType
+    const validLinkTypes = ['SALESPAGE_INTERNAL', 'SALESPAGE_EXTERNAL', 'CHECKOUT', 'CHECKOUT_PRO']
+    if (!validLinkTypes.includes(linkType)) {
+      return NextResponse.json({ error: 'Invalid link type' }, { status: 400 })
+    }
+
+    // Validate targetType
+    const validTargetTypes = ['membership', 'product', 'course', 'supplier']
+    if (!validTargetTypes.includes(targetType)) {
+      return NextResponse.json({ error: 'Invalid target type' }, { status: 400 })
+    }
+
+    console.log('📝 Generate link request:', { linkType, targetType, targetId, couponCode: sanitizedCouponCode })
 
     // Generate unique code
-    const code = `${affiliateProfile.affiliateCode}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+    const baseCode = `${affiliateProfile.affiliateCode}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+    const code = sanitizeInput(baseCode)
 
     // Simple mode: if targetUrl provided, use it directly
     let url = ''
@@ -253,8 +385,8 @@ export async function POST(request: NextRequest) {
         }
         
         const params = new URLSearchParams()
-        params.append('ref', code)
-        if (couponCode) params.append('coupon', couponCode)
+        params.append('ref', sanitizeInput(code))
+        if (sanitizedCouponCode) params.append('coupon', sanitizedCouponCode)
         url += `?${params.toString()}`
       }
       else if (linkType === 'CHECKOUT') {
@@ -265,53 +397,58 @@ export async function POST(request: NextRequest) {
           url = `${baseUrl}/checkout/${targetSlug}`
           
           const params = new URLSearchParams()
-          params.append('ref', code)
-          if (couponCode) params.append('coupon', couponCode)
+          params.append('ref', sanitizeInput(code))
+          if (sanitizedCouponCode) params.append('coupon', sanitizedCouponCode)
           url += `?${params.toString()}`
         } else if (targetSlug && targetType === 'product') {
           // Untuk produk spesifik
           url = `${baseUrl}/checkout/product/${targetSlug}`
           
           const params = new URLSearchParams()
-          params.append('ref', code)
-          if (couponCode) params.append('coupon', couponCode)
+          params.append('ref', sanitizeInput(code))
+          if (sanitizedCouponCode) params.append('coupon', sanitizedCouponCode)
           url += `?${params.toString()}`
         } else if (targetSlug && targetType === 'course') {
           // Untuk course spesifik
           url = `${baseUrl}/checkout/course/${targetSlug}`
           
           const params = new URLSearchParams()
-          params.append('ref', code)
-          if (couponCode) params.append('coupon', couponCode)
+          params.append('ref', sanitizeInput(code))
+          if (sanitizedCouponCode) params.append('coupon', sanitizedCouponCode)
           url += `?${params.toString()}`
         } else if (targetSlug && targetType === 'supplier') {
           // Untuk supplier spesifik
           url = `${baseUrl}/supplier/${targetSlug}`
           
           const params = new URLSearchParams()
-          params.append('ref', code)
-          if (couponCode) params.append('coupon', couponCode)
+          params.append('ref', sanitizeInput(code))
+          if (sanitizedCouponCode) params.append('coupon', sanitizedCouponCode)
           url += `?${params.toString()}`
         } else {
           // Checkout umum untuk semua paket
           url = `${baseUrl}/checkout-unified`
           
           const params = new URLSearchParams()
-          params.append('ref', code)
-          if (couponCode) params.append('coupon', couponCode)
+          params.append('ref', sanitizeInput(code))
+          if (sanitizedCouponCode) params.append('coupon', sanitizedCouponCode)
           url += `?${params.toString()}`
         }
       }
     }
 
-    // Build create data object
+    // Build create data object with sanitized inputs
     const createData: any = {
-      code,
-      fullUrl: url,
+      code: sanitizeInput(code),
+      fullUrl: isValidUrl(url) ? url : '', // Ensure URL is valid
       clicks: 0,
       linkType,
-      couponCode: couponCode || null,
+      couponCode: sanitizedCouponCode || null,
       affiliateId: affiliateProfile.id,
+    }
+
+    // Validate final URL
+    if (!createData.fullUrl || !isValidUrl(createData.fullUrl)) {
+      return NextResponse.json({ error: 'Generated URL is invalid' }, { status: 400 })
     }
 
     // Add targetId based on type

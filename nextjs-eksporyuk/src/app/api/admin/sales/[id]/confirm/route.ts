@@ -68,6 +68,36 @@ export async function POST(
           ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years for lifetime
           : new Date(Date.now() + durationValue * 24 * 60 * 60 * 1000)
 
+        // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
+        await prisma.userMembership.updateMany({
+          where: { 
+            userId: transaction.userId,
+            isActive: true,
+            id: { not: userMembership.id }
+          },
+          data: { 
+            isActive: false,
+            status: 'EXPIRED'
+          }
+        })
+
+        // 🔒 CANCEL OTHER PENDING MEMBERSHIP TRANSACTIONS
+        const cancelledTransactions = await prisma.transaction.updateMany({
+          where: {
+            userId: transaction.userId,
+            type: 'MEMBERSHIP',
+            status: 'PENDING',
+            id: { not: transaction.id }
+          },
+          data: {
+            status: 'CANCELLED',
+          }
+        })
+        
+        if (cancelledTransactions.count > 0) {
+          console.log(`[Admin Confirm] ✅ Auto-cancelled ${cancelledTransactions.count} pending membership transactions for user ${transaction.userId}`)
+        }
+
         // Update userMembership to active
         await prisma.userMembership.update({
           where: { id: userMembership.id },
