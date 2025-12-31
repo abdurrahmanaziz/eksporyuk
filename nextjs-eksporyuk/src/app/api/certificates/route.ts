@@ -23,19 +23,23 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const courseId = searchParams.get('courseId')
     const userId = searchParams.get('userId')
+    const includeInvalid = searchParams.get('includeInvalid') === 'true'
 
     // Build where clause based on role
-    const where: any = {
-      isValid: true
-    }
+    const where: any = {}
 
     if (session.user.role === 'ADMIN') {
-      // Admin can filter by userId or see all
+      // Admin can see all certificates
       if (userId) where.userId = userId
       if (courseId) where.courseId = courseId
+      // Only filter by isValid if includeInvalid is false
+      if (!includeInvalid) {
+        // Admin still sees all by default
+      }
     } else {
-      // Regular users only see their own
+      // Regular users only see their own valid certificates
       where.userId = session.user.id
+      where.isValid = true
       if (courseId) where.courseId = courseId
     }
 

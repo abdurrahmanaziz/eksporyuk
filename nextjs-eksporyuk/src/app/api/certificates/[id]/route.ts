@@ -20,26 +20,9 @@ export async function GET(
 
     const { id } = await params
 
+    // Certificate model has no relations in schema - fetch manually
     const certificate = await prisma.certificate.findUnique({
-      where: { id },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            thumbnail: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        certificateTemplate: true
-      }
+      where: { id }
     })
 
     if (!certificate) {
@@ -51,7 +34,41 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    return NextResponse.json({ certificate })
+    // Fetch related data manually
+    const [course, user, template] = await Promise.all([
+      prisma.course.findUnique({
+        where: { id: certificate.courseId },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          thumbnail: true
+        }
+      }),
+      prisma.user.findUnique({
+        where: { id: certificate.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }),
+      certificate.certificateTemplateId 
+        ? prisma.certificateTemplate.findUnique({
+            where: { id: certificate.certificateTemplateId }
+          })
+        : null
+    ])
+
+    // Combine data
+    const certificateWithData = {
+      ...certificate,
+      course: course || { id: certificate.courseId, title: certificate.courseName, slug: null, thumbnail: null },
+      user: user || { id: certificate.userId, name: certificate.studentName, email: '' },
+      certificateTemplate: template
+    }
+
+    return NextResponse.json({ certificate: certificateWithData })
 
   } catch (error) {
     console.error('Error fetching certificate:', error)

@@ -119,26 +119,26 @@ export default function CertificateDetailPage() {
 
   return (
     <ResponsivePageWrapper>
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6">
       {/* Actions - Print Hidden */}
-      <div className="mb-6 print:hidden flex items-center justify-between">
-        <Link href="/dashboard/certificates">
+      <div className="mb-6 print:hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <Link href="/certificates">
           <Button variant="outline">
             ← Kembali
           </Button>
         </Link>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleShare}>
-            <Share2 className="w-4 h-4 mr-2" />
-            Bagikan
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={handleShare}>
+            <Share2 className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Bagikan</span>
           </Button>
-          <Button variant="outline" onClick={handlePrint}>
-            <Printer className="w-4 h-4 mr-2" />
-            Cetak
+          <Button variant="outline" size="sm" onClick={handlePrint}>
+            <Printer className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Cetak</span>
           </Button>
-          <Button>
-            <Download className="w-4 h-4 mr-2" />
-            Download PDF
+          <Button size="sm">
+            <Download className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Download PDF</span>
           </Button>
         </div>
       </div>
@@ -146,7 +146,7 @@ export default function CertificateDetailPage() {
       {/* Certificate Card */}
       <Card className="overflow-hidden shadow-2xl">
         <div 
-          className="relative p-16"
+          className="relative p-6 sm:p-10 md:p-16"
           style={{
             backgroundColor: certificate.certificateTemplate?.backgroundColor || '#FFFFFF',
             color: certificate.certificateTemplate?.textColor || '#1F2937',
@@ -191,7 +191,7 @@ export default function CertificateDetailPage() {
             {/* Title */}
             <div>
               <h1 
-                className="text-4xl font-bold mb-2"
+                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2"
                 style={{
                   fontFamily: certificate.certificateTemplate?.fontFamily || 'inherit',
                   color: certificate.certificateTemplate?.primaryColor || (certificate.certificateTemplate ? 'inherit' : '#FFFFFF')
@@ -200,7 +200,7 @@ export default function CertificateDetailPage() {
                 CERTIFICATE OF COMPLETION
               </h1>
               <p 
-                className="text-lg"
+                className="text-sm sm:text-base md:text-lg"
                 style={{
                   opacity: certificate.certificateTemplate ? 0.75 : 0.9,
                   color: certificate.certificateTemplate ? 'inherit' : '#FFFFFF'
@@ -211,9 +211,9 @@ export default function CertificateDetailPage() {
             </div>
 
             {/* Student Name */}
-            <div className="py-4">
+            <div className="py-2 sm:py-4">
               <p 
-                className="text-5xl font-bold mb-4"
+                className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4"
                 style={{
                   fontFamily: certificate.certificateTemplate?.fontFamily || 'inherit',
                   color: certificate.certificateTemplate ? 'inherit' : '#FFFFFF'
@@ -234,7 +234,7 @@ export default function CertificateDetailPage() {
             {/* Achievement */}
             <div className="max-w-2xl mx-auto">
               <p 
-                className="text-xl mb-2"
+                className="text-base sm:text-lg md:text-xl mb-2"
                 style={{
                   opacity: certificate.certificateTemplate ? 0.75 : 0.9,
                   color: certificate.certificateTemplate ? 'inherit' : '#FFFFFF'
@@ -243,7 +243,7 @@ export default function CertificateDetailPage() {
                 has successfully completed
               </p>
               <p 
-                className="text-3xl font-bold mb-6"
+                className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6"
                 style={{
                   fontFamily: certificate.certificateTemplate?.fontFamily || 'inherit',
                   color: certificate.certificateTemplate?.primaryColor || (certificate.certificateTemplate ? 'inherit' : '#FFFFFF')
@@ -252,7 +252,7 @@ export default function CertificateDetailPage() {
                 {certificate.courseName}
               </p>
               <p 
-                className="text-lg"
+                className="text-sm sm:text-base md:text-lg"
                 style={{
                   opacity: certificate.certificateTemplate ? 0.75 : 0.9,
                   color: certificate.certificateTemplate ? 'inherit' : '#FFFFFF'
@@ -263,10 +263,10 @@ export default function CertificateDetailPage() {
             </div>
 
             {/* Date & Certificate Number */}
-            <div className="flex items-center justify-between pt-8">
-              <div className="text-left">
+            <div className="flex flex-col sm:flex-row items-center justify-between pt-6 sm:pt-8 gap-4 sm:gap-0">
+              <div className="text-center sm:text-left">
                 <p 
-                  className="text-sm mb-1"
+                  className="text-xs sm:text-sm mb-1"
                   style={{ 
                     opacity: certificate.certificateTemplate ? 0.6 : 0.75,
                     color: certificate.certificateTemplate ? 'inherit' : '#FFFFFF'
@@ -275,7 +275,7 @@ export default function CertificateDetailPage() {
                   Completion Date
                 </p>
                 <p 
-                  className="text-lg font-semibold"
+                  className="text-base sm:text-lg font-semibold"
                   style={{ color: certificate.certificateTemplate ? 'inherit' : '#FFFFFF' }}
                 >
                   {new Date(certificate.completedAt).toLocaleDateString('en-US', {
@@ -285,9 +285,9 @@ export default function CertificateDetailPage() {
                   })}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="text-center sm:text-right">
                 <p 
-                  className="text-sm mb-1"
+                  className="text-xs sm:text-sm mb-1"
                   style={{ 
                     opacity: certificate.certificateTemplate ? 0.6 : 0.75,
                     color: certificate.certificateTemplate ? 'inherit' : '#FFFFFF'
@@ -296,7 +296,7 @@ export default function CertificateDetailPage() {
                   Certificate Number
                 </p>
                 <p 
-                  className="text-lg font-mono font-semibold"
+                  className="text-base sm:text-lg font-mono font-semibold"
                   style={{ color: certificate.certificateTemplate ? 'inherit' : '#FFFFFF' }}
                 >
                   {certificate.certificateNumber}
@@ -306,7 +306,7 @@ export default function CertificateDetailPage() {
 
             {/* Signatures */}
             {(certificate.certificateTemplate?.showSignature ?? true) && (
-              <div className="flex justify-around mt-12 pt-8">
+              <div className="flex flex-col sm:flex-row justify-around mt-8 sm:mt-12 pt-6 sm:pt-8 gap-6 sm:gap-0">
                 <div className="text-center">
                   <div 
                     className="border-t-2 pt-2 px-8 mb-2"
@@ -356,24 +356,24 @@ export default function CertificateDetailPage() {
         </div>
 
         {/* Verification Section - Print Hidden */}
-        <div className="p-8 bg-gray-50 print:hidden">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+        <div className="p-4 sm:p-6 md:p-8 bg-gray-50 print:hidden">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                 Sertifikat Terverifikasi
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-sm sm:text-base text-gray-600 mb-4">
                 Sertifikat ini telah diverifikasi dan dapat dicek keasliannya
               </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <Badge variant="outline" className="text-sm">
+              <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 sm:gap-4">
+                <Badge variant="outline" className="text-xs sm:text-sm">
                   <Calendar className="w-3 h-3 mr-1" />
                   Diterbitkan {new Date(certificate.issuedAt).toLocaleDateString('id-ID')}
                 </Badge>
-                <Link href={certificate.verificationUrl} target="_blank">
+                <Link href={certificate.verificationUrl || `/verify/${certificate.certificateNumber}`} target="_blank">
                   <Button variant="outline" size="sm">
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Verifikasi Online
@@ -386,11 +386,11 @@ export default function CertificateDetailPage() {
       </Card>
 
       {/* Additional Info - Print Hidden */}
-      <Card className="mt-6 p-6 print:hidden">
-        <h3 className="font-semibold text-lg mb-4">Tentang Kursus</h3>
-        <div className="flex items-center gap-4">
+      <Card className="mt-4 sm:mt-6 p-4 sm:p-6 print:hidden">
+        <h3 className="font-semibold text-base sm:text-lg mb-4">Tentang Kursus</h3>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {certificate.course.thumbnail && (
-            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0">
               <img 
                 src={certificate.course.thumbnail} 
                 alt={certificate.course.title}
@@ -402,11 +402,13 @@ export default function CertificateDetailPage() {
             <h4 className="font-semibold text-gray-900 mb-1">
               {certificate.course.title}
             </h4>
-            <Link href={`/learn/${certificate.course.slug}`}>
-              <Button variant="link" className="p-0 h-auto">
-                Lihat Kursus →
-              </Button>
-            </Link>
+            {certificate.course.slug && (
+              <Link href={`/learn/${certificate.course.slug}`}>
+                <Button variant="link" className="p-0 h-auto">
+                  Lihat Kursus →
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </Card>
