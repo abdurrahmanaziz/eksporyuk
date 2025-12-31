@@ -158,60 +158,60 @@ export default function VerifyCertificatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-3 sm:p-4">
       <Card className="w-full max-w-3xl border-green-200 shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-green-600 to-blue-600 text-white">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-white rounded-full p-4">
-              <CheckCircle className="h-16 w-16 text-green-600" />
+        <CardHeader className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-4 sm:p-6">
+          <div className="flex items-center justify-center mb-3 sm:mb-4">
+            <div className="bg-white rounded-full p-3 sm:p-4">
+              <CheckCircle className="h-10 w-10 sm:h-16 sm:w-16 text-green-600" />
             </div>
           </div>
-          <CardTitle className="text-center text-3xl">
-            Certificate Verified ✓
+          <CardTitle className="text-center text-xl sm:text-3xl">
+            Sertifikat Terverifikasi ✓
           </CardTitle>
-          <p className="text-center text-green-100 mt-2">
-            This is an authentic certificate issued by EksporYuk
+          <p className="text-center text-green-100 mt-2 text-xs sm:text-sm">
+            Sertifikat ini asli dan diterbitkan oleh EksporYuk
           </p>
         </CardHeader>
 
-        <CardContent className="p-8 space-y-6">
+        <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-6">
           {/* Certificate Badge */}
           <div className="flex justify-center">
-            <Badge className="text-lg px-6 py-2 bg-green-600">
-              <Award className="w-5 h-5 mr-2" />
-              Verified Certificate
+            <Badge className="text-sm sm:text-lg px-4 sm:px-6 py-1.5 sm:py-2 bg-green-600">
+              <Award className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+              Sertifikat Valid
             </Badge>
           </div>
 
           {/* Certificate Details */}
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="font-semibold text-blue-900 mb-4 text-lg">
-                Certificate Details
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
+              <h3 className="font-semibold text-blue-900 mb-3 sm:mb-4 text-base sm:text-lg">
+                Detail Sertifikat
               </h3>
               <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <User className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Student Name</p>
-                    <p className="font-semibold text-lg">{cert.studentName}</p>
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Nama Peserta</p>
+                    <p className="font-semibold text-sm sm:text-lg truncate">{cert.studentName}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <BookOpen className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Course Title</p>
-                    <p className="font-semibold text-lg">{cert.courseName}</p>
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Judul Kursus</p>
+                    <p className="font-semibold text-sm sm:text-lg">{cert.courseName}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Completion Date</p>
-                    <p className="font-semibold">
-                      {new Date(cert.completionDate).toLocaleDateString('id-ID', {
+                    <p className="text-xs sm:text-sm text-muted-foreground">Tanggal Penyelesaian</p>
+                    <p className="font-semibold text-sm sm:text-base">
+                      {new Date(cert.completionDate || cert.completedAt).toLocaleDateString('id-ID', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -220,42 +220,42 @@ export default function VerifyCertificatePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <Award className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Certificate Number</p>
-                    <p className="font-mono font-semibold">{cert.certificateNumber}</p>
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Nomor Sertifikat</p>
+                    <p className="font-mono font-semibold text-xs sm:text-sm break-all">{cert.certificateNumber}</p>
                   </div>
                 </div>
 
-                {cert.duration && (
-                  <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
+                {cert.course?.duration && (
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Course Duration</p>
-                      <p className="font-semibold">
-                        {Math.floor(cert.duration / 60)} hours {cert.duration % 60} minutes
+                      <p className="text-xs sm:text-sm text-muted-foreground">Durasi Kursus</p>
+                      <p className="font-semibold text-sm sm:text-base">
+                        {Math.floor(cert.course.duration / 60)} jam {cert.course.duration % 60} menit
                       </p>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-start gap-3">
-                  <User className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Instructor</p>
-                    <p className="font-semibold">{cert.instructor}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Instruktur</p>
+                    <p className="font-semibold text-sm sm:text-base">{instructor}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Issued By */}
-            <div className="text-center py-4 border-t">
-              <p className="text-sm text-muted-foreground mb-2">Issued By</p>
+            <div className="text-center py-3 sm:py-4 border-t">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">Diterbitkan Oleh</p>
               <div className="flex items-center justify-center gap-2">
-                <Award className="h-6 w-6 text-primary" />
-                <p className="text-xl font-bold text-primary">EksporYuk</p>
+                <Award className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                <p className="text-lg sm:text-xl font-bold text-primary">EksporYuk</p>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Empowering Indonesian Exporters
@@ -263,28 +263,36 @@ export default function VerifyCertificatePage() {
             </div>
 
             {/* Info Notice */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm text-yellow-900">
-                <span className="font-semibold">Note:</span> This certificate can be verified at any time using the certificate number above.
-                Any discrepancies should be reported immediately.
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-yellow-900">
+                <span className="font-semibold">Catatan:</span> Sertifikat ini dapat diverifikasi kapan saja menggunakan nomor sertifikat di atas.
               </p>
             </div>
           </div>
 
           {/* CTA */}
-          <div className="flex gap-3 pt-4">
-            <Link href="/courses" className="flex-1">
-              <Button className="w-full" size="lg">
-                Explore Our Courses
-              </Button>
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 sm:pt-4">
+            <Button 
+              onClick={handleDownload}
+              className="flex-1 h-10 sm:h-11 text-sm sm:text-base"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download PDF
+            </Button>
             <Button 
               variant="outline" 
-              size="lg"
-              onClick={() => window.print()}
+              onClick={handleShare}
+              className="h-10 sm:h-11 text-sm sm:text-base"
             >
-              Print
+              <Share2 className="w-4 h-4 mr-2" />
+              Bagikan
             </Button>
+            <Link href="/courses" className="sm:flex-1">
+              <Button variant="secondary" className="w-full h-10 sm:h-11 text-sm sm:text-base">
+                <BookOpen className="w-4 h-4 mr-2" />
+                Jelajahi Kursus
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
