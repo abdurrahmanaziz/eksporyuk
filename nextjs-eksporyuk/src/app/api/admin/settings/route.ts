@@ -339,50 +339,71 @@ export async function POST(request: NextRequest) {
 
     console.log('[SETTINGS API] Update data:', JSON.stringify(updateData, null, 2))
 
-    // Update or create settings
-    const settings = await prisma.settings.upsert({
-      where: { id: 1 },
-      update: updateData,
-      create: {
-        id: 1,
-        siteTitle: toNullIfEmpty(siteTitle) || 'Eksporyuk',
-        siteDescription: toNullIfEmpty(siteDescription) || 'Platform Ekspor Indonesia',
-        siteLogo: toNullIfEmpty(siteLogo),
-        siteFavicon: toNullIfEmpty(siteFavicon),
-        primaryColor: toNullIfEmpty(primaryColor) || '#3B82F6',
-        secondaryColor: toNullIfEmpty(secondaryColor) || '#1F2937',
-        buttonPrimaryBg: toNullIfEmpty(buttonPrimaryBg) || '#3B82F6',
-        buttonPrimaryText: toNullIfEmpty(buttonPrimaryText) || '#FFFFFF',
-        buttonSecondaryBg: toNullIfEmpty(buttonSecondaryBg) || '#6B7280',
-        buttonSecondaryText: toNullIfEmpty(buttonSecondaryText) || '#FFFFFF',
-        buttonSuccessBg: toNullIfEmpty(buttonSuccessBg) || '#10B981',
-        buttonSuccessText: toNullIfEmpty(buttonSuccessText) || '#FFFFFF',
-        buttonDangerBg: toNullIfEmpty(buttonDangerBg) || '#EF4444',
-        buttonDangerText: toNullIfEmpty(buttonDangerText) || '#FFFFFF',
-        buttonBorderRadius: toNullIfEmpty(buttonBorderRadius) || '0.5rem',
-        headerText: toNullIfEmpty(headerText),
-        footerText: toNullIfEmpty(footerText),
-        contactEmail: toNullIfEmpty(contactEmail),
-        contactPhone: toNullIfEmpty(contactPhone),
-        whatsappNumber: toNullIfEmpty(whatsappNumber),
-        instagramUrl: toNullIfEmpty(instagramUrl),
-        facebookUrl: toNullIfEmpty(facebookUrl),
-        linkedinUrl: toNullIfEmpty(linkedinUrl),
-        customCss: toNullIfEmpty(customCss),
-        customJs: toNullIfEmpty(customJs),
-        maintenanceMode: maintenanceMode ?? false,
-        defaultLanguage: toNullIfEmpty(defaultLanguage) || 'id',
-        bannerImage: toNullIfEmpty(bannerImage),
-        paymentExpiryHours: paymentExpiryHours ? parseInt(paymentExpiryHours) : 72,
-        followUpEnabled: followUpEnabled ?? true,
-        followUp1HourEnabled: followUp1HourEnabled ?? true,
-        followUp24HourEnabled: followUp24HourEnabled ?? true,
-        followUp48HourEnabled: followUp48HourEnabled ?? true,
-        followUpMessage1Hour: toNullIfEmpty(followUpMessage1Hour),
-        followUpMessage24Hour: toNullIfEmpty(followUpMessage24Hour),
-        followUpMessage48Hour: toNullIfEmpty(followUpMessage48Hour),
-      }
-    })
+    // Check if settings record exists
+    const existingSettings = await prisma.settings.findUnique({ where: { id: 1 } })
+    
+    let settings
+    if (existingSettings) {
+      // Update existing settings
+      settings = await prisma.settings.update({
+        where: { id: 1 },
+        data: updateData
+      })
+    } else {
+      // Create new settings with all fields
+      settings = await prisma.settings.create({
+        data: {
+          id: 1,
+          siteTitle: toNullIfEmpty(siteTitle) || 'Eksporyuk',
+          siteDescription: toNullIfEmpty(siteDescription) || 'Platform Ekspor Indonesia',
+          siteLogo: toNullIfEmpty(siteLogo),
+          siteFavicon: toNullIfEmpty(siteFavicon),
+          primaryColor: toNullIfEmpty(primaryColor) || '#3B82F6',
+          secondaryColor: toNullIfEmpty(secondaryColor) || '#1F2937',
+          buttonPrimaryBg: toNullIfEmpty(buttonPrimaryBg) || '#3B82F6',
+          buttonPrimaryText: toNullIfEmpty(buttonPrimaryText) || '#FFFFFF',
+          buttonSecondaryBg: toNullIfEmpty(buttonSecondaryBg) || '#6B7280',
+          buttonSecondaryText: toNullIfEmpty(buttonSecondaryText) || '#FFFFFF',
+          buttonSuccessBg: toNullIfEmpty(buttonSuccessBg) || '#10B981',
+          buttonSuccessText: toNullIfEmpty(buttonSuccessText) || '#FFFFFF',
+          buttonDangerBg: toNullIfEmpty(buttonDangerBg) || '#EF4444',
+          buttonDangerText: toNullIfEmpty(buttonDangerText) || '#FFFFFF',
+          buttonBorderRadius: toNullIfEmpty(buttonBorderRadius) || '0.5rem',
+          headerText: toNullIfEmpty(headerText),
+          footerText: toNullIfEmpty(footerText),
+          contactEmail: toNullIfEmpty(contactEmail),
+          contactPhone: toNullIfEmpty(contactPhone),
+          whatsappNumber: toNullIfEmpty(whatsappNumber),
+          instagramUrl: toNullIfEmpty(instagramUrl),
+          facebookUrl: toNullIfEmpty(facebookUrl),
+          linkedinUrl: toNullIfEmpty(linkedinUrl),
+          customCss: toNullIfEmpty(customCss),
+          customJs: toNullIfEmpty(customJs),
+          maintenanceMode: maintenanceMode ?? false,
+          defaultLanguage: toNullIfEmpty(defaultLanguage) || 'id',
+          bannerImage: toNullIfEmpty(bannerImage),
+          paymentExpiryHours: paymentExpiryHours ? parseInt(paymentExpiryHours) : 72,
+          followUpEnabled: followUpEnabled ?? true,
+          followUp1HourEnabled: followUp1HourEnabled ?? true,
+          followUp24HourEnabled: followUp24HourEnabled ?? true,
+          followUp48HourEnabled: followUp48HourEnabled ?? true,
+          followUpMessage1Hour: toNullIfEmpty(followUpMessage1Hour),
+          followUpMessage24Hour: toNullIfEmpty(followUpMessage24Hour),
+          followUpMessage48Hour: toNullIfEmpty(followUpMessage48Hour),
+          // Email Footer Settings
+          emailFooterText: emailFooterText || '',
+          emailFooterCompany: emailFooterCompany || '',
+          emailFooterAddress: emailFooterAddress || '',
+          emailFooterPhone: emailFooterPhone || '',
+          emailFooterEmail: emailFooterEmail || '',
+          emailFooterWebsiteUrl: emailFooterWebsiteUrl || '',
+          emailFooterInstagramUrl: emailFooterInstagramUrl || '',
+          emailFooterFacebookUrl: emailFooterFacebookUrl || '',
+          emailFooterLinkedinUrl: emailFooterLinkedinUrl || '',
+          emailFooterCopyrightText: emailFooterCopyrightText || '',
+        }
+      })
+    }
 
     // Update CourseSettings for affiliate commission and withdrawal settings
     if (defaultAffiliateCommission !== undefined || minWithdrawalAmount !== undefined) {
