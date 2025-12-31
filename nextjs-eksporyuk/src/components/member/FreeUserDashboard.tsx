@@ -254,171 +254,156 @@ export default function FreeUserDashboard() {
   // Show pending transaction UI if exists
   if (!loadingPending && pendingTransaction) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50">
+      <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
         {/* Hero Section - Payment Pending */}
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500"></div>
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 left-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
-            <div className="absolute bottom-10 right-10 w-60 h-60 bg-purple-300 rounded-full blur-3xl"></div>
-          </div>
+        <section className="rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 text-white p-6 md:p-8 text-center relative overflow-hidden shadow-lg">
+          {/* Background effects */}
+          <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4"></div>
           
-          <div className="relative px-4 py-8 md:py-12">
-            <div className="max-w-4xl mx-auto text-center">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-yellow-400/90 backdrop-blur-sm px-4 py-2 rounded-full mb-6 animate-pulse">
-                <AlertCircle className="w-4 h-4 text-yellow-800" />
-                <span className="text-yellow-800 text-sm font-bold">Tagihan Menunggu Pembayaran</span>
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium mb-4 border border-white/10">
+              <AlertCircle className="w-4 h-4 text-orange-300" />
+              <span className="text-orange-100">Tagihan Menunggu Pembayaran</span>
+            </div>
+            
+            {/* Greeting */}
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">Hai {userName}! 💳</h2>
+            <p className="text-blue-50 max-w-xl mx-auto mb-6 text-sm font-light leading-relaxed">
+              Anda memiliki tagihan yang belum dibayar. Selesaikan pembayaran untuk mengaktifkan membership Anda!
+            </p>
+            
+            {/* Payment Card */}
+            <div className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl shadow-2xl p-5 w-full max-w-sm mx-auto transform transition-transform hover:scale-[1.01] duration-300">
+              <div className="flex items-start gap-3 mb-5">
+                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <div className="text-left flex-1">
+                  <h3 className="font-bold text-sm md:text-base leading-tight">Membership: {pendingTransaction.membershipName}</h3>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 font-mono">#{pendingTransaction.invoiceNumber}</p>
+                </div>
               </div>
               
-              {/* Greeting */}
-              <h1 className="text-2xl md:text-4xl font-bold text-white mb-3">
-                Hai {userName}! 💳
-              </h1>
-              <p className="text-white/90 text-sm md:text-lg mb-8 max-w-2xl mx-auto">
-                Anda memiliki tagihan yang belum dibayar. Selesaikan pembayaran untuk mengaktifkan membership Anda!
-              </p>
+              <div className="border-t border-gray-100 dark:border-gray-700 my-3"></div>
               
-              {/* Payment Card */}
-              <div className="bg-white rounded-2xl p-6 max-w-md mx-auto mb-8 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <Receipt className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-bold text-gray-900">{pendingTransaction.membershipName}</p>
-                      <p className="text-xs text-gray-500">#{pendingTransaction.invoiceNumber}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-100 pt-4 mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">Total Tagihan</span>
-                    <span className="text-2xl font-bold text-blue-600">{formatPrice(pendingTransaction.amount)}</span>
-                  </div>
-                </div>
-
-                {/* Payment Countdown */}
-                {pendingTransaction.expiredAt && (
-                  <div className="bg-red-50 rounded-xl p-4 mb-4">
-                    <p className="text-red-600 text-xs mb-2 flex items-center justify-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      Bayar sebelum waktu habis:
-                    </p>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="bg-white rounded-lg px-3 py-2 min-w-[50px] border border-red-200">
-                        <div className="text-xl font-bold text-red-600">{String(paymentCountdown.hours).padStart(2, '0')}</div>
-                        <div className="text-[10px] text-gray-500">Jam</div>
-                      </div>
-                      <span className="text-red-400 font-bold">:</span>
-                      <div className="bg-white rounded-lg px-3 py-2 min-w-[50px] border border-red-200">
-                        <div className="text-xl font-bold text-red-600">{String(paymentCountdown.minutes).padStart(2, '0')}</div>
-                        <div className="text-[10px] text-gray-500">Menit</div>
-                      </div>
-                      <span className="text-red-400 font-bold">:</span>
-                      <div className="bg-white rounded-lg px-3 py-2 min-w-[50px] border border-red-200">
-                        <div className="text-xl font-bold text-red-600">{String(paymentCountdown.seconds).padStart(2, '0')}</div>
-                        <div className="text-[10px] text-gray-500">Detik</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              <div className="flex justify-between items-center mb-5">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Tagihan</span>
+                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">{formatPrice(pendingTransaction.amount)}</span>
               </div>
               
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/dashboard/billing">
-                  <button className="group bg-white hover:bg-gray-50 text-blue-600 font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-3">
-                    <CreditCard className="w-5 h-5" />
-                    <span>Lihat Detail Tagihan</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </Link>
+              <div className="flex flex-col gap-2">
                 {pendingTransaction.paymentUrl && (
                   <Link href={pendingTransaction.paymentUrl} target="_blank">
-                    <button className="group bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-3">
-                      <ExternalLink className="w-5 h-5" />
-                      <span>Bayar Sekarang</span>
+                    <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg font-bold text-sm shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-2 group active:scale-[0.98] transform hover:-translate-y-0.5">
+                      <CreditCard className="w-4 h-4" />
+                      Bayar Sekarang
                     </button>
                   </Link>
                 )}
+                <Link href="/dashboard/billing">
+                  <button className="mx-auto text-xs font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors flex items-center gap-1 py-1 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <Receipt className="w-4 h-4" />
+                    Lihat Detail Tagihan
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Payment Steps */}
-        <div className="px-4 py-12 max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-              Cara Menyelesaikan Pembayaran
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Ikuti langkah-langkah berikut untuk mengaktifkan membership Anda
-            </p>
+        <section className="py-2">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Cara Menyelesaikan Pembayaran</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Ikuti langkah-langkah berikut untuk mengaktifkan membership Anda</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 relative">
-              <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">1</div>
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                <Receipt className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">Lihat Tagihan</h3>
-              <p className="text-sm text-gray-600">Klik "Lihat Detail Tagihan" untuk melihat informasi pembayaran lengkap</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+            {/* Connection line */}
+            <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-0.5 bg-gray-200 dark:bg-gray-700 -z-10 border-t-2 border-dashed border-gray-300 dark:border-gray-600"></div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 relative">
-              <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">2</div>
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                <CreditCard className="w-6 h-6 text-green-600" />
+            {/* Step 1 */}
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
+              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-slate-800">1</div>
+              <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center mb-3">
+                <Receipt className="w-5 h-5" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Lakukan Pembayaran</h3>
-              <p className="text-sm text-gray-600">Transfer sesuai nominal ke rekening yang tertera atau gunakan metode pembayaran lainnya</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 relative">
-              <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">3</div>
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-6 h-6 text-purple-600" />
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">Membership Aktif</h3>
-              <p className="text-sm text-gray-600">Setelah pembayaran terverifikasi, membership Anda akan langsung aktif!</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Benefits Preview */}
-        <div className="px-4 py-12 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                Yang Akan Anda Dapatkan 🎁
-              </h2>
-              <p className="text-gray-600">
-                Setelah pembayaran selesai, Anda akan mendapatkan akses ke:
+              <h4 className="font-bold text-sm mb-1 text-gray-900 dark:text-white">Lihat Tagihan</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                Klik "Lihat Detail Tagihan" untuk melihat informasi pembayaran lengkap.
               </p>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { icon: BookOpen, title: 'Semua Materi', color: 'blue' },
-                { icon: Users, title: 'Komunitas', color: 'green' },
-                { icon: Award, title: 'Sertifikasi', color: 'purple' },
-                { icon: MessageCircle, title: 'Mentoring', color: 'orange' },
-              ].map((item, index) => (
-                <div key={index} className="bg-white rounded-xl p-4 text-center shadow-sm">
-                  <div className={`w-10 h-10 mx-auto mb-3 bg-${item.color}-100 rounded-lg flex items-center justify-center`}>
-                    <item.icon className={`w-5 h-5 text-${item.color}-600`} />
-                  </div>
-                  <p className="text-sm font-medium text-gray-900">{item.title}</p>
-                </div>
-              ))}
+            {/* Step 2 */}
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
+              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-slate-800">2</div>
+              <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center mb-3">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-sm mb-1 text-gray-900 dark:text-white">Lakukan Pembayaran</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                Transfer sesuai nominal ke rekening yang tertera atau gunakan metode pembayaran lainnya.
+              </p>
+            </div>
+            
+            {/* Step 3 */}
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative group hover:shadow-md transition-shadow">
+              <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs absolute -top-3 left-4 shadow-md border-2 border-white dark:border-slate-800">3</div>
+              <div className="w-10 h-10 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg flex items-center justify-center mb-3">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-sm mb-1 text-gray-900 dark:text-white">Membership Aktif</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                Setelah pembayaran terverifikasi, membership Anda akan langsung aktif!
+              </p>
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* Benefits Preview */}
+        <section className="py-6 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-5">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 flex items-center justify-center gap-1.5">
+              Yang Akan Anda Dapatkan <span className="text-xl">🎁</span>
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Setelah pembayaran selesai, Anda akan mendapatkan akses ke:</p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mb-2">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Semua Materi</span>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
+              <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mb-2">
+                <Users className="w-5 h-5" />
+              </div>
+              <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Komunitas</span>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center mb-2">
+                <Award className="w-5 h-5" />
+              </div>
+              <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Sertifikasi</span>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all cursor-default">
+              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mb-2">
+                <MessageCircle className="w-5 h-5" />
+              </div>
+              <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Mentoring</span>
+            </div>
+          </div>
+        </section>
+        
+        {/* Bottom spacer */}
+        <div className="h-6"></div>
       </div>
     )
   }
