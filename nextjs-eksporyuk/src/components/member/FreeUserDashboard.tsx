@@ -287,7 +287,7 @@ export default function FreeUserDashboard() {
             </div>
             
             {/* Greeting */}
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">Hai {userName}! 💳</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">Hai {userName}! 💳</h2>
             <p className="text-blue-50 max-w-xl mx-auto mb-6 text-sm font-light leading-relaxed">
               Anda memiliki tagihan yang belum dibayar. Selesaikan pembayaran untuk mengaktifkan membership Anda!
             </p>

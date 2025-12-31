@@ -272,7 +272,8 @@ const navigationByRole = {
         { name: 'Performa', href: '/affiliate/performance', icon: TrendingUp },
       ]
     },
-    {
+    // Hide BOOSTER SUITE in production, only show in development
+    ...(process.env.NODE_ENV === 'development' ? [{
       title: 'BOOSTER SUITE',
       items: [
         { name: 'Bio Page', href: '/affiliate/bio', icon: Layout },
@@ -283,7 +284,7 @@ const navigationByRole = {
         { name: 'Automation', href: '/affiliate/automation', icon: Zap },
         { name: 'Kredit', href: '/affiliate/credits', icon: Coins },
       ]
-    },
+    }] : []),
     {
       title: 'AFFILIATE',
       items: [
@@ -589,7 +590,8 @@ export default function DashboardSidebar() {
             { name: 'Performa', href: '/affiliate/performance', icon: TrendingUp },
           ]
         },
-        {
+        // Hide BOOSTER SUITE in production, only show in development
+        ...(process.env.NODE_ENV === 'development' ? [{
           title: 'BOOSTER SUITE',
           items: [
             { name: 'Bio Page', href: '/affiliate/bio', icon: Layout },
@@ -600,7 +602,7 @@ export default function DashboardSidebar() {
             { name: 'Automation', href: '/affiliate/automation', icon: Zap },
             { name: 'Kredit', href: '/affiliate/credits', icon: Coins },
           ]
-        },
+        }] : []),
         {
           title: 'AFFILIATE',
           items: [
