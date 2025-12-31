@@ -225,10 +225,10 @@ export default function PremiumDashboardNew() {
         </div>
 
         {/* Main Grid: 2 Column Layout */}
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr,320px] xl:grid-cols-[1fr,380px] gap-6">
           
-          {/* Left Column - Main Content (grows to fill) */}
-          <div className="flex-1 min-w-0 space-y-6">
+          {/* Left Column - Main Content */}
+          <div className="space-y-6 order-2 lg:order-1">
 
             {/* Hero Banner Card - Blue Gradient */}
             {data?.banners && data.banners.length > 0 ? (
@@ -546,7 +546,7 @@ export default function PremiumDashboardNew() {
           </div>
 
           {/* Right Sidebar - Fixed Width */}
-          <aside className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-6">
+          <aside className="space-y-6 order-1 lg:order-2">
             
             {/* Progress Kelas */}
             <Card className="rounded-xl shadow-sm border border-gray-100 bg-white">
