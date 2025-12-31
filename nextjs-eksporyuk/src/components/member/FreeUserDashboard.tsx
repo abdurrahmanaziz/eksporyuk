@@ -309,13 +309,14 @@ export default function FreeUserDashboard() {
               <div className="flex justify-between items-center mb-5">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Tagihan</span>
                 <div className="flex flex-col items-end">
-                  {pendingTransaction.discountAmount > 0 && pendingTransaction.originalAmount > pendingTransaction.amount && (
+                  {/* Show discount if originalAmount is higher than final amount */}
+                  {pendingTransaction.originalAmount > pendingTransaction.amount && (
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-[10px] text-gray-400 line-through decoration-gray-300 dark:decoration-gray-600">
                         {formatPrice(pendingTransaction.originalAmount)}
                       </span>
                       <span className="bg-red-50 dark:bg-red-500/20 text-red-500 dark:text-red-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-red-100 dark:border-transparent">
-                        Diskon {Math.round((pendingTransaction.discountAmount / pendingTransaction.originalAmount) * 100)}%
+                        Diskon {Math.round(((pendingTransaction.originalAmount - pendingTransaction.amount) / pendingTransaction.originalAmount) * 100)}%
                       </span>
                     </div>
                   )}

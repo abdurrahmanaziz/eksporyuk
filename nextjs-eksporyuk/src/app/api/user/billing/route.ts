@@ -54,8 +54,16 @@ export async function GET(request: NextRequest) {
       const uniqueCode = metadata.uniqueCode || 0
       
       // Calculate final amount (already stored in amount field)
-      const originalAmount = tx.originalAmount ? Number(tx.originalAmount) : Number(tx.amount)
-      const discountAmount = tx.discountAmount ? Number(tx.discountAmount) : 0
+      // Also check metadata for discount info if not in main fields
+      const metaOriginalAmount = metadata.originalAmount || metadata.originalPrice || metadata.basePrice || 0
+      const metaDiscountAmount = metadata.discountAmount || metadata.discount || 0
+      
+      const originalAmount = tx.originalAmount 
+        ? Number(tx.originalAmount) 
+        : (metaOriginalAmount ? Number(metaOriginalAmount) : Number(tx.amount))
+      const discountAmount = tx.discountAmount 
+        ? Number(tx.discountAmount) 
+        : (metaDiscountAmount ? Number(metaDiscountAmount) : 0)
       const finalAmount = Number(tx.amount)
       
       // Calculate time remaining for pending transactions
