@@ -98,15 +98,28 @@ export default function AdminBrandedTemplatesPage() {
     'TRANSACTION': '💸',
   }
 
+  // Deskripsi kategori yang lebih detail untuk memudahkan admin
   const categoryDescriptions: Record<string, string> = {
-    'SYSTEM': 'Template untuk sistem internal, aktivasi akun, reset password',
-    'MEMBERSHIP': 'Template untuk membership plan, upgrade, renewal, expires',
-    'AFFILIATE': 'Template untuk affiliate approval, komisi, payout, leaderboard',
-    'COURSE': 'Template untuk course enrollment, progress, certificate',
-    'PAYMENT': 'Template untuk payment reminder, invoice, receipt',
-    'MARKETING': 'Template untuk promosi, newsletter, campaign',
-    'NOTIFICATION': 'Template untuk notifikasi umum, update, announcement',
-    'TRANSACTION': 'Template untuk transaksi: sukses, pending, gagal, refund',
+    'SYSTEM': '🔐 Verifikasi Email, Reset Password, 2FA, Login Baru, Akun Locked/Unlocked, Welcome New User',
+    'MEMBERSHIP': '💎 Aktivasi Member, Upgrade/Downgrade, Perpanjangan, Kadaluarsa, Welcome Member Premium',
+    'AFFILIATE': '💰 Pendaftaran Affiliate, Approval, Komisi Masuk, Withdraw, Leaderboard, Referral',
+    'COURSE': '🎓 Enrollment Kelas, Progress Belajar, Sertifikat, Reminder Belajar, Kelas Baru',
+    'PAYMENT': '💳 Reminder Pembayaran, Invoice, Kwitansi, Payment Success/Failed, Refund',
+    'MARKETING': '📣 Promosi, Newsletter, Campaign, Broadcast, Flash Sale, Event Invitation',
+    'NOTIFICATION': '🔔 Pengumuman, Update Sistem, Maintenance, Info Penting',
+    'TRANSACTION': '🧾 Order Created, Payment Pending, Sukses, Gagal, Expired, Refund',
+  }
+
+  // Mapping slug prefix ke kategori untuk referensi cepat
+  const categorySlugExamples: Record<string, string[]> = {
+    'SYSTEM': ['verify-email', 'reset-password', 'welcome-new-user', '2fa-code', 'account-locked'],
+    'MEMBERSHIP': ['membership-activated', 'membership-expired', 'membership-renewal', 'welcome-member'],
+    'AFFILIATE': ['affiliate-approved', 'commission-received', 'withdrawal-success', 'referral-signup'],
+    'COURSE': ['course-enrolled', 'learning-reminder', 'certificate-ready', 'course-completed'],
+    'PAYMENT': ['payment-reminder', 'payment-success', 'invoice-created', 'refund-processed'],
+    'MARKETING': ['promo-announcement', 'newsletter', 'flash-sale', 'event-invitation'],
+    'NOTIFICATION': ['system-announcement', 'maintenance-notice', 'policy-update'],
+    'TRANSACTION': ['order-created', 'order-confirmed', 'order-cancelled', 'order-expired'],
   }
 
   const typeIcons: Record<string, string> = {
@@ -175,13 +188,18 @@ export default function AdminBrandedTemplatesPage() {
     }
   }, [selectedCategory, selectedType, activeTab])
 
-  // Fetch settings from API
+  // Fetch settings from API (admin endpoint for full settings)
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings')
+      const res = await fetch('/api/admin/settings')
       const data = await res.json()
-      if (res.ok) {
+      if (res.ok && data.settings) {
+        setSettings(data.settings)
+      } else if (res.ok) {
+        // Fallback jika response langsung object settings
         setSettings(data)
+      } else {
+        console.error('Failed to fetch settings:', data.error)
       }
     } catch (error) {
       console.error('Error fetching settings:', error)
@@ -972,17 +990,18 @@ Tim Eksporyuk"
                   <select 
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-3 py-2 border rounded-lg bg-white"
+                    className="px-3 py-2 border rounded-lg bg-white min-w-[200px]"
+                    title={selectedCategory ? categoryDescriptions[selectedCategory] : 'Pilih kategori untuk filter'}
                   >
-                    <option value="">Semua Kategori</option>
-                    <option value="SYSTEM">⚙️ System</option>
-                    <option value="MEMBERSHIP">👑 Membership</option>
-                    <option value="AFFILIATE">🤝 Affiliate</option>
-                    <option value="COURSE">📚 Course</option>
-                    <option value="PAYMENT">💳 Payment</option>
-                    <option value="MARKETING">📢 Marketing</option>
-                    <option value="NOTIFICATION">🔔 Notification</option>
-                    <option value="TRANSACTION">💸 Transaction</option>
+                    <option value="">📋 Semua Kategori</option>
+                    <option value="SYSTEM">⚙️ System (Verifikasi, Reset Password, 2FA)</option>
+                    <option value="MEMBERSHIP">👑 Membership (Aktivasi, Perpanjangan)</option>
+                    <option value="AFFILIATE">🤝 Affiliate (Komisi, Withdraw)</option>
+                    <option value="COURSE">📚 Course (Enrollment, Sertifikat)</option>
+                    <option value="PAYMENT">💳 Payment (Invoice, Reminder)</option>
+                    <option value="MARKETING">📢 Marketing (Promo, Newsletter)</option>
+                    <option value="NOTIFICATION">🔔 Notification (Pengumuman)</option>
+                    <option value="TRANSACTION">💸 Transaction (Order, Receipt)</option>
                   </select>
                   <select 
                     value={selectedType}
@@ -1180,6 +1199,53 @@ Tim Eksporyuk"
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-6">
+                {/* Panduan Kategori Template */}
+                <Card className="border-2 border-blue-200 bg-blue-50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-blue-800">
+                      <Info className="w-5 h-5" />
+                      Panduan Kategori Template
+                    </CardTitle>
+                    <p className="text-sm text-blue-700">Gunakan kategori yang tepat agar notifikasi terorganisir</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div className="p-2 bg-white rounded border">
+                        <span className="font-semibold">⚙️ SYSTEM:</span>
+                        <span className="text-gray-600 ml-1">Verifikasi Email, Reset Password, 2FA, Login Baru, Welcome User</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <span className="font-semibold">👑 MEMBERSHIP:</span>
+                        <span className="text-gray-600 ml-1">Aktivasi Member, Upgrade, Perpanjangan, Kadaluarsa</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <span className="font-semibold">🤝 AFFILIATE:</span>
+                        <span className="text-gray-600 ml-1">Pendaftaran, Approval, Komisi Masuk, Withdraw</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <span className="font-semibold">📚 COURSE:</span>
+                        <span className="text-gray-600 ml-1">Enrollment Kelas, Progress, Sertifikat, Reminder</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <span className="font-semibold">💳 PAYMENT:</span>
+                        <span className="text-gray-600 ml-1">Reminder Bayar, Invoice, Kwitansi, Refund</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <span className="font-semibold">💸 TRANSACTION:</span>
+                        <span className="text-gray-600 ml-1">Order Created, Pending, Sukses, Gagal, Expired</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <span className="font-semibold">📢 MARKETING:</span>
+                        <span className="text-gray-600 ml-1">Promo, Newsletter, Flash Sale, Event</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <span className="font-semibold">🔔 NOTIFICATION:</span>
+                        <span className="text-gray-600 ml-1">Pengumuman, Update Sistem, Maintenance</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Email Service Status */}
                 <Card className="border-2 border-green-300 bg-green-50">
                   <CardHeader>

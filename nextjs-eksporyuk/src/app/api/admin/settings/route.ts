@@ -16,8 +16,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get settings
-    let settings = await prisma.settings.findUnique({ where: { id: 1 } })
+    // Get settings with error handling
+    let settings: any = null
+    try {
+      settings = await prisma.settings.findUnique({ where: { id: 1 } })
+    } catch (dbError: any) {
+      console.error('[SETTINGS API GET] Database fetch error:', dbError.message)
+      // Return default settings if database query fails
+      return NextResponse.json({ 
+        success: true, 
+        settings: {
+          siteTitle: 'Eksporyuk',
+          siteDescription: 'Platform Ekspor Indonesia',
+          siteLogo: null,
+          primaryColor: '#3B82F6',
+          secondaryColor: '#1F2937',
+          emailFooterText: '',
+          emailFooterCompany: '',
+          emailFooterAddress: '',
+          emailFooterPhone: '',
+          emailFooterEmail: '',
+          emailFooterWebsiteUrl: '',
+          emailFooterInstagramUrl: '',
+          emailFooterFacebookUrl: '',
+          emailFooterLinkedinUrl: '',
+          emailFooterCopyrightText: '',
+        }
+      })
+    }
     
     if (!settings) {
       // Create default settings
@@ -93,11 +119,13 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, settings: mergedSettings })
-  } catch (error) {
-    console.error('Error fetching settings:', error)
+  } catch (error: any) {
+    console.error('[SETTINGS API GET] Error:', error.message)
+    console.error('[SETTINGS API GET] Stack:', error.stack)
     return NextResponse.json({ 
       success: false, 
-      error: 'Internal server error' 
+      error: error.message || 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 })
   }
 }
@@ -394,11 +422,29 @@ export async function POST(request: NextRequest) {
     console.log('[SETTINGS API] Cache cleared after update')
 
     return NextResponse.json({ success: true, settings })
-  } catch (error) {
-    console.error('Error saving settings:', error)
+  } catch (error: any) {
+    console.error('[SETTINGS API POST] Error:', error.message)
+    console.error('[SETTINGS API POST] Stack:', error.stack)
+    
+    // Handle Prisma errors specifically
+    if (error.code === 'P2002') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Duplicate entry - settings already exist' 
+      }, { status: 400 })
+    }
+    
+    if (error.code === 'P2025') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Settings record not found' 
+      }, { status: 404 })
+    }
+    
     return NextResponse.json({ 
       success: false, 
-      error: 'Internal server error' 
+      error: error.message || 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 })
   }
 }
