@@ -89,26 +89,30 @@ export async function GET(req: NextRequest) {
     })
 
     const groupIds = groupMembers.map(gm => gm.groupId)
-    const userGroups = await prisma.group.findMany({
-      where: { id: { in: groupIds } }
-    })
 
     // Get recommended groups (groups user hasn't joined)
     const recommendedGroups = await prisma.group.findMany({
       where: {
-        id: { notIn: groupIds },
+        id: { notIn: groupIds.length > 0 ? groupIds : ['no-groups'] },
         isActive: true
       },
       take: 3,
-      orderBy: { memberCount: 'desc' }
+      orderBy: { createdAt: 'desc' }
     })
 
-    const groupsData = recommendedGroups.map(g => ({
+    // Get member counts for groups
+    const groupMemberCounts = await Promise.all(
+      recommendedGroups.map(g => 
+        prisma.groupMember.count({ where: { groupId: g.id } })
+      )
+    )
+
+    const groupsData = recommendedGroups.map((g, i) => ({
       id: g.id,
       slug: g.slug || g.id,
       name: g.name,
-      thumbnail: g.thumbnail,
-      memberCount: g.memberCount || 0
+      thumbnail: g.avatar || null,
+      memberCount: groupMemberCounts[i] || 0
     }))
 
     // Get products
