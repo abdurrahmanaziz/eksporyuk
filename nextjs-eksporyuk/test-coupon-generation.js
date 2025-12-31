@@ -3,65 +3,66 @@ const prisma = new PrismaClient()
 
 async function test() {
   try {
-    console.log('🔍 Testing coupon generation fix...\n')
+    console.log('🧪 TESTING COUPON GENERATION FROM EKSPORYUK TEMPLATE\n')
     
-    // Get a template
-    const template = await prisma.coupon.findFirst({
-      where: { basedOnCouponId: null, isAffiliateEnabled: true, isActive: true }
+    // 1. Get EKSPORYUK template
+    const template = await prisma.coupon.findUnique({
+      where: { code: 'EKSPORYUK' }
     })
     
     if (!template) {
-      console.log('❌ No template found')
+      console.log('❌ Template EKSPORYUK not found')
       return
     }
     
-    console.log(`✅ Using template: ${template.code} (ID: ${template.id})`)
-    console.log(`   Discount: ${template.discountValue}${template.discountType === 'PERCENTAGE' ? '%' : ' IDR'}\n`)
+    console.log('✅ Template found:')
+    console.log('   Code: ' + template.code)
+    console.log('   Discount: ' + template.discountValue + '%')
+    console.log('   Affiliate Enabled: ' + template.isAffiliateEnabled)
+    console.log('   ID: ' + template.id + '\n')
     
-    // Simulate coupon generation
-    const newId = `coupon-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-    const newCode = `TEST${Date.now().toString().slice(-6)}`
+    // 2. Create generated coupon (simulating affiliate azizbiasa@gmail.com)
+    const userId = 'cmjmtotzh001eitz0kq029lk5' // azizbiasa@gmail.com
+    const customCode = 'EKSPORYUK-AZIZ-TEST-' + Date.now().toString().slice(-6)
     
-    console.log(`📝 Creating test coupon:`)
-    console.log(`   ID: ${newId}`)
-    console.log(`   Code: ${newCode}`)
-    console.log(`   BasedOn: ${template.id}\n`)
+    console.log('📝 Creating coupon from template:')
+    console.log('   Code: ' + customCode)
+    console.log('   User ID: ' + userId)
+    console.log('   Based On: ' + template.id + '\n')
     
     const newCoupon = await prisma.coupon.create({
       data: {
-        id: newId,
-        code: newCode,
-        description: `Test coupon from ${template.code}`,
+        id: 'coupon-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9),
+        code: customCode,
+        description: 'Generated from ' + template.code + ' for affiliate',
         discountType: template.discountType,
         discountValue: template.discountValue,
         isActive: true,
         basedOnCouponId: template.id,
-        createdBy: 'test-user',
+        createdBy: userId,
       }
     })
     
-    console.log(`✅ Coupon created successfully!`)
-    console.log(`   ID: ${newCoupon.id}`)
-    console.log(`   Code: ${newCoupon.code}`)
-    console.log(`   CreatedAt: ${newCoupon.createdAt}`)
-    console.log(`   UpdatedAt: ${newCoupon.updatedAt}\n`)
+    console.log('✅ Coupon created successfully!')
+    console.log('   ID: ' + newCoupon.id)
+    console.log('   Code: ' + newCoupon.code)
+    console.log('   CreatedAt: ' + newCoupon.createdAt)
+    console.log('   UpdatedAt: ' + newCoupon.updatedAt + '\n')
     
-    // Verify it exists
+    // 3. Verify it exists
+    console.log('🔍 Verifying in database...\n')
     const verify = await prisma.coupon.findUnique({
-      where: { id: newId }
+      where: { id: newCoupon.id }
     })
     
     if (verify) {
-      console.log(`✅ Verification: Coupon exists in database!`)
+      console.log('✅ VERIFIED: Coupon exists in database!')
+      console.log('   Code: ' + verify.code)
+      console.log('   CreatedBy: ' + verify.createdBy)
+      console.log('   BasedOn: ' + verify.basedOnCouponId)
     } else {
-      console.log(`❌ Verification failed: Coupon not found`)
+      console.log('❌ FAILED: Coupon not found in database!')
     }
-    
-    // Count total generated coupons
-    const totalGenerated = await prisma.coupon.count({
-      where: { basedOnCouponId: { not: null } }
-    })
-    console.log(`\n📊 Total generated coupons: ${totalGenerated}`)
     
   } catch (error) {
     console.error('❌ Error:', error.message)

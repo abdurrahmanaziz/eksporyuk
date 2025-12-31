@@ -37,13 +37,26 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    // Convert Decimal to string for JSON response
-    const templatesWithStrings = templates.map(t => ({
-      ...t,
-      discountValue: t.discountValue.toString()
-    }))
+    // For each template, count how many this user has already generated
+    const userId = session.user.id as string
+    const templatesWithCounts = await Promise.all(
+      templates.map(async (t) => {
+        const generatedCount = await prisma.coupon.count({
+          where: {
+            basedOnCouponId: t.id,
+            createdBy: userId,
+          },
+        })
+        
+        return {
+          ...t,
+          discountValue: t.discountValue.toString(),
+          generatedCount: generatedCount, // How many this user has generated
+        }
+      })
+    )
 
-    return NextResponse.json({ templates: templatesWithStrings })
+    return NextResponse.json({ templates: templatesWithCounts })
   } catch (error) {
     console.error('Error fetching coupon templates:', error)
     return NextResponse.json(

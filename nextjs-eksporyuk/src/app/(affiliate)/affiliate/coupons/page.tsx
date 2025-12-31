@@ -66,6 +66,7 @@ interface TemplateCoupon {
   maxGeneratePerAffiliate: number | null
   maxUsagePerCoupon: number | null
   validUntil: string | null
+  generatedCount?: number
 }
 
 interface AffiliateCoupon {
@@ -253,14 +254,12 @@ export default function AffiliateCouponsPage() {
 
   const canGenerateMore = (template: TemplateCoupon) => {
     if (!template.maxGeneratePerAffiliate) return true
-    const myGeneratedCount = myCoupons.filter(
-      c => c.basedOnCoupon?.code === template.code
-    ).length
+    const myGeneratedCount = template.generatedCount || 0
     return myGeneratedCount < template.maxGeneratePerAffiliate
   }
 
   const getGeneratedCount = (template: TemplateCoupon) => {
-    return myCoupons.filter(c => c.basedOnCoupon?.code === template.code).length
+    return template.generatedCount || 0
   }
 
   if (loading) {
