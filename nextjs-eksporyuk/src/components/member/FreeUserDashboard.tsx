@@ -17,6 +17,8 @@ interface PendingTransaction {
   id: string
   invoiceNumber: string
   amount: number
+  originalAmount: number
+  discountAmount: number
   paymentUrl: string | null
   expiredAt: string | null
   membershipName: string
@@ -133,6 +135,8 @@ export default function FreeUserDashboard() {
               id: tx.id,
               invoiceNumber: tx.invoiceNumber,
               amount: tx.finalAmount || tx.amount,
+              originalAmount: tx.originalAmount || tx.amount,
+              discountAmount: tx.discountAmount || 0,
               paymentUrl: tx.paymentUrl,
               expiredAt: tx.expiresAt,
               membershipName: tx.itemName || 'Membership',
@@ -298,7 +302,19 @@ export default function FreeUserDashboard() {
               
               <div className="flex justify-between items-center mb-5">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Tagihan</span>
-                <span className="text-2xl font-bold text-blue-600 tracking-tight">{formatPrice(pendingTransaction.amount)}</span>
+                <div className="flex flex-col items-end">
+                  {pendingTransaction.discountAmount > 0 && pendingTransaction.originalAmount > pendingTransaction.amount && (
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[10px] text-gray-400 line-through decoration-gray-300 dark:decoration-gray-600">
+                        {formatPrice(pendingTransaction.originalAmount)}
+                      </span>
+                      <span className="bg-red-50 dark:bg-red-500/20 text-red-500 dark:text-red-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-red-100 dark:border-transparent">
+                        Diskon {Math.round((pendingTransaction.discountAmount / pendingTransaction.originalAmount) * 100)}%
+                      </span>
+                    </div>
+                  )}
+                  <span className="text-2xl font-bold tracking-tight" style={{ color: '#2563EB' }}>{formatPrice(pendingTransaction.amount)}</span>
+                </div>
               </div>
               
               <div className="flex flex-col gap-2">
