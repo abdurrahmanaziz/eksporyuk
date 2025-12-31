@@ -550,19 +550,27 @@ export default function DashboardSidebar() {
       .filter(category => !category.condition || category.condition(session))
       .map(category => ({
         ...category,
-        items: category.items.map(item => {
-          if (item.href === '/chat' && chatUnread > 0) {
-            return { ...item, badge: chatUnread.toString() }
-          }
-          if ((item.href === '/notifications') && notifUnread > 0) {
-            return { ...item, badge: notifUnread.toString() }
-          }
-          // Add badge to Tagihan Saya if there are pending transactions
-          if (item.href === '/dashboard/billing' && hasPending && transactions.length > 0) {
-            return { ...item, badge: transactions.length.toString(), badgeType: 'pending' }
-          }
-          return item
-        })
+        items: category.items
+          // Filter out Upgrade Premium if user has pending transaction
+          .filter(item => {
+            if (item.href === '/dashboard/upgrade' && hasPending && transactions.length > 0) {
+              return false // Hide Upgrade menu when has pending
+            }
+            return true
+          })
+          .map(item => {
+            if (item.href === '/chat' && chatUnread > 0) {
+              return { ...item, badge: chatUnread.toString() }
+            }
+            if ((item.href === '/notifications') && notifUnread > 0) {
+              return { ...item, badge: notifUnread.toString() }
+            }
+            // Add badge to Tagihan Saya if there are pending transactions
+            if (item.href === '/dashboard/billing' && hasPending && transactions.length > 0) {
+              return { ...item, badge: transactions.length.toString(), badgeType: 'pending' }
+            }
+            return item
+          })
       }))
   }
 

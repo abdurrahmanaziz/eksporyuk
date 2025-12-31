@@ -6,10 +6,22 @@ import {
   Crown, Lock, Star, Users, BookOpen, Award, 
   CheckCircle2, ArrowRight, Sparkles, TrendingUp,
   Clock, Gift, Shield, Zap, Target, Play,
-  ChevronRight, Heart, MessageCircle, Rocket
+  ChevronRight, Heart, MessageCircle, Rocket,
+  CreditCard, Receipt, AlertCircle, ExternalLink
 } from 'lucide-react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+
+// Pending Transaction interface
+interface PendingTransaction {
+  id: string
+  invoiceNumber: string
+  amount: number
+  paymentUrl: string | null
+  expiredAt: string | null
+  membershipName: string
+  membershipSlug: string
+}
 
 // Premium features list
 const premiumFeatures = [
@@ -101,6 +113,71 @@ export default function FreeUserDashboard() {
   const [minutesRemaining, setMinutesRemaining] = useState(0)
   const [secondsRemaining, setSecondsRemaining] = useState(0)
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
+  
+  // Pending transaction states
+  const [pendingTransaction, setPendingTransaction] = useState<PendingTransaction | null>(null)
+  const [paymentCountdown, setPaymentCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 })
+  const [loadingPending, setLoadingPending] = useState(true)
+
+  // Fetch pending transactions
+  useEffect(() => {
+    const fetchPendingTransaction = async () => {
+      try {
+        const res = await fetch('/api/user/billing?status=PENDING&limit=1')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && data.transactions.length > 0) {
+            const tx = data.transactions[0]
+            // Parse metadata for membership info
+            setPendingTransaction({
+              id: tx.id,
+              invoiceNumber: tx.invoiceNumber,
+              amount: tx.finalAmount || tx.amount,
+              paymentUrl: tx.paymentUrl,
+              expiredAt: tx.expiresAt,
+              membershipName: tx.itemName || 'Membership',
+              membershipSlug: tx.membershipSlug || '',
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching pending transaction:', error)
+      } finally {
+        setLoadingPending(false)
+      }
+    }
+
+    if (session?.user?.id) {
+      fetchPendingTransaction()
+    }
+  }, [session])
+
+  // Payment countdown timer
+  useEffect(() => {
+    if (pendingTransaction?.expiredAt) {
+      const updatePaymentCountdown = () => {
+        const now = new Date()
+        const expiry = new Date(pendingTransaction.expiredAt!)
+        const diff = expiry.getTime() - now.getTime()
+        
+        if (diff > 0) {
+          const hours = Math.floor(diff / (1000 * 60 * 60))
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+          setPaymentCountdown({ hours, minutes, seconds })
+        } else {
+          setPaymentCountdown({ hours: 0, minutes: 0, seconds: 0 })
+        }
+      }
+      
+      updatePaymentCountdown()
+      const interval = setInterval(updatePaymentCountdown, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [pendingTransaction])
+  const [minutesRemaining, setMinutesRemaining] = useState(0)
+  const [secondsRemaining, setSecondsRemaining] = useState(0)
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
 
   // Fetch user data to get accurate trialEndsAt from createdAt
   useEffect(() => {
@@ -168,6 +245,188 @@ export default function FreeUserDashboard() {
 
   const userName = session?.user?.name || 'Member'
 
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  // Show pending transaction UI if exists
+  if (!loadingPending && pendingTransaction) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50">
+        {/* Hero Section - Payment Pending */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500"></div>
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
+            <div className="absolute bottom-10 right-10 w-60 h-60 bg-purple-300 rounded-full blur-3xl"></div>
+          </div>
+          
+          <div className="relative px-4 py-8 md:py-12">
+            <div className="max-w-4xl mx-auto text-center">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-yellow-400/90 backdrop-blur-sm px-4 py-2 rounded-full mb-6 animate-pulse">
+                <AlertCircle className="w-4 h-4 text-yellow-800" />
+                <span className="text-yellow-800 text-sm font-bold">Tagihan Menunggu Pembayaran</span>
+              </div>
+              
+              {/* Greeting */}
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-3">
+                Hai {userName}! 💳
+              </h1>
+              <p className="text-white/90 text-sm md:text-lg mb-8 max-w-2xl mx-auto">
+                Anda memiliki tagihan yang belum dibayar. Selesaikan pembayaran untuk mengaktifkan membership Anda!
+              </p>
+              
+              {/* Payment Card */}
+              <div className="bg-white rounded-2xl p-6 max-w-md mx-auto mb-8 shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <Receipt className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-gray-900">{pendingTransaction.membershipName}</p>
+                      <p className="text-xs text-gray-500">#{pendingTransaction.invoiceNumber}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-100 pt-4 mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-600">Total Tagihan</span>
+                    <span className="text-2xl font-bold text-blue-600">{formatPrice(pendingTransaction.amount)}</span>
+                  </div>
+                </div>
+
+                {/* Payment Countdown */}
+                {pendingTransaction.expiredAt && (
+                  <div className="bg-red-50 rounded-xl p-4 mb-4">
+                    <p className="text-red-600 text-xs mb-2 flex items-center justify-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Bayar sebelum waktu habis:
+                    </p>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="bg-white rounded-lg px-3 py-2 min-w-[50px] border border-red-200">
+                        <div className="text-xl font-bold text-red-600">{String(paymentCountdown.hours).padStart(2, '0')}</div>
+                        <div className="text-[10px] text-gray-500">Jam</div>
+                      </div>
+                      <span className="text-red-400 font-bold">:</span>
+                      <div className="bg-white rounded-lg px-3 py-2 min-w-[50px] border border-red-200">
+                        <div className="text-xl font-bold text-red-600">{String(paymentCountdown.minutes).padStart(2, '0')}</div>
+                        <div className="text-[10px] text-gray-500">Menit</div>
+                      </div>
+                      <span className="text-red-400 font-bold">:</span>
+                      <div className="bg-white rounded-lg px-3 py-2 min-w-[50px] border border-red-200">
+                        <div className="text-xl font-bold text-red-600">{String(paymentCountdown.seconds).padStart(2, '0')}</div>
+                        <div className="text-[10px] text-gray-500">Detik</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link href="/dashboard/billing">
+                  <button className="group bg-white hover:bg-gray-50 text-blue-600 font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-3">
+                    <CreditCard className="w-5 h-5" />
+                    <span>Lihat Detail Tagihan</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </Link>
+                {pendingTransaction.paymentUrl && (
+                  <Link href={pendingTransaction.paymentUrl} target="_blank">
+                    <button className="group bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-3">
+                      <ExternalLink className="w-5 h-5" />
+                      <span>Bayar Sekarang</span>
+                    </button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Steps */}
+        <div className="px-4 py-12 max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              Cara Menyelesaikan Pembayaran
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Ikuti langkah-langkah berikut untuk mengaktifkan membership Anda
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 relative">
+              <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">1</div>
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                <Receipt className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Lihat Tagihan</h3>
+              <p className="text-sm text-gray-600">Klik "Lihat Detail Tagihan" untuk melihat informasi pembayaran lengkap</p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 relative">
+              <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">2</div>
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Lakukan Pembayaran</h3>
+              <p className="text-sm text-gray-600">Transfer sesuai nominal ke rekening yang tertera atau gunakan metode pembayaran lainnya</p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 relative">
+              <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">3</div>
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Membership Aktif</h3>
+              <p className="text-sm text-gray-600">Setelah pembayaran terverifikasi, membership Anda akan langsung aktif!</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Benefits Preview */}
+        <div className="px-4 py-12 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                Yang Akan Anda Dapatkan 🎁
+              </h2>
+              <p className="text-gray-600">
+                Setelah pembayaran selesai, Anda akan mendapatkan akses ke:
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: BookOpen, title: 'Semua Materi', color: 'blue' },
+                { icon: Users, title: 'Komunitas', color: 'green' },
+                { icon: Award, title: 'Sertifikasi', color: 'purple' },
+                { icon: MessageCircle, title: 'Mentoring', color: 'orange' },
+              ].map((item, index) => (
+                <div key={index} className="bg-white rounded-xl p-4 text-center shadow-sm">
+                  <div className={`w-10 h-10 mx-auto mb-3 bg-${item.color}-100 rounded-lg flex items-center justify-center`}>
+                    <item.icon className={`w-5 h-5 text-${item.color}-600`} />
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Default: Show upgrade UI for free users without pending transaction
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-orange-50">
       {/* Hero Section - Trial Countdown */}
@@ -224,7 +483,7 @@ export default function FreeUserDashboard() {
             </div>
             
             {/* CTA Button */}
-            <Link href="/dashboard/upgrade">
+            <Link href="/pricing">
               <button className="group bg-white hover:bg-gray-50 text-orange-600 font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-3">
                 <Crown className="w-5 h-5" />
                 <span>Upgrade ke Premium Sekarang</span>
