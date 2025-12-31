@@ -115,6 +115,74 @@ export async function POST(
           where: { id: transaction.userId },
           data: { role: 'MEMBER_PREMIUM' }
         })
+
+        // ===== AUTO-JOIN GROUPS =====
+        // Get groups linked to this membership
+        const membershipGroups = await prisma.membershipGroup.findMany({
+          where: { membershipId: membership.id }
+        })
+
+        for (const mg of membershipGroups) {
+          try {
+            // Check if already member
+            const existingMember = await prisma.groupMember.findUnique({
+              where: {
+                groupId_userId: {
+                  groupId: mg.groupId,
+                  userId: transaction.userId
+                }
+              }
+            })
+
+            if (!existingMember) {
+              await prisma.groupMember.create({
+                data: {
+                  id: createId(),
+                  groupId: mg.groupId,
+                  userId: transaction.userId,
+                  role: 'MEMBER'
+                }
+              })
+              console.log(`[Admin Confirm] ✅ User ${transaction.userId} added to group ${mg.groupId}`)
+            }
+          } catch (groupError) {
+            console.error(`[Admin Confirm] Error adding user to group ${mg.groupId}:`, groupError)
+          }
+        }
+
+        // ===== AUTO-ENROLL COURSES =====
+        // Get courses linked to this membership
+        const membershipCourses = await prisma.membershipCourse.findMany({
+          where: { membershipId: membership.id }
+        })
+
+        for (const mc of membershipCourses) {
+          try {
+            // Check if already enrolled (no unique constraint, use findFirst)
+            const existingEnrollment = await prisma.courseEnrollment.findFirst({
+              where: {
+                courseId: mc.courseId,
+                userId: transaction.userId
+              }
+            })
+
+            if (!existingEnrollment) {
+              await prisma.courseEnrollment.create({
+                data: {
+                  id: createId(),
+                  courseId: mc.courseId,
+                  userId: transaction.userId,
+                  updatedAt: new Date()
+                }
+              })
+              console.log(`[Admin Confirm] ✅ User ${transaction.userId} enrolled in course ${mc.courseId}`)
+            }
+          } catch (courseError) {
+            console.error(`[Admin Confirm] Error enrolling user in course ${mc.courseId}:`, courseError)
+          }
+        }
+
+        console.log(`[Admin Confirm] ✅ Membership activated with ${membershipGroups.length} groups and ${membershipCourses.length} courses`)
       }
     }
 

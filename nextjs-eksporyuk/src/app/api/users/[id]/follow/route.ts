@@ -71,7 +71,7 @@ export async function POST(
         select: { name: true, username: true, avatar: true }
       })
 
-      // Send notification via notificationService
+      // Send notification via notificationService (Pusher + OneSignal)
       try {
         await notificationService.send({
           userId: targetUserId,
@@ -80,7 +80,10 @@ export async function POST(
           message: `${follower?.name || 'Seseorang'} mulai mengikuti Anda`,
           link: `/${follower?.username || session.user.id}`,
           redirectUrl: `/${follower?.username || session.user.id}`,
-          channels: ['pusher'],
+          actorId: session.user.id,
+          actorName: follower?.name || 'Seseorang',
+          actorAvatar: follower?.avatar || undefined,
+          channels: ['pusher', 'onesignal'],
         })
       } catch (notifError) {
         console.error('Follow notification error:', notifError)

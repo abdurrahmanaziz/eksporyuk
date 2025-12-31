@@ -890,7 +890,7 @@ model ChatParticipant {
 }
 
 model ChatRoom {
-  id            String       @id
+  id            String       @id @default(cuid())
   type          ChatRoomType @default(DIRECT)
   name          String?
   avatar        String?
@@ -900,8 +900,15 @@ model ChatRoom {
   lastMessageAt DateTime?
   lastMessage   String?
   isActive      Boolean      @default(true)
+  
+  // Relations untuk real-time
+  messages      Message[]
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime     @updatedAt
+  
+  @@index([user1Id])
+  @@index([user2Id])
+  @@index([lastMessageAt])
 }
 
 model CommentReaction {
@@ -1891,26 +1898,53 @@ model MentorProfile {
 }
 
 model Message {
-  id             String    @id
+  id             String    @id @default(cuid())
+  
+  // Room reference
   roomId         String?
+  room           ChatRoom? @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  // Sender
   senderId       String
+  sender         User      @relation("Message_sender", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  // Receiver (direct message)
   receiverId     String?
-  content        String
-  type           String    @default("text")
+  
+  // Content
+  content        String    @db.Text
+  type           String    @default("text") // "text", "image", "file", "system"
+  
+  // Attachments
   attachmentUrl  String?
   attachmentType String?
+  attachmentName String?
+  attachmentSize Int?
+  
+  // Metadata
+  metadata       Json?
+  reactions      Json?     // {emoji: count, ...}
+  replyToId      String?   // For threaded messages
+  
+  // Status
   isRead         Boolean   @default(false)
   readAt         DateTime?
   isDelivered    Boolean   @default(false)
   deliveredAt    DateTime?
-  reactions      Json?
-  replyToId      String?
   isEdited       Boolean   @default(false)
   isDeleted      Boolean   @default(false)
+  
+  // Timestamps
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime
-  attachmentName String?
-  attachmentSize Int?
+  updatedAt      DateTime  @updatedAt
+  
+  // Indices untuk performance
+  @@index([roomId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@index([isDeleted])
+  @@index([isRead])
 }
 
 model Notification {
@@ -2969,6 +3003,9 @@ model User {
   wallet                          Wallet?
   affiliateProfile                AffiliateProfile?
   affiliateLinks                  AffiliateLink[]
+  
+  // Chat & Messages
+  messagesAsSender                Message[]         @relation("Message_sender")
 
   @@index([city])
   @@index([district])

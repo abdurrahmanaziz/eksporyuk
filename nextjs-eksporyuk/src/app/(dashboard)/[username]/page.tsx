@@ -809,7 +809,7 @@ export default function PublicProfilePage() {
           <p className="text-muted-foreground mb-4">Username yang Anda cari tidak tersedia</p>
           <Button onClick={() => router.push('/member-directory')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali ke Directory
+            Kembali ke Region
           </Button>
         </div>
       </ResponsivePageWrapper>

@@ -163,7 +163,7 @@ export default function CommunityMembersPage() {
             <Link href="/community/members">
               <Button variant="default" size="sm" className="whitespace-nowrap shadow-sm">
                 <Users className="w-4 h-4 mr-2" />
-                Member Directory
+                Region
               </Button>
             </Link>
           </div>

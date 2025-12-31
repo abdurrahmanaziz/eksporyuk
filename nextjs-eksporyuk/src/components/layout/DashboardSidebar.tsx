@@ -237,7 +237,7 @@ const navigationByRole = {
         { name: 'Feed', href: '/community/feed', icon: MessageSquare },
         { name: 'Grup', href: '/community/groups', icon: UsersRound },
         { name: 'Acara', href: '/events', icon: Calendar },
-        { name: 'Directory', href: '/member-directory', icon: MapPin },
+        { name: 'Region', href: '/member-directory', icon: MapPin },
       ]
     },
     {
@@ -331,22 +331,12 @@ const navigationByRole = {
       ]
     },
     {
-      title: 'MEMBERSHIP',
-      items: [
-        { name: 'My Membership', href: '/dashboard/my-membership', icon: Crown },
-        { name: 'Produk Saya', href: '/my-products', icon: Package },
-        { name: 'Tagihan Saya', href: '/dashboard/billing', icon: Receipt },
-        { name: 'Riwayat Transaksi', href: '/dashboard/transactions', icon: CreditCard },
-        { name: 'Upgrade', href: '/dashboard/upgrade', icon: Zap },
-      ]
-    },
-    {
       title: 'KOMUNITAS',
       items: [
         { name: 'Feed', href: '/community/feed', icon: MessageSquare },
         { name: 'Grup', href: '/community/groups', icon: UsersRound },
         { name: 'Acara', href: '/community/events', icon: Calendar },
-        { name: 'Directory', href: '/member-directory', icon: MapPin },
+        { name: 'Region', href: '/member-directory', icon: MapPin },
         { name: 'Tersimpan', href: '/saved-posts', icon: Bookmark },
       ]
     },
@@ -357,6 +347,16 @@ const navigationByRole = {
         { name: 'Supplier', href: '/databases/suppliers', icon: Database },
         { name: 'Forwarder', href: '/databases/forwarders', icon: Truck },
         { name: 'Dokumen', href: '/dashboard/documents', icon: FileText },
+      ]
+    },
+    {
+      title: 'MEMBERSHIP',
+      items: [
+        { name: 'My Membership', href: '/dashboard/my-membership', icon: Crown },
+        { name: 'Produk Saya', href: '/my-products', icon: Package },
+        { name: 'Tagihan Saya', href: '/dashboard/billing', icon: Receipt },
+        { name: 'Riwayat Transaksi', href: '/dashboard/transactions', icon: CreditCard },
+        { name: 'Upgrade', href: '/dashboard/upgrade', icon: Zap },
       ]
     },
     {

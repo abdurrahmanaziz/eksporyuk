@@ -734,7 +734,7 @@ export default function CommunityFeedPage() {
             <Link href="/member-directory">
               <Button variant="outline" size="sm" className="whitespace-nowrap">
                 <Users className="w-4 h-4 mr-2" />
-                Member Directory
+                Region
               </Button>
             </Link>
           </div>

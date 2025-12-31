@@ -208,7 +208,7 @@ export default function CommunityEventDetailPage({ params }: { params: { id: str
             <Link href="/community/members">
               <Button variant="outline" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                Member Directory
+                Region
               </Button>
             </Link>
           </div>

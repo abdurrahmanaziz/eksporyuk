@@ -180,7 +180,7 @@ export function MemberDirectoryLink({ className = '' }: { className?: string }) 
           <MapPin className="h-4 w-4 text-blue-600" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium">Member Directory</p>
+          <p className="text-sm font-medium">Region</p>
           <p className="text-xs text-muted-foreground">Temukan member terdekat</p>
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
