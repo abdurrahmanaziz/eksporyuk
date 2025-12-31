@@ -175,9 +175,6 @@ export default function FreeUserDashboard() {
       return () => clearInterval(interval)
     }
   }, [pendingTransaction])
-  const [minutesRemaining, setMinutesRemaining] = useState(0)
-  const [secondsRemaining, setSecondsRemaining] = useState(0)
-  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
 
   // Fetch user data to get accurate trialEndsAt from createdAt
   useEffect(() => {
