@@ -8,7 +8,6 @@ import { MailketingService } from '@/lib/integrations/mailketing'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
-
 /**
  * POST /api/admin/branded-templates/test-email
  * Send test email using branded template
@@ -98,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Process subject with shortcodes
     const processedSubject = processShortcodes(template.subject, templateData)
 
-    // Send email using Mailketing API only
+    // Send email using Mailketing API
     console.log('📧 Sending test email via Mailketing:', {
       to: testEmail,
       subject: `[TEST] ${processedSubject}`,
@@ -115,61 +114,61 @@ export async function POST(request: NextRequest) {
         from_name: 'EksporYuk Test'
       })
 
-    if (emailResult.success) {
-      // Record usage
-      try {
-        await prisma.brandedTemplateUsage.create({
-          data: {
-            templateId: template.id,
-            userId: session.user.id,
-            userRole: session.user.role,
-            context: 'TEST_EMAIL',
-            success: true,
-            metadata: {
-              testEmail: testEmail,
-              testData: testData,
-              mode: emailResult.data?.mode || 'api',
-              messageId: emailResult.data?.message_id || `test_${Date.now()}`
+      if (emailResult.success) {
+        // Record usage
+        try {
+          await prisma.brandedTemplateUsage.create({
+            data: {
+              templateId: template.id,
+              userId: session.user.id,
+              userRole: session.user.role,
+              context: 'TEST_EMAIL',
+              success: true,
+              metadata: {
+                testEmail: testEmail,
+                testData: testData,
+                mode: emailResult.data?.mode || 'api',
+                messageId: emailResult.data?.message_id || `test_${Date.now()}`
+              }
             }
-          }
-        })
-      } catch (usageError) {
-        console.error('[Test Email API] Failed to record usage:', usageError)
-        // Continue anyway - email was sent
-      }
+          })
+        } catch (usageError) {
+          console.error('[Test Email API] Failed to record usage:', usageError)
+          // Continue anyway - email was sent
+        }
 
-      return NextResponse.json({
-        success: true,
-        message: `Test email sent successfully to ${testEmail}`,
-        mode: emailResult.data?.mode || 'api',
-        details: emailResult.message
-      })
-    } else {
-      // Record failed attempt
-      try {
-        await prisma.brandedTemplateUsage.create({
-          data: {
-            templateId: template.id,
-            userId: session.user.id,
-            userRole: session.user.role,
-            context: 'TEST_EMAIL',
-            success: false,
-            metadata: {
-              testEmail: testEmail,
-              testData: testData,
-              error: emailResult.error || emailResult.message
+        return NextResponse.json({
+          success: true,
+          message: `Test email sent successfully to ${testEmail}`,
+          mode: emailResult.data?.mode || 'api',
+          details: emailResult.message
+        })
+      } else {
+        // Record failed attempt
+        try {
+          await prisma.brandedTemplateUsage.create({
+            data: {
+              templateId: template.id,
+              userId: session.user.id,
+              userRole: session.user.role,
+              context: 'TEST_EMAIL',
+              success: false,
+              metadata: {
+                testEmail: testEmail,
+                testData: testData,
+                error: emailResult.error || emailResult.message
+              }
             }
-          }
-        })
-      } catch (usageError) {
-        console.error('[Test Email API] Failed to record usage:', usageError)
-      }
+          })
+        } catch (usageError) {
+          console.error('[Test Email API] Failed to record usage:', usageError)
+        }
 
-      return NextResponse.json(
-        { error: emailResult.error || emailResult.message || 'Failed to send test email' },
-        { status: 500 }
-      )
-    }
+        return NextResponse.json(
+          { error: emailResult.error || emailResult.message || 'Failed to send test email' },
+          { status: 500 }
+        )
+      }
     } catch (mailError: any) {
       console.error('[Test Email API] Mailketing error:', mailError.message)
       return NextResponse.json(
@@ -186,11 +185,6 @@ export async function POST(request: NextRequest) {
       { 
         error: 'Failed to send test email',
         details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    )
-  }
-}
       },
       { status: 500 }
     )
