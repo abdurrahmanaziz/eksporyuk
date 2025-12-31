@@ -212,22 +212,23 @@ export default function PremiumDashboardNew() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="p-4 md:p-8 pb-24 lg:pb-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="p-4 lg:p-6 pb-24 lg:pb-6">
+        {/* Welcome Header - Full Width */}
+        <div className="max-w-7xl mx-auto mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            Welcome back, {userName}! 👋
+          </h1>
+          <p className="text-sm md:text-base text-gray-500">
+            Lanjutkan progress belajarmu hari ini.
+          </p>
+        </div>
+
+        {/* Main Grid: 2 Column Layout */}
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
           
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-8 space-y-6 lg:space-y-8">
-            
-            {/* Welcome Header */}
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-                Welcome back, {userName}! 👋
-              </h1>
-              <p className="text-sm md:text-base text-gray-500">
-                Lanjutkan progress belajarmu hari ini.
-              </p>
-            </div>
+          {/* Left Column - Main Content (grows to fill) */}
+          <div className="flex-1 min-w-0 space-y-6">
 
             {/* Hero Banner Card - Blue Gradient */}
             {data?.banners && data.banners.length > 0 ? (
@@ -544,49 +545,49 @@ export default function PremiumDashboardNew() {
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <aside className="lg:col-span-4 space-y-6 lg:space-y-8">
+          {/* Right Sidebar - Fixed Width */}
+          <aside className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-6">
             
             {/* Progress Kelas */}
-            <Card className="rounded-xl shadow-sm border-gray-100">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <GraduationCap className="w-5 h-5 text-orange-500" />
+            <Card className="rounded-xl shadow-sm border border-gray-100 bg-white">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                    <span className="text-lg">🎯</span>
                     Progress Kelas
                   </h3>
                   <Link href="/learn" className="text-xs font-semibold text-blue-600 hover:underline">Lihat Semua</Link>
                 </div>
                 
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {data?.courses && data.courses.length > 0 ? (
                     data.courses.slice(0, 2).map((course, index) => (
-                      <Link key={course.id} href={`/learn/${course.slug}`} className="block group cursor-pointer">
-                        <div className="flex items-start gap-3 mb-2">
-                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${index === 0 ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'}`}>
+                      <Link key={course.id} href={`/learn/${course.slug}`} className="block group">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 ${index === 0 ? 'bg-blue-100' : 'bg-purple-100'}`}>
                             {course.thumbnail ? (
-                              <Image src={course.thumbnail} alt={course.title} width={48} height={48} className="w-full h-full object-cover rounded-lg" />
-                            ) : index === 0 ? (
-                              <Truck className="w-6 h-6" />
+                              <Image src={course.thumbnail} alt={course.title} width={44} height={44} className="w-full h-full object-cover rounded-lg" />
                             ) : (
-                              <DollarSign className="w-6 h-6" />
+                              <span className="text-xl">{index === 0 ? '📦' : '💰'}</span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">{course.title}</h4>
-                            <p className="text-xs text-gray-500 mt-0.5">Modul {course.currentModule} dari {course.totalModules}</p>
+                            <h4 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">{course.title}</h4>
+                            <p className="text-xs text-gray-500">Modul {course.currentModule} dari {course.totalModules}</p>
                           </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
-                          <div className={`h-1.5 rounded-full ${index === 0 ? 'bg-blue-600' : 'bg-purple-500'}`} style={{ width: `${course.progress}%` }} />
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                            <div className={`h-1.5 rounded-full transition-all ${index === 0 ? 'bg-blue-600' : 'bg-purple-500'}`} style={{ width: `${Math.max(course.progress, 5)}%` }} />
+                          </div>
+                          <span className="text-xs text-gray-500 font-medium whitespace-nowrap">{course.progress}% Selesai</span>
                         </div>
-                        <div className="flex justify-end text-[10px] text-gray-500 font-medium">{course.progress}% Selesai</div>
                       </Link>
                     ))
                   ) : (
                     <div className="text-center py-4">
                       <GraduationCap className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                      <p className="text-sm text-gray-500">Belum ada kursus yang diikuti</p>
+                      <p className="text-sm text-gray-500">Belum ada kursus</p>
                       <Link href="/courses"><Button variant="link" className="text-blue-600 text-sm mt-2">Jelajahi Kursus →</Button></Link>
                     </div>
                   )}
@@ -595,37 +596,44 @@ export default function PremiumDashboardNew() {
             </Card>
 
             {/* Grup Rekomendasi */}
-            <Card className="rounded-xl shadow-sm border-gray-100">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-indigo-500" />
+            <Card className="rounded-xl shadow-sm border border-gray-100 bg-white">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                    <span className="text-lg">👥</span>
                     Grup Rekomendasi
                   </h3>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {data?.groups && data.groups.length > 0 ? (
-                    data.groups.slice(0, 3).map((group) => (
-                      <div key={group.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 overflow-hidden">
-                            {group.thumbnail ? (
-                              <Image src={group.thumbnail} alt={group.name} width={40} height={40} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-white font-bold">{group.name.charAt(0)}</div>
-                            )}
+                    data.groups.slice(0, 3).map((group, index) => {
+                      const gradients = [
+                        'from-green-400 to-emerald-500',
+                        'from-orange-400 to-red-500', 
+                        'from-blue-400 to-indigo-500'
+                      ]
+                      return (
+                        <div key={group.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradients[index % 3]} overflow-hidden`}>
+                              {group.thumbnail ? (
+                                <Image src={group.thumbnail} alt={group.name} width={40} height={40} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">{group.name.charAt(0)}</div>
+                              )}
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-gray-900">{group.name}</h4>
+                              <p className="text-xs text-gray-500">{group.memberCount.toLocaleString()} Anggota</p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-gray-900">{group.name}</h4>
-                            <p className="text-xs text-gray-500">{group.memberCount.toLocaleString()} Anggota</p>
-                          </div>
+                          <Link href={`/community/groups/${group.slug}`}>
+                            <Button variant="ghost" size="sm" className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-full h-auto">Gabung</Button>
+                          </Link>
                         </div>
-                        <Link href={`/community/groups/${group.slug}`}>
-                          <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full">Gabung</Button>
-                        </Link>
-                      </div>
-                    ))
+                      )
+                    })
                   ) : (
                     <div className="text-center py-4">
                       <Users className="w-10 h-10 text-gray-300 mx-auto mb-2" />
@@ -635,19 +643,19 @@ export default function PremiumDashboardNew() {
                 </div>
                 
                 <Link href="/community/groups">
-                  <button className="w-full mt-4 text-xs text-gray-500 hover:text-blue-600 flex items-center justify-center gap-1 transition-colors">
-                    Lihat grup lainnya <ArrowRight className="w-4 h-4" />
+                  <button className="w-full mt-3 text-xs text-gray-500 hover:text-blue-600 flex items-center justify-center gap-1 transition-colors">
+                    Lihat grup lainnya <ArrowRight className="w-3 h-3" />
                   </button>
                 </Link>
               </CardContent>
             </Card>
 
             {/* Produk Rekomendasi */}
-            <Card className="rounded-xl shadow-sm border-gray-100">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <ShoppingBag className="w-5 h-5 text-red-500" />
+            <Card className="rounded-xl shadow-sm border border-gray-100 bg-white">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                    <span className="text-lg">🛍️</span>
                     Produk Rekomendasi
                   </h3>
                 </div>
@@ -657,16 +665,16 @@ export default function PremiumDashboardNew() {
                     data.products.slice(0, 2).map((product) => (
                       <Link key={product.id} href={`/products/${product.slug}`} className="block group">
                         <div className="flex gap-3">
-                          <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0 relative">
+                          <div className="w-14 h-14 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                             {product.thumbnail ? (
-                              <Image src={product.thumbnail} alt={product.name} width={64} height={64} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                              <Image src={product.thumbnail} alt={product.name} width={56} height={56} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">{product.name}</h4>
-                            <div className="flex items-center gap-1 my-1">
+                            <h4 className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">{product.name}</h4>
+                            <div className="flex items-center gap-1 my-0.5">
                               <Star className="w-3 h-3 text-yellow-400 fill-current" />
                               <span className="text-xs text-gray-500">{product.rating.toFixed(1)} ({product.reviewCount})</span>
                             </div>
@@ -676,7 +684,7 @@ export default function PremiumDashboardNew() {
                       </Link>
                     ))
                   ) : (
-                    <div className="text-center py-4">
+                    <div className="text-center py-6">
                       <ShoppingBag className="w-10 h-10 text-gray-300 mx-auto mb-2" />
                       <p className="text-sm text-gray-500">Tidak ada produk tersedia</p>
                     </div>
@@ -694,25 +702,26 @@ export default function PremiumDashboardNew() {
 
 function DashboardSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-        <div className="lg:col-span-8 space-y-6">
-          <div>
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <Skeleton className="h-[320px] w-full rounded-2xl" />
+    <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
+      <div className="max-w-7xl mx-auto mb-6">
+        <Skeleton className="h-8 w-64 mb-2" />
+        <Skeleton className="h-4 w-48" />
+      </div>
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
+        <div className="flex-1 space-y-6">
+          <Skeleton className="h-[280px] w-full rounded-2xl" />
           <div className="flex justify-between items-center">
             <Skeleton className="h-6 w-40" />
             <Skeleton className="h-8 w-48" />
           </div>
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
         </div>
-        <div className="lg:col-span-4 space-y-6">
-          <Skeleton className="h-64 w-full rounded-xl" />
-          <Skeleton className="h-48 w-full rounded-xl" />
-          <Skeleton className="h-48 w-full rounded-xl" />
+        <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-6">
+          <Skeleton className="h-52 w-full rounded-xl" />
+          <Skeleton className="h-44 w-full rounded-xl" />
+          <Skeleton className="h-44 w-full rounded-xl" />
         </div>
       </div>
     </div>

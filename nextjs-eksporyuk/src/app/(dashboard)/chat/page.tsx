@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
-import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
-import { Send, Search, MoreVertical, Phone, Video, Paperclip, Smile, Image as ImageIcon, X, Reply, User, ExternalLink, FileText, Film, Download, Loader2, Trash2, ChevronLeft } from 'lucide-react'
+import { Send, Search, MoreVertical, Phone, Video, Paperclip, Smile, Image as ImageIcon, X, Reply, User, ExternalLink, FileText, Film, Download, Loader2, Trash2, ChevronLeft, Mic, MessageCircle, Users, Filter, Check, CheckCheck, Clock, ArrowLeft, Plus, Settings, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -32,10 +30,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import OnlineStatusBadge from '@/components/presence/OnlineStatusBadge'
 import LinkPreview from '@/components/chat/LinkPreview'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import Pusher from 'pusher-js'
 import { toast } from 'react-hot-toast'
+import { cn } from '@/lib/utils'
 
 // Common emojis organized by category
 const EMOJI_CATEGORIES = {
@@ -44,6 +43,17 @@ const EMOJI_CATEGORIES = {
   'Gesture': ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏'],
   'Hati': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝'],
   'Objek': ['🎁', '🎉', '🎊', '🎈', '🏆', '🥇', '🎯', '💡', '📱', '💻', '📷', '🎬', '🎵', '🎶', '⭐', '🌟', '✨', '💫', '🔥', '💥', '💢', '💦', '💨'],
+}
+
+interface Mentor {
+  id: string
+  name: string
+  username?: string
+  avatar?: string
+  isOnline: boolean
+  lastSeenAt?: string
+  bio?: string
+  unreadCount: number
 }
 
 interface ChatRoom {
@@ -106,6 +116,7 @@ const formatFileSize = (bytes: number): string => {
 export default function ChatPage() {
   const { data: session } = useSession()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [rooms, setRooms] = useState<ChatRoom[]>([])
   const [activeRoom, setActiveRoom] = useState<ChatRoom | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -123,12 +134,65 @@ export default function ChatPage() {
   const [uploading, setUploading] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [pendingFile, setPendingFile] = useState<{ file: File; type: 'file' | 'image'; preview?: string; isVideo?: boolean } | null>(null)
+  
+  // New states for redesigned chat
+  const [mentors, setMentors] = useState<Mentor[]>([])
+  const [messageFilter, setMessageFilter] = useState<'all' | 'online' | 'unread'>('all')
+  const [loadingMentors, setLoadingMentors] = useState(true)
+  const [startingChat, setStartingChat] = useState<string | null>(null)
+  
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
   const initialRoomLoaded = useRef(false)
+
+  // Fetch mentors for "Chat Dengan Mentor" section
+  const fetchMentors = async () => {
+    try {
+      setLoadingMentors(true)
+      const res = await fetch('/api/mentors')
+      if (res.ok) {
+        const data = await res.json()
+        setMentors(data.mentors || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch mentors:', error)
+    } finally {
+      setLoadingMentors(false)
+    }
+  }
+
+  // Start chat with mentor
+  const startChatWithMentor = async (mentorId: string) => {
+    try {
+      setStartingChat(mentorId)
+      const res = await fetch('/api/chat/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: mentorId })
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        // Refresh rooms and set active room
+        const fetchedRooms = await fetchRooms()
+        const newRoom = fetchedRooms.find((r: ChatRoom) => r.id === data.roomId)
+        if (newRoom) {
+          setActiveRoom(newRoom)
+        }
+      } else {
+        const error = await res.json()
+        toast.error(error.error || 'Gagal memulai chat')
+      }
+    } catch (error) {
+      console.error('Failed to start chat:', error)
+      toast.error('Gagal memulai chat dengan mentor')
+    } finally {
+      setStartingChat(null)
+    }
+  }
 
   // Fetch rooms
   const fetchRooms = async () => {
@@ -151,6 +215,9 @@ export default function ChatPage() {
   // Handle initial room from URL params
   useEffect(() => {
     const loadRoomsAndSelectInitial = async () => {
+      // Fetch mentors in parallel
+      fetchMentors()
+      
       const fetchedRooms = await fetchRooms()
       
       // Check if there's a room param in URL
@@ -750,15 +817,50 @@ export default function ChatPage() {
     }
   }, [activeRoom])
 
-  const filteredRooms = rooms.filter(room =>
-    (room.name || '').toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Filter rooms based on search and filter state
+  const filteredRooms = rooms.filter(room => {
+    const matchesSearch = (room.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+    if (!matchesSearch) return false
+    
+    const otherUser = room.participants.find(p => p.user.id !== session?.user?.id)?.user
+    
+    if (messageFilter === 'online') {
+      return otherUser?.isOnline === true
+    }
+    if (messageFilter === 'unread') {
+      return room.unreadCount > 0
+    }
+    return true
+  })
+
+  // Get total unread count
+  const totalUnread = rooms.reduce((sum, room) => sum + (room.unreadCount || 0), 0)
+  
+  // Get online mentors count
+  const onlineMentorsCount = mentors.filter(m => m.isOnline).length
 
   const getOtherUser = (room: ChatRoom) => {
     if (room.type === 'DIRECT' || room.type === 'MENTOR') {
       return room.participants.find(p => p.user.id !== session?.user?.id)?.user
     }
     return null
+  }
+  
+  // Format time for message list
+  const formatMessageTime = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const now = new Date()
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 0) {
+      return format(date, 'HH:mm')
+    } else if (diffDays === 1) {
+      return 'Kemarin'
+    } else if (diffDays < 7) {
+      return format(date, 'EEEE', { locale: idLocale })
+    } else {
+      return format(date, 'dd/MM/yy')
+    }
   }
 
   if (loading) {
