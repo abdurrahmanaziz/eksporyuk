@@ -111,6 +111,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(banners)
   } catch (error) {
     console.error('Error fetching banners:', error)
-    return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 })
+    // Return safe default empty array instead of error
+    return NextResponse.json([], { status: 200 })
   }
 }

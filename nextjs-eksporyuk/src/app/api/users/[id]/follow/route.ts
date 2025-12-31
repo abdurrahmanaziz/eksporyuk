@@ -170,10 +170,11 @@ export async function DELETE(
       message: 'Unfollowed successfully'
     })
   } catch (error) {
-    console.error('Unfollow error:', error)
+    console.error('Follow error:', error)
+    // Return safe error response
     return NextResponse.json(
-      { error: 'Failed to unfollow' },
-      { status: 500 }
+      { isFollowing: false, error: 'Tidak dapat mengikuti user', success: false },
+      { status: 400 }
     )
   }
 }

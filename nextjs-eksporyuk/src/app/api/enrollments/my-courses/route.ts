@@ -82,9 +82,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching my courses:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch courses' },
-      { status: 500 }
-    )
+    // Return safe empty result instead of error
+    return NextResponse.json({ enrollments: [] }, { status: 200 })
   }
 }

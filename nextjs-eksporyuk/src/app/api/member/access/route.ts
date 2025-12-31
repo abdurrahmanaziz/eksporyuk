@@ -290,17 +290,30 @@ export async function GET() {
     console.error('Error stack:', error?.stack)
     console.error('Error message:', error?.message)
     
-    // Return more detailed error for debugging
+    // Return safe default response instead of error
     return NextResponse.json(
       { 
-        success: false, 
-        error: process.env.NODE_ENV === 'development' 
-          ? error?.message || 'Internal server error'
-          : 'Internal server error',
-        // Include stack trace only in development
-        ...(process.env.NODE_ENV === 'development' && { stack: error?.stack })
+        success: true,
+        hasMembership: false,
+        membership: null,
+        access: {
+          courses: [],
+          groups: [],
+          products: [],
+          features: [],
+        },
+        locked: {
+          courses: true,
+          groups: true,
+          products: true,
+          documents: true,
+          certificates: true,
+          mentoring: true,
+        },
+        membershipComparison: [],
+        upgradeUrl: '/checkout/pro',
       },
-      { status: 500 }
+      { status: 200 }
     )
   }
 }

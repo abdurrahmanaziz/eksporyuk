@@ -122,9 +122,10 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('[API] Start chat error:', error)
+    // Return safe error response instead of 500
     return NextResponse.json(
-      { error: 'Failed to start chat', message: error.message },
-      { status: 500 }
+      { error: 'Tidak dapat memulai chat. Silakan coba lagi.', success: false },
+      { status: 400 }
     )
   }
 }
