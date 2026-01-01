@@ -16,7 +16,7 @@ interface AffiliateInfo {
 
 /**
  * Component to display affiliate partner info on checkout pages
- * Reads from affiliate_ref cookie and fetches affiliate name
+ * Reads from affiliate_ref cookie OR URL params, and fetches affiliate name
  */
 export default function AffiliatePartnerBadge({ className = '' }: AffiliatePartnerBadgeProps) {
   const [affiliate, setAffiliate] = useState<AffiliateInfo | null>(null)
@@ -29,11 +29,24 @@ export default function AffiliatePartnerBadge({ className = '' }: AffiliatePartn
         return
       }
 
-      // Get affiliate code from cookie
-      const affiliateCode = document.cookie
+      // Try to get affiliate code from cookie first
+      let affiliateCode = document.cookie
         .split('; ')
         .find(row => row.startsWith('affiliate_ref='))
         ?.split('=')[1]
+
+      // Fallback: Check URL params if no cookie (handles race condition with AffiliateTracker)
+      if (!affiliateCode) {
+        const urlParams = new URLSearchParams(window.location.search)
+        affiliateCode = urlParams.get('ref') || urlParams.get('aff') || urlParams.get('affiliate') || undefined
+        
+        // If found in URL, set the cookie for future page loads
+        if (affiliateCode) {
+          const expires = new Date()
+          expires.setDate(expires.getDate() + 30)
+          document.cookie = `affiliate_ref=${affiliateCode}; path=/; expires=${expires.toUTCString()}`
+        }
+      }
 
       if (!affiliateCode) {
         setLoading(false)

@@ -126,9 +126,18 @@ export default function VirtualAccountPage() {
 
       // Handle redirect response (fallback to Xendit checkout)
       if (data.redirect && data.redirectUrl) {
-        console.log('[VA Page] Redirecting to Xendit checkout:', data.redirectUrl)
-        window.location.href = data.redirectUrl
-        return
+        // Prevent redirect loop: only redirect if URL is NOT pointing to this same page
+        const currentPath = `/payment/va/${params.transactionId}`
+        if (!data.redirectUrl.includes(currentPath) && !data.redirectUrl.includes('/payment/va/')) {
+          console.log('[VA Page] Redirecting to Xendit checkout:', data.redirectUrl)
+          window.location.href = data.redirectUrl
+          return
+        } else {
+          console.warn('[VA Page] Redirect loop detected, showing error instead')
+          setError('Detail pembayaran tidak lengkap. Silakan hubungi admin atau lakukan checkout ulang.')
+          setLoading(false)
+          return
+        }
       }
 
       if (!response.ok) {

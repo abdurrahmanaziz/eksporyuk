@@ -112,8 +112,9 @@ export async function GET(
     }
     
     if (!vaNumber) {
-      // Check if there's a paymentUrl fallback
-      if (transaction.paymentUrl) {
+      // Check if there's a paymentUrl fallback (only if it's NOT a self-referencing URL)
+      // Avoid redirect loop by checking if paymentUrl points to /payment/va/
+      if (transaction.paymentUrl && !transaction.paymentUrl.includes('/payment/va/')) {
         return NextResponse.json({
           redirect: true,
           redirectUrl: transaction.paymentUrl,
@@ -121,8 +122,40 @@ export async function GET(
         })
       }
       
+      // Try to create a new Xendit invoice as fallback
+      try {
+        const { xenditService } = await import('@/lib/xendit')
+        const isConfigured = await xenditService.isConfigured()
+        
+        if (isConfigured) {
+          const invoice = await xenditService.createInvoice({
+            external_id: transaction.externalId || transaction.id,
+            amount: Number(transaction.amount),
+            payer_email: transaction.customerEmail || user?.email || 'customer@eksporyuk.com',
+            description: transaction.description || 'Pembayaran',
+            invoice_duration: paymentExpiryHours * 3600,
+          })
+          
+          if (invoice?.invoiceUrl) {
+            // Update transaction with invoice URL
+            await prisma.transaction.update({
+              where: { id: transaction.id },
+              data: { paymentUrl: invoice.invoiceUrl }
+            })
+            
+            return NextResponse.json({
+              redirect: true,
+              redirectUrl: invoice.invoiceUrl,
+              message: 'Silakan selesaikan pembayaran melalui Xendit checkout',
+            })
+          }
+        }
+      } catch (invoiceError) {
+        console.error('[VA API] Failed to create invoice fallback for missing VA:', invoiceError)
+      }
+      
       return NextResponse.json(
-        { error: 'Detail Virtual Account tidak ditemukan' },
+        { error: 'Detail Virtual Account tidak ditemukan. Silakan hubungi admin atau coba checkout ulang.' },
         { status: 400 }
       )
     }
