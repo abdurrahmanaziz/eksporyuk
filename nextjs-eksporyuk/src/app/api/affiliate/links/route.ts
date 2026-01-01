@@ -241,9 +241,6 @@ export async function GET(request: NextRequest) {
         name: error.name
       } : undefined
     })
-  } catch (outerError: any) {
-    console.error('💥 [Affiliate Links] OUTER ERROR:', outerError)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
