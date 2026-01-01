@@ -51,3 +51,47 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    const { messageId, content } = await request.json()
+    
+    if (!messageId || !content) {
+      return NextResponse.json(
+        { error: 'messageId and content required' },
+        { status: 400 }
+      )
+    }
+    
+    // Get the message to verify ownership
+    const message = await chatService.getMessage(messageId)
+    
+    if (!message) {
+      return NextResponse.json({ error: 'Message not found' }, { status: 404 })
+    }
+    
+    if (message.senderId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    
+    // Update the message
+    const updatedMessage = await chatService.editMessage(messageId, content)
+    
+    return NextResponse.json({
+      success: true,
+      message: updatedMessage
+    })
+  } catch (error: any) {
+    console.error('[API] Edit message error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error', message: error.message },
+      { status: 500 }
+    )
+  }
+}

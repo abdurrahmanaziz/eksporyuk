@@ -82,37 +82,46 @@ export async function GET(req: NextRequest) {
         }
       })
 
-    // Get user's groups
-    const groupMembers = await prisma.groupMember.findMany({
+    // Get user's groups (groups they're a member of)
+    const userGroupMembers = await prisma.groupMember.findMany({
       where: { userId },
-      take: 5
+      include: { group: true }
     })
 
-    const groupIds = groupMembers.map(gm => gm.groupId)
-
-    // Get recommended groups (groups user hasn't joined)
-    const recommendedGroups = await prisma.group.findMany({
+    // Get public groups (not private or hidden)
+    const publicGroups = await prisma.group.findMany({
       where: {
-        id: { notIn: groupIds.length > 0 ? groupIds : ['no-groups'] },
-        isActive: true
+        isActive: true,
+        type: 'PUBLIC' // Only show public groups
       },
-      take: 3,
       orderBy: { createdAt: 'desc' }
     })
 
+    // Combine: user's own groups + public groups
+    const userGroupIds = userGroupMembers.map(gm => gm.groupId)
+    const userGroups = userGroupMembers.map(gm => gm.group).filter(g => g.isActive)
+    
+    // Public groups that user isn't already in
+    const newPublicGroups = publicGroups.filter(g => !userGroupIds.includes(g.id))
+    
+    // Combine both lists: user's groups first, then new public groups (up to 5 total)
+    const allGroupsToShow = [...userGroups, ...newPublicGroups].slice(0, 5)
+
     // Get member counts for groups
     const groupMemberCounts = await Promise.all(
-      recommendedGroups.map(g => 
+      allGroupsToShow.map(g => 
         prisma.groupMember.count({ where: { groupId: g.id } })
       )
     )
 
-    const groupsData = recommendedGroups.map((g, i) => ({
+    const groupsData = allGroupsToShow.map((g, i) => ({
       id: g.id,
       slug: g.slug || g.id,
       name: g.name,
+      description: g.description || '',
       thumbnail: g.avatar || null,
-      memberCount: groupMemberCounts[i] || 0
+      memberCount: groupMemberCounts[i] || 0,
+      isUserMember: userGroupIds.includes(g.id) // Indicate if user is already a member
     }))
 
     // Get products
