@@ -326,15 +326,22 @@ async function calculateAffiliateStats() {
   
   const totalAffiliates = registeredCount + roleOnlyCount
   
-  // Get total earnings from AffiliateProfile
-  const earningsData = await prisma.affiliateProfile.aggregate({
-    _sum: { totalEarnings: true }
+  // Get total earnings from AffiliateConversion (ALL commissions - including Sejoli data)
+  const totalCommissionData = await prisma.affiliateConversion.aggregate({
+    _sum: { commissionAmount: true },
+    _count: { id: true }
   })
   
-  // Get total sales from AffiliateProfile
-  const salesData = await prisma.affiliateProfile.aggregate({
-    _sum: { totalSales: true }
+  // Get total sales from transactions linked to AffiliateConversion
+  const conversionTxIds = await prisma.affiliateConversion.findMany({
+    select: { transactionId: true }
   })
+  const txIds = conversionTxIds.map(c => c.transactionId)
+  
+  const totalSalesData = txIds.length > 0 ? await prisma.transaction.aggregate({
+    where: { id: { in: txIds } },
+    _sum: { amount: true }
+  }) : { _sum: { amount: null } }
   
   // Get all affiliate user IDs
   const allAffiliateUserIds = [
@@ -372,8 +379,9 @@ async function calculateAffiliateStats() {
     roleOnlyAffiliates: roleOnlyCount,
     activeAffiliates: activeCount,
     pendingApproval: pendingCount,
-    totalEarnings: Number(earningsData._sum.totalEarnings || 0),
-    totalSales: Number(salesData._sum.totalSales || 0),
+    totalEarnings: Number(totalCommissionData._sum.commissionAmount || 0),
+    totalSales: Number(totalSalesData._sum.amount || 0),
+    totalConversions: totalCommissionData._count.id || 0,
     pendingPayouts: Number(pendingPayoutsData._sum.balance || 0),
     totalPayouts: Number(totalPayoutsData._sum.amount || 0),
   }
