@@ -2,7 +2,324 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Copy, Check, AlertCircle, Clock, CreditCard, User, Mail, Phone, FileText, Tag, Calendar, Timer, CheckCircle } from 'lucide-react'
+import { Copy, Check, AlertCircle, Clock, CreditCard, User, Mail, Phone, FileText, Tag, Calendar, Timer, CheckCircle, Smartphone, Building2, Globe, ChevronRight } from 'lucide-react'
+
+// Payment Instructions Tab Component
+function PaymentInstructionTabs({ 
+  bankName, 
+  bankCode, 
+  vaNumber, 
+  amount, 
+  formatCurrency 
+}: { 
+  bankName: string
+  bankCode: string
+  vaNumber: string
+  amount: number
+  formatCurrency: (amount: number) => string
+}) {
+  const [activeTab, setActiveTab] = useState<'mbanking' | 'atm' | 'ibanking'>('mbanking')
+  
+  // Bank-specific instructions
+  const getBankInstructions = () => {
+    const code = bankCode?.toUpperCase()
+    
+    const instructions = {
+      mbanking: {
+        BCA: [
+          'Login ke aplikasi BCA Mobile atau myBCA',
+          'Pilih menu "m-Transfer"',
+          'Pilih "BCA Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Pastikan nama dan nominal sudah benar',
+          'Masukkan PIN m-BCA',
+          'Pembayaran selesai'
+        ],
+        MANDIRI: [
+          'Login ke aplikasi Livin\' by Mandiri',
+          'Pilih menu "Bayar"',
+          'Pilih "Multipayment"',
+          'Pilih "Lainnya" lalu cari penyedia jasa',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi nominal pembayaran',
+          'Masukkan PIN',
+          'Pembayaran selesai'
+        ],
+        BNI: [
+          'Login ke aplikasi BNI Mobile Banking',
+          'Pilih menu "Transfer"',
+          'Pilih "Virtual Account Billing"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Pastikan data sudah benar',
+          'Masukkan Password Transaksi',
+          'Pembayaran selesai'
+        ],
+        BRI: [
+          'Login ke aplikasi BRImo',
+          'Pilih menu "BRIVA"',
+          `Masukkan nomor BRIVA: ${vaNumber}`,
+          'Pastikan nama dan nominal sudah benar',
+          'Masukkan PIN BRImo',
+          'Pembayaran selesai'
+        ],
+        BSI: [
+          'Login ke aplikasi BSI Mobile',
+          'Pilih menu "Bayar"',
+          'Pilih "Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi pembayaran',
+          'Masukkan PIN',
+          'Pembayaran selesai'
+        ],
+        PERMATA: [
+          'Login ke aplikasi PermataMobile X',
+          'Pilih menu "Bayar Tagihan"',
+          'Pilih "Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi pembayaran',
+          'Masukkan PIN',
+          'Pembayaran selesai'
+        ],
+        CIMB: [
+          'Login ke aplikasi OCTO Mobile',
+          'Pilih menu "Transfer"',
+          'Pilih "Transfer to Other CIMB Niaga Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi pembayaran',
+          'Masukkan PIN',
+          'Pembayaran selesai'
+        ]
+      },
+      atm: {
+        BCA: [
+          'Masukkan kartu ATM BCA & PIN',
+          'Pilih menu "Transaksi Lainnya"',
+          'Pilih "Transfer"',
+          'Pilih "Ke Rek BCA Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          `Masukkan nominal: ${formatCurrency(amount)}`,
+          'Konfirmasi dan selesaikan pembayaran'
+        ],
+        MANDIRI: [
+          'Masukkan kartu ATM Mandiri & PIN',
+          'Pilih menu "Bayar/Beli"',
+          'Pilih "Multipayment"',
+          'Masukkan kode perusahaan',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dan selesaikan pembayaran'
+        ],
+        BNI: [
+          'Masukkan kartu ATM BNI & PIN',
+          'Pilih menu "Menu Lainnya"',
+          'Pilih "Transfer"',
+          'Pilih "Virtual Account Billing"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dan selesaikan pembayaran'
+        ],
+        BRI: [
+          'Masukkan kartu ATM BRI & PIN',
+          'Pilih menu "Transaksi Lainnya"',
+          'Pilih "Pembayaran"',
+          'Pilih "Lainnya" → "BRIVA"',
+          `Masukkan nomor BRIVA: ${vaNumber}`,
+          'Konfirmasi dan selesaikan pembayaran'
+        ],
+        BSI: [
+          'Masukkan kartu ATM BSI & PIN',
+          'Pilih menu "Pembayaran"',
+          'Pilih "Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dan selesaikan pembayaran'
+        ],
+        PERMATA: [
+          'Masukkan kartu ATM Permata & PIN',
+          'Pilih menu "Transaksi Lainnya"',
+          'Pilih "Pembayaran"',
+          'Pilih "Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dan selesaikan pembayaran'
+        ],
+        CIMB: [
+          'Masukkan kartu ATM CIMB & PIN',
+          'Pilih menu "Transfer"',
+          'Pilih "Rekening CIMB Niaga Lain"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dan selesaikan pembayaran'
+        ]
+      },
+      ibanking: {
+        BCA: [
+          'Login ke KlikBCA Individual',
+          'Pilih menu "Transfer Dana"',
+          'Pilih "Transfer ke BCA Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Klik "Lanjutkan"',
+          'Masukkan respon KeyBCA',
+          'Pembayaran selesai'
+        ],
+        MANDIRI: [
+          'Login ke Mandiri Online',
+          'Pilih menu "Bayar"',
+          'Pilih "Multipayment"',
+          'Pilih penyedia jasa',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dengan Token',
+          'Pembayaran selesai'
+        ],
+        BNI: [
+          'Login ke BNI Internet Banking',
+          'Pilih menu "Transfer"',
+          'Pilih "Virtual Account Billing"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dengan Token',
+          'Pembayaran selesai'
+        ],
+        BRI: [
+          'Login ke BRI Internet Banking',
+          'Pilih menu "Pembayaran"',
+          'Pilih "BRIVA"',
+          `Masukkan nomor BRIVA: ${vaNumber}`,
+          'Konfirmasi dengan Token',
+          'Pembayaran selesai'
+        ],
+        BSI: [
+          'Login ke BSI Net Banking',
+          'Pilih menu "Pembayaran"',
+          'Pilih "Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi pembayaran',
+          'Pembayaran selesai'
+        ],
+        PERMATA: [
+          'Login ke PermataNet',
+          'Pilih menu "Pembayaran Tagihan"',
+          'Pilih "Virtual Account"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dengan Token',
+          'Pembayaran selesai'
+        ],
+        CIMB: [
+          'Login ke CIMB Clicks',
+          'Pilih menu "Transfer"',
+          'Pilih "Transfer ke Rekening CIMB Niaga"',
+          `Masukkan nomor VA: ${vaNumber}`,
+          'Konfirmasi dengan Token',
+          'Pembayaran selesai'
+        ]
+      }
+    }
+    
+    // Default instructions if bank not found
+    const defaultInstructions = {
+      mbanking: [
+        `Buka aplikasi mobile banking ${bankName}`,
+        'Pilih menu "Transfer" atau "Bayar"',
+        'Pilih "Virtual Account"',
+        `Masukkan nomor VA: ${vaNumber}`,
+        `Masukkan nominal: ${formatCurrency(amount)}`,
+        'Konfirmasi dan selesaikan pembayaran'
+      ],
+      atm: [
+        `Masukkan kartu ATM ${bankName} & PIN`,
+        'Pilih menu "Pembayaran" atau "Transfer"',
+        'Pilih "Virtual Account"',
+        `Masukkan nomor VA: ${vaNumber}`,
+        `Masukkan nominal: ${formatCurrency(amount)}`,
+        'Konfirmasi dan selesaikan pembayaran'
+      ],
+      ibanking: [
+        `Login ke Internet Banking ${bankName}`,
+        'Pilih menu "Transfer" atau "Pembayaran"',
+        'Pilih "Virtual Account"',
+        `Masukkan nomor VA: ${vaNumber}`,
+        'Konfirmasi dengan Token/OTP',
+        'Pembayaran selesai'
+      ]
+    }
+    
+    return {
+      mbanking: instructions.mbanking[code] || defaultInstructions.mbanking,
+      atm: instructions.atm[code] || defaultInstructions.atm,
+      ibanking: instructions.ibanking[code] || defaultInstructions.ibanking
+    }
+  }
+  
+  const bankInstructions = getBankInstructions()
+  
+  const tabs = [
+    { id: 'mbanking' as const, label: 'M-Banking', icon: Smartphone },
+    { id: 'atm' as const, label: 'ATM', icon: Building2 },
+    { id: 'ibanking' as const, label: 'Internet Banking', icon: Globe },
+  ]
+  
+  return (
+    <div>
+      {/* Tab Buttons */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+        {tabs.map((tab) => {
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.id
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
+      
+      {/* Instructions Content */}
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4">
+        <ol className="space-y-3 text-sm text-gray-700">
+          {bankInstructions[activeTab].map((step, index) => (
+            <li key={index} className="flex gap-3 items-start">
+              <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                {index + 1}
+              </span>
+              <span className="pt-0.5" dangerouslySetInnerHTML={{ 
+                __html: step
+                  .replace(vaNumber, `<strong class="text-blue-600 font-mono bg-blue-100 px-1 rounded">${vaNumber}</strong>`)
+                  .replace(formatCurrency(amount), `<strong class="text-blue-600">${formatCurrency(amount)}</strong>`)
+              }} />
+            </li>
+          ))}
+        </ol>
+      </div>
+      
+      {/* Quick Copy Section */}
+      <div className="mt-4 p-3 bg-gray-50 rounded-xl">
+        <p className="text-xs text-gray-500 mb-2">Salin informasi pembayaran:</p>
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(vaNumber)
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs hover:bg-gray-50 transition"
+          >
+            <Copy className="w-3 h-3" />
+            <span className="font-mono">{vaNumber}</span>
+          </button>
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(amount.toString())
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs hover:bg-gray-50 transition"
+          >
+            <Copy className="w-3 h-3" />
+            <span>{formatCurrency(amount)}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 interface VADetails {
   // VA Details
@@ -641,38 +958,21 @@ export default function VirtualAccountPage() {
           </div>
         </div>
 
-        {/* Payment Instructions */}
+        {/* Payment Instructions with Tabs */}
         <div className="bg-white rounded-2xl shadow-lg p-5 mb-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-blue-600" />
             Cara Pembayaran
           </h3>
-          <ol className="space-y-3 text-sm text-gray-700">
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-              <span>Buka aplikasi mobile banking atau ATM <strong>{vaDetails.bankName || vaDetails.bankCode}</strong></span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-              <span>Pilih menu <strong>Transfer</strong> atau <strong>Bayar/Beli</strong></span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
-              <span>Pilih <strong>Virtual Account</strong></span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
-              <span>Masukkan nomor VA: <strong className="text-blue-600 font-mono">{vaDetails.vaNumber}</strong></span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">5</span>
-              <span>Masukkan nominal: <strong className="text-blue-600">{formatCurrency(vaDetails.amount)}</strong></span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">6</span>
-              <span>Konfirmasi dan selesaikan pembayaran</span>
-            </li>
-          </ol>
+          
+          {/* Payment Method Tabs */}
+          <PaymentInstructionTabs 
+            bankName={vaDetails.bankName || vaDetails.bankCode}
+            bankCode={vaDetails.bankCode}
+            vaNumber={vaDetails.vaNumber}
+            amount={vaDetails.amount}
+            formatCurrency={formatCurrency}
+          />
         </div>
 
         {/* Status Note */}
