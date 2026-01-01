@@ -91,11 +91,16 @@ const rateLimiter = new RateLimiter()
 // GET /api/affiliate/links - Get user's affiliate links
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 [Affiliate Links] GET request started')
+    
     const session = await getServerSession(authOptions)
     
     if (!session) {
+      console.log('❌ [Affiliate Links] No session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    console.log(`✅ [Affiliate Links] User: ${session.user.id}`)
 
     // Parse query parameters for pagination and filtering
     const { searchParams } = new URL(request.url)
@@ -104,6 +109,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50) // Max 50 items
     const skip = (page - 1) * limit
 
+    console.log(`📄 [Affiliate Links] Pagination: page=${page}, limit=${limit}`)
+
     // Get or create affiliate profile with minimal data
     let affiliateProfile = await prisma.affiliateProfile.findUnique({
       where: { userId: session.user.id },
@@ -111,11 +118,14 @@ export async function GET(request: NextRequest) {
     })
 
     if (!affiliateProfile) {
+      console.log('⚠️  [Affiliate Links] No affiliate profile found')
       return NextResponse.json({ 
         links: [], 
         pagination: { page, limit, total: 0, totalPages: 0 }
       })
     }
+
+    console.log(`✅ [Affiliate Links] Affiliate ID: ${affiliateProfile.id}`)
 
     // Get total count for pagination (separate query for performance)
     const totalCount = await prisma.affiliateLink.count({
@@ -124,6 +134,8 @@ export async function GET(request: NextRequest) {
         ...(showArchived ? {} : { isArchived: false }),
       },
     })
+    
+    console.log(`📊 [Affiliate Links] Total links: ${totalCount}`)
     
     // Get affiliate's links with pagination and optimized includes
     const links = await prisma.affiliateLink.findMany({
@@ -166,6 +178,8 @@ export async function GET(request: NextRequest) {
       skip: skip,
     })
 
+    console.log(`✅ [Affiliate Links] Retrieved ${links.length} links`)
+
     // Build optimized response with pagination
     const linksWithStats = links.map((link) => {
       return {
@@ -188,6 +202,8 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(totalCount / limit)
 
+    console.log(`✅ [Affiliate Links] Success - returning ${linksWithStats.length} links`)
+
     return NextResponse.json({
       links: linksWithStats,
       pagination: {
@@ -199,10 +215,16 @@ export async function GET(request: NextRequest) {
         hasPrev: page > 1
       }
     })
-  } catch (error) {
-    console.error('Error fetching affiliate links:', error)
+  } catch (error: any) {
+    console.error('❌ [Affiliate Links] Error:', error)
+    console.error('❌ [Affiliate Links] Stack:', error.stack)
+    console.error('❌ [Affiliate Links] Message:', error.message)
+    
     return NextResponse.json(
-      { error: 'Failed to fetch affiliate links' },
+      { 
+        error: 'Failed to fetch affiliate links',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     )
   }
