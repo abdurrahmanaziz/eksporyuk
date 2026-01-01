@@ -442,16 +442,17 @@ export default function DashboardSidebar() {
   const { settings } = useSettings()
 
   // Detect current dashboard context from pathname AND preferredDashboard
-  // This ensures menu stays consistent when navigating to shared pages like /dashboard/my-membership
+  // This ensures menu stays consistent when navigating to shared pages
   const getCurrentDashboardContext = (): string => {
-    // Role-specific paths always take precedence
+    // Role-specific paths ALWAYS take precedence (explicit dashboard routes)
     if (pathname?.startsWith('/admin')) return 'ADMIN'
     if (pathname?.startsWith('/mentor')) return 'MENTOR'
     if (pathname?.startsWith('/affiliate')) return 'AFFILIATE'
     if (pathname?.startsWith('/supplier')) return 'SUPPLIER'
     
-    // For shared paths (like /dashboard/*, /community/*, etc), use preferredDashboard
-    // This keeps the menu consistent with the dashboard user switched to
+    // For ALL other paths, use preferredDashboard if set
+    // This includes: /dashboard/*, /learn, /courses, /community/*, /profile, etc.
+    // User's preferred dashboard should persist across all non-role-specific pages
     if (preferredDashboard) {
       switch (preferredDashboard) {
         case 'admin':
@@ -468,7 +469,14 @@ export default function DashboardSidebar() {
       }
     }
     
-    // Fallback to primary role
+    // Fallback: If no preferredDashboard, use primary role
+    // But for AFFILIATE/MENTOR primary roles accessing member pages, show member menu
+    const memberPaths = ['/dashboard', '/community', '/learn', '/courses', '/chat', '/profile', '/notifications', '/certificates', '/saved-posts', '/member-directory', '/my-events', '/databases', '/documents', '/wallet']
+    if (memberPaths.some(path => pathname?.startsWith(path))) {
+      return 'MEMBER_PREMIUM'
+    }
+    
+    // Final fallback to primary role
     return userRole === 'MEMBER_FREE' ? 'MEMBER_FREE' : (userRole || 'MEMBER_PREMIUM')
   }
   

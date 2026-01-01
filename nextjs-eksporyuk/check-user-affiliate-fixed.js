@@ -3,7 +3,7 @@ const prisma = new PrismaClient()
 
 async function checkUserAffiliate() {
   try {
-    console.log('�� Checking user: azizbiasa@gmail.com\n')
+    console.log('🔍 Checking user: azizbiasa@gmail.com\n')
     
     // Get user
     const user = await prisma.user.findUnique({
@@ -41,31 +41,42 @@ async function checkUserAffiliate() {
         id: true,
         userId: true,
         affiliateCode: true,
-        status: true,
+        applicationStatus: true,  // CORRECT FIELD
         isActive: true,
         approvedAt: true,
-        rejectedAt: true,
         createdAt: true,
+        tier: true,
+        commissionRate: true,
+        totalClicks: true,
+        totalConversions: true,
+        totalSales: true,
+        totalEarnings: true,
       }
     })
     
     if (!affiliateProfile) {
       console.log('❌ No affiliate profile found!')
       console.log('\n💡 Solution: User needs to apply at /affiliate/apply')
+      console.log('   Or admin needs to create affiliate profile for this user')
       return
     }
     
     console.log('✅ Affiliate profile found:')
     console.log('   ID:', affiliateProfile.id)
     console.log('   Code:', affiliateProfile.affiliateCode || 'NOT SET')
-    console.log('   Status:', affiliateProfile.status)
+    console.log('   Application Status:', affiliateProfile.applicationStatus)
     console.log('   Active:', affiliateProfile.isActive)
-    console.log('   Approved:', affiliateProfile.approvedAt ? 'YES' : 'NO')
-    console.log('   Rejected:', affiliateProfile.rejectedAt ? 'YES' : 'NO')
+    console.log('   Approved:', affiliateProfile.approvedAt ? 'YES (' + affiliateProfile.approvedAt.toISOString() + ')' : 'NO')
+    console.log('   Tier:', affiliateProfile.tier)
+    console.log('   Commission Rate:', affiliateProfile.commissionRate + '%')
+    console.log('   Total Clicks:', affiliateProfile.totalClicks)
+    console.log('   Total Conversions:', affiliateProfile.totalConversions)
+    console.log('   Total Sales: Rp', affiliateProfile.totalSales?.toLocaleString() || 0)
+    console.log('   Total Earnings: Rp', affiliateProfile.totalEarnings?.toLocaleString() || 0)
     
-    if (affiliateProfile.status !== 'APPROVED') {
-      console.log('\n⚠️  WARNING: Affiliate status is NOT approved!')
-      console.log('   Current status:', affiliateProfile.status)
+    if (affiliateProfile.applicationStatus !== 'APPROVED') {
+      console.log('\n⚠️  WARNING: Application status is NOT approved!')
+      console.log('   Current status:', affiliateProfile.applicationStatus)
       console.log('   💡 Admin needs to approve this affiliate')
     }
     
@@ -75,7 +86,7 @@ async function checkUserAffiliate() {
     
     if (!affiliateProfile.affiliateCode) {
       console.log('\n⚠️  WARNING: No affiliate code set!')
-      console.log('   �� Code should be auto-generated on approval')
+      console.log('   💡 Code should be auto-generated on creation')
     }
     
     // Check existing links
@@ -93,6 +104,8 @@ async function checkUserAffiliate() {
         fullUrl: true,
         isActive: true,
         createdAt: true,
+        clicks: true,
+        conversions: true,
       },
       orderBy: { createdAt: 'desc' },
       take: 5
@@ -107,10 +120,15 @@ async function checkUserAffiliate() {
                       link.productId ? 'PRODUCT' : 
                       link.courseId ? 'COURSE' : 
                       link.supplierId ? 'SUPPLIER' : 'UNKNOWN'
-        console.log(`   ${i + 1}. ${link.code} (${link.linkType} - ${target})`)
-        console.log(`      URL: ${link.fullUrl?.substring(0, 80)}...`)
+        console.log(`\n   ${i + 1}. Code: ${link.code}`)
+        console.log(`      Type: ${link.linkType} → ${target}`)
+        console.log(`      URL: ${link.fullUrl?.substring(0, 70)}...`)
         console.log(`      Active: ${link.isActive}`)
+        console.log(`      Clicks: ${link.clicks}, Conversions: ${link.conversions}`)
+        console.log(`      Created: ${link.createdAt.toISOString()}`)
       })
+    } else {
+      console.log('   ℹ️  No links created yet')
     }
     
     // Check memberships available
@@ -125,7 +143,7 @@ async function checkUserAffiliate() {
         price: true,
         affiliateCommissionRate: true,
       },
-      take: 5
+      take: 10
     })
     
     console.log(`   Active memberships: ${memberships.length}`)
@@ -134,6 +152,7 @@ async function checkUserAffiliate() {
       memberships.forEach((m, i) => {
         console.log(`   ${i + 1}. ${m.name}`)
         console.log(`      Slug: ${m.slug || m.checkoutSlug}`)
+        console.log(`      Checkout: ${m.checkoutSlug}`)
         console.log(`      Price: Rp ${m.price?.toLocaleString()}`)
         console.log(`      Commission: ${m.affiliateCommissionRate}%`)
       })
@@ -143,38 +162,75 @@ async function checkUserAffiliate() {
     }
     
     // Summary
-    console.log('\n' + '='.repeat(60))
-    console.log('📊 SUMMARY')
-    console.log('='.repeat(60))
+    console.log('\n' + '='.repeat(70))
+    console.log('📊 DIAGNOSIS & SOLUTION')
+    console.log('='.repeat(70))
     
     const canGenerate = 
       user.isActive && 
       !user.isSuspended && 
       affiliateProfile && 
       affiliateProfile.isActive && 
-      affiliateProfile.status === 'APPROVED' && 
+      affiliateProfile.applicationStatus === 'APPROVED' && 
       affiliateProfile.affiliateCode && 
       memberships.length > 0
     
     if (canGenerate) {
       console.log('✅ User CAN generate affiliate links!')
-      console.log('\n   Next steps:')
-      console.log('   1. Login to https://eksporyuk.com')
-      console.log('   2. Go to /affiliate/links')
-      console.log('   3. Click "Generate Link"')
-      console.log('   4. Select "Membership"')
-      console.log('   5. Click "Generate Semua Link!"')
+      console.log('\n📍 Steps to generate:')
+      console.log('   1. Login to https://eksporyuk.com/auth/login')
+      console.log('   2. Email: azizbiasa@gmail.com')
+      console.log('   3. Navigate to /affiliate/links')
+      console.log('   4. Click tab "Generate Link"')
+      console.log('   5. Select "Membership"')
+      console.log('   6. (Optional) Select specific membership or leave empty for all')
+      console.log('   7. (Optional) Select coupon')
+      console.log('   8. Click "Generate Semua Link!"')
+      console.log('\n   Expected: Links will be created and appear in list')
     } else {
-      console.log('❌ User CANNOT generate links yet!')
-      console.log('\n   Issues found:')
-      if (!user.isActive) console.log('   - User account not active')
-      if (user.isSuspended) console.log('   - User account suspended')
-      if (!affiliateProfile) console.log('   - No affiliate profile')
-      if (affiliateProfile && !affiliateProfile.isActive) console.log('   - Affiliate profile not active')
-      if (affiliateProfile && affiliateProfile.status !== 'APPROVED') console.log('   - Affiliate not approved (status: ' + affiliateProfile.status + ')')
-      if (affiliateProfile && !affiliateProfile.affiliateCode) console.log('   - No affiliate code')
-      if (memberships.length === 0) console.log('   - No active memberships')
+      console.log('❌ User CANNOT generate links!')
+      console.log('\n🔧 Issues found & solutions:')
+      
+      if (!user.isActive) {
+        console.log('\n   ❌ User account not active')
+        console.log('      → Admin: Activate user account')
+      }
+      
+      if (user.isSuspended) {
+        console.log('\n   ❌ User account suspended')
+        console.log('      → Admin: Unsuspend user account')
+      }
+      
+      if (!affiliateProfile) {
+        console.log('\n   ❌ No affiliate profile')
+        console.log('      → User: Apply at /affiliate/apply')
+        console.log('      → Admin: Create affiliate profile manually')
+      } else {
+        if (!affiliateProfile.isActive) {
+          console.log('\n   ❌ Affiliate profile not active')
+          console.log('      → Admin: Set isActive = true in database')
+        }
+        
+        if (affiliateProfile.applicationStatus !== 'APPROVED') {
+          console.log('\n   ❌ Application not approved')
+          console.log('      → Current status:', affiliateProfile.applicationStatus)
+          console.log('      → Admin: Approve affiliate at /admin/affiliates')
+          console.log('      → Or update applicationStatus to APPROVED in database')
+        }
+        
+        if (!affiliateProfile.affiliateCode) {
+          console.log('\n   ❌ No affiliate code')
+          console.log('      → Admin: Generate code manually in database')
+        }
+      }
+      
+      if (memberships.length === 0) {
+        console.log('\n   ❌ No active memberships')
+        console.log('      → Admin: Activate at least 1 membership')
+      }
     }
+    
+    console.log('\n' + '='.repeat(70))
     
   } catch (error) {
     console.error('❌ Error:', error.message)
