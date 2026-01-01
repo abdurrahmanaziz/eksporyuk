@@ -493,6 +493,7 @@ async function scanFrontend(): Promise<ScanCheckResult[]> {
     { name: 'Mentor Dashboard Page', url: '/mentor/dashboard', category: 'Mentor' },
     { name: 'Mentor Courses', url: '/mentor/courses', category: 'Mentor' },
     { name: 'Mentor Students', url: '/mentor/students', category: 'Mentor' },
+    { name: 'Mentor Supplier Reviews', url: '/mentor/supplier/reviews', category: 'Mentor' },
     
     // === SUPPLIER PAGES ===
     { name: 'Supplier Dashboard', url: '/supplier/dashboard', category: 'Supplier' },
@@ -500,12 +501,58 @@ async function scanFrontend(): Promise<ScanCheckResult[]> {
     { name: 'Supplier Profile', url: '/supplier/profile', category: 'Supplier' },
     { name: 'Supplier Onboarding', url: '/supplier/onboarding', category: 'Supplier' },
     
+    // === DATABASE PAGES ===
+    { name: 'Database Suppliers', url: '/databases/suppliers', category: 'Database' },
+    { name: 'Database Forwarders', url: '/databases/forwarders', category: 'Database' },
+    { name: 'Database Buyers', url: '/databases/buyers', category: 'Database' },
+    { name: 'Admin Database Suppliers', url: '/admin/databases/suppliers', category: 'Admin Database' },
+    { name: 'Admin Database Forwarders', url: '/admin/databases/forwarders', category: 'Admin Database' },
+    { name: 'Admin Database Buyers', url: '/admin/databases/buyers', category: 'Admin Database' },
+    { name: 'Member Database Suppliers', url: '/member/databases/suppliers', category: 'Member Database' },
+    { name: 'Member Database Forwarders', url: '/member/databases/forwarders', category: 'Member Database' },
+    { name: 'Member Database Buyers', url: '/member/databases/buyers', category: 'Member Database' },
+    
+    // === ADMIN EXTRA PAGES ===
+    { name: 'Admin Integrations', url: '/admin/integrations', category: 'Admin' },
+    { name: 'Admin OneSignal', url: '/admin/onesignal', category: 'Admin' },
+    { name: 'Admin Sales Page', url: '/admin/salespage', category: 'Admin' },
+    { name: 'Admin Features', url: '/admin/features', category: 'Admin' },
+    { name: 'Admin Course Consents', url: '/admin/course-consents', category: 'Admin' },
+    { name: 'Admin Documentation', url: '/admin/documentation', category: 'Admin' },
+    { name: 'Admin Member Directory', url: '/admin/member-directory', category: 'Admin' },
+    { name: 'Admin Supplier Products', url: '/admin/supplier/products', category: 'Admin Supplier' },
+    { name: 'Admin Supplier Users', url: '/admin/supplier/users', category: 'Admin Supplier' },
+    { name: 'Admin Supplier Verifications', url: '/admin/supplier/verifications', category: 'Admin Supplier' },
+    { name: 'Admin Supplier Authorized Mentors', url: '/admin/supplier/authorized-mentors', category: 'Admin Supplier' },
+    
+    // === AFFILIATE EXTRA PAGES ===
+    { name: 'Affiliate Bio', url: '/affiliate/bio', category: 'Affiliate' },
+    { name: 'Affiliate Optin Forms', url: '/affiliate/optin-forms', category: 'Affiliate' },
+    { name: 'Affiliate Materials', url: '/affiliate/materials', category: 'Affiliate' },
+    { name: 'Affiliate Welcome', url: '/affiliate/welcome', category: 'Affiliate' },
+    { name: 'Affiliate Statistics', url: '/affiliate/statistics', category: 'Affiliate' },
+    { name: 'Affiliate Settings', url: '/affiliate/settings', category: 'Affiliate Settings' },
+    { name: 'Affiliate Settings Follow-up', url: '/affiliate/settings/followup', category: 'Affiliate Settings' },
+    { name: 'Affiliate Settings Withdrawal', url: '/affiliate/settings/withdrawal', category: 'Affiliate Settings' },
+    
     // === OTHER FEATURES ===
     { name: 'Feed/Timeline', url: '/feed', category: 'Feature' },
     { name: 'Groups', url: '/groups', category: 'Feature' },
     { name: 'Notifications', url: '/notifications', category: 'Feature' },
     { name: 'Wallet', url: '/wallet', category: 'Feature' },
     { name: 'Chat', url: '/chat', category: 'Feature' },
+    { name: 'Learn', url: '/learn', category: 'Feature' },
+    { name: 'Documentation', url: '/documentation', category: 'Feature' },
+    { name: 'Member Directory', url: '/member-directory', category: 'Feature' },
+    { name: 'My Events', url: '/my-events', category: 'Feature' },
+    { name: 'Dashboard Selector', url: '/dashboard-selector', category: 'Feature' },
+    
+    // === PUBLIC REGISTRATION ===
+    { name: 'Daftar Affiliate', url: '/daftar-affiliate', category: 'Public' },
+    { name: 'Daftar Supplier', url: '/daftar-supplier', category: 'Public' },
+    { name: 'Register Supplier', url: '/register-supplier', category: 'Public' },
+    { name: 'Beli Paket', url: '/beli-paket', category: 'Public' },
+    { name: 'Migrasi', url: '/migrasi', category: 'Public' },
   ]
 
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
