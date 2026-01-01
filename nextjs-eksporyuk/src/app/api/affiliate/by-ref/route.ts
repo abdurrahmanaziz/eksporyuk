@@ -8,6 +8,9 @@ export const dynamic = 'force-dynamic'
 /**
  * GET /api/affiliate/by-ref?code=ABC123
  * Get affiliate info (name) from affiliate code for display on checkout
+ * Supports both:
+ * - AffiliateProfile.affiliateCode (e.g., "abdurrahmanaziz")
+ * - AffiliateLink.code (e.g., "abdurrahmanaziz-4BJ0R8")
  */
 export async function GET(request: NextRequest) {
   try {
@@ -21,8 +24,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Find affiliate profile by code
-    const affiliateProfile = await prisma.affiliateProfile.findFirst({
+    // First, try to find by AffiliateProfile.affiliateCode (simple code like "abdurrahmanaziz")
+    let affiliateProfile = await prisma.affiliateProfile.findFirst({
       where: {
         affiliateCode: code,
         isActive: true,
@@ -40,6 +43,36 @@ export async function GET(request: NextRequest) {
         },
       },
     })
+
+    // If not found, try to find by AffiliateLink.code (full code like "abdurrahmanaziz-4BJ0R8")
+    if (!affiliateProfile) {
+      const affiliateLink = await prisma.affiliateLink.findFirst({
+        where: {
+          code: code,
+          isActive: true,
+        },
+        select: {
+          affiliate: {
+            select: {
+              id: true,
+              affiliateCode: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  username: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (affiliateLink?.affiliate) {
+        affiliateProfile = affiliateLink.affiliate
+      }
+    }
 
     if (!affiliateProfile) {
       return NextResponse.json(
