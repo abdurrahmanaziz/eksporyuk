@@ -76,12 +76,8 @@ export default function AffiliatePartnerBadge({ className = '' }: AffiliatePartn
   }
 
   return (
-    <div className={`flex items-center justify-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg ${className}`}>
-      <Users className="h-4 w-4 text-blue-600 flex-shrink-0" />
-      <span className="text-sm text-blue-800">
-        <span className="font-medium">Partner Komunitas:</span>{' '}
-        <span className="font-semibold">{affiliate.name}</span>
-      </span>
-    </div>
+    <p className={`text-xs text-center text-gray-500 ${className}`}>
+      🤝 Partner Komunitas: <span className="font-medium text-gray-600">{affiliate.name}</span>
+    </p>
   )
 }
