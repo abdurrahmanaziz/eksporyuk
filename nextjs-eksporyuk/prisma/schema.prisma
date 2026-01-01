@@ -363,13 +363,12 @@ model AffiliateLink {
   expiresAt    DateTime?
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
-
-  user         User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
   affiliate    AffiliateProfile? @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  product      Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
-  membership   Membership?       @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   course       Course?           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  membership   Membership?       @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  product      Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
   supplier     SupplierProfile?  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  user         User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([affiliateId])
   @@index([code])
@@ -428,19 +427,19 @@ model AffiliateOptinForm {
 }
 
 model AffiliateProfile {
-  id                    String    @id
-  userId                String    @unique
-  affiliateCode         String    @unique
-  shortLink             String    @unique
-  shortLinkUsername     String?   @unique
-  tier                  Int       @default(1)
-  commissionRate        Decimal   @default(10)
-  totalClicks           Int       @default(0)
-  totalConversions      Int       @default(0)
-  totalSales            Decimal   @default(0)
-  totalEarnings         Decimal   @default(0)
-  isActive              Boolean   @default(true)
-  applicationStatus     String    @default("PENDING")
+  id                    String          @id
+  userId                String          @unique
+  affiliateCode         String          @unique
+  shortLink             String          @unique
+  shortLinkUsername     String?         @unique
+  tier                  Int             @default(1)
+  commissionRate        Decimal         @default(10)
+  totalClicks           Int             @default(0)
+  totalConversions      Int             @default(0)
+  totalSales            Decimal         @default(0)
+  totalEarnings         Decimal         @default(0)
+  isActive              Boolean         @default(true)
+  applicationStatus     String          @default("PENDING")
   applicationNotes      String?
   bankName              String?
   bankAccountName       String?
@@ -448,22 +447,21 @@ model AffiliateProfile {
   whatsapp              String?
   motivation            String?
   approvedAt            DateTime?
-  welcomeShown          Boolean   @default(false)
-  onboardingCompleted   Boolean   @default(false)
+  welcomeShown          Boolean         @default(false)
+  onboardingCompleted   Boolean         @default(false)
   onboardingCompletedAt DateTime?
-  trainingCompleted     Boolean   @default(false)
+  trainingCompleted     Boolean         @default(false)
   trainingCompletedAt   DateTime?
-  firstLinkCreated      Boolean   @default(false)
+  firstLinkCreated      Boolean         @default(false)
   firstLinkCreatedAt    DateTime?
-  profileCompleted      Boolean   @default(false)
+  profileCompleted      Boolean         @default(false)
   profileCompletedAt    DateTime?
-  bankInfoCompleted     Boolean   @default(false)
+  bankInfoCompleted     Boolean         @default(false)
   bankInfoCompletedAt   DateTime?
-  createdAt             DateTime  @default(now())
+  createdAt             DateTime        @default(now())
   updatedAt             DateTime
-
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   affiliateLinks        AffiliateLink[]
+  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([affiliateCode])
   @@index([shortLinkUsername])
@@ -645,28 +643,19 @@ model BrandedTemplate {
   updatedAt      DateTime
 }
 
-// Email Notification Tracking - Real-time system untuk tracking semua email
 model EmailNotificationLog {
-  id                 String   @id @default(cuid())
-  
-  // Email metadata
-  templateId         String   // Reference to BrandedTemplate
-  templateSlug       String   // e.g., "affiliate-commission-received"
-  templateCategory   String   // AFFILIATE, TRANSACTION, SYSTEM
-  
-  // Recipient info
-  recipientId        String   // User ID
+  id                 String    @id @default(cuid())
+  templateId         String
+  templateSlug       String
+  templateCategory   String
+  recipientId        String
   recipientEmail     String
   recipientName      String?
-  recipientRole      String?  // AFFILIATE, MENTOR, ADMIN, FOUNDER
-  
-  // Email content
+  recipientRole      String?
   subject            String
-  bodyPreview        String?  // First 200 chars untuk quick view
-  variables          Json?    // Variables yang dirender: {amount}, {name}, etc
-  
-  // Delivery tracking
-  status             String   @default("QUEUED") // QUEUED, PENDING, SENT, DELIVERED, FAILED, BOUNCED, SPAM
+  bodyPreview        String?
+  variables          Json?
+  status             String    @default("QUEUED")
   sentAt             DateTime?
   deliveredAt        DateTime?
   openedAt           DateTime?
@@ -674,36 +663,24 @@ model EmailNotificationLog {
   clickUrl           String?
   failureReason      String?
   bounceReason       String?
-  spamReported       Boolean  @default(false)
-  
-  // Engagement metrics
-  openCount          Int      @default(0)
-  clickCount         Int      @default(0)
-  
-  // Technical info
-  externalMessageId  String?  // ID dari Mailketing/Email provider
-  internalTrackingId String   @unique @default(cuid())
-  
-  // Source & context
-  sourceType         String?  // COMMISSION, TRANSACTION, SETTINGS_CHANGE
-  sourceId           String?  // Transaction ID, Pending Revenue ID
+  spamReported       Boolean   @default(false)
+  openCount          Int       @default(0)
+  clickCount         Int       @default(0)
+  externalMessageId  String?
+  internalTrackingId String    @unique @default(cuid())
+  sourceType         String?
+  sourceId           String?
   transactionId      String?
-  
-  // IP & User agent tracking
   openIpAddress      String?
   openUserAgent      String?
   clickIpAddress     String?
   clickUserAgent     String?
-  
-  // Metadata
-  metadata           Json?    // Any additional data
-  retryCount         Int      @default(0)
+  metadata           Json?
+  retryCount         Int       @default(0)
   nextRetryAt        DateTime?
-  
-  // Timestamps
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
   @@index([recipientId])
   @@index([templateSlug])
   @@index([status])
@@ -879,27 +856,25 @@ model ChallengProgress {
 }
 
 model ChatParticipant {
-  id        String   @id @default(cuid())
-  roomId    String
-  userId    String
-  
-  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id          String    @id @default(cuid())
+  roomId      String
+  userId      String
   lastReadAt  DateTime?
   unreadCount Int       @default(0)
   isMuted     Boolean   @default(false)
   isPinned    Boolean   @default(false)
   joinedAt    DateTime  @default(now())
-  
+  room        ChatRoom  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([roomId, userId])
   @@index([roomId])
   @@index([userId])
 }
 
 model ChatRoom {
-  id            String           @id @default(cuid())
-  type          ChatRoomType     @default(DIRECT)
+  id            String            @id @default(cuid())
+  type          ChatRoomType      @default(DIRECT)
   name          String?
   avatar        String?
   user1Id       String?
@@ -907,17 +882,14 @@ model ChatRoom {
   groupId       String?
   lastMessageAt DateTime?
   lastMessage   String?
-  isActive      Boolean          @default(true)
-  
-  // Relations
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   participants  ChatParticipant[]
+  user1         User?             @relation("ChatRoom_user1", fields: [user1Id], references: [id])
+  user2         User?             @relation("ChatRoom_user2", fields: [user2Id], references: [id])
   messages      Message[]
-  user1         User?            @relation("ChatRoom_user1", fields: [user1Id], references: [id], onDelete: SetNull)
-  user2         User?            @relation("ChatRoom_user2", fields: [user2Id], references: [id], onDelete: SetNull)
-  
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  
+
   @@index([user1Id])
   @@index([user2Id])
   @@index([lastMessageAt])
@@ -1029,7 +1001,6 @@ model Course {
   isPublicListed          Boolean                @default(true)
   createdAt               DateTime               @default(now())
   updatedAt               DateTime
-
   affiliateLinks          AffiliateLink[]
 }
 
@@ -1043,7 +1014,6 @@ model CourseConsent {
   agreedAt    DateTime @default(now())
 }
 
-// Course-Membership relation for MEMBERSHIP type courses
 model CourseMembership {
   id           String   @id
   courseId     String
@@ -1730,7 +1700,6 @@ model Membership {
   affiliateEnabled        Boolean            @default(true)
   createdAt               DateTime           @default(now())
   updatedAt               DateTime
-
   affiliateLinks          AffiliateLink[]
 
   @@index([affiliateEnabled])
@@ -1911,46 +1880,29 @@ model MentorProfile {
 
 model Message {
   id             String    @id @default(cuid())
-  
-  // Room reference
   roomId         String?
-  room           ChatRoom? @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  
-  // Sender
   senderId       String
-  sender         User      @relation("Message_sender", fields: [senderId], references: [id], onDelete: Cascade)
-  
-  // Receiver (direct message)
   receiverId     String?
-  
-  // Content
-  content        String    @db.Text
-  type           String    @default("text") // "text", "image", "file", "system"
-  
-  // Attachments
+  content        String
+  type           String    @default("text")
   attachmentUrl  String?
   attachmentType String?
-  attachmentName String?
-  attachmentSize Int?
-  
-  // Metadata
-  metadata       Json?
-  reactions      Json?     // {emoji: count, ...}
-  replyToId      String?   // For threaded messages
-  
-  // Status
   isRead         Boolean   @default(false)
   readAt         DateTime?
   isDelivered    Boolean   @default(false)
   deliveredAt    DateTime?
+  reactions      Json?
+  replyToId      String?
   isEdited       Boolean   @default(false)
   isDeleted      Boolean   @default(false)
-  
-  // Timestamps
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-  
-  // Indices untuk performance
+  attachmentName String?
+  attachmentSize Int?
+  metadata       Json?
+  room           ChatRoom? @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender         User      @relation("Message_sender", fields: [senderId], references: [id], onDelete: Cascade)
+
   @@index([roomId])
   @@index([senderId])
   @@index([receiverId])
@@ -2171,7 +2123,7 @@ model Post {
   type             PostType       @default(POST)
   content          String
   contentFormatted Json?
-  backgroundId     String?        // Post background style (gradient/solid color)
+  backgroundId     String?
   images           Json?
   videos           Json?
   documents        Json?
@@ -2314,10 +2266,10 @@ model Product {
   clickCount              Int             @default(0)
   createdAt               DateTime        @default(now())
   updatedAt               DateTime
+  affiliateLinks          AffiliateLink[]
   User                    User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   Group                   Group?          @relation(fields: [groupId], references: [id])
   UserProduct             UserProduct[]
-  affiliateLinks          AffiliateLink[]
 }
 
 model ProductCourse {
@@ -2642,16 +2594,6 @@ model Settings {
   paymentAutoActivation           Boolean  @default(true)
   paymentMinAmount                Int      @default(10000)
   paymentMaxAmount                Int      @default(100000000)
-  paymentContactWhatsapp          String?
-  paymentContactEmail             String?
-  paymentContactPhone             String?
-  paymentContactName              String?  @default("Customer Service")
-  paymentUniqueCodeEnabled        Boolean  @default(true)
-  paymentUniqueCodeType           String?  @default("add") // 'add' or 'subtract'
-  paymentUniqueCodeMin            Int      @default(1)
-  paymentUniqueCodeMax            Int      @default(999)
-  orderCooldownMinutes            Int      @default(5) // Anti-spam: minimum minutes between orders
-  orderCooldownEnabled            Boolean  @default(true)
   createdAt                       DateTime @default(now())
   updatedAt                       DateTime
   emailFooterAddress              String?
@@ -2742,6 +2684,16 @@ model Settings {
   notificationWhatsappEnabled     Boolean  @default(true)
   notificationPushEnabled         Boolean  @default(true)
   notificationInAppEnabled        Boolean  @default(true)
+  paymentContactEmail             String?
+  paymentContactName              String?  @default("Customer Service")
+  paymentContactPhone             String?
+  paymentContactWhatsapp          String?
+  paymentUniqueCodeEnabled        Boolean  @default(true)
+  paymentUniqueCodeMax            Int      @default(999)
+  paymentUniqueCodeMin            Int      @default(1)
+  paymentUniqueCodeType           String?  @default("add")
+  orderCooldownEnabled            Boolean  @default(true)
+  orderCooldownMinutes            Int      @default(5)
 }
 
 model ShortLinkDomain {
@@ -2861,7 +2813,7 @@ model SupplierProduct {
 }
 
 model SupplierProfile {
-  id               String    @id
+  id               String          @id
   userId           String
   companyName      String
   slug             String
@@ -2883,21 +2835,20 @@ model SupplierProfile {
   twitterUrl       String?
   legalityDoc      String?
   nibDoc           String?
-  isVerified       Boolean   @default(false)
+  isVerified       Boolean         @default(false)
   verifiedAt       DateTime?
   verifiedBy       String?
-  isSuspended      Boolean   @default(false)
+  isSuspended      Boolean         @default(false)
   suspendedAt      DateTime?
   suspendedBy      String?
   suspendReason    String?
-  viewCount        Int       @default(0)
-  totalProducts    Int       @default(0)
-  totalChats       Int       @default(0)
-  rating           Float?    @default(0)
-  totalReviews     Int       @default(0)
-  createdAt        DateTime  @default(now())
+  viewCount        Int             @default(0)
+  totalProducts    Int             @default(0)
+  totalChats       Int             @default(0)
+  rating           Float?          @default(0)
+  totalReviews     Int             @default(0)
+  createdAt        DateTime        @default(now())
   updatedAt        DateTime
-
   affiliateLinks   AffiliateLink[]
 }
 
@@ -3001,10 +2952,16 @@ model User {
   withdrawalPin                   String?
   withdrawalPinSetAt              DateTime?
   coverImage                      String?
-  preferredDashboard              String?           // Stores user's preferred dashboard: 'member', 'affiliate', 'mentor', 'admin'
+  preferredDashboard              String?
+  affiliateLinks                  AffiliateLink[]
+  affiliateProfile                AffiliateProfile?
+  chatParticipants                ChatParticipant[]
+  chatRoomsAsUser1                ChatRoom[]        @relation("ChatRoom_user1")
+  chatRoomsAsUser2                ChatRoom[]        @relation("ChatRoom_user2")
   CommentReaction                 CommentReaction[]
   Follow_Follow_followerIdToUser  Follow[]          @relation("Follow_followerIdToUser")
   Follow_Follow_followingIdToUser Follow[]          @relation("Follow_followingIdToUser")
+  messagesAsSender                Message[]         @relation("Message_sender")
   Post                            Post[]
   PostComment                     PostComment[]
   PostReaction                    PostReaction[]
@@ -3013,14 +2970,6 @@ model User {
   UserProduct                     UserProduct[]
   userRoles                       UserRole[]
   wallet                          Wallet?
-  affiliateProfile                AffiliateProfile?
-  affiliateLinks                  AffiliateLink[]
-  
-  // Chat & Messages
-  messagesAsSender                Message[]         @relation("Message_sender")
-  chatParticipants                ChatParticipant[]
-  chatRoomsAsUser1                ChatRoom[]        @relation("ChatRoom_user1")
-  chatRoomsAsUser2                ChatRoom[]        @relation("ChatRoom_user2")
 
   @@index([city])
   @@index([district])
@@ -3118,7 +3067,6 @@ model UserRole {
   userId    String
   role      Role
   createdAt DateTime @default(now())
-  
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, role])
@@ -3135,8 +3083,7 @@ model Wallet {
   totalPayout    Decimal  @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -3201,6 +3148,18 @@ model support_tickets {
   updatedAt           DateTime
   closedAt            DateTime?
   resolvedAt          DateTime?
+}
+
+model CourseMentor {
+  id        String   @id
+  courseId  String
+  mentorId  String
+  role      String   @default("MENTOR")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@unique([courseId, mentorId])
 }
 
 enum AccessLevel {
@@ -3559,18 +3518,6 @@ enum TransactionStatus {
   SUCCESS
   FAILED
   REFUNDED
-}
-
-model CourseMentor {
-  id         String   @id
-  courseId   String
-  mentorId   String
-  role       String   @default("MENTOR") // "MENTOR", "CO_MENTOR", "ASSISTANT"
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime
-  
-  @@unique([courseId, mentorId])
 }
 
 enum TransactionType {

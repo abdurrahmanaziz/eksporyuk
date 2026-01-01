@@ -54,6 +54,40 @@ export async function GET(request: NextRequest) {
       select: { id: true, isActive: true }
     })
 
+    // Auto-determine affiliate access based on commission/wallet/links
+    const [affiliateTransactionCount, affiliateLinksCount, wallet] = await Promise.all([
+      prisma.transaction.count({
+        where: { 
+          affiliateId: userId,
+          status: 'SUCCESS'
+        }
+      }),
+      prisma.affiliateLink.count({
+        where: { userId }
+      }),
+      prisma.wallet.findUnique({
+        where: { userId },
+        select: { balance: true, balancePending: true }
+      })
+    ])
+    
+    const hasAffiliateTransactions = affiliateTransactionCount > 0
+    const hasAffiliateLinks = affiliateLinksCount > 0
+    const hasWalletBalance = wallet && (wallet.balance > 0 || wallet.balancePending > 0)
+    
+    // User should have affiliate access if they have any commission activity OR manually enabled
+    const shouldHaveAffiliateAccess = hasAffiliateTransactions || hasAffiliateLinks || hasWalletBalance || user.affiliateMenuEnabled || (affiliateProfile?.isActive)
+    
+    console.log('[DASHBOARD OPTIONS] Affiliate access check:', {
+      userId,
+      hasTransactions: hasAffiliateTransactions,
+      hasLinks: hasAffiliateLinks,
+      hasWallet: hasWalletBalance,
+      manuallyEnabled: user.affiliateMenuEnabled,
+      hasProfile: !!affiliateProfile?.isActive,
+      shouldHave: shouldHaveAffiliateAccess
+    })
+
     // Combine primary role with additional roles
     const allRoles = new Set<string>()
     allRoles.add(user.role) // Primary role
@@ -102,8 +136,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Affiliate dashboard - only if user has active affiliate profile (any role can be affiliate)
-    if (affiliateProfile?.isActive) {
+    // Affiliate dashboard - auto-enable based on commission activity
+    if (shouldHaveAffiliateAccess) {
       dashboardOptions.push({
         id: 'affiliate',
         title: 'Rich Affiliate',

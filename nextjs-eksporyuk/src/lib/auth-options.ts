@@ -47,10 +47,48 @@ const providers: any[] = [
         
         // Manual lookup for affiliateProfile (schema has no relations)
         let affiliateProfile = null
+        let shouldHaveAffiliateAccess = false
+        
         if (user) {
+          // Check affiliate profile
           affiliateProfile = await prisma.affiliateProfile.findUnique({
             where: { userId: user.id },
             select: { id: true, isActive: true }
+          })
+          
+          // Auto-determine affiliate access based on:
+          // 1. Has affiliate transactions
+          // 2. Has affiliate links
+          // 3. Has wallet balance
+          const [affiliateTransactionCount, affiliateLinksCount, wallet] = await Promise.all([
+            prisma.transaction.count({
+              where: { 
+                affiliateId: user.id,
+                status: 'SUCCESS'
+              }
+            }),
+            prisma.affiliateLink.count({
+              where: { userId: user.id }
+            }),
+            prisma.wallet.findUnique({
+              where: { userId: user.id },
+              select: { balance: true, balancePending: true }
+            })
+          ])
+          
+          const hasAffiliateTransactions = affiliateTransactionCount > 0
+          const hasAffiliateLinks = affiliateLinksCount > 0
+          const hasWalletBalance = wallet && (wallet.balance > 0 || wallet.balancePending > 0)
+          
+          shouldHaveAffiliateAccess = hasAffiliateTransactions || hasAffiliateLinks || hasWalletBalance || user.affiliateMenuEnabled
+          
+          console.log('[AUTH] Auto affiliate access check:', {
+            userId: user.id,
+            hasTransactions: hasAffiliateTransactions,
+            hasLinks: hasAffiliateLinks,
+            hasWallet: hasWalletBalance,
+            currentlyEnabled: user.affiliateMenuEnabled,
+            shouldHave: shouldHaveAffiliateAccess
           })
         }
 
@@ -106,8 +144,8 @@ const providers: any[] = [
           username: user.username,
           whatsapp: user.whatsapp,
           emailVerified: user.emailVerified,
-          affiliateMenuEnabled: user.affiliateMenuEnabled,
-          hasAffiliateProfile: !!affiliateProfile && affiliateProfile.isActive,
+          affiliateMenuEnabled: shouldHaveAffiliateAccess, // Auto-enable based on commission/wallet
+          hasAffiliateProfile: shouldHaveAffiliateAccess || (!!affiliateProfile && affiliateProfile.isActive),
           preferredDashboard: user.preferredDashboard,
         }
       } catch (error: any) {
@@ -409,10 +447,44 @@ export const authOptions: NextAuthOptions = {
           
           // Manual lookup for affiliateProfile (schema has no relations)
           let dbAffiliateProfile = null
+          let shouldHaveAffiliateAccess = false
+          
           if (dbUser) {
             dbAffiliateProfile = await prisma.affiliateProfile.findUnique({
               where: { userId: dbUser.id },
               select: { id: true, isActive: true }
+            })
+            
+            // Auto-determine affiliate access for Google OAuth users
+            const [affiliateTransactionCount, affiliateLinksCount, wallet] = await Promise.all([
+              prisma.transaction.count({
+                where: { 
+                  affiliateId: dbUser.id,
+                  status: 'SUCCESS'
+                }
+              }),
+              prisma.affiliateLink.count({
+                where: { userId: dbUser.id }
+              }),
+              prisma.wallet.findUnique({
+                where: { userId: dbUser.id },
+                select: { balance: true, balancePending: true }
+              })
+            ])
+            
+            const hasAffiliateTransactions = affiliateTransactionCount > 0
+            const hasAffiliateLinks = affiliateLinksCount > 0
+            const hasWalletBalance = wallet && (wallet.balance > 0 || wallet.balancePending > 0)
+            
+            shouldHaveAffiliateAccess = hasAffiliateTransactions || hasAffiliateLinks || hasWalletBalance || dbUser.affiliateMenuEnabled
+            
+            console.log('[AUTH] Google OAuth auto affiliate access:', {
+              userId: dbUser.id,
+              hasTransactions: hasAffiliateTransactions,
+              hasLinks: hasAffiliateLinks,
+              hasWallet: hasWalletBalance,
+              currentlyEnabled: dbUser.affiliateMenuEnabled,
+              shouldHave: shouldHaveAffiliateAccess
             })
           }
           
@@ -434,8 +506,8 @@ export const authOptions: NextAuthOptions = {
             token.memberCode = dbUser.memberCode
             token.isGoogleAuth = true
             // token.isAuthorizedSupplierReviewer = dbUser.isAuthorizedSupplierReviewer  // Field not in current DB schema
-            token.affiliateMenuEnabled = dbUser.affiliateMenuEnabled
-            token.hasAffiliateProfile = !!dbAffiliateProfile && dbAffiliateProfile.isActive
+            token.affiliateMenuEnabled = shouldHaveAffiliateAccess // Auto-enable based on commission/wallet
+            token.hasAffiliateProfile = shouldHaveAffiliateAccess || (!!dbAffiliateProfile && dbAffiliateProfile.isActive)
             token.preferredDashboard = dbUser.preferredDashboard || null
           } else {
             console.error(`[AUTH ${timestamp}] JWT - User not found in database for email:`, token.email)
