@@ -333,56 +333,6 @@ export default function AffiliateLinksPage() {
 
     return stats
   }, [links])
-
-  const generateNewLink = async () => {
-    if (!selectedCouponCode) {
-      toast.error('Pilih kupon terlebih dahulu')
-      return
-    }
-
-    setGenerating(true)
-    try {
-      const payload = {
-        linkType: selectedLinkType,
-        targetType: selectedTargetType,
-        targetId: selectedTargetId || null,
-        couponCode: selectedCouponCode,
-      }
-      
-      console.log('🚀 Sending generate link request:', payload)
-      
-      const response = await fetch('/api/affiliate/links', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      
-      console.log('📡 Response status:', response.status)
-      
-      const data = await response.json()
-      
-      console.log('📦 Response data:', data)
-      
-      if (data.link) {
-        await fetchLinks()
-        setMainTab('list')
-        resetForm()
-        toast.success('Link berhasil dibuat!')
-        
-        navigator.clipboard.writeText(data.link.url)
-        toast.success('Link sudah dicopy ke clipboard!')
-      } else if (data.error) {
-        console.error('❌ API Error:', data.error)
-        toast.error(data.error)
-      }
-    } catch (error) {
-      console.error('❌ Error generating link:', error)
-      toast.error('Gagal membuat link')
-    } finally {
-      setGenerating(false)
-    }
-  }
-
   const resetForm = () => {
     setSelectedLinkType('CHECKOUT')
     setSelectedTargetType('membership')

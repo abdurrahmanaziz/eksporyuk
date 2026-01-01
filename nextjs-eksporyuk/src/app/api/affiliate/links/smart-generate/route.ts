@@ -76,22 +76,22 @@ export async function POST(request: NextRequest) {
     if (targetId) {
       // Generate for specific item
       if (targetType === 'membership') {
-        const item = await prisma.membership.findUnique({ 
+        const item = await prisma.membership.findFirst({ 
           where: { id: targetId, isActive: true } 
         })
         if (item) targetItems = [item]
       } else if (targetType === 'product') {
-        const item = await prisma.product.findUnique({ 
+        const item = await prisma.product.findFirst({ 
           where: { id: targetId, isActive: true } 
         })
         if (item) targetItems = [item]
       } else if (targetType === 'course') {
-        const item = await prisma.course.findUnique({ 
+        const item = await prisma.course.findFirst({ 
           where: { id: targetId, isPublished: true } 
         })
         if (item) targetItems = [item]
       } else if (targetType === 'supplier') {
-        const item = await prisma.supplier.findUnique({ 
+        const item = await prisma.supplier.findFirst({ 
           where: { id: targetId, isVerified: true } 
         })
         if (item) targetItems = [item]
