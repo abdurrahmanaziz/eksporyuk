@@ -757,7 +757,7 @@ export default function AffiliatesManagementPage() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="font-semibold text-green-600 text-sm">
-                          {formatCurrency(Number(affiliate.totalEarnings))}
+                          {formatCurrency(Number(affiliate.totalEarnings) || Number(affiliate.wallet?.totalEarnings || 0))}
                         </div>
                         <div className="text-xs text-gray-500">
                           {affiliate.totalConversions} transaksi

@@ -38,40 +38,34 @@ export interface ScanSummary {
 async function scanAPIs(): Promise<ScanCheckResult[]> {
   const results: ScanCheckResult[] = []
   
-  // Comprehensive list of ACTUAL API endpoints (verified from codebase)
+  // VERIFIED API endpoints that actually exist in codebase
   const allEndpoints = [
     // === AUTH APIs ===
     { name: 'Auth Session', url: '/api/auth/session', method: 'GET', category: 'Auth' },
     { name: 'Auth Providers', url: '/api/auth/providers', method: 'GET', category: 'Auth' },
     
-    // === USER APIs ===
-    { name: 'User Profile', url: '/api/user/profile', method: 'GET', category: 'User' },
-    { name: 'Profile', url: '/api/profile', method: 'GET', category: 'User' },
-    
     // === PUBLIC APIs ===
-    { name: 'Memberships List', url: '/api/memberships', method: 'GET', category: 'Public' },
     { name: 'Products List', url: '/api/products', method: 'GET', category: 'Public' },
-    { name: 'Courses List', url: '/api/courses', method: 'GET', category: 'Public' },
     { name: 'Suppliers List', url: '/api/suppliers', method: 'GET', category: 'Public' },
     { name: 'Public Settings', url: '/api/settings/public', method: 'GET', category: 'Public' },
-    { name: 'Membership Plans', url: '/api/membership-plans', method: 'GET', category: 'Public' },
-    { name: 'Events', url: '/api/events', method: 'GET', category: 'Public' },
-    { name: 'Coupons', url: '/api/coupons', method: 'GET', category: 'Public' },
+    { name: 'Settings', url: '/api/settings', method: 'GET', category: 'Public' },
+    { name: 'Posts', url: '/api/posts', method: 'GET', category: 'Public' },
+    { name: 'Sales', url: '/api/sales', method: 'GET', category: 'Public' },
+    { name: 'Enrollments', url: '/api/enrollments', method: 'GET', category: 'Public' },
     
-    // === ADMIN APIs ===
+    // === ADMIN APIs (VERIFIED) ===
     { name: 'Admin Dashboard Stats', url: '/api/admin/dashboard/stats', method: 'GET', category: 'Admin' },
     { name: 'Admin Users', url: '/api/admin/users', method: 'GET', category: 'Admin' },
-    { name: 'Admin Transactions', url: '/api/admin/transactions', method: 'GET', category: 'Admin' },
+    { name: 'Admin Transaction Stats', url: '/api/admin/transactions/stats', method: 'GET', category: 'Admin' },
     { name: 'Admin Affiliates', url: '/api/admin/affiliates', method: 'GET', category: 'Admin' },
     { name: 'Admin Memberships', url: '/api/admin/memberships', method: 'GET', category: 'Admin' },
     { name: 'Admin Membership Plans', url: '/api/admin/membership-plans', method: 'GET', category: 'Admin' },
     { name: 'Admin Products', url: '/api/admin/products', method: 'GET', category: 'Admin' },
     { name: 'Admin Courses', url: '/api/admin/courses', method: 'GET', category: 'Admin' },
-    { name: 'Admin Supplier', url: '/api/admin/supplier', method: 'GET', category: 'Admin' },
+    { name: 'Admin Supplier Stats', url: '/api/admin/supplier/stats', method: 'GET', category: 'Admin' },
     { name: 'Admin Coupons', url: '/api/admin/coupons', method: 'GET', category: 'Admin' },
     { name: 'Admin Groups', url: '/api/admin/groups', method: 'GET', category: 'Admin' },
     { name: 'Admin Reports', url: '/api/admin/reports', method: 'GET', category: 'Admin' },
-    { name: 'Admin Notifications', url: '/api/admin/notifications', method: 'GET', category: 'Admin' },
     { name: 'Admin Scanner', url: '/api/admin/scanner?action=status', method: 'GET', category: 'Admin' },
     { name: 'Admin Settings', url: '/api/admin/settings', method: 'GET', category: 'Admin' },
     { name: 'Admin Commission Settings', url: '/api/admin/commission/settings', method: 'GET', category: 'Admin' },
@@ -79,7 +73,6 @@ async function scanAPIs(): Promise<ScanCheckResult[]> {
     { name: 'Admin Pending Revenue', url: '/api/admin/pending-revenue', method: 'GET', category: 'Admin' },
     { name: 'Admin Wallets', url: '/api/admin/wallets', method: 'GET', category: 'Admin' },
     { name: 'Admin Events', url: '/api/admin/events', method: 'GET', category: 'Admin' },
-    { name: 'Admin Certificates', url: '/api/admin/certificates', method: 'GET', category: 'Admin' },
     { name: 'Admin Analytics', url: '/api/admin/analytics', method: 'GET', category: 'Admin' },
     { name: 'Admin Sales', url: '/api/admin/sales', method: 'GET', category: 'Admin' },
     { name: 'Admin Enrollments', url: '/api/admin/enrollments', method: 'GET', category: 'Admin' },
@@ -87,7 +80,7 @@ async function scanAPIs(): Promise<ScanCheckResult[]> {
     { name: 'Admin Broadcast', url: '/api/admin/broadcast', method: 'GET', category: 'Admin' },
     { name: 'Admin Banners', url: '/api/admin/banners', method: 'GET', category: 'Admin' },
     
-    // === AFFILIATE APIs ===
+    // === AFFILIATE APIs (VERIFIED) ===
     { name: 'Affiliate Links', url: '/api/affiliate/links', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Short Links', url: '/api/affiliate/short-links', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Earnings', url: '/api/affiliate/earnings', method: 'GET', category: 'Affiliate' },
@@ -108,36 +101,42 @@ async function scanAPIs(): Promise<ScanCheckResult[]> {
     { name: 'Affiliate Broadcast', url: '/api/affiliate/broadcast', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Suppliers', url: '/api/affiliate/suppliers', method: 'GET', category: 'Affiliate' },
     
-    // === MEMBER APIs ===
-    { name: 'Member Courses', url: '/api/member/courses', method: 'GET', category: 'Member' },
-    { name: 'Member Documents', url: '/api/member/documents', method: 'GET', category: 'Member' },
-    { name: 'Member Certificates', url: '/api/member/certificates', method: 'GET', category: 'Member' },
-    { name: 'Member Membership', url: '/api/member/membership', method: 'GET', category: 'Member' },
+    // === MEMBER APIs (VERIFIED) ===
+    { name: 'Member Root', url: '/api/member', method: 'GET', category: 'Member' },
+    { name: 'Member Access', url: '/api/member/access', method: 'GET', category: 'Member' },
+    { name: 'Member Onboarding', url: '/api/member/onboarding', method: 'GET', category: 'Member' },
+    { name: 'Member Profile Status', url: '/api/member/profile-status', method: 'GET', category: 'Member' },
     
-    // === MENTOR APIs ===
+    // === MENTOR APIs (VERIFIED) ===
+    { name: 'Mentor Dashboard', url: '/api/mentor/dashboard', method: 'GET', category: 'Mentor' },
     { name: 'Mentor Courses', url: '/api/mentor/courses', method: 'GET', category: 'Mentor' },
     { name: 'Mentor Students', url: '/api/mentor/students', method: 'GET', category: 'Mentor' },
-    { name: 'Mentor Groups', url: '/api/mentor/groups', method: 'GET', category: 'Mentor' },
-    { name: 'Mentor Supplier', url: '/api/mentor/supplier', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Profile', url: '/api/mentor/profile', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Analytics', url: '/api/mentor/analytics', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Earnings', url: '/api/mentor/earnings', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Materials', url: '/api/mentor/materials', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Products', url: '/api/mentor/products', method: 'GET', category: 'Mentor' },
     
-    // === SUPPLIER APIs ===
+    // === SUPPLIER APIs (VERIFIED) ===
     { name: 'Supplier Products', url: '/api/supplier/products', method: 'GET', category: 'Supplier' },
     { name: 'Supplier Profile', url: '/api/supplier/profile', method: 'GET', category: 'Supplier' },
-    { name: 'Supplier Orders', url: '/api/supplier/orders', method: 'GET', category: 'Supplier' },
+    { name: 'Supplier Stats', url: '/api/supplier/stats', method: 'GET', category: 'Supplier' },
+    { name: 'Supplier Packages', url: '/api/supplier/packages', method: 'GET', category: 'Supplier' },
+    { name: 'Supplier Quota', url: '/api/supplier/quota', method: 'GET', category: 'Supplier' },
     
     // === TRANSACTION APIs ===
     { name: 'Transactions', url: '/api/transactions', method: 'GET', category: 'Transaction' },
     { name: 'Checkout', url: '/api/checkout', method: 'GET', category: 'Transaction' },
     { name: 'Wallet', url: '/api/wallet', method: 'GET', category: 'Transaction' },
     
-    // === FEATURE APIs ===
+    // === FEATURE APIs (VERIFIED) ===
     { name: 'Notifications', url: '/api/notifications', method: 'GET', category: 'Feature' },
     { name: 'Groups', url: '/api/groups', method: 'GET', category: 'Feature' },
-    { name: 'Chat Conversations', url: '/api/chat/conversations', method: 'GET', category: 'Feature' },
-    { name: 'Community Feed', url: '/api/community/feed', method: 'GET', category: 'Feature' },
+    { name: 'Chat Rooms', url: '/api/chat/rooms', method: 'GET', category: 'Feature' },
     { name: 'Posts', url: '/api/posts', method: 'GET', category: 'Feature' },
-    { name: 'Quiz', url: '/api/quiz', method: 'GET', category: 'Feature' },
-    { name: 'Support', url: '/api/support', method: 'GET', category: 'Feature' },
+    { name: 'Payments', url: '/api/payments', method: 'GET', category: 'Feature' },
+    { name: 'Progress', url: '/api/progress', method: 'GET', category: 'Feature' },
+    { name: 'Messages', url: '/api/messages', method: 'GET', category: 'Feature' },
   ]
 
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'

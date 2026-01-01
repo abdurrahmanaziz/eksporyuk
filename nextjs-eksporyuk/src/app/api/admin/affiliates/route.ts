@@ -250,7 +250,7 @@ export async function GET(request: NextRequest) {
       limit,
     })
 
-    // 7. Get wallet data for each affiliate
+    // 7. Get wallet data for each affiliate and enrich with realtime earnings
     const affiliatesWithWallet = await Promise.all(
       paginatedAffiliates.map(async (affiliate) => {
         const wallet = await prisma.wallet.findUnique({
@@ -263,9 +263,15 @@ export async function GET(request: NextRequest) {
           },
         })
 
+        // Use wallet.totalEarnings if affiliate has no earnings from AffiliateConversion
+        const realtimeEarnings = affiliate.totalEarnings > 0 
+          ? affiliate.totalEarnings 
+          : Number(wallet?.totalEarnings || 0)
+
         return {
           ...affiliate,
           wallet,
+          totalEarnings: realtimeEarnings,
         }
       })
     )
