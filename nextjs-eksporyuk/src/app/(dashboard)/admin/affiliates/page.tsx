@@ -708,6 +708,8 @@ export default function AffiliatesManagementPage() {
                       <td className="p-4 text-center">
                         {affiliate.source === 'REGISTERED' ? (
                           <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 text-xs">Registered</Badge>
+                        ) : affiliate.source === 'ROLE' ? (
+                          <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">Role Only</Badge>
                         ) : (
                           <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">Imported</Badge>
                         )}
