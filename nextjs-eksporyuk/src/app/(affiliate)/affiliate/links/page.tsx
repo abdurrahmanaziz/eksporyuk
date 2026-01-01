@@ -110,16 +110,22 @@ export default function AffiliateLinksPage() {
 
   const fetchAllData = async () => {
     setLoading(true)
-    await Promise.all([
-      fetchLinks(),
-      fetchMemberships(),
-      fetchProducts(),
-      fetchCourses(),
-      fetchSuppliers(),
-      fetchCoupons(),
-      fetchAffiliateCoupons()
-    ])
-    setLoading(false)
+    try {
+      await Promise.all([
+        fetchLinks(),
+        fetchMemberships(),
+        fetchProducts(),
+        fetchCourses(),
+        fetchSuppliers(),
+        fetchCoupons(),
+        fetchAffiliateCoupons()
+      ])
+    } catch (error) {
+      console.error('Error loading data:', error)
+      toast.error('Gagal memuat data')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const fetchLinks = async () => {
@@ -128,6 +134,11 @@ export default function AffiliateLinksPage() {
         ? '/api/affiliate/links?archived=true' 
         : '/api/affiliate/links'
       const response = await fetch(url)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
       const data = await response.json()
       
       if (data.links) {
@@ -137,10 +148,13 @@ export default function AffiliateLinksPage() {
           targetName: link.membership?.name || link.product?.name || link.course?.title || link.supplier?.companyName || 'Semua Produk'
         }))
         setLinks(enrichedLinks)
+      } else {
+        setLinks([])
       }
     } catch (error) {
       console.error('Error fetching links:', error)
       toast.error('Gagal memuat link')
+      setLinks([])
     }
   }
 
@@ -148,10 +162,13 @@ export default function AffiliateLinksPage() {
     try {
       // Use forAffiliate=true to only get memberships that can be promoted by affiliates
       const response = await fetch('/api/memberships/packages?forAffiliate=true')
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.packages) setMemberships(data.packages)
+      else setMemberships([])
     } catch (error) {
       console.error('Error fetching memberships:', error)
+      setMemberships([])
     }
   }
 
@@ -159,10 +176,13 @@ export default function AffiliateLinksPage() {
     try {
       // Use forAffiliate=true to only get products that can be promoted by affiliates
       const response = await fetch('/api/products?forAffiliate=true')
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.products) setProducts(data.products)
+      else setProducts([])
     } catch (error) {
       console.error('Error fetching products:', error)
+      setProducts([])
     }
   }
 
@@ -170,40 +190,52 @@ export default function AffiliateLinksPage() {
     try {
       // Use forAffiliate=true to only get courses that can be promoted by affiliates
       const response = await fetch('/api/courses?forAffiliate=true')
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.courses) setCourses(data.courses.filter((c: any) => c.isPublished))
+      else setCourses([])
     } catch (error) {
       console.error('Error fetching courses:', error)
+      setCourses([])
     }
   }
 
   const fetchSuppliers = async () => {
     try {
       const response = await fetch('/api/suppliers?verified=true')
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.suppliers) setSuppliers(data.suppliers)
+      else setSuppliers([])
     } catch (error) {
       console.error('Error fetching suppliers:', error)
+      setSuppliers([])
     }
   }
 
   const fetchCoupons = async () => {
     try {
       const response = await fetch('/api/affiliate/coupons/all')
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.coupons) setCoupons(data.coupons)
+      else setCoupons([])
     } catch (error) {
       console.error('Error fetching coupons:', error)
+      setCoupons([])
     }
   }
 
   const fetchAffiliateCoupons = async () => {
     try {
       const response = await fetch('/api/affiliate/coupons')
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.coupons) setAffiliateCoupons(data.coupons)
+      else setAffiliateCoupons([])
     } catch (error) {
       console.error('Error fetching affiliate coupons:', error)
+      setAffiliateCoupons([])
     }
   }
 
