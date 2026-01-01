@@ -124,17 +124,16 @@ async function scanAPIs(): Promise<ScanCheckResult[]> {
     { name: 'Supplier Packages', url: '/api/supplier/packages', method: 'GET', category: 'Supplier' },
     { name: 'Supplier Quota', url: '/api/supplier/quota', method: 'GET', category: 'Supplier' },
     
-    // === TRANSACTION APIs ===
+    // === TRANSACTION APIs (GET-enabled only) ===
     { name: 'Transactions', url: '/api/transactions', method: 'GET', category: 'Transaction' },
-    { name: 'Checkout', url: '/api/checkout', method: 'GET', category: 'Transaction' },
     { name: 'Wallet', url: '/api/wallet', method: 'GET', category: 'Transaction' },
+    // Note: /api/checkout and /api/payments are POST-only, not scanned
     
     // === FEATURE APIs (VERIFIED) ===
     { name: 'Notifications', url: '/api/notifications', method: 'GET', category: 'Feature' },
     { name: 'Groups', url: '/api/groups', method: 'GET', category: 'Feature' },
     { name: 'Chat Rooms', url: '/api/chat/rooms', method: 'GET', category: 'Feature' },
     { name: 'Posts', url: '/api/posts', method: 'GET', category: 'Feature' },
-    { name: 'Payments', url: '/api/payments', method: 'GET', category: 'Feature' },
     { name: 'Progress', url: '/api/progress', method: 'GET', category: 'Feature' },
     { name: 'Messages', url: '/api/messages', method: 'GET', category: 'Feature' },
   ]
