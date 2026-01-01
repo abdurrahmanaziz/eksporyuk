@@ -57,7 +57,7 @@ export async function PATCH(
 
     // If couponCode provided, update URL
     if (couponCode !== undefined) {
-      let newUrl = link.url
+      let newUrl = link.fullUrl || ''
       
       // Remove existing coupon parameter if any
       newUrl = newUrl.replace(/[&?]coupon=[^&]*/, '')
@@ -68,7 +68,7 @@ export async function PATCH(
         newUrl = `${newUrl}${separator}coupon=${couponCode}`
       }
       
-      updateData.url = newUrl
+      updateData.fullUrl = newUrl
     }
 
     // Only update if there's data to update
