@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
 import { prisma } from '@/lib/prisma';
+import { notificationService } from '@/lib/services/notificationService';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -93,6 +94,19 @@ export async function POST(
         },
       },
     });
+    
+    // Notify student about graded assignment
+    const percentage = Math.round((score / submission.assignment.maxScore) * 100);
+    const isPassing = percentage >= 70;
+    
+    await notificationService.send({
+      userId: graded.user.id,
+      type: 'ASSIGNMENT',
+      title: isPassing ? '✅ Tugas Dinilai - Lulus!' : '📝 Tugas Dinilai',
+      message: `Tugas "${graded.assignment.title}" mendapat nilai ${score}/${submission.assignment.maxScore} (${percentage}%)${feedback ? '. Lihat feedback dari mentor.' : ''}`,
+      link: `/learn/${submission.assignment.course.slug}?tab=assignments`,
+      channels: ['pusher', 'onesignal', 'email']
+    }).catch(err => console.error('Failed to send grade notification:', err));
 
     return NextResponse.json({ submission: graded });
   } catch (error: any) {

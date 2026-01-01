@@ -93,6 +93,9 @@ export default function CheckoutProPage() {
   const [selectedPackage, setSelectedPackage] = useState<MembershipPackage | null>(null)
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [couponChecking, setCouponChecking] = useState(false)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [affiliatePartner, setAffiliatePartner] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [userData, setUserData] = useState({
@@ -151,6 +154,70 @@ export default function CheckoutProPage() {
     }
   }, [searchParams])
 
+  // Load affiliate partner from cookies
+  useEffect(() => {
+    const loadAffiliatePartner = async () => {
+      try {
+        // Check for affiliate cookie
+        const cookies = document.cookie.split(';')
+        const affiliateCookie = cookies.find(c => c.trim().startsWith('affiliate_code='))
+        const refCookie = cookies.find(c => c.trim().startsWith('ref='))
+        
+        const affiliateCode = affiliateCookie?.split('=')[1] || refCookie?.split('=')[1]
+        
+        if (affiliateCode) {
+          // Fetch affiliate name
+          const res = await fetch(`/api/affiliate/by-code?code=${affiliateCode}`)
+          if (res.ok) {
+            const data = await res.json()
+            if (data.affiliate?.user?.name) {
+              setAffiliatePartner(data.affiliate.user.name)
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[Checkout Pro] Error loading affiliate partner:', err)
+      }
+    }
+    loadAffiliatePartner()
+  }, [])
+
+  // Auto-detect coupon as user types (with debounce)
+  useEffect(() => {
+    if (!couponCode.trim() || couponCode.length < 3 || !selectedPackage) {
+      setCouponError(null)
+      return
+    }
+    
+    // Don't auto-check if already applied
+    if (appliedCoupon && appliedCoupon.code === couponCode) {
+      return
+    }
+
+    const debounceTimer = setTimeout(async () => {
+      setCouponChecking(true)
+      setCouponError(null)
+      try {
+        const res = await fetch(`/api/coupons/validate?code=${couponCode}&membershipId=${selectedPackage.id}`)
+        const data = await res.json()
+        if (res.ok && data.valid) {
+          setAppliedCoupon(data.coupon)
+          setCouponError(null)
+        } else {
+          setAppliedCoupon(null)
+          setCouponError(data.message || 'Kupon tidak valid')
+        }
+      } catch (err) {
+        console.error('[Checkout Pro] Error checking coupon:', err)
+        setCouponError('Gagal memeriksa kupon')
+      } finally {
+        setCouponChecking(false)
+      }
+    }, 800) // 800ms debounce
+
+    return () => clearTimeout(debounceTimer)
+  }, [couponCode, selectedPackage])
+
   // Auto-validate coupon when couponCode is set from URL and package is selected
   useEffect(() => {
     const autoValidateCoupon = async () => {
@@ -159,15 +226,20 @@ export default function CheckoutProPage() {
         // Only auto-validate if coupon came from URL
         if (couponFromUrl && couponFromUrl === couponCode && !appliedCoupon) {
           console.log('[Checkout Pro] Auto-validating coupon:', couponCode)
+          setCouponChecking(true)
           try {
             const res = await fetch(`/api/coupons/validate?code=${couponCode}&membershipId=${selectedPackage.id}`)
             const data = await res.json()
             if (res.ok && data.valid) {
               console.log('[Checkout Pro] Coupon validated successfully:', data.coupon)
               setAppliedCoupon(data.coupon)
+            } else {
+              setCouponError(data.message || 'Kupon tidak valid')
             }
           } catch (err) {
             console.error('[Checkout Pro] Error auto-validating coupon:', err)
+          } finally {
+            setCouponChecking(false)
           }
         }
       }
@@ -743,26 +815,51 @@ export default function CheckoutProPage() {
 
           {/* Coupon Section */}
           <div className="mb-8">
-            <Label className="text-sm font-semibold mb-2 block">Punya Kupon</Label>
+            <Label className="text-sm font-semibold mb-2 block">Punya Kupon?</Label>
             <div className="flex gap-2">
-              <Input
-                placeholder="Kode kupon"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                className="flex-1"
-              />
+              <div className="relative flex-1">
+                <Input
+                  placeholder="Masukkan kode kupon"
+                  value={couponCode}
+                  onChange={(e) => {
+                    setCouponCode(e.target.value.toUpperCase())
+                    if (appliedCoupon && e.target.value.toUpperCase() !== appliedCoupon.code) {
+                      setAppliedCoupon(null)
+                    }
+                  }}
+                  className={`pr-10 ${appliedCoupon ? 'border-green-500 bg-green-50' : couponError ? 'border-red-500 bg-red-50' : ''}`}
+                />
+                {couponChecking && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                  </div>
+                )}
+                {appliedCoupon && !couponChecking && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Check className="w-4 h-4 text-green-600" />
+                  </div>
+                )}
+              </div>
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleValidateCoupon}
-                className="bg-orange-600 text-white hover:bg-orange-700"
+                disabled={couponChecking || !couponCode.trim()}
+                className="bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
               >
-                Validasi
+                {couponChecking ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Terapkan'}
               </Button>
             </div>
             {appliedCoupon && (
-              <p className="text-sm text-green-600 mt-2">
-                ✓ Kupon "{appliedCoupon.code}" berhasil diterapkan
+              <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                <Check className="w-4 h-4" />
+                Kupon "{appliedCoupon.code}" berhasil diterapkan - Hemat {appliedCoupon.discountType === 'PERCENTAGE' ? `${appliedCoupon.discount}%` : `Rp ${appliedCoupon.discount?.toLocaleString('id-ID')}`}
+              </p>
+            )}
+            {couponError && !appliedCoupon && (
+              <p className="text-sm text-red-600 mt-2 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" />
+                {couponError}
               </p>
             )}
           </div>

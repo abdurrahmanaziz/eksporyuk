@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -58,6 +59,16 @@ export async function POST(
           relatedId: post.id
         }
       })
+      
+      // Send push notification
+      await notificationService.send({
+        userId: post.authorId,
+        type: 'POST_APPROVED',
+        title: '✅ Postingan Disetujui',
+        message: `Postingan Anda di grup "${post.group.name}" telah disetujui`,
+        link: `/community/groups/${post.groupId}`,
+        channels: ['pusher', 'onesignal']
+      }).catch(err => console.error('Failed to send approval notification:', err))
 
       return NextResponse.json(updatedPost)
     } else if (action === 'reject') {
@@ -76,6 +87,16 @@ export async function POST(
           relatedId: post.id
         }
       })
+      
+      // Send push notification
+      await notificationService.send({
+        userId: post.authorId,
+        type: 'POST_REJECTED',
+        title: '❌ Postingan Ditolak',
+        message: `Postingan Anda di grup "${post.group.name}" ditolak oleh moderator`,
+        link: `/community/groups/${post.groupId}`,
+        channels: ['pusher', 'onesignal']
+      }).catch(err => console.error('Failed to send rejection notification:', err))
 
       return NextResponse.json(updatedPost)
     }

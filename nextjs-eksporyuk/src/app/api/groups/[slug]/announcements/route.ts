@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -75,6 +76,7 @@ export async function POST(
       select: { userId: true }
     })
 
+    // Create database notifications
     await Promise.all(
       members.slice(0, 100).map(m =>
         prisma.notification.create({
@@ -86,6 +88,20 @@ export async function POST(
             link: `/community/groups/${params.id}`
           }
         })
+      )
+    )
+    
+    // Send push notifications to all members
+    await Promise.all(
+      members.slice(0, 100).map(m =>
+        notificationService.send({
+          userId: m.userId,
+          type: 'ANNOUNCEMENT',
+          title: '📢 Pengumuman Grup Baru',
+          message: content.substring(0, 80) + '...',
+          link: `/community/groups/${params.id}`,
+          channels: ['pusher', 'onesignal']
+        }).catch(err => console.error('Failed to send push notification:', err))
       )
     )
 

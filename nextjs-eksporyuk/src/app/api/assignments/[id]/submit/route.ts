@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
 import { prisma } from '@/lib/prisma';
+import { notificationService } from '@/lib/services/notificationService';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -115,10 +116,30 @@ export async function POST(
             select: {
               title: true,
               maxScore: true,
+              course: {
+                select: {
+                  id: true,
+                  mentorId: true,
+                  title: true,
+                  slug: true
+                }
+              }
             },
           },
         },
       });
+      
+      // Notify mentor about new submission
+      if (submission.assignment.course?.mentorId) {
+        await notificationService.send({
+          userId: submission.assignment.course.mentorId,
+          type: 'ASSIGNMENT',
+          title: '📝 Tugas Baru Dikumpulkan',
+          message: `${user.name} mengumpulkan tugas "${submission.assignment.title}"${isLate ? ' (terlambat)' : ''}`,
+          link: `/mentor/courses/${submission.assignment.course.id}/assignments`,
+          channels: ['pusher', 'onesignal', 'email']
+        }).catch(err => console.error('Failed to send assignment notification:', err));
+      }
     }
 
     return NextResponse.json({ submission }, { status: 201 });
