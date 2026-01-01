@@ -122,18 +122,111 @@ export async function GET(
         })
       }
       
-      // Try to create a new Xendit invoice as fallback
+      // Get bank code from metadata (user already selected this bank)
+      const bankCode = metadata?.bankCode || metadata?.xenditBankCode || metadata?.paymentChannel
+      
+      // Try to create a NEW VA with the same bank that user selected
       try {
         const { xenditService } = await import('@/lib/xendit')
         const isConfigured = await xenditService.isConfigured()
         
+        if (isConfigured && bankCode) {
+          console.log('[VA API] Creating new VA for bank:', bankCode)
+          
+          // Try to create VA first (so user doesn't need to select bank again)
+          const vaResult = await xenditService.createVirtualAccount({
+            externalId: transaction.externalId || transaction.id,
+            bankCode: bankCode,
+            name: transaction.customerName || user?.name || 'Customer',
+            amount: Number(transaction.amount),
+            isSingleUse: true,
+            expirationDate: new Date(Date.now() + paymentExpiryHours * 3600 * 1000)
+          })
+          
+          if (vaResult?.success && vaResult.data?.account_number) {
+            const newVANumber = vaResult.data.account_number
+            
+            // Check if it's a real VA number (not a URL fallback)
+            if (!newVANumber.startsWith('http')) {
+              // Update transaction with new VA details
+              await prisma.transaction.update({
+                where: { id: transaction.id },
+                data: {
+                  reference: vaResult.data.id,
+                  expiredAt: vaResult.data.expiration_date ? new Date(vaResult.data.expiration_date) : new Date(Date.now() + paymentExpiryHours * 3600 * 1000),
+                  metadata: {
+                    ...metadata,
+                    vaNumber: newVANumber,
+                    accountNumber: newVANumber,
+                    xenditVANumber: newVANumber,
+                    vaId: vaResult.data.id,
+                  }
+                }
+              })
+              
+              console.log('[VA API] ✅ New VA created:', newVANumber)
+              
+              // Return VA details directly (no redirect needed)
+              return NextResponse.json({
+                // VA Details
+                vaNumber: newVANumber,
+                bankCode: bankCode,
+                bankName: getBankName(bankCode),
+                
+                // Amount Details
+                amount: Number(transaction.amount),
+                originalAmount: Number(transaction.originalAmount || metadata?.originalAmount || transaction.amount),
+                discountAmount: Number(transaction.discountAmount || metadata?.discountAmount || 0),
+                
+                // Invoice Details
+                invoiceNumber: transaction.invoiceNumber || transaction.id.slice(0, 8).toUpperCase(),
+                transactionId: transaction.id,
+                type: transaction.type,
+                itemName: transaction.description || 'Pembelian',
+                membershipDuration: 0,
+                description: transaction.description,
+                status: transaction.status,
+                
+                // Customer Details
+                customerName: transaction.customerName || user?.name || 'Customer',
+                customerEmail: transaction.customerEmail || user?.email || '',
+                customerWhatsapp: transaction.customerWhatsapp || user?.whatsapp || '',
+                
+                // Time Details
+                createdAt: transaction.createdAt.toISOString(),
+                expiredAt: vaResult.data.expiration_date || new Date(Date.now() + paymentExpiryHours * 3600 * 1000).toISOString(),
+                paymentExpiryHours: paymentExpiryHours,
+                
+                // Coupon Details
+                coupon: coupon ? {
+                  code: coupon.code,
+                  discountType: coupon.discountType,
+                  discountValue: Number(coupon.discountValue),
+                } : null,
+                
+                // Payment Method
+                paymentMethod: transaction.paymentMethod,
+                paymentChannelName: getBankName(bankCode),
+                
+                // Flags
+                isFallback: false,
+              })
+            }
+          }
+        }
+        
+        // If VA creation failed, fall back to Invoice with specific bank
         if (isConfigured) {
+          console.log('[VA API] VA creation failed, falling back to Invoice with bank:', bankCode)
+          
           const invoice = await xenditService.createInvoice({
             external_id: transaction.externalId || transaction.id,
             amount: Number(transaction.amount),
             payer_email: transaction.customerEmail || user?.email || 'customer@eksporyuk.com',
             description: transaction.description || 'Pembayaran',
             invoice_duration: paymentExpiryHours * 3600,
+            // Specify payment method to pre-select the bank user chose
+            payment_methods: bankCode ? [bankCode] : undefined,
           })
           
           if (invoice?.invoiceUrl) {
@@ -146,12 +239,12 @@ export async function GET(
             return NextResponse.json({
               redirect: true,
               redirectUrl: invoice.invoiceUrl,
-              message: 'Silakan selesaikan pembayaran melalui Xendit checkout',
+              message: `Silakan selesaikan pembayaran via ${getBankName(bankCode)}`,
             })
           }
         }
       } catch (invoiceError) {
-        console.error('[VA API] Failed to create invoice fallback for missing VA:', invoiceError)
+        console.error('[VA API] Failed to create VA/invoice fallback:', invoiceError)
       }
       
       return NextResponse.json(
