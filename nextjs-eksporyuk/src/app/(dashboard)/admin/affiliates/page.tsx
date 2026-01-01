@@ -52,6 +52,7 @@ interface AffiliateStats {
   pendingApproval: number
   totalEarnings: number
   totalSales: number
+  totalConversions?: number
   pendingPayouts: number
   totalPayouts: number
 }
@@ -469,6 +470,25 @@ export default function AffiliatesManagementPage() {
               <div className="text-2xl font-bold text-white mb-1">{formatCurrency(stats.totalSales || 0)}</div>
               <p className="text-sm text-indigo-100 mb-3">Total Omset</p>
               <div className="text-xs text-indigo-100">Total penjualan via affiliate</div>
+            </CardContent>
+          </Card>
+
+          {/* Total Transaksi Card */}
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-pink-500 to-rose-600">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+            <CardContent className="pt-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-pink-400/20 text-pink-100">
+                  <ArrowUpRight className="h-3 w-3" />
+                  Live
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">{(stats.totalConversions || 0).toLocaleString('id-ID')}</div>
+              <p className="text-sm text-pink-100 mb-3">Total Transaksi</p>
+              <div className="text-xs text-pink-100">Jumlah transaksi affiliate</div>
             </CardContent>
           </Card>
 

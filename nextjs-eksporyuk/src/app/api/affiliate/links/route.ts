@@ -90,13 +90,20 @@ const rateLimiter = new RateLimiter()
 
 // GET /api/affiliate/links - Get user's affiliate links
 export async function GET(request: NextRequest) {
-  console.log('🔍 [Affiliate Links] GET request started')
-  console.log('🔍 [Affiliate Links] URL:', request.url)
-  console.log('🔍 [Affiliate Links] Method:', request.method)
-  
   try {
-    console.log('🔍 [Affiliate Links] Getting session...')
-    const session = await getServerSession(authOptions)
+    console.log('🔍 [Affiliate Links] GET request started')
+    
+    let session
+    try {
+      session = await getServerSession(authOptions)
+    } catch (sessionError: any) {
+      console.error('❌ [Affiliate Links] Session error:', sessionError.message)
+      return NextResponse.json({ 
+        error: 'Session error', 
+        links: [],
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
+      }, { status: 401 })
+    }
     console.log('🔍 [Affiliate Links] Session result:', session ? 'EXISTS' : 'NULL')
     
     if (!session) {
@@ -240,13 +247,16 @@ export async function GET(request: NextRequest) {
         hasNext: false,
         hasPrev: false
       },
-      error: 'Database connection issue. Please contact support.',
+      error: process.env.NODE_ENV === 'development' 
+        ? `Error: ${error.message}` 
+        : 'Database connection issue. Please contact support.',
       _debug: process.env.NODE_ENV === 'development' ? {
         message: error.message,
         code: error.code,
-        name: error.name
+        name: error.name,
+        stack: error.stack?.substring(0, 500)
       } : undefined
-    })
+    }, { status: 200 }) // Return 200 with error in body to prevent page crash
   }
 }
 
