@@ -235,12 +235,41 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Sort by totalEarnings desc
-    allAffiliates.sort((a, b) => b.totalEarnings - a.totalEarnings)
+    // 7. Get wallet data for ALL affiliates first (before sorting)
+    const allUserIds = allAffiliates.map(a => a.userId)
+    const wallets = await prisma.wallet.findMany({
+      where: { userId: { in: allUserIds } },
+      select: {
+        userId: true,
+        balance: true,
+        balancePending: true,
+        totalEarnings: true,
+        totalPayout: true,
+      },
+    })
+    const walletMap = new Map(wallets.map(w => [w.userId, w]))
+
+    // Enrich affiliates with wallet data and calculate realtime earnings
+    const affiliatesWithEarnings = allAffiliates.map(affiliate => {
+      const wallet = walletMap.get(affiliate.userId) || null
+      // Use wallet.totalEarnings if affiliate has no earnings from AffiliateConversion
+      const realtimeEarnings = affiliate.totalEarnings > 0 
+        ? affiliate.totalEarnings 
+        : Number(wallet?.totalEarnings || 0)
+      
+      return {
+        ...affiliate,
+        wallet,
+        totalEarnings: realtimeEarnings,
+      }
+    })
+
+    // Sort by totalEarnings desc (now with wallet data included)
+    affiliatesWithEarnings.sort((a, b) => b.totalEarnings - a.totalEarnings)
     
-    // Apply pagination
-    const total = allAffiliates.length
-    const paginatedAffiliates = allAffiliates.slice(skip, skip + limit)
+    // Apply pagination AFTER sorting
+    const total = affiliatesWithEarnings.length
+    const paginatedAffiliates = affiliatesWithEarnings.slice(skip, skip + limit)
     
     console.log('[ADMIN_AFFILIATES_API] Query result:', {
       registeredCount: registeredAffiliates.length,
@@ -250,39 +279,13 @@ export async function GET(request: NextRequest) {
       limit,
     })
 
-    // 7. Get wallet data for each affiliate and enrich with realtime earnings
-    const affiliatesWithWallet = await Promise.all(
-      paginatedAffiliates.map(async (affiliate) => {
-        const wallet = await prisma.wallet.findUnique({
-          where: { userId: affiliate.userId },
-          select: {
-            balance: true,
-            balancePending: true,
-            totalEarnings: true,
-            totalPayout: true,
-          },
-        })
-
-        // Use wallet.totalEarnings if affiliate has no earnings from AffiliateConversion
-        const realtimeEarnings = affiliate.totalEarnings > 0 
-          ? affiliate.totalEarnings 
-          : Number(wallet?.totalEarnings || 0)
-
-        return {
-          ...affiliate,
-          wallet,
-          totalEarnings: realtimeEarnings,
-        }
-      })
-    )
-
     // 8. Calculate stats
     const stats = await calculateAffiliateStats()
 
     // 9. Return response
     return NextResponse.json({
       success: true,
-      affiliates: affiliatesWithWallet,
+      affiliates: paginatedAffiliates,
       stats,
       pagination: {
         page,
