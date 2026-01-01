@@ -11,6 +11,7 @@ import {
   CreditCard,
   BookOpen,
   Zap,
+  Shield,
 } from 'lucide-react'
 
 const settingsPages = [
@@ -61,6 +62,12 @@ const settingsPages = [
     href: '/admin/settings/platform',
     icon: Zap,
     description: 'Fitur & integrasi',
+  },
+  {
+    name: 'Scanner',
+    href: '/admin/settings/scanner',
+    icon: Shield,
+    description: 'Health monitor sistem',
   },
 ]
 

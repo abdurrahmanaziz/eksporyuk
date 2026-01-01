@@ -111,14 +111,14 @@ export async function GET(request: NextRequest) {
 
     // 5. Get affiliates ONLY from AffiliateConversion (not in AffiliateProfile)
     const registeredUserIds = new Set(registeredAffiliates.map(a => a.userId))
-    const importedOnlyUserIds = conversionStats
+    const importedOnlyAffiliateIds = conversionStats
       .map(s => s.affiliateId)
       .filter(id => !registeredUserIds.has(id))
     
-    // Get users for imported-only affiliates
+    // Get users for imported-only affiliates (some may exist as users, some may not)
     const importedUsers = source === 'REGISTERED' ? [] : await prisma.user.findMany({
       where: { 
-        id: { in: importedOnlyUserIds },
+        id: { in: importedOnlyAffiliateIds },
         ...(search ? {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
@@ -166,31 +166,47 @@ export async function GET(request: NextRequest) {
     }
     
     // Add imported-only affiliates (from AffiliateConversion)
-    for (const [userId, user] of importedUserMap) {
-      const stats = conversionStatsMap.get(userId)
-      if (stats) {
-        allAffiliates.push({
-          id: userId,
-          userId: userId,
-          user: user,
-          affiliateCode: '',
-          shortLinkUsername: null,
-          tier: 1,
-          commissionRate: 0,
-          totalClicks: 0,
-          totalConversions: Number(stats.totalConversions),
-          totalEarnings: Number(stats.totalEarnings),
-          totalSales: 0,
-          isActive: true,
-          applicationStatus: 'IMPORTED',
-          approvedAt: stats.firstCommission?.toISOString(),
-          createdAt: stats.firstCommission?.toISOString() || new Date().toISOString(),
-          source: 'IMPORTED',
-          bankName: null,
-          bankAccountName: null,
-          bankAccountNumber: null,
-          whatsapp: null,
-        })
+    // These may or may not have matching users in our system
+    if (source !== 'REGISTERED') {
+      for (const affiliateId of importedOnlyAffiliateIds) {
+        const stats = conversionStatsMap.get(affiliateId)
+        if (stats) {
+          // Check if we have a matching user
+          const user = importedUserMap.get(affiliateId)
+          
+          // Format affiliate ID for display (remove 'aff_' prefix if present)
+          const displayId = affiliateId.startsWith('aff_') 
+            ? affiliateId.replace('aff_', '').substring(0, 8).toUpperCase()
+            : affiliateId.substring(0, 8).toUpperCase()
+          
+          allAffiliates.push({
+            id: affiliateId,
+            userId: affiliateId,
+            user: user || {
+              id: affiliateId,
+              name: `Affiliate ${displayId}`,
+              email: `imported-${displayId.toLowerCase()}@sejoli.co.id`,
+              avatar: null,
+            },
+            affiliateCode: affiliateId,
+            shortLinkUsername: null,
+            tier: 1,
+            commissionRate: 0,
+            totalClicks: 0,
+            totalConversions: Number(stats.totalConversions),
+            totalEarnings: Number(stats.totalEarnings),
+            totalSales: 0,
+            isActive: true,
+            applicationStatus: 'IMPORTED',
+            approvedAt: stats.firstCommission?.toISOString(),
+            createdAt: stats.firstCommission?.toISOString() || new Date().toISOString(),
+            source: 'IMPORTED',
+            bankName: null,
+            bankAccountName: null,
+            bankAccountNumber: null,
+            whatsapp: null,
+          })
+        }
       }
     }
 
