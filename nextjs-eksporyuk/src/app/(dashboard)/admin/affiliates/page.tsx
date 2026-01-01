@@ -144,16 +144,6 @@ export default function AffiliatesManagementPage() {
     }
   }, [status, session, statusFilter])
 
-  // Realtime refresh every 30 seconds
-  useEffect(() => {
-    if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
-      const interval = setInterval(() => {
-        fetchData()
-      }, 30000) // Refresh every 30 seconds
-      return () => clearInterval(interval)
-    }
-  }, [status, session])
-
   const fetchData = async () => {
     try {
       setLoading(true)
