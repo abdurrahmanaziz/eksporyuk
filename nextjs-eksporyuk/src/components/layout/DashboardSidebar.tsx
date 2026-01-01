@@ -437,7 +437,19 @@ export default function DashboardSidebar() {
   const { hasPending, transactions, loading: pendingLoading } = usePendingTransactions()
   
   const userRole = session?.user?.role || 'MEMBER_FREE'
+  const allRoles = session?.user?.allRoles || [userRole]
   const { settings } = useSettings()
+
+  // Detect current dashboard context from pathname
+  const getCurrentDashboardContext = (): string => {
+    if (pathname?.startsWith('/admin')) return 'ADMIN'
+    if (pathname?.startsWith('/mentor')) return 'MENTOR'
+    if (pathname?.startsWith('/affiliate')) return 'AFFILIATE'
+    if (pathname?.startsWith('/supplier')) return 'SUPPLIER'
+    return userRole // Default to primary role for member dashboard
+  }
+  
+  const currentDashboardContext = getCurrentDashboardContext()
 
   // Initialize dark mode from localStorage or system preference
   useEffect(() => {
@@ -575,8 +587,9 @@ export default function DashboardSidebar() {
       }))
   }
 
-  // Get base navigation by role
-  let baseNavigation = navigationByRole[userRole as keyof typeof navigationByRole] || navigationByRole.MEMBER_FREE
+  // Get base navigation by current dashboard context (not just primary role)
+  // This allows users with additional roles to see proper menu when they switch dashboards
+  let baseNavigation = navigationByRole[currentDashboardContext as keyof typeof navigationByRole] || navigationByRole.MEMBER_FREE
   
   // Add affiliate menu for non-affiliate users if enabled
   if (affiliateMenuEnabled && userRole !== 'AFFILIATE') {
@@ -648,9 +661,11 @@ export default function DashboardSidebar() {
   }
 
   const getDashboardUrl = () => {
-    if (userRole === 'ADMIN') return '/admin'
-    if (userRole === 'MENTOR') return '/mentor/dashboard'
-    if (userRole === 'AFFILIATE') return '/affiliate/dashboard'
+    // Use current dashboard context instead of primary role
+    if (currentDashboardContext === 'ADMIN') return '/admin'
+    if (currentDashboardContext === 'MENTOR') return '/mentor/dashboard'
+    if (currentDashboardContext === 'AFFILIATE') return '/affiliate/dashboard'
+    if (currentDashboardContext === 'SUPPLIER') return '/supplier/dashboard'
     return '/dashboard'
   }
 

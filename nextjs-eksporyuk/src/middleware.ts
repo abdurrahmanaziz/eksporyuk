@@ -43,10 +43,36 @@ const authMiddleware = withAuth(
     }
 
     const role = token.role as string
+    const allRoles = token.allRoles as string[] || [role]
+    const preferredDashboard = token.preferredDashboard as string || null
 
-    // Redirect /dashboard based on role - direct to primary dashboard
+    // Redirect /dashboard based on preferred dashboard OR role
     if (pathname === '/dashboard') {
-      // Auto-redirect based on primary role - RoleSwitcher available in sidebar for multi-role users
+      // PRIORITY 1: Use preferredDashboard if set and user has access
+      if (preferredDashboard) {
+        switch (preferredDashboard) {
+          case 'admin':
+            if (role === 'ADMIN') {
+              return NextResponse.redirect(new URL('/admin', request.url))
+            }
+            break
+          case 'mentor':
+            if (allRoles.includes('MENTOR') || allRoles.includes('ADMIN')) {
+              return NextResponse.redirect(new URL('/mentor/dashboard', request.url))
+            }
+            break
+          case 'affiliate':
+            if (allRoles.includes('AFFILIATE') || token.hasAffiliateProfile || role === 'ADMIN') {
+              return NextResponse.redirect(new URL('/affiliate/dashboard', request.url))
+            }
+            break
+          case 'member':
+            // Members can always access member dashboard
+            return NextResponse.next()
+        }
+      }
+      
+      // PRIORITY 2: Fallback to primary role based redirect
       switch (role) {
         case 'ADMIN':
           return NextResponse.redirect(new URL('/admin', request.url))
@@ -70,7 +96,7 @@ const authMiddleware = withAuth(
 
     if (pathname.startsWith('/mentor')) {
       // Check if user has MENTOR role (primary or additional) OR is ADMIN
-      const allRoles = token.allRoles as string[] || [role]
+      // allRoles already defined above
       const hasMentorAccess = allRoles.includes('MENTOR') || allRoles.includes('ADMIN')
       
       if (!hasMentorAccess) {
