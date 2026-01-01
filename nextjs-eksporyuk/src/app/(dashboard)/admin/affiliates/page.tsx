@@ -46,6 +46,8 @@ import { Textarea } from '@/components/ui/textarea'
 
 interface AffiliateStats {
   totalAffiliates: number
+  registeredAffiliates?: number
+  importedAffiliates?: number
   activeAffiliates: number
   pendingApproval: number
   totalEarnings: number
@@ -73,6 +75,8 @@ interface Affiliate {
   totalEarnings: number
   totalSales: number
   isActive: boolean
+  applicationStatus?: string
+  source?: 'REGISTERED' | 'IMPORTED'
   approvedAt?: string
   createdAt: string
   wallet?: {
@@ -81,6 +85,10 @@ interface Affiliate {
     totalEarnings: number
     totalPayout: number
   }
+  bankName?: string
+  bankAccountName?: string
+  bankAccountNumber?: string
+  whatsapp?: string
 }
 
 export default function AffiliatesManagementPage() {
@@ -642,7 +650,7 @@ export default function AffiliatesManagementPage() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px]">
+            <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="border-b bg-gray-50/50">
                   <th className="text-center p-4 w-12">
@@ -655,6 +663,7 @@ export default function AffiliatesManagementPage() {
                   </th>
                   <th className="text-left p-4 font-medium text-gray-600">Affiliate</th>
                   <th className="text-left p-4 font-medium text-gray-600">Kode</th>
+                  <th className="text-center p-4 font-medium text-gray-600">Sumber</th>
                   <th className="text-center p-4 font-medium text-gray-600">Status</th>
                   <th className="text-center p-4 font-medium text-gray-600">Role</th>
                   <th className="text-right p-4 font-medium text-gray-600">Total Komisi</th>
@@ -664,7 +673,7 @@ export default function AffiliatesManagementPage() {
               <tbody>
                 {affiliates.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center p-8 text-gray-500">
+                    <td colSpan={8} className="text-center p-8 text-gray-500">
                       Tidak ada data affiliate
                     </td>
                   </tr>
@@ -694,7 +703,14 @@ export default function AffiliatesManagementPage() {
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{affiliate.affiliateCode}</span>
+                        <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{affiliate.affiliateCode || '-'}</span>
+                      </td>
+                      <td className="p-4 text-center">
+                        {affiliate.source === 'REGISTERED' ? (
+                          <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 text-xs">Registered</Badge>
+                        ) : (
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">Imported</Badge>
+                        )}
                       </td>
                       <td className="p-4 text-center">
                         {!affiliate.approvedAt ? (
