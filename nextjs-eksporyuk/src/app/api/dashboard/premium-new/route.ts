@@ -135,39 +135,111 @@ export async function GET(req: NextRequest) {
       reviewCount: 0 // Default review count
     }))
 
-    // Get recent community posts - limit to 5 for dashboard
-    const recentPosts = await prisma.post.findMany({
+    // Get recent community posts using proper feed system
+    console.log('[DASHBOARD] Fetching community feed posts...')
+    
+    // Get user's active memberships for community access
+    const userMemberships = await prisma.userMembership.findMany({
       where: {
-        approvalStatus: 'APPROVED'
+        userId,
+        isActive: true,
+        startDate: { lte: new Date() },
+        endDate: { gte: new Date() }
+      },
+      select: { membershipId: true }
+    })
+    const userMembershipIds = userMemberships.map(m => m.membershipId)
+
+    // Get user's direct group memberships  
+    const userGroupMemberships = await prisma.groupMember.findMany({
+      where: { userId },
+      select: { groupId: true }
+    })
+    const userGroupIds = userGroupMemberships.map(gm => gm.groupId)
+
+    // Get groups accessible via membership
+    const membershipGroupAccess = userMembershipIds.length > 0 ? await prisma.membershipGroup.findMany({
+      where: { membershipId: { in: userMembershipIds } },
+      select: { groupId: true }
+    }) : []
+    const membershipGroupIds = membershipGroupAccess.map(mg => mg.groupId)
+    
+    // Combined accessible groups
+    const accessibleGroupIds = [...new Set([...userGroupIds, ...membershipGroupIds])]
+
+    // Get community posts (public + user's groups + user's own posts)
+    const communityPosts = await prisma.post.findMany({
+      where: {
+        approvalStatus: 'APPROVED',
+        OR: [
+          { groupId: null }, // Public posts
+          { groupId: { in: accessibleGroupIds } }, // Group posts user has access to  
+          { authorId: userId } // User's own posts
+        ]
       },
       take: 5,
-      orderBy: { createdAt: 'desc' }
+      orderBy: [
+        { isPinned: 'desc' },
+        { createdAt: 'desc' }
+      ]
     })
 
-    // Get post authors
-    const authorIds = recentPosts.map(p => p.authorId)
-    const authors = await prisma.user.findMany({
-      where: { id: { in: authorIds } },
-      select: { id: true, name: true, avatar: true, role: true }
-    })
-    const authorMap = new Map(authors.map(a => [a.id, a]))
+    // Get post details (authors, groups, interaction counts)
+    const postAuthorIds = communityPosts.map(p => p.authorId)
+    const postGroupIds = communityPosts.filter(p => p.groupId).map(p => p.groupId!)
+    
+    const [postAuthors, postGroups, postLikes, postComments] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: postAuthorIds } },
+        select: { id: true, name: true, avatar: true, role: true, province: true, city: true }
+      }),
+      postGroupIds.length > 0 ? prisma.group.findMany({
+        where: { id: { in: postGroupIds } },
+        select: { id: true, name: true, slug: true, avatar: true, type: true }
+      }) : [],
+      prisma.postLike.groupBy({
+        by: ['postId'],
+        where: { postId: { in: communityPosts.map(p => p.id) } },
+        _count: { id: true }
+      }),
+      prisma.postComment.groupBy({
+        by: ['postId'], 
+        where: { postId: { in: communityPosts.map(p => p.id) } },
+        _count: { id: true }
+      })
+    ])
 
-    const postsData = recentPosts.map(p => {
-      const author = authorMap.get(p.authorId)
-      // Extract hashtags from content
-      const hashtags = (p.content || '').match(/#\w+/g)?.map(tag => tag.slice(1)) || []
+    // Create lookup maps
+    const authorMap = new Map(postAuthors.map(a => [a.id, a]))
+    const groupMap = new Map(postGroups.map(g => [g.id, g]))
+    const likesMap = new Map(postLikes.map(l => [l.postId, l._count.id]))
+    const commentsMap = new Map(postComments.map(c => [c.postId, c._count.id]))
+
+    const postsData = communityPosts.map(post => {
+      const author = authorMap.get(post.authorId)
+      const group = post.groupId ? groupMap.get(post.groupId) : null
+      const hashtags = (post.content || '').match(/#\w+/g)?.map(tag => tag.slice(1)) || []
+      
       return {
-        id: p.id,
-        content: p.content || '',
+        id: post.id,
+        content: post.content || '',
         author: {
-          id: p.authorId,
+          id: post.authorId,
           name: author?.name || 'Unknown',
           avatar: author?.avatar || null,
-          role: author?.role || 'MEMBER_FREE'
+          role: author?.role || 'MEMBER_FREE',
+          location: author ? `${author.city || ''}, ${author.province || ''}`.replace(/^, |, $/, '') : ''
         },
-        createdAt: p.createdAt.toISOString(),
-        likesCount: p.likesCount || 0,
-        commentsCount: p.commentsCount || 0,
+        group: group ? {
+          id: group.id,
+          name: group.name,
+          slug: group.slug,
+          avatar: group.avatar,
+          type: group.type
+        } : null,
+        createdAt: post.createdAt.toISOString(),
+        likesCount: likesMap.get(post.id) || 0,
+        commentsCount: commentsMap.get(post.id) || 0,
         tags: hashtags,
         images: p.images ? (Array.isArray(p.images) ? p.images : []) : []
       }
