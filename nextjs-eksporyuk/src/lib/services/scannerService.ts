@@ -38,7 +38,7 @@ export interface ScanSummary {
 async function scanAPIs(): Promise<ScanCheckResult[]> {
   const results: ScanCheckResult[] = []
   
-  // Comprehensive list of ALL API endpoints
+  // Comprehensive list of ACTUAL API endpoints (verified from codebase)
   const allEndpoints = [
     // === AUTH APIs ===
     { name: 'Auth Session', url: '/api/auth/session', method: 'GET', category: 'Auth' },
@@ -46,7 +46,7 @@ async function scanAPIs(): Promise<ScanCheckResult[]> {
     
     // === USER APIs ===
     { name: 'User Profile', url: '/api/user/profile', method: 'GET', category: 'User' },
-    { name: 'User Settings', url: '/api/user/settings', method: 'GET', category: 'User' },
+    { name: 'Profile', url: '/api/profile', method: 'GET', category: 'User' },
     
     // === PUBLIC APIs ===
     { name: 'Memberships List', url: '/api/memberships', method: 'GET', category: 'Public' },
@@ -54,6 +54,9 @@ async function scanAPIs(): Promise<ScanCheckResult[]> {
     { name: 'Courses List', url: '/api/courses', method: 'GET', category: 'Public' },
     { name: 'Suppliers List', url: '/api/suppliers', method: 'GET', category: 'Public' },
     { name: 'Public Settings', url: '/api/settings/public', method: 'GET', category: 'Public' },
+    { name: 'Membership Plans', url: '/api/membership-plans', method: 'GET', category: 'Public' },
+    { name: 'Events', url: '/api/events', method: 'GET', category: 'Public' },
+    { name: 'Coupons', url: '/api/coupons', method: 'GET', category: 'Public' },
     
     // === ADMIN APIs ===
     { name: 'Admin Dashboard Stats', url: '/api/admin/dashboard/stats', method: 'GET', category: 'Admin' },
@@ -61,65 +64,80 @@ async function scanAPIs(): Promise<ScanCheckResult[]> {
     { name: 'Admin Transactions', url: '/api/admin/transactions', method: 'GET', category: 'Admin' },
     { name: 'Admin Affiliates', url: '/api/admin/affiliates', method: 'GET', category: 'Admin' },
     { name: 'Admin Memberships', url: '/api/admin/memberships', method: 'GET', category: 'Admin' },
+    { name: 'Admin Membership Plans', url: '/api/admin/membership-plans', method: 'GET', category: 'Admin' },
     { name: 'Admin Products', url: '/api/admin/products', method: 'GET', category: 'Admin' },
     { name: 'Admin Courses', url: '/api/admin/courses', method: 'GET', category: 'Admin' },
-    { name: 'Admin Suppliers', url: '/api/admin/suppliers', method: 'GET', category: 'Admin' },
-    { name: 'Admin Withdrawals', url: '/api/admin/withdrawals', method: 'GET', category: 'Admin' },
+    { name: 'Admin Supplier', url: '/api/admin/supplier', method: 'GET', category: 'Admin' },
     { name: 'Admin Coupons', url: '/api/admin/coupons', method: 'GET', category: 'Admin' },
     { name: 'Admin Groups', url: '/api/admin/groups', method: 'GET', category: 'Admin' },
-    { name: 'Admin Leads', url: '/api/admin/leads', method: 'GET', category: 'Admin' },
     { name: 'Admin Reports', url: '/api/admin/reports', method: 'GET', category: 'Admin' },
     { name: 'Admin Notifications', url: '/api/admin/notifications', method: 'GET', category: 'Admin' },
     { name: 'Admin Scanner', url: '/api/admin/scanner?action=status', method: 'GET', category: 'Admin' },
     { name: 'Admin Settings', url: '/api/admin/settings', method: 'GET', category: 'Admin' },
     { name: 'Admin Commission Settings', url: '/api/admin/commission/settings', method: 'GET', category: 'Admin' },
+    { name: 'Admin Payouts', url: '/api/admin/payouts', method: 'GET', category: 'Admin' },
+    { name: 'Admin Pending Revenue', url: '/api/admin/pending-revenue', method: 'GET', category: 'Admin' },
+    { name: 'Admin Wallets', url: '/api/admin/wallets', method: 'GET', category: 'Admin' },
+    { name: 'Admin Events', url: '/api/admin/events', method: 'GET', category: 'Admin' },
+    { name: 'Admin Certificates', url: '/api/admin/certificates', method: 'GET', category: 'Admin' },
+    { name: 'Admin Analytics', url: '/api/admin/analytics', method: 'GET', category: 'Admin' },
+    { name: 'Admin Sales', url: '/api/admin/sales', method: 'GET', category: 'Admin' },
+    { name: 'Admin Enrollments', url: '/api/admin/enrollments', method: 'GET', category: 'Admin' },
+    { name: 'Admin Short Links', url: '/api/admin/short-links', method: 'GET', category: 'Admin' },
+    { name: 'Admin Broadcast', url: '/api/admin/broadcast', method: 'GET', category: 'Admin' },
+    { name: 'Admin Banners', url: '/api/admin/banners', method: 'GET', category: 'Admin' },
     
     // === AFFILIATE APIs ===
-    { name: 'Affiliate Dashboard', url: '/api/affiliate/dashboard', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Links', url: '/api/affiliate/links', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Short Links', url: '/api/affiliate/short-links', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Earnings', url: '/api/affiliate/earnings', method: 'GET', category: 'Affiliate' },
-    { name: 'Affiliate Withdraw', url: '/api/affiliate/withdraw', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Training', url: '/api/affiliate/training', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Leaderboard', url: '/api/affiliate/leaderboard', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Profile', url: '/api/affiliate/profile', method: 'GET', category: 'Affiliate' },
-    { name: 'Affiliate Marketing Kit', url: '/api/affiliate/marketing-kit', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Materials', url: '/api/affiliate/materials', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Leads', url: '/api/affiliate/leads', method: 'GET', category: 'Affiliate' },
     { name: 'Affiliate Onboarding', url: '/api/affiliate/onboarding', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Stats', url: '/api/affiliate/stats', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Statistics', url: '/api/affiliate/statistics', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Payouts', url: '/api/affiliate/payouts', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Conversions', url: '/api/affiliate/conversions', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Reports', url: '/api/affiliate/reports', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Credits', url: '/api/affiliate/credits', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Coupons', url: '/api/affiliate/coupons', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Challenges', url: '/api/affiliate/challenges', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Broadcast', url: '/api/affiliate/broadcast', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Suppliers', url: '/api/affiliate/suppliers', method: 'GET', category: 'Affiliate' },
     
     // === MEMBER APIs ===
-    { name: 'Member Dashboard', url: '/api/member/dashboard', method: 'GET', category: 'Member' },
     { name: 'Member Courses', url: '/api/member/courses', method: 'GET', category: 'Member' },
-    { name: 'Member Downloads', url: '/api/member/downloads', method: 'GET', category: 'Member' },
+    { name: 'Member Documents', url: '/api/member/documents', method: 'GET', category: 'Member' },
     { name: 'Member Certificates', url: '/api/member/certificates', method: 'GET', category: 'Member' },
-    { name: 'Member Groups', url: '/api/member/groups', method: 'GET', category: 'Member' },
-    { name: 'Member Transactions', url: '/api/member/transactions', method: 'GET', category: 'Member' },
+    { name: 'Member Membership', url: '/api/member/membership', method: 'GET', category: 'Member' },
     
     // === MENTOR APIs ===
-    { name: 'Mentor Dashboard', url: '/api/mentor/dashboard', method: 'GET', category: 'Mentor' },
     { name: 'Mentor Courses', url: '/api/mentor/courses', method: 'GET', category: 'Mentor' },
     { name: 'Mentor Students', url: '/api/mentor/students', method: 'GET', category: 'Mentor' },
     { name: 'Mentor Groups', url: '/api/mentor/groups', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Supplier', url: '/api/mentor/supplier', method: 'GET', category: 'Mentor' },
     
     // === SUPPLIER APIs ===
-    { name: 'Supplier Dashboard', url: '/api/supplier/dashboard', method: 'GET', category: 'Supplier' },
     { name: 'Supplier Products', url: '/api/supplier/products', method: 'GET', category: 'Supplier' },
     { name: 'Supplier Profile', url: '/api/supplier/profile', method: 'GET', category: 'Supplier' },
+    { name: 'Supplier Orders', url: '/api/supplier/orders', method: 'GET', category: 'Supplier' },
     
     // === TRANSACTION APIs ===
     { name: 'Transactions', url: '/api/transactions', method: 'GET', category: 'Transaction' },
     { name: 'Checkout', url: '/api/checkout', method: 'GET', category: 'Transaction' },
+    { name: 'Wallet', url: '/api/wallet', method: 'GET', category: 'Transaction' },
     
-    // === OTHER APIs ===
-    { name: 'Notifications', url: '/api/notifications', method: 'GET', category: 'Other' },
-    { name: 'Feed', url: '/api/feed', method: 'GET', category: 'Other' },
-    { name: 'Groups', url: '/api/groups', method: 'GET', category: 'Other' },
-    { name: 'Chat Conversations', url: '/api/chat/conversations', method: 'GET', category: 'Other' },
-    { name: 'Wallet', url: '/api/wallet', method: 'GET', category: 'Other' },
-    { name: 'Upload', url: '/api/upload', method: 'GET', category: 'Other' },
-    
-    // === WEBHOOK APIs ===
-    { name: 'Xendit Webhook', url: '/api/webhooks/xendit', method: 'GET', category: 'Webhook' },
+    // === FEATURE APIs ===
+    { name: 'Notifications', url: '/api/notifications', method: 'GET', category: 'Feature' },
+    { name: 'Groups', url: '/api/groups', method: 'GET', category: 'Feature' },
+    { name: 'Chat Conversations', url: '/api/chat/conversations', method: 'GET', category: 'Feature' },
+    { name: 'Community Feed', url: '/api/community/feed', method: 'GET', category: 'Feature' },
+    { name: 'Posts', url: '/api/posts', method: 'GET', category: 'Feature' },
+    { name: 'Quiz', url: '/api/quiz', method: 'GET', category: 'Feature' },
+    { name: 'Support', url: '/api/support', method: 'GET', category: 'Feature' },
   ]
 
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
@@ -368,7 +386,7 @@ async function scanDatabase(): Promise<ScanCheckResult[]> {
 async function scanFrontend(): Promise<ScanCheckResult[]> {
   const results: ScanCheckResult[] = []
   
-  // Comprehensive list of ALL pages grouped by section
+  // Comprehensive list of ALL pages (verified from actual folder structure)
   const allPages = [
     // === PUBLIC PAGES ===
     { name: 'Homepage', url: '/', category: 'Public' },
@@ -377,6 +395,8 @@ async function scanFrontend(): Promise<ScanCheckResult[]> {
     { name: 'Privacy Policy', url: '/privacy-policy', category: 'Public' },
     { name: 'Terms of Service', url: '/terms-of-service', category: 'Public' },
     { name: 'FAQ', url: '/faq', category: 'Public' },
+    { name: 'Suppliers Public', url: '/suppliers', category: 'Public' },
+    { name: 'Courses Public', url: '/courses', category: 'Public' },
     
     // === AUTH PAGES ===
     { name: 'Login', url: '/auth/login', category: 'Auth' },
@@ -387,22 +407,36 @@ async function scanFrontend(): Promise<ScanCheckResult[]> {
     { name: 'Memberships List', url: '/membership', category: 'Membership' },
     { name: 'Checkout Page', url: '/checkout', category: 'Membership' },
     
-    // === ADMIN PAGES ===
+    // === ADMIN PAGES (verified from /src/app/(dashboard)/admin/) ===
     { name: 'Admin Dashboard', url: '/admin', category: 'Admin' },
+    { name: 'Admin Dashboard Stats', url: '/admin/dashboard', category: 'Admin' },
     { name: 'Admin Users', url: '/admin/users', category: 'Admin' },
-    { name: 'Admin Memberships', url: '/admin/memberships', category: 'Admin' },
+    { name: 'Admin Membership Plans', url: '/admin/membership-plans', category: 'Admin' },
     { name: 'Admin Products', url: '/admin/products', category: 'Admin' },
-    { name: 'Admin Transactions', url: '/admin/transactions', category: 'Admin' },
+    { name: 'Admin Sales', url: '/admin/sales', category: 'Admin' },
     { name: 'Admin Affiliates', url: '/admin/affiliates', category: 'Admin' },
     { name: 'Admin Courses', url: '/admin/courses', category: 'Admin' },
-    { name: 'Admin Suppliers', url: '/admin/suppliers', category: 'Admin' },
-    { name: 'Admin Withdrawals', url: '/admin/withdrawals', category: 'Admin' },
+    { name: 'Admin Supplier', url: '/admin/supplier', category: 'Admin' },
     { name: 'Admin Coupons', url: '/admin/coupons', category: 'Admin' },
     { name: 'Admin Groups', url: '/admin/groups', category: 'Admin' },
     { name: 'Admin Reports', url: '/admin/reports', category: 'Admin' },
-    { name: 'Admin Notifications', url: '/admin/notifications', category: 'Admin' },
-    { name: 'Admin Leads', url: '/admin/leads', category: 'Admin' },
     { name: 'Admin Certificates', url: '/admin/certificates', category: 'Admin' },
+    { name: 'Admin Wallets', url: '/admin/wallets', category: 'Admin' },
+    { name: 'Admin Payouts', url: '/admin/payouts', category: 'Admin' },
+    { name: 'Admin Pending Revenue', url: '/admin/pending-revenue', category: 'Admin' },
+    { name: 'Admin Analytics', url: '/admin/analytics', category: 'Admin' },
+    { name: 'Admin Enrollments', url: '/admin/enrollments', category: 'Admin' },
+    { name: 'Admin Events', url: '/admin/events', category: 'Admin' },
+    { name: 'Admin Broadcast', url: '/admin/broadcast', category: 'Admin' },
+    { name: 'Admin Short Links', url: '/admin/short-links', category: 'Admin' },
+    { name: 'Admin Banners', url: '/admin/banners', category: 'Admin' },
+    { name: 'Admin Support', url: '/admin/support', category: 'Admin' },
+    { name: 'Admin Quiz', url: '/admin/quiz', category: 'Admin' },
+    { name: 'Admin Feed', url: '/admin/feed', category: 'Admin' },
+    { name: 'Admin Leaderboard', url: '/admin/leaderboard', category: 'Admin' },
+    { name: 'Admin Marketing Kit', url: '/admin/marketing-kit', category: 'Admin' },
+    { name: 'Admin Import', url: '/admin/import', category: 'Admin' },
+    { name: 'Admin Documents', url: '/admin/documents', category: 'Admin' },
     
     // === ADMIN SETTINGS ===
     { name: 'Settings General', url: '/admin/settings', category: 'Admin Settings' },
@@ -415,44 +449,58 @@ async function scanFrontend(): Promise<ScanCheckResult[]> {
     { name: 'Settings Platform', url: '/admin/settings/platform', category: 'Admin Settings' },
     { name: 'Settings Scanner', url: '/admin/settings/scanner', category: 'Admin Settings' },
     
-    // === AFFILIATE PAGES ===
+    // === AFFILIATE PAGES (verified from /src/app/(affiliate)/affiliate/) ===
     { name: 'Affiliate Dashboard', url: '/affiliate', category: 'Affiliate' },
+    { name: 'Affiliate Dashboard Page', url: '/affiliate/dashboard', category: 'Affiliate' },
     { name: 'Affiliate Links', url: '/affiliate/links', category: 'Affiliate' },
     { name: 'Affiliate Short Links', url: '/affiliate/short-links', category: 'Affiliate' },
     { name: 'Affiliate Earnings', url: '/affiliate/earnings', category: 'Affiliate' },
-    { name: 'Affiliate Withdraw', url: '/affiliate/withdraw', category: 'Affiliate' },
+    { name: 'Affiliate Payouts', url: '/affiliate/payouts', category: 'Affiliate' },
     { name: 'Affiliate Training', url: '/affiliate/training', category: 'Affiliate' },
     { name: 'Affiliate Leaderboard', url: '/affiliate/leaderboard', category: 'Affiliate' },
-    { name: 'Affiliate Marketing Kit', url: '/affiliate/marketing-kit', category: 'Affiliate' },
-    { name: 'Affiliate Bio Page', url: '/affiliate/bio-page', category: 'Affiliate' },
     { name: 'Affiliate Leads', url: '/affiliate/leads', category: 'Affiliate' },
-    { name: 'Affiliate Profile', url: '/affiliate/profile', category: 'Affiliate' },
-    { name: 'Affiliate Register', url: '/affiliate/register', category: 'Affiliate' },
+    { name: 'Affiliate Conversions', url: '/affiliate/conversions', category: 'Affiliate' },
+    { name: 'Affiliate Credits', url: '/affiliate/credits', category: 'Affiliate' },
+    { name: 'Affiliate Coupons', url: '/affiliate/coupons', category: 'Affiliate' },
+    { name: 'Affiliate Broadcast', url: '/affiliate/broadcast', category: 'Affiliate' },
+    { name: 'Affiliate Templates', url: '/affiliate/templates', category: 'Affiliate' },
+    { name: 'Affiliate Automation', url: '/affiliate/automation', category: 'Affiliate' },
+    { name: 'Affiliate Performance', url: '/affiliate/performance', category: 'Affiliate' },
+    { name: 'Affiliate Reports', url: '/affiliate/reports', category: 'Affiliate' },
+    { name: 'Affiliate Suppliers', url: '/affiliate/suppliers', category: 'Affiliate' },
+    { name: 'Affiliate Onboarding', url: '/affiliate/onboarding', category: 'Affiliate' },
+    { name: 'Affiliate Profile', url: '/affiliate/user-profile', category: 'Affiliate' },
     
-    // === MEMBER PAGES ===
+    // === MEMBER PAGES (verified from /src/app/(dashboard)/member/) ===
     { name: 'Member Dashboard', url: '/member', category: 'Member' },
+    { name: 'Member Dashboard Page', url: '/member/dashboard', category: 'Member' },
     { name: 'Member Courses', url: '/member/courses', category: 'Member' },
-    { name: 'Member Downloads', url: '/member/downloads', category: 'Member' },
+    { name: 'Member Learn', url: '/member/learn', category: 'Member' },
     { name: 'Member Certificates', url: '/member/certificates', category: 'Member' },
-    { name: 'Member Groups', url: '/member/groups', category: 'Member' },
+    { name: 'Member Documents', url: '/member/documents', category: 'Member' },
     { name: 'Member Profile', url: '/member/profile', category: 'Member' },
     { name: 'Member Transactions', url: '/member/transactions', category: 'Member' },
+    { name: 'Member My Membership', url: '/member/my-membership', category: 'Member' },
+    { name: 'Member Wallet', url: '/member/wallet', category: 'Member' },
+    { name: 'Member Upgrade', url: '/member/upgrade', category: 'Member' },
+    { name: 'Member Billing', url: '/member/billing', category: 'Member' },
+    { name: 'Member Directory', url: '/member/member-directory', category: 'Member' },
+    { name: 'Member Community Feed', url: '/member/community/feed', category: 'Member' },
+    { name: 'Member Community Groups', url: '/member/community/groups', category: 'Member' },
+    { name: 'Member Community Events', url: '/member/community/events', category: 'Member' },
+    { name: 'Member Saved Posts', url: '/member/saved-posts', category: 'Member' },
     
     // === MENTOR PAGES ===
     { name: 'Mentor Dashboard', url: '/mentor', category: 'Mentor' },
+    { name: 'Mentor Dashboard Page', url: '/mentor/dashboard', category: 'Mentor' },
     { name: 'Mentor Courses', url: '/mentor/courses', category: 'Mentor' },
     { name: 'Mentor Students', url: '/mentor/students', category: 'Mentor' },
-    { name: 'Mentor Groups', url: '/mentor/groups', category: 'Mentor' },
-    { name: 'Mentor Analytics', url: '/mentor/analytics', category: 'Mentor' },
     
     // === SUPPLIER PAGES ===
-    { name: 'Suppliers List', url: '/suppliers', category: 'Supplier' },
     { name: 'Supplier Dashboard', url: '/supplier/dashboard', category: 'Supplier' },
     { name: 'Supplier Products', url: '/supplier/products', category: 'Supplier' },
     { name: 'Supplier Profile', url: '/supplier/profile', category: 'Supplier' },
-    
-    // === COURSE PAGES ===
-    { name: 'Courses List', url: '/courses', category: 'Course' },
+    { name: 'Supplier Onboarding', url: '/supplier/onboarding', category: 'Supplier' },
     
     // === OTHER FEATURES ===
     { name: 'Feed/Timeline', url: '/feed', category: 'Feature' },

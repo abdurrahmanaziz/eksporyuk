@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const brandingSettings = await prisma.branding.findFirst({
@@ -10,8 +12,12 @@ export async function GET() {
       },
     });
 
+    // Return default values if no branding settings found
     if (!brandingSettings) {
-      return NextResponse.json({ error: 'Branding settings not found' }, { status: 404 });
+      return NextResponse.json({
+        logoAffiliate: null,
+        brandColor: '#3B82F6',
+      });
     }
 
     return NextResponse.json({
@@ -20,6 +26,10 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching public settings:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    // Return default values on error instead of 500
+    return NextResponse.json({
+      logoAffiliate: null,
+      brandColor: '#3B82F6',
+    });
   }
 }

@@ -11,14 +11,15 @@ export const dynamic = 'force-dynamic'
  * GET /api/admin/affiliates
  * 
  * Get list of all affiliates with stats and filters
- * Combines data from AffiliateProfile (registered) and AffiliateConversion (imported from Sejoli)
+ * Primary sources:
+ * 1. AffiliateProfile (registered affiliates)
+ * 2. Users with AFFILIATE role
  * 
  * Query params:
  * - status: ALL | PENDING | ACTIVE | INACTIVE
  * - search: search by name, email, or affiliate code
  * - page: page number (default: 1)
  * - limit: items per page (default: 50)
- * - source: ALL | REGISTERED | IMPORTED (filter by data source)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -27,13 +28,7 @@ export async function GET(request: NextRequest) {
     // 1. Check admin authentication
     const session = await getServerSession(authOptions)
     
-    console.log('[ADMIN_AFFILIATES_API] Session check:', {
-      hasSession: !!session,
-      role: session?.user?.role,
-    })
-    
     if (!session || session.user.role !== 'ADMIN') {
-      console.log('[ADMIN_AFFILIATES_API] Unauthorized access attempt')
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -44,7 +39,6 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status') || 'ALL'
     const search = searchParams.get('search') || ''
-    const source = searchParams.get('source') || 'ALL'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const skip = (page - 1) * limit
@@ -52,7 +46,6 @@ export async function GET(request: NextRequest) {
     // 3. Get affiliates from AffiliateProfile (registered affiliates)
     const profileWhere: any = {}
     
-    // Status filter for AffiliateProfile
     if (status === 'PENDING') {
       profileWhere.applicationStatus = 'PENDING'
     } else if (status === 'ACTIVE') {
@@ -62,7 +55,6 @@ export async function GET(request: NextRequest) {
       profileWhere.isActive = false
     }
     
-    // Search filter
     if (search) {
       profileWhere.OR = [
         { affiliateCode: { contains: search, mode: 'insensitive' } },
@@ -72,8 +64,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get registered affiliates from AffiliateProfile
-    const registeredAffiliates = source === 'IMPORTED' ? [] : await prisma.affiliateProfile.findMany({
+    const registeredAffiliates = await prisma.affiliateProfile.findMany({
       where: profileWhere,
       include: {
         user: {
@@ -82,22 +73,175 @@ export async function GET(request: NextRequest) {
             name: true,
             email: true,
             avatar: true,
+            role: true,
           }
         }
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { totalEarnings: 'desc' },
     })
 
-    // 4. Get conversion stats from AffiliateConversion (Sejoli import data)
+    // 4. Get users with AFFILIATE role who DON'T have AffiliateProfile
+    const profileUserIds = registeredAffiliates.map(a => a.userId)
+    
+    const affiliateRoleUsers = await prisma.user.findMany({
+      where: {
+        role: 'AFFILIATE',
+        id: { notIn: profileUserIds },
+        ...(search ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+          ]
+        } : {})
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        role: true,
+        createdAt: true,
+      }
+    })
+
+    // Also check UserRole table for AFFILIATE role
+    const userRoleAffiliates = await prisma.userRole.findMany({
+      where: {
+        role: 'AFFILIATE',
+        userId: { notIn: [...profileUserIds, ...affiliateRoleUsers.map(u => u.id)] }
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            role: true,
+            createdAt: true,
+          }
+        }
+      }
+    })
+
+    // 5. Get commission stats from AffiliateConversion for ALL affiliates
+    // Note: AffiliateConversion.affiliateId may contain Sejoli IDs (aff_xxx) that don't match our users
+    // We'll try to match by userId for registered affiliates
+    const allUserIds = [
+      ...profileUserIds,
+      ...affiliateRoleUsers.map(u => u.id),
+      ...userRoleAffiliates.map(ur => ur.userId)
+    ]
+    
     const conversionStats = await prisma.$queryRaw<Array<{
       affiliateId: string
       totalEarnings: bigint
       totalConversions: bigint
-      firstCommission: Date
     }>>`
       SELECT 
         "affiliateId",
         SUM("commissionAmount")::bigint as "totalEarnings",
+        COUNT(*)::bigint as "totalConversions"
+      FROM "AffiliateConversion"
+      WHERE "affiliateId" = ANY(${allUserIds}::text[])
+      GROUP BY "affiliateId"
+    `
+    
+    const conversionStatsMap = new Map(
+      conversionStats.map(stat => [stat.affiliateId, stat])
+    )
+
+    // 6. Build combined affiliate list
+    const allAffiliates: any[] = []
+    
+    // Add registered affiliates from AffiliateProfile
+    for (const affiliate of registeredAffiliates) {
+      const stats = conversionStatsMap.get(affiliate.userId)
+      allAffiliates.push({
+        id: affiliate.id,
+        userId: affiliate.userId,
+        user: affiliate.user,
+        affiliateCode: affiliate.affiliateCode,
+        shortLinkUsername: affiliate.shortLinkUsername,
+        tier: affiliate.tier,
+        commissionRate: Number(affiliate.commissionRate),
+        totalClicks: affiliate.totalClicks,
+        totalConversions: stats ? Number(stats.totalConversions) : affiliate.totalConversions,
+        totalEarnings: stats ? Number(stats.totalEarnings) : Number(affiliate.totalEarnings),
+        totalSales: Number(affiliate.totalSales),
+        isActive: affiliate.isActive,
+        applicationStatus: affiliate.applicationStatus,
+        approvedAt: affiliate.approvedAt?.toISOString(),
+        createdAt: affiliate.createdAt.toISOString(),
+        source: 'REGISTERED',
+        bankName: affiliate.bankName,
+        bankAccountName: affiliate.bankAccountName,
+        bankAccountNumber: affiliate.bankAccountNumber,
+        whatsapp: affiliate.whatsapp,
+      })
+    }
+    
+    // Add users with AFFILIATE role (not in AffiliateProfile)
+    for (const user of affiliateRoleUsers) {
+      const stats = conversionStatsMap.get(user.id)
+      allAffiliates.push({
+        id: user.id,
+        userId: user.id,
+        user: user,
+        affiliateCode: '',
+        shortLinkUsername: null,
+        tier: 1,
+        commissionRate: 0,
+        totalClicks: 0,
+        totalConversions: stats ? Number(stats.totalConversions) : 0,
+        totalEarnings: stats ? Number(stats.totalEarnings) : 0,
+        totalSales: 0,
+        isActive: true,
+        applicationStatus: 'ROLE_ASSIGNED',
+        approvedAt: null,
+        createdAt: user.createdAt.toISOString(),
+        source: 'ROLE',
+        bankName: null,
+        bankAccountName: null,
+        bankAccountNumber: null,
+        whatsapp: null,
+      })
+    }
+    
+    // Add from UserRole table
+    for (const userRole of userRoleAffiliates) {
+      if (!userRole.user) continue
+      const stats = conversionStatsMap.get(userRole.userId)
+      allAffiliates.push({
+        id: userRole.userId,
+        userId: userRole.userId,
+        user: userRole.user,
+        affiliateCode: '',
+        shortLinkUsername: null,
+        tier: 1,
+        commissionRate: 0,
+        totalClicks: 0,
+        totalConversions: stats ? Number(stats.totalConversions) : 0,
+        totalEarnings: stats ? Number(stats.totalEarnings) : 0,
+        totalSales: 0,
+        isActive: true,
+        applicationStatus: 'ROLE_ASSIGNED',
+        approvedAt: null,
+        createdAt: userRole.user.createdAt.toISOString(),
+        source: 'ROLE',
+        bankName: null,
+        bankAccountName: null,
+        bankAccountNumber: null,
+        whatsapp: null,
+      })
+    }
+
+    // Sort by totalEarnings desc
+    allAffiliates.sort((a, b) => b.totalEarnings - a.totalEarnings)
+    
+    // Apply pagination
+    const total = allAffiliates.length
+    const paginatedAffiliates = allAffiliates.slice(skip, skip + limit)
         COUNT(*)::bigint as "totalConversions",
         MIN("createdAt") as "firstCommission"
       FROM "AffiliateConversion"
