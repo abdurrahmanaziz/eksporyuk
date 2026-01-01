@@ -438,21 +438,38 @@ export default function DashboardSidebar() {
   
   const userRole = session?.user?.role || 'MEMBER_FREE'
   const allRoles = session?.user?.allRoles || [userRole]
+  const preferredDashboard = session?.user?.preferredDashboard || null
   const { settings } = useSettings()
 
-  // Detect current dashboard context from pathname
+  // Detect current dashboard context from pathname AND preferredDashboard
+  // This ensures menu stays consistent when navigating to shared pages like /dashboard/my-membership
   const getCurrentDashboardContext = (): string => {
+    // Role-specific paths always take precedence
     if (pathname?.startsWith('/admin')) return 'ADMIN'
     if (pathname?.startsWith('/mentor')) return 'MENTOR'
     if (pathname?.startsWith('/affiliate')) return 'AFFILIATE'
     if (pathname?.startsWith('/supplier')) return 'SUPPLIER'
-    // Member area paths - show MEMBER_PREMIUM menu
-    const memberPaths = ['/dashboard', '/community', '/learn', '/courses', '/chat', '/profile', '/notifications', '/certificates', '/saved-posts', '/member-directory', '/my-events', '/databases', '/documents', '/wallet']
-    if (memberPaths.some(path => pathname?.startsWith(path))) {
-      return 'MEMBER_PREMIUM'
+    
+    // For shared paths (like /dashboard/*, /community/*, etc), use preferredDashboard
+    // This keeps the menu consistent with the dashboard user switched to
+    if (preferredDashboard) {
+      switch (preferredDashboard) {
+        case 'admin':
+          if (allRoles.includes('ADMIN')) return 'ADMIN'
+          break
+        case 'mentor':
+          if (allRoles.includes('MENTOR') || allRoles.includes('ADMIN')) return 'MENTOR'
+          break
+        case 'affiliate':
+          if (allRoles.includes('AFFILIATE') || allRoles.includes('ADMIN')) return 'AFFILIATE'
+          break
+        case 'member':
+          return 'MEMBER_PREMIUM'
+      }
     }
-    // Fallback to primary role for other paths
-    return userRole
+    
+    // Fallback to primary role
+    return userRole === 'MEMBER_FREE' ? 'MEMBER_FREE' : (userRole || 'MEMBER_PREMIUM')
   }
   
   const currentDashboardContext = getCurrentDashboardContext()

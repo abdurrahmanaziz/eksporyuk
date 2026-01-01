@@ -75,7 +75,7 @@ interface RoleSwitcherProps {
 }
 
 export default function RoleSwitcher({ collapsed = false }: RoleSwitcherProps) {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const router = useRouter()
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
@@ -138,12 +138,16 @@ export default function RoleSwitcher({ collapsed = false }: RoleSwitcherProps) {
     setIsOpen(false)
 
     try {
-      // Save preferred dashboard
+      // Save preferred dashboard to database
       await fetch('/api/user/preferred-dashboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dashboard: option.id })
       })
+
+      // Update session to reflect new preferredDashboard immediately
+      // This triggers JWT callback to fetch fresh data from DB
+      await update({ preferredDashboard: option.id })
 
       // Navigate to the selected dashboard
       router.push(option.href)

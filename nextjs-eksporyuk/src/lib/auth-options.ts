@@ -410,13 +410,21 @@ export const authOptions: NextAuthOptions = {
       console.log(`[AUTH ${timestamp}] ====== signIn callback END - Returning true ======`)
       return true
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account, profile, trigger, session: updateSession }) {
       const timestamp = new Date().toISOString()
       console.log(`[AUTH ${timestamp}] ====== JWT callback START ======`)
+      console.log(`[AUTH ${timestamp}] Trigger:`, trigger)
       console.log(`[AUTH ${timestamp}] Has user object:`, !!user)
       console.log(`[AUTH ${timestamp}] Has account:`, !!account)
       console.log(`[AUTH ${timestamp}] Provider:`, account?.provider)
       console.log(`[AUTH ${timestamp}] Token email:`, token.email)
+      
+      // Handle session update from client (e.g., RoleSwitcher calling update())
+      if (trigger === 'update' && updateSession?.preferredDashboard !== undefined) {
+        console.log(`[AUTH ${timestamp}] JWT - Updating preferredDashboard to:`, updateSession.preferredDashboard)
+        token.preferredDashboard = updateSession.preferredDashboard
+        return token
+      }
       
       // First time JWT is created (sign in)
       if (user) {
