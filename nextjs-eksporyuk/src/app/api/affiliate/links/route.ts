@@ -2,8 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import validator from 'validator'
-import DOMPurify from 'isomorphic-dompurify'
+
+// Import optional dependencies with fallback
+let validator: any = null
+let DOMPurify: any = null
+try {
+  validator = require('validator')
+} catch (e) {
+  console.warn('validator not available')
+}
+try {
+  DOMPurify = require('isomorphic-dompurify')
+} catch (e) {
+  console.warn('isomorphic-dompurify not available')
+}
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -45,16 +57,24 @@ function isValidUrl(url: string): boolean {
 function sanitizeInput(input: string): string {
   if (typeof input !== 'string') return input
   
-  // Remove XSS payloads
-  let sanitized = DOMPurify.sanitize(input, { 
-    ALLOWED_TAGS: [], 
-    ALLOWED_ATTR: [] 
-  })
+  // Use DOMPurify if available, otherwise basic sanitization
+  if (DOMPurify) {
+    let sanitized = DOMPurify.sanitize(input, { 
+      ALLOWED_TAGS: [], 
+      ALLOWED_ATTR: [] 
+    })
+    if (validator) {
+      sanitized = validator.escape(sanitized)
+    }
+    return sanitized
+  }
   
-  // Additional sanitization
-  sanitized = validator.escape(sanitized)
-  
-  return sanitized
+  // Basic sanitization fallback
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
 }
 
 // Rate limiting

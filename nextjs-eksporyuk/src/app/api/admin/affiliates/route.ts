@@ -125,14 +125,14 @@ export async function GET(request: NextRequest) {
     })
 
     // 5. Get commission stats from AffiliateConversion
-    const allUserIds = [
+    const userIdsForStats = [
       ...profileUserIds,
       ...affiliateRoleUsers.map(u => u.id),
       ...userRoleAffiliates.map(ur => ur.userId)
     ]
     
     // Try to match by userId - these are valid affiliate commissions
-    const conversionStats = allUserIds.length > 0 ? await prisma.$queryRaw<Array<{
+    const conversionStats = userIdsForStats.length > 0 ? await prisma.$queryRaw<Array<{
       affiliateId: string
       totalEarnings: bigint
       totalConversions: bigint
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
         SUM("commissionAmount")::bigint as "totalEarnings",
         COUNT(*)::bigint as "totalConversions"
       FROM "AffiliateConversion"
-      WHERE "affiliateId" = ANY(${allUserIds}::text[])
+      WHERE "affiliateId" = ANY(${userIdsForStats}::text[])
       GROUP BY "affiliateId"
     ` : []
     
