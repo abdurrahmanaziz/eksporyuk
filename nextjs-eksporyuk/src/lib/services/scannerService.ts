@@ -33,79 +33,169 @@ export interface ScanSummary {
 }
 
 // ===========================================
-// API SCANNER
+// API SCANNER - ALL ENDPOINTS
 // ===========================================
 async function scanAPIs(): Promise<ScanCheckResult[]> {
   const results: ScanCheckResult[] = []
   
-  const criticalEndpoints = [
-    { name: 'Auth Login', url: '/api/auth/session', method: 'GET' },
-    { name: 'User Profile', url: '/api/user/profile', method: 'GET' },
-    { name: 'Memberships List', url: '/api/memberships', method: 'GET' },
-    { name: 'Products List', url: '/api/products', method: 'GET' },
-    { name: 'Affiliate Links', url: '/api/affiliate/links', method: 'GET' },
-    { name: 'Admin Dashboard Stats', url: '/api/admin/dashboard/stats', method: 'GET' },
-    { name: 'Transactions', url: '/api/transactions', method: 'GET' },
-    { name: 'Notifications', url: '/api/notifications', method: 'GET' },
+  // Comprehensive list of ALL API endpoints
+  const allEndpoints = [
+    // === AUTH APIs ===
+    { name: 'Auth Session', url: '/api/auth/session', method: 'GET', category: 'Auth' },
+    { name: 'Auth Providers', url: '/api/auth/providers', method: 'GET', category: 'Auth' },
+    
+    // === USER APIs ===
+    { name: 'User Profile', url: '/api/user/profile', method: 'GET', category: 'User' },
+    { name: 'User Settings', url: '/api/user/settings', method: 'GET', category: 'User' },
+    
+    // === PUBLIC APIs ===
+    { name: 'Memberships List', url: '/api/memberships', method: 'GET', category: 'Public' },
+    { name: 'Products List', url: '/api/products', method: 'GET', category: 'Public' },
+    { name: 'Courses List', url: '/api/courses', method: 'GET', category: 'Public' },
+    { name: 'Suppliers List', url: '/api/suppliers', method: 'GET', category: 'Public' },
+    { name: 'Public Settings', url: '/api/settings/public', method: 'GET', category: 'Public' },
+    
+    // === ADMIN APIs ===
+    { name: 'Admin Dashboard Stats', url: '/api/admin/dashboard/stats', method: 'GET', category: 'Admin' },
+    { name: 'Admin Users', url: '/api/admin/users', method: 'GET', category: 'Admin' },
+    { name: 'Admin Transactions', url: '/api/admin/transactions', method: 'GET', category: 'Admin' },
+    { name: 'Admin Affiliates', url: '/api/admin/affiliates', method: 'GET', category: 'Admin' },
+    { name: 'Admin Memberships', url: '/api/admin/memberships', method: 'GET', category: 'Admin' },
+    { name: 'Admin Products', url: '/api/admin/products', method: 'GET', category: 'Admin' },
+    { name: 'Admin Courses', url: '/api/admin/courses', method: 'GET', category: 'Admin' },
+    { name: 'Admin Suppliers', url: '/api/admin/suppliers', method: 'GET', category: 'Admin' },
+    { name: 'Admin Withdrawals', url: '/api/admin/withdrawals', method: 'GET', category: 'Admin' },
+    { name: 'Admin Coupons', url: '/api/admin/coupons', method: 'GET', category: 'Admin' },
+    { name: 'Admin Groups', url: '/api/admin/groups', method: 'GET', category: 'Admin' },
+    { name: 'Admin Leads', url: '/api/admin/leads', method: 'GET', category: 'Admin' },
+    { name: 'Admin Reports', url: '/api/admin/reports', method: 'GET', category: 'Admin' },
+    { name: 'Admin Notifications', url: '/api/admin/notifications', method: 'GET', category: 'Admin' },
+    { name: 'Admin Scanner', url: '/api/admin/scanner?action=status', method: 'GET', category: 'Admin' },
+    { name: 'Admin Settings', url: '/api/admin/settings', method: 'GET', category: 'Admin' },
+    { name: 'Admin Commission Settings', url: '/api/admin/commission/settings', method: 'GET', category: 'Admin' },
+    
+    // === AFFILIATE APIs ===
+    { name: 'Affiliate Dashboard', url: '/api/affiliate/dashboard', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Links', url: '/api/affiliate/links', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Short Links', url: '/api/affiliate/short-links', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Earnings', url: '/api/affiliate/earnings', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Withdraw', url: '/api/affiliate/withdraw', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Training', url: '/api/affiliate/training', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Leaderboard', url: '/api/affiliate/leaderboard', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Profile', url: '/api/affiliate/profile', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Marketing Kit', url: '/api/affiliate/marketing-kit', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Leads', url: '/api/affiliate/leads', method: 'GET', category: 'Affiliate' },
+    { name: 'Affiliate Onboarding', url: '/api/affiliate/onboarding', method: 'GET', category: 'Affiliate' },
+    
+    // === MEMBER APIs ===
+    { name: 'Member Dashboard', url: '/api/member/dashboard', method: 'GET', category: 'Member' },
+    { name: 'Member Courses', url: '/api/member/courses', method: 'GET', category: 'Member' },
+    { name: 'Member Downloads', url: '/api/member/downloads', method: 'GET', category: 'Member' },
+    { name: 'Member Certificates', url: '/api/member/certificates', method: 'GET', category: 'Member' },
+    { name: 'Member Groups', url: '/api/member/groups', method: 'GET', category: 'Member' },
+    { name: 'Member Transactions', url: '/api/member/transactions', method: 'GET', category: 'Member' },
+    
+    // === MENTOR APIs ===
+    { name: 'Mentor Dashboard', url: '/api/mentor/dashboard', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Courses', url: '/api/mentor/courses', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Students', url: '/api/mentor/students', method: 'GET', category: 'Mentor' },
+    { name: 'Mentor Groups', url: '/api/mentor/groups', method: 'GET', category: 'Mentor' },
+    
+    // === SUPPLIER APIs ===
+    { name: 'Supplier Dashboard', url: '/api/supplier/dashboard', method: 'GET', category: 'Supplier' },
+    { name: 'Supplier Products', url: '/api/supplier/products', method: 'GET', category: 'Supplier' },
+    { name: 'Supplier Profile', url: '/api/supplier/profile', method: 'GET', category: 'Supplier' },
+    
+    // === TRANSACTION APIs ===
+    { name: 'Transactions', url: '/api/transactions', method: 'GET', category: 'Transaction' },
+    { name: 'Checkout', url: '/api/checkout', method: 'GET', category: 'Transaction' },
+    
+    // === OTHER APIs ===
+    { name: 'Notifications', url: '/api/notifications', method: 'GET', category: 'Other' },
+    { name: 'Feed', url: '/api/feed', method: 'GET', category: 'Other' },
+    { name: 'Groups', url: '/api/groups', method: 'GET', category: 'Other' },
+    { name: 'Chat Conversations', url: '/api/chat/conversations', method: 'GET', category: 'Other' },
+    { name: 'Wallet', url: '/api/wallet', method: 'GET', category: 'Other' },
+    { name: 'Upload', url: '/api/upload', method: 'GET', category: 'Other' },
+    
+    // === WEBHOOK APIs ===
+    { name: 'Xendit Webhook', url: '/api/webhooks/xendit', method: 'GET', category: 'Webhook' },
   ]
 
-  for (const endpoint of criticalEndpoints) {
-    try {
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-      const startTime = Date.now()
-      const response = await fetch(`${baseUrl}${endpoint.url}`, {
-        method: endpoint.method,
-        headers: { 'Content-Type': 'application/json' },
-        // Short timeout for health check
-        signal: AbortSignal.timeout(10000)
-      })
-      const responseTime = Date.now() - startTime
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  
+  // Scan APIs in parallel batches
+  const batchSize = 10
+  for (let i = 0; i < allEndpoints.length; i += batchSize) {
+    const batch = allEndpoints.slice(i, i + batchSize)
+    const batchResults = await Promise.all(
+      batch.map(async (endpoint) => {
+        try {
+          const startTime = Date.now()
+          const response = await fetch(`${baseUrl}${endpoint.url}`, {
+            method: endpoint.method,
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(10000)
+          })
+          const responseTime = Date.now() - startTime
 
-      if (response.ok || response.status === 401) {
-        // 401 is acceptable - means endpoint exists but needs auth
-        results.push({
-          category: 'API',
-          checkName: `API: ${endpoint.name}`,
-          status: 'PASS',
-          level: 'INFO',
-          message: `Endpoint aktif (${response.status}) - ${responseTime}ms`,
-          location: endpoint.url,
-          details: `Response time: ${responseTime}ms`
-        })
-      } else if (response.status >= 500) {
-        results.push({
-          category: 'API',
-          checkName: `API: ${endpoint.name}`,
-          status: 'FAIL',
-          level: 'CRITICAL',
-          message: `Server error ${response.status}`,
-          location: endpoint.url,
-          impact: 'Fitur terkait tidak berfungsi',
-          suggestion: 'Periksa server logs dan fix error handler'
-        })
-      } else if (response.status >= 400) {
-        results.push({
-          category: 'API',
-          checkName: `API: ${endpoint.name}`,
-          status: 'WARNING',
-          level: 'MEDIUM',
-          message: `Client error ${response.status}`,
-          location: endpoint.url,
-          suggestion: 'Periksa request format atau authentication'
-        })
-      }
-    } catch (error: any) {
-      results.push({
-        category: 'API',
-        checkName: `API: ${endpoint.name}`,
-        status: 'FAIL',
-        level: 'HIGH',
-        message: error.name === 'TimeoutError' ? 'Request timeout' : `Error: ${error.message}`,
-        location: endpoint.url,
-        impact: 'Endpoint tidak dapat diakses',
-        suggestion: 'Periksa koneksi dan server status'
+          if (response.ok || response.status === 401 || response.status === 403) {
+            // 401/403 is acceptable - means endpoint exists but needs auth
+            return {
+              category: 'API' as const,
+              checkName: `[${endpoint.category}] ${endpoint.name}`,
+              status: 'PASS' as const,
+              level: 'INFO' as const,
+              message: `Aktif (${response.status}) - ${responseTime}ms`,
+              location: endpoint.url,
+              details: `Response time: ${responseTime}ms`
+            }
+          } else if (response.status >= 500) {
+            return {
+              category: 'API' as const,
+              checkName: `[${endpoint.category}] ${endpoint.name}`,
+              status: 'FAIL' as const,
+              level: 'CRITICAL' as const,
+              message: `Server error ${response.status}`,
+              location: endpoint.url,
+              impact: 'Fitur terkait tidak berfungsi',
+              suggestion: 'Periksa server logs dan fix error handler'
+            }
+          } else if (response.status === 404) {
+            return {
+              category: 'API' as const,
+              checkName: `[${endpoint.category}] ${endpoint.name}`,
+              status: 'WARNING' as const,
+              level: 'MEDIUM' as const,
+              message: `Not found (404)`,
+              location: endpoint.url,
+              suggestion: 'API endpoint mungkin belum dibuat atau path salah'
+            }
+          } else {
+            return {
+              category: 'API' as const,
+              checkName: `[${endpoint.category}] ${endpoint.name}`,
+              status: 'WARNING' as const,
+              level: 'LOW' as const,
+              message: `Response ${response.status}`,
+              location: endpoint.url
+            }
+          }
+        } catch (error: any) {
+          return {
+            category: 'API' as const,
+            checkName: `[${endpoint.category}] ${endpoint.name}`,
+            status: 'FAIL' as const,
+            level: 'HIGH' as const,
+            message: error.name === 'TimeoutError' ? 'Timeout (>10s)' : `Error: ${error.message}`,
+            location: endpoint.url,
+            impact: 'Endpoint tidak dapat diakses',
+            suggestion: 'Periksa koneksi dan server status'
+          }
+        }
       })
-    }
+    )
+    results.push(...batchResults)
   }
 
   return results
@@ -273,82 +363,181 @@ async function scanDatabase(): Promise<ScanCheckResult[]> {
 }
 
 // ===========================================
-// FRONTEND SCANNER
+// FRONTEND SCANNER - ALL PAGES & FEATURES
 // ===========================================
 async function scanFrontend(): Promise<ScanCheckResult[]> {
   const results: ScanCheckResult[] = []
   
-  const criticalPages = [
-    { name: 'Homepage', url: '/' },
-    { name: 'Login', url: '/auth/login' },
-    { name: 'Register', url: '/auth/register' },
-    { name: 'Memberships', url: '/membership' },
-    { name: 'Admin Dashboard', url: '/admin' },
-    { name: 'Affiliate Dashboard', url: '/affiliate' },
-    { name: 'Checkout', url: '/checkout' },
+  // Comprehensive list of ALL pages grouped by section
+  const allPages = [
+    // === PUBLIC PAGES ===
+    { name: 'Homepage', url: '/', category: 'Public' },
+    { name: 'About', url: '/about', category: 'Public' },
+    { name: 'Contact', url: '/contact', category: 'Public' },
+    { name: 'Privacy Policy', url: '/privacy-policy', category: 'Public' },
+    { name: 'Terms of Service', url: '/terms-of-service', category: 'Public' },
+    { name: 'FAQ', url: '/faq', category: 'Public' },
+    
+    // === AUTH PAGES ===
+    { name: 'Login', url: '/auth/login', category: 'Auth' },
+    { name: 'Register', url: '/auth/register', category: 'Auth' },
+    { name: 'Forgot Password', url: '/auth/forgot-password', category: 'Auth' },
+    
+    // === MEMBERSHIP PAGES ===
+    { name: 'Memberships List', url: '/membership', category: 'Membership' },
+    { name: 'Checkout Page', url: '/checkout', category: 'Membership' },
+    
+    // === ADMIN PAGES ===
+    { name: 'Admin Dashboard', url: '/admin', category: 'Admin' },
+    { name: 'Admin Users', url: '/admin/users', category: 'Admin' },
+    { name: 'Admin Memberships', url: '/admin/memberships', category: 'Admin' },
+    { name: 'Admin Products', url: '/admin/products', category: 'Admin' },
+    { name: 'Admin Transactions', url: '/admin/transactions', category: 'Admin' },
+    { name: 'Admin Affiliates', url: '/admin/affiliates', category: 'Admin' },
+    { name: 'Admin Courses', url: '/admin/courses', category: 'Admin' },
+    { name: 'Admin Suppliers', url: '/admin/suppliers', category: 'Admin' },
+    { name: 'Admin Withdrawals', url: '/admin/withdrawals', category: 'Admin' },
+    { name: 'Admin Coupons', url: '/admin/coupons', category: 'Admin' },
+    { name: 'Admin Groups', url: '/admin/groups', category: 'Admin' },
+    { name: 'Admin Reports', url: '/admin/reports', category: 'Admin' },
+    { name: 'Admin Notifications', url: '/admin/notifications', category: 'Admin' },
+    { name: 'Admin Leads', url: '/admin/leads', category: 'Admin' },
+    { name: 'Admin Certificates', url: '/admin/certificates', category: 'Admin' },
+    
+    // === ADMIN SETTINGS ===
+    { name: 'Settings General', url: '/admin/settings', category: 'Admin Settings' },
+    { name: 'Settings Branding', url: '/admin/settings/branding', category: 'Admin Settings' },
+    { name: 'Settings Payment', url: '/admin/settings/payment', category: 'Admin Settings' },
+    { name: 'Settings Withdrawal', url: '/admin/settings/withdrawal', category: 'Admin Settings' },
+    { name: 'Settings Affiliate', url: '/admin/settings/affiliate', category: 'Admin Settings' },
+    { name: 'Settings Follow-up', url: '/admin/settings/followup', category: 'Admin Settings' },
+    { name: 'Settings Course', url: '/admin/settings/course', category: 'Admin Settings' },
+    { name: 'Settings Platform', url: '/admin/settings/platform', category: 'Admin Settings' },
+    { name: 'Settings Scanner', url: '/admin/settings/scanner', category: 'Admin Settings' },
+    
+    // === AFFILIATE PAGES ===
+    { name: 'Affiliate Dashboard', url: '/affiliate', category: 'Affiliate' },
+    { name: 'Affiliate Links', url: '/affiliate/links', category: 'Affiliate' },
+    { name: 'Affiliate Short Links', url: '/affiliate/short-links', category: 'Affiliate' },
+    { name: 'Affiliate Earnings', url: '/affiliate/earnings', category: 'Affiliate' },
+    { name: 'Affiliate Withdraw', url: '/affiliate/withdraw', category: 'Affiliate' },
+    { name: 'Affiliate Training', url: '/affiliate/training', category: 'Affiliate' },
+    { name: 'Affiliate Leaderboard', url: '/affiliate/leaderboard', category: 'Affiliate' },
+    { name: 'Affiliate Marketing Kit', url: '/affiliate/marketing-kit', category: 'Affiliate' },
+    { name: 'Affiliate Bio Page', url: '/affiliate/bio-page', category: 'Affiliate' },
+    { name: 'Affiliate Leads', url: '/affiliate/leads', category: 'Affiliate' },
+    { name: 'Affiliate Profile', url: '/affiliate/profile', category: 'Affiliate' },
+    { name: 'Affiliate Register', url: '/affiliate/register', category: 'Affiliate' },
+    
+    // === MEMBER PAGES ===
+    { name: 'Member Dashboard', url: '/member', category: 'Member' },
+    { name: 'Member Courses', url: '/member/courses', category: 'Member' },
+    { name: 'Member Downloads', url: '/member/downloads', category: 'Member' },
+    { name: 'Member Certificates', url: '/member/certificates', category: 'Member' },
+    { name: 'Member Groups', url: '/member/groups', category: 'Member' },
+    { name: 'Member Profile', url: '/member/profile', category: 'Member' },
+    { name: 'Member Transactions', url: '/member/transactions', category: 'Member' },
+    
+    // === MENTOR PAGES ===
+    { name: 'Mentor Dashboard', url: '/mentor', category: 'Mentor' },
+    { name: 'Mentor Courses', url: '/mentor/courses', category: 'Mentor' },
+    { name: 'Mentor Students', url: '/mentor/students', category: 'Mentor' },
+    { name: 'Mentor Groups', url: '/mentor/groups', category: 'Mentor' },
+    { name: 'Mentor Analytics', url: '/mentor/analytics', category: 'Mentor' },
+    
+    // === SUPPLIER PAGES ===
+    { name: 'Suppliers List', url: '/suppliers', category: 'Supplier' },
+    { name: 'Supplier Dashboard', url: '/supplier/dashboard', category: 'Supplier' },
+    { name: 'Supplier Products', url: '/supplier/products', category: 'Supplier' },
+    { name: 'Supplier Profile', url: '/supplier/profile', category: 'Supplier' },
+    
+    // === COURSE PAGES ===
+    { name: 'Courses List', url: '/courses', category: 'Course' },
+    
+    // === OTHER FEATURES ===
+    { name: 'Feed/Timeline', url: '/feed', category: 'Feature' },
+    { name: 'Groups', url: '/groups', category: 'Feature' },
+    { name: 'Notifications', url: '/notifications', category: 'Feature' },
+    { name: 'Wallet', url: '/wallet', category: 'Feature' },
+    { name: 'Chat', url: '/chat', category: 'Feature' },
   ]
 
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
 
-  for (const page of criticalPages) {
-    try {
-      const startTime = Date.now()
-      const response = await fetch(`${baseUrl}${page.url}`, {
-        method: 'GET',
-        redirect: 'follow',
-        signal: AbortSignal.timeout(15000)
-      })
-      const responseTime = Date.now() - startTime
+  // Scan pages in parallel batches for speed
+  const batchSize = 10
+  for (let i = 0; i < allPages.length; i += batchSize) {
+    const batch = allPages.slice(i, i + batchSize)
+    const batchResults = await Promise.all(
+      batch.map(async (page) => {
+        try {
+          const startTime = Date.now()
+          const response = await fetch(`${baseUrl}${page.url}`, {
+            method: 'GET',
+            redirect: 'follow',
+            signal: AbortSignal.timeout(15000)
+          })
+          const responseTime = Date.now() - startTime
 
-      if (response.ok || response.status === 307 || response.status === 302) {
-        // 307/302 redirects are OK (auth redirects)
-        const isSlowPage = responseTime > 3000
-        results.push({
-          category: 'FRONTEND',
-          checkName: `Page: ${page.name}`,
-          status: isSlowPage ? 'WARNING' : 'PASS',
-          level: isSlowPage ? 'LOW' : 'INFO',
-          message: isSlowPage 
-            ? `Halaman lambat (${responseTime}ms)` 
-            : `Halaman OK (${responseTime}ms)`,
-          location: page.url,
-          details: `Load time: ${responseTime}ms`,
-          suggestion: isSlowPage ? 'Optimalkan page load time' : undefined
-        })
-      } else if (response.status === 404) {
-        results.push({
-          category: 'FRONTEND',
-          checkName: `Page: ${page.name}`,
-          status: 'FAIL',
-          level: 'HIGH',
-          message: 'Halaman tidak ditemukan (404)',
-          location: page.url,
-          impact: 'User tidak bisa akses halaman',
-          suggestion: 'Periksa routing dan file page'
-        })
-      } else if (response.status >= 500) {
-        results.push({
-          category: 'FRONTEND',
-          checkName: `Page: ${page.name}`,
-          status: 'FAIL',
-          level: 'CRITICAL',
-          message: `Server error ${response.status}`,
-          location: page.url,
-          impact: 'Halaman crash',
-          suggestion: 'Periksa error logs dan fix component'
-        })
-      }
-    } catch (error: any) {
-      results.push({
-        category: 'FRONTEND',
-        checkName: `Page: ${page.name}`,
-        status: 'FAIL',
-        level: 'HIGH',
-        message: `Error: ${error.message}`,
-        location: page.url,
-        suggestion: 'Periksa server status'
+          if (response.ok || response.status === 307 || response.status === 302) {
+            const isSlowPage = responseTime > 3000
+            return {
+              category: 'FRONTEND' as const,
+              checkName: `[${page.category}] ${page.name}`,
+              status: isSlowPage ? 'WARNING' as const : 'PASS' as const,
+              level: isSlowPage ? 'LOW' as const : 'INFO' as const,
+              message: isSlowPage 
+                ? `Halaman lambat (${responseTime}ms)` 
+                : `OK (${responseTime}ms)`,
+              location: page.url,
+              details: `Load time: ${responseTime}ms`
+            }
+          } else if (response.status === 404) {
+            return {
+              category: 'FRONTEND' as const,
+              checkName: `[${page.category}] ${page.name}`,
+              status: 'FAIL' as const,
+              level: 'HIGH' as const,
+              message: 'Halaman tidak ditemukan (404)',
+              location: page.url,
+              impact: 'User tidak bisa akses halaman',
+              suggestion: 'Periksa routing dan file page'
+            }
+          } else if (response.status >= 500) {
+            return {
+              category: 'FRONTEND' as const,
+              checkName: `[${page.category}] ${page.name}`,
+              status: 'FAIL' as const,
+              level: 'CRITICAL' as const,
+              message: `Server error ${response.status}`,
+              location: page.url,
+              impact: 'Halaman crash',
+              suggestion: 'Periksa error logs dan fix component'
+            }
+          } else {
+            return {
+              category: 'FRONTEND' as const,
+              checkName: `[${page.category}] ${page.name}`,
+              status: 'WARNING' as const,
+              level: 'MEDIUM' as const,
+              message: `Response ${response.status}`,
+              location: page.url
+            }
+          }
+        } catch (error: any) {
+          return {
+            category: 'FRONTEND' as const,
+            checkName: `[${page.category}] ${page.name}`,
+            status: 'FAIL' as const,
+            level: 'HIGH' as const,
+            message: error.name === 'TimeoutError' ? 'Timeout (>15s)' : `Error: ${error.message}`,
+            location: page.url,
+            suggestion: 'Periksa server status'
+          }
+        }
       })
-    }
+    )
+    results.push(...batchResults)
   }
 
   return results
