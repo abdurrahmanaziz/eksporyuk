@@ -685,11 +685,11 @@ export default function AffiliatesManagementPage() {
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-                            {affiliate.user.name.charAt(0).toUpperCase()}
+                            {affiliate.user?.name?.charAt(0)?.toUpperCase() || '?'}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-medium text-sm truncate max-w-[180px]">{affiliate.user.name}</div>
-                            <div className="text-xs text-gray-500 truncate max-w-[180px]">{affiliate.user.email}</div>
+                            <div className="font-medium text-sm truncate max-w-[180px]">{affiliate.user?.name || 'Unknown User'}</div>
+                            <div className="text-xs text-gray-500 truncate max-w-[180px]">{affiliate.user?.email || '-'}</div>
                           </div>
                         </div>
                       </td>
@@ -706,7 +706,7 @@ export default function AffiliatesManagementPage() {
                         )}
                       </td>
                       <td className="p-4 text-center">
-                        {affiliate.user.role === 'AFFILIATE' || (affiliate.user.userRoles && affiliate.user.userRoles.some(r => r.role === 'AFFILIATE')) ? (
+                        {affiliate.user?.role === 'AFFILIATE' || (affiliate.user?.userRoles && affiliate.user.userRoles.some(r => r.role === 'AFFILIATE')) ? (
                           <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">AFFILIATE</Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs cursor-pointer" onClick={() => {
@@ -759,11 +759,11 @@ export default function AffiliatesManagementPage() {
               <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white font-bold text-2xl shrink-0 border-2 border-white/30">
-                    {selectedAffiliate.user.name.charAt(0).toUpperCase()}
+                    {selectedAffiliate.user?.name?.charAt(0)?.toUpperCase() || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-xl">{selectedAffiliate.user.name}</h3>
-                    <p className="text-white/80 text-sm">{selectedAffiliate.user.email}</p>
+                    <h3 className="font-bold text-xl">{selectedAffiliate.user?.name || 'Unknown User'}</h3>
+                    <p className="text-white/80 text-sm">{selectedAffiliate.user?.email || '-'}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="font-mono text-xs bg-white/20 px-2 py-1 rounded">{selectedAffiliate.affiliateCode}</span>
                       {selectedAffiliate.shortLinkUsername && (
@@ -922,14 +922,14 @@ export default function AffiliatesManagementPage() {
             <div className="space-y-4">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-sm text-gray-700">
-                  Anda akan menyetujui <strong>{selectedAffiliate.user.name}</strong> sebagai affiliate.
+                  Anda akan menyetujui <strong>{selectedAffiliate.user?.name || 'affiliate ini'}</strong> sebagai affiliate.
                   Mereka akan mendapatkan akses penuh ke dashboard affiliate dan dapat mulai mempromosikan produk.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <label className="text-gray-600">Email</label>
-                  <p className="font-medium">{selectedAffiliate.user.email}</p>
+                  <p className="font-medium">{selectedAffiliate.user?.email || '-'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">Kode Affiliate</label>
@@ -970,7 +970,7 @@ export default function AffiliatesManagementPage() {
             <div className="space-y-4">
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-gray-700">
-                  Anda akan menolak aplikasi affiliate dari <strong>{selectedAffiliate.user.name}</strong>.
+                  Anda akan menolak aplikasi affiliate dari <strong>{selectedAffiliate.user?.name || 'affiliate ini'}</strong>.
                   Mereka akan menerima notifikasi email tentang penolakan ini.
                 </p>
               </div>
@@ -1023,18 +1023,18 @@ export default function AffiliatesManagementPage() {
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-gray-700">
-                  Anda akan memberikan role <strong>AFFILIATE</strong> kepada <strong>{selectedAffiliate.user.name}</strong>.
+                  Anda akan memberikan role <strong>AFFILIATE</strong> kepada <strong>{selectedAffiliate.user?.name || 'user ini'}</strong>.
                   Mereka akan mendapatkan akses ke fitur affiliate dan dashboard leaderboard.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <label className="text-gray-600">Nama</label>
-                  <p className="font-medium">{selectedAffiliate.user.name}</p>
+                  <p className="font-medium">{selectedAffiliate.user?.name || '-'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">Email</label>
-                  <p className="font-medium text-xs">{selectedAffiliate.user.email}</p>
+                  <p className="font-medium text-xs">{selectedAffiliate.user?.email || '-'}</p>
                 </div>
               </div>
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">

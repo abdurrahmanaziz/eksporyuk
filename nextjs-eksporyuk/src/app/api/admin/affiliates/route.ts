@@ -120,23 +120,25 @@ export async function GET(request: NextRequest) {
     })
     const userMap = new Map(users.map(u => [u.id, u]))
     
-    // Build affiliate data structure
-    const affiliates = affiliateStats.map(stat => ({
-      id: stat.affiliateId, // Use userId as affiliate ID
-      userId: stat.affiliateId,
-      user: userMap.get(stat.affiliateId) || null,
-      affiliateCode: '', // Not used in Sejoli import
-      shortLinkUsername: undefined,
-      tier: 1,
-      commissionRate: 0,
-      totalClicks: 0,
-      totalConversions: Number(stat.totalConversions),
-      totalEarnings: Number(stat.totalEarnings),
-      totalSales: 0, // Will be filled from transactions
-      isActive: true,
-      approvedAt: stat.firstCommission?.toISOString(),
-      createdAt: stat.firstCommission?.toISOString() || new Date().toISOString(),
-    }))
+    // Build affiliate data structure - only include those with valid users
+    const affiliates = affiliateStats
+      .filter(stat => userMap.has(stat.affiliateId)) // Filter out affiliates without user
+      .map(stat => ({
+        id: stat.affiliateId, // Use userId as affiliate ID
+        userId: stat.affiliateId,
+        user: userMap.get(stat.affiliateId)!, // User is guaranteed to exist after filter
+        affiliateCode: '', // Not used in Sejoli import
+        shortLinkUsername: undefined,
+        tier: 1,
+        commissionRate: 0,
+        totalClicks: 0,
+        totalConversions: Number(stat.totalConversions),
+        totalEarnings: Number(stat.totalEarnings),
+        totalSales: 0, // Will be filled from transactions
+        isActive: true,
+        approvedAt: stat.firstCommission?.toISOString(),
+        createdAt: stat.firstCommission?.toISOString() || new Date().toISOString(),
+      }))
     
     console.log('[ADMIN_AFFILIATES_API] Query result:', {
       affiliatesFound: affiliates.length,
