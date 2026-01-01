@@ -425,22 +425,43 @@ export default function ChatPage() {
   useEffect(() => {
     if (!session?.user?.id || !activeRoom) return
 
-    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
-    if (!pusherKey) return
+    const pusherKey = '1927d0c82c61c5022f22' // NEXT_PUBLIC_PUSHER_KEY
+    const pusherCluster = 'ap1' // NEXT_PUBLIC_PUSHER_CLUSTER
+    
+    if (!pusherKey) {
+      console.error('Pusher key not found')
+      return
+    }
+
+    console.log('Initializing Pusher with key:', pusherKey)
 
     const pusher = new Pusher(pusherKey, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
-      authEndpoint: '/api/pusher/auth'
+      cluster: pusherCluster,
+      authEndpoint: '/api/pusher/auth',
+      forceTLS: true
     })
 
-    const channel = pusher.subscribe(`private-room-${activeRoom.id}`)
+    const channelName = `private-room-${activeRoom.id}`
+    console.log('Subscribing to channel:', channelName)
+    
+    const channel = pusher.subscribe(channelName)
+
+    channel.bind('pusher:subscription_succeeded', () => {
+      console.log('Successfully subscribed to channel:', channelName)
+    })
+
+    channel.bind('pusher:subscription_error', (error: any) => {
+      console.error('Subscription error:', error)
+    })
 
     channel.bind('new-message', (message: Message) => {
+      console.log('New message received:', message)
       setMessages(prev => [...prev, message])
       scrollToBottom()
     })
 
     channel.bind('user-typing', (data: { userId: string; userName: string; isTyping: boolean }) => {
+      console.log('Typing event:', data)
       if (data.userId === session.user.id) return
       
       if (data.isTyping) {
@@ -450,7 +471,16 @@ export default function ChatPage() {
       }
     })
 
+    pusher.connection.bind('connected', () => {
+      console.log('Pusher connected successfully')
+    })
+
+    pusher.connection.bind('error', (error: any) => {
+      console.error('Pusher connection error:', error)
+    })
+
     return () => {
+      console.log('Cleaning up Pusher connection')
       channel.unbind_all()
       channel.unsubscribe()
       pusher.disconnect()
@@ -469,10 +499,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[100dvh] md:h-[calc(100vh-100px)] bg-gray-50">
+    <div className="flex h-screen bg-gray-50">
       {/* Left Sidebar - Message List */}
       <div className={cn(
-        "w-full md:w-[380px] lg:w-[420px] border-r border-gray-200 flex flex-col bg-white",
+        "w-full md:w-80 xl:w-96 border-r border-gray-200 flex flex-col bg-white",
         activeRoom ? 'hidden md:flex' : 'flex'
       )}>
         {/* Header */}
