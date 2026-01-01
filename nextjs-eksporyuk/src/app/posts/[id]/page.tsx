@@ -38,7 +38,8 @@ export default function PostRedirectPage() {
         
         // Check if post is in a group
         if (post.group) {
-          redirectUrl = `/community/${post.group.id}`
+          // Use correct group URL format with slug
+          redirectUrl = `/community/groups/${post.group.slug || post.group.id}`
         } else {
           // Redirect to author's profile
           // Use username if available, otherwise use user id

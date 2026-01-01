@@ -73,10 +73,16 @@ interface Post {
     avatar: string | null
     role: string
   }
+  group?: {
+    id: string
+    name: string
+    slug: string
+  } | null
   createdAt: string
   likesCount: number
   commentsCount: number
   tags: string[]
+  hashtags?: string[]
   images?: string[]
 }
 

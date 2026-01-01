@@ -25,10 +25,20 @@ export async function GET() {
       select: { isActive: true }
     })
 
-    if (!affiliateProfile?.isActive && session.user.role !== 'ADMIN' && session.user.role !== 'FOUNDER' && session.user.role !== 'CO_FOUNDER') {
-      console.log('[GET /api/affiliate/coupons] Access denied. No active affiliate profile')
+    // Check if user has earned affiliate commissions
+    const wallet = await prisma.wallet.findUnique({
+      where: { userId: session.user.id },
+      select: { balance: true, totalEarnings: true }
+    })
+
+    const hasEarnedCommissions = wallet && (Number(wallet.balance) > 0 || Number(wallet.totalEarnings) > 0)
+    const isAdmin = ['ADMIN', 'FOUNDER', 'CO_FOUNDER'].includes(session.user.role)
+    const hasAccess = affiliateProfile?.isActive || isAdmin || hasEarnedCommissions
+
+    if (!hasAccess) {
+      console.log('[GET /api/affiliate/coupons] Access denied. User lacks affiliate status, admin role, or commission earnings')
       return NextResponse.json({ 
-        error: 'Unauthorized - Anda belum terdaftar sebagai affiliate. Silakan daftar affiliate terlebih dahulu.' 
+        error: 'Unauthorized - Anda belum terdaftar sebagai affiliate atau belum memiliki komisi.' 
       }, { status: 401 })
     }
 
@@ -67,15 +77,34 @@ export async function POST(request: NextRequest) {
       select: { isActive: true }
     })
 
-    if (!affiliateProfile?.isActive && session.user.role !== 'ADMIN' && session.user.role !== 'FOUNDER' && session.user.role !== 'CO_FOUNDER') {
-      console.log('[POST /api/affiliate/coupons] Access denied. No active affiliate profile')
+    // Check if user has earned affiliate commissions
+    const wallet = await prisma.wallet.findUnique({
+      where: { userId: session.user.id },
+      select: { balance: true, totalEarnings: true }
+    })
+
+    const hasEarnedCommissions = wallet && (Number(wallet.balance) > 0 || Number(wallet.totalEarnings) > 0)
+    const isAdmin = ['ADMIN', 'FOUNDER', 'CO_FOUNDER'].includes(session.user.role)
+    const hasAccess = affiliateProfile?.isActive || isAdmin || hasEarnedCommissions
+
+    if (!hasAccess) {
+      console.log('[POST /api/affiliate/coupons] Access denied. User lacks affiliate status, admin role, or commission earnings')
       return NextResponse.json({ 
-        error: 'Unauthorized - Anda belum terdaftar sebagai affiliate. Silakan daftar affiliate terlebih dahulu.' 
+        error: 'Unauthorized - Anda belum terdaftar sebagai affiliate atau belum memiliki komisi.' 
       }, { status: 401 })
     }
 
     const body = await request.json()
     const { code, adminCouponId, description, discountType, discountValue, usageLimit, validUntil, targetType, source } = body
+
+    // ENFORCE: Affiliate MUST use admin template - no custom coupons allowed
+    if (!adminCouponId || adminCouponId === '') {
+      console.log('[POST /api/affiliate/coupons] Rejected: Affiliate attempted custom coupon creation')
+      return NextResponse.json(
+        { error: 'Affiliate tidak diizinkan membuat kupon sendiri. Kupon harus berasal dari template admin.' },
+        { status: 403 }
+      )
+    }
 
     // Check if coupon code already exists
     const existing = await prisma.coupon.findUnique({
@@ -114,66 +143,15 @@ export async function POST(request: NextRequest) {
 
     let coupon
 
-    if (source === 'affiliate' && !adminCouponId) {
-      // DIRECT CUSTOM COUPON CREATION by affiliate
-      console.log('=== DEBUG CREATE CUSTOM COUPON ===')
-      console.log('Session user ID:', session.user.id)
-      console.log('User exists:', !!userExists)
-      console.log('New coupon code:', code.toUpperCase())
-      
-      // Determine product/membership IDs based on target type
-      let productIds: string[] = []
-      let membershipIds: string[] = []
-      
-      if (targetType === 'product') {
-        // Get all products (could be limited based on business rules)
-        const products = await prisma.product.findMany({
-          where: { isActive: true },
-          select: { id: true }
-        })
-        productIds = products.map(p => p.id)
-      } else if (targetType === 'membership') {
-        // Get all memberships
-        const memberships = await prisma.membershipPlan.findMany({
-          where: { isActive: true },
-          select: { id: true }
-        })
-        membershipIds = memberships.map(m => m.id)
-      }
-      // For 'all' and 'course', we leave both arrays empty (applies to all)
-
-      coupon = await prisma.coupon.create({
-        data: {
-          code: code.toUpperCase(),
-          description: description || `Kupon affiliate ${discountValue}${discountType === 'PERCENTAGE' ? '%' : 'K'} off`,
-          discountType: discountType as any,
-          discountValue: discountValue,
-          usageLimit: usageLimit || null,
-          usageCount: 0,
-          validUntil: validUntil ? new Date(validUntil) : null,
-          isActive: true,
-          productIds: productIds,
-          membershipIds: membershipIds,
-          minPurchase: null,
-          validFrom: new Date(),
-          basedOnCouponId: null, // No template, pure custom
-          ...(userExists && { createdBy: session.user.id }),
-          isAffiliateEnabled: false, // Created by affiliate, not for other affiliates
-        },
-      })
-
-      console.log('✅ Custom coupon created successfully:', coupon.id)
-      
-    } else {
-      // TEMPLATE-BASED COUPON CREATION (existing logic)
-      console.log('=== DEBUG CREATE TEMPLATE-BASED COUPON ===')
-      
-      // Get admin coupon as template
-      const adminCoupon = await prisma.coupon.findUnique({
-        where: { 
-          id: adminCouponId,
-        },
-      })
+    // Template-based coupon creation ONLY (required for all affiliates)
+    console.log('=== AFFILIATE COUPON FROM ADMIN TEMPLATE ===')
+    
+    // Get admin coupon as template
+    const adminCoupon = await prisma.coupon.findUnique({
+      where: { 
+        id: adminCouponId,
+      },
+    })
 
       if (!adminCoupon) {
         return NextResponse.json(
@@ -232,7 +210,6 @@ export async function POST(request: NextRequest) {
       })
 
       console.log('✅ Template coupon created successfully:', coupon.id)
-    }
 
     return NextResponse.json({ coupon }, { status: 201 })
   } catch (error: any) {

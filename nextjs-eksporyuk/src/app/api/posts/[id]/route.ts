@@ -32,7 +32,7 @@ export async function GET(
       }),
       post.groupId ? prisma.group.findUnique({
         where: { id: post.groupId },
-        select: { id: true, name: true }
+        select: { id: true, name: true, slug: true }
       }) : null,
       prisma.postLike.findMany({ where: { postId: post.id } }),
       prisma.postComment.findMany({ where: { postId: post.id, parentId: null }, orderBy: { createdAt: 'desc' } }),

@@ -84,9 +84,13 @@ export async function GET(req: NextRequest) {
 
     // Get user's groups (groups they're a member of)
     const userGroupMembers = await prisma.groupMember.findMany({
-      where: { userId },
-      include: { group: true }
+      where: { userId }
     })
+
+    // Get group details
+    const userGroupsData = await Promise.all(
+      userGroupMembers.map(gm => prisma.group.findUnique({ where: { id: gm.groupId } }))
+    )
 
     // Get public groups (not private or hidden)
     const publicGroups = await prisma.group.findMany({
@@ -97,32 +101,50 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    // Combine: user's own groups + public groups
+    // Separate user's groups from public groups
     const userGroupIds = userGroupMembers.map(gm => gm.groupId)
-    const userGroups = userGroupMembers.map(gm => gm.group).filter(g => g.isActive)
+    const userGroups = userGroupsData.filter(g => g && g.isActive && g.type === 'PUBLIC')
     
     // Public groups that user isn't already in
     const newPublicGroups = publicGroups.filter(g => !userGroupIds.includes(g.id))
-    
-    // Combine both lists: user's groups first, then new public groups (up to 5 total)
-    const allGroupsToShow = [...userGroups, ...newPublicGroups].slice(0, 5)
 
-    // Get member counts for groups
-    const groupMemberCounts = await Promise.all(
-      allGroupsToShow.map(g => 
+    // Get member counts for all groups
+    const userGroupMemberCounts = await Promise.all(
+      userGroups.map(g => 
         prisma.groupMember.count({ where: { groupId: g.id } })
       )
     )
 
-    const groupsData = allGroupsToShow.map((g, i) => ({
+    const newGroupMemberCounts = await Promise.all(
+      newPublicGroups.map(g => 
+        prisma.groupMember.count({ where: { groupId: g.id } })
+      )
+    )
+
+    // Format user's own groups (Komunitas)
+    const komunitas = userGroups.map((g, i) => ({
       id: g.id,
       slug: g.slug || g.id,
       name: g.name,
       description: g.description || '',
       thumbnail: g.avatar || null,
-      memberCount: groupMemberCounts[i] || 0,
-      isUserMember: userGroupIds.includes(g.id) // Indicate if user is already a member
+      memberCount: userGroupMemberCounts[i] || 0,
+      isUserMember: true
     }))
+
+    // Format public groups discovery (limit to 5 total)
+    const publicGroupsDiscovery = newPublicGroups.slice(0, 5 - komunitas.length).map((g, i) => ({
+      id: g.id,
+      slug: g.slug || g.id,
+      name: g.name,
+      description: g.description || '',
+      thumbnail: g.avatar || null,
+      memberCount: newGroupMemberCounts[i] || 0,
+      isUserMember: false
+    }))
+
+    // Keep groupsData for backward compatibility (all groups combined)
+    const groupsData = [...komunitas, ...publicGroupsDiscovery]
 
     // Get products
     const products = await prisma.product.findMany({
@@ -240,6 +262,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       courses: coursesWithProgress,
       groups: groupsData,
+      komunitas: komunitas,
+      publicGroups: publicGroupsDiscovery,
       products: productsData,
       recentPosts: postsData,
       banners: bannersData,
@@ -256,6 +280,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       courses: [],
       groups: [],
+      komunitas: [],
+      publicGroups: [],
       products: [],
       recentPosts: [],
       banners: [],

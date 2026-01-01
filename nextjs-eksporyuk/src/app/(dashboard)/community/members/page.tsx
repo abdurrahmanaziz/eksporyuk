@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import MemberLocationBadge from '@/components/member/MemberLocationBadge'
+import { toast } from 'sonner'
 
 interface Member {
   id: string
@@ -62,6 +63,32 @@ export default function CommunityMembersPage() {
       console.error('Failed to fetch members:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const startChat = async (userId: string, userName: string) => {
+    if (!session?.user?.id) {
+      toast.error('Anda harus login untuk memulai chat')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/chat/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: userId })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Redirect to chat page
+        window.location.href = `/chat?room=${data.roomId}`
+      } else {
+        toast.error('Gagal memulai chat')
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error)
+      toast.error('Gagal memulai chat')
     }
   }
 
@@ -352,11 +379,14 @@ export default function CommunityMembersPage() {
                         className="w-full text-sm h-9 hover:bg-indigo-50"
                         onClick={(e) => {
                           e.preventDefault()
-                          // Handle message
+                          if (session?.user?.id !== member.id) {
+                            startChat(member.id, member.name)
+                          }
                         }}
+                        disabled={session?.user?.id === member.id}
                       >
                         <MessageCircle className="w-4 h-4 mr-2" />
-                        Pesan
+                        {session?.user?.id === member.id ? 'Anda' : 'Pesan'}
                       </Button>
                     </CardContent>
                   </Card>

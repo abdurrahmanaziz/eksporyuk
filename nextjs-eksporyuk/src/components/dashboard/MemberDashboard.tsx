@@ -216,7 +216,7 @@ export default function MemberDashboard({ data, user }: MemberDashboardProps) {
                 {data.groups.map((group: any) => (
                   <Link
                     key={group.id}
-                    href={`/community/groups/${group.id}`}
+                    href={`/community/groups/${group.slug || group.id}`}
                     className="group relative overflow-hidden rounded-xl aspect-[4/3] cursor-pointer shadow-sm hover:shadow-md transition-all"
                   >
                     <div
