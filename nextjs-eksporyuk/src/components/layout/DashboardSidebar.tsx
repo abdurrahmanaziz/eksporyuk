@@ -446,7 +446,13 @@ export default function DashboardSidebar() {
     if (pathname?.startsWith('/mentor')) return 'MENTOR'
     if (pathname?.startsWith('/affiliate')) return 'AFFILIATE'
     if (pathname?.startsWith('/supplier')) return 'SUPPLIER'
-    return userRole // Default to primary role for member dashboard
+    // Member area paths - show MEMBER_PREMIUM menu
+    const memberPaths = ['/dashboard', '/community', '/learn', '/courses', '/chat', '/profile', '/notifications', '/certificates', '/saved-posts', '/member-directory', '/my-events', '/databases', '/documents', '/wallet']
+    if (memberPaths.some(path => pathname?.startsWith(path))) {
+      return 'MEMBER_PREMIUM'
+    }
+    // Fallback to primary role for other paths
+    return userRole
   }
   
   const currentDashboardContext = getCurrentDashboardContext()

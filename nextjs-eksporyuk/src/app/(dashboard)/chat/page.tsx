@@ -429,6 +429,9 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error('Error fetching mentors:', error)
+    } finally {
+      // Set loading false even if no active room
+      setLoading(false)
     }
   }
 
@@ -438,10 +441,10 @@ export default function ChatPage() {
       if (res.ok) {
         const data = await res.json()
         setMessages(data.messages || [])
-        setLoading(false)
       }
     } catch (error) {
       console.error('Error fetching messages:', error)
+      setMessages([])
     }
   }
 

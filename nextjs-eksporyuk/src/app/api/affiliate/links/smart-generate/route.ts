@@ -15,12 +15,15 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
+      console.log('❌ [Smart Generate] Unauthorized - no session')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const { targetType, targetId, couponId } = await request.json()
+    console.log(`🔍 [Smart Generate] User: ${session.user.id}, Type: ${targetType}, TargetID: ${targetId}, CouponID: ${couponId}`)
 
     if (!targetType || !['membership', 'product', 'course', 'supplier'].includes(targetType)) {
+      console.log(`❌ [Smart Generate] Invalid targetType: ${targetType}`)
       return NextResponse.json({ 
         error: 'Valid targetType required (membership, product, course, supplier)' 
       }, { status: 400 })
@@ -32,8 +35,11 @@ export async function POST(request: NextRequest) {
     })
 
     if (!affiliateProfile) {
-      return NextResponse.json({ error: 'Affiliate profile not found' }, { status: 404 })
+      console.log(`❌ [Smart Generate] No affiliate profile for user: ${session.user.id}`)
+      return NextResponse.json({ error: 'Affiliate profile not found. Please activate your affiliate account first.' }, { status: 404 })
     }
+    
+    console.log(`✅ [Smart Generate] Found affiliate: ${affiliateProfile.affiliateCode || 'NO CODE'}`)
 
     let linksCreated = 0
     let salesPageLinks = 0
@@ -132,10 +138,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (targetItems.length === 0) {
+      console.log(`❌ [Smart Generate] No items found for type: ${targetType}`)
       return NextResponse.json({ 
-        error: `No active ${targetType} found` 
+        error: `No active ${targetType} found. Please contact admin.` 
       }, { status: 404 })
     }
+    
+    console.log(`✅ [Smart Generate] Found ${targetItems.length} ${targetType}(s) to generate links for`)
 
     // Generate links for each item
     for (const item of targetItems) {
@@ -160,9 +169,10 @@ export async function POST(request: NextRequest) {
         }
 
         // Use live domain - prioritize production domain
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                       process.env.NEXTAUTH_URL ||
-                       'https://eksporyuk.com'
+        // Ensure no trailing slashes or newlines
+        const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 
+                        process.env.NEXTAUTH_URL ||
+                        'https://eksporyuk.com').trim().replace(/\/+$/, '')
         
         for (const linkType of linkTypes) {
           // Check if link already exists
@@ -184,7 +194,7 @@ export async function POST(request: NextRequest) {
               shortCode = Math.random().toString(36).substring(2, 8).toUpperCase()
               shortCodeRetries++
               if (shortCodeRetries > 100) {
-                console.error('❌ Could not generate unique shortCode after 100 retries')
+                console.error('❌ [Smart Generate] Could not generate unique shortCode after 100 retries')
                 return NextResponse.json({ 
                   error: 'Gagal generate link - terlalu banyak link yang sudah ada' 
                 }, { status: 500 })
@@ -198,12 +208,14 @@ export async function POST(request: NextRequest) {
               linkCode = `${affiliateCode}-${shortCode}`
               codeRetries++
               if (codeRetries > 100) {
-                console.error('❌ Could not generate unique linkCode after 100 retries')
+                console.error('❌ [Smart Generate] Could not generate unique linkCode after 100 retries')
                 return NextResponse.json({ 
                   error: 'Gagal generate link - terlalu banyak link yang sudah ada' 
                 }, { status: 500 })
               }
             } while (await prisma.affiliateLink.findUnique({ where: { code: linkCode } }))
+
+            console.log(`📝 [Smart Generate] Creating link: ${linkType} for ${itemName} (code: ${linkCode})`)
 
             // Build URLs
             let fullUrl = ''
@@ -287,10 +299,11 @@ export async function POST(request: NextRequest) {
       note: !selectedCoupon ? 'Links created without coupon codes. Select a coupon for discount links.' : null
     })
 
-  } catch (error) {
-    console.error('❌ Smart generate error:', error)
+  } catch (error: any) {
+    console.error('❌ [Smart Generate] Error:', error)
+    console.error('❌ [Smart Generate] Stack:', error.stack)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error: ' + error.message },
       { status: 500 }
     )
   }

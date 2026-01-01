@@ -87,7 +87,10 @@ export default function EditLessonPage() {
       return
     }
     if (status === 'authenticated') {
-      if (session?.user?.role !== 'ADMIN' && session?.user?.role !== 'MENTOR') {
+      // Check allRoles for multi-role support (user may have MENTOR as additional role)
+      const allRoles = session?.user?.allRoles || [session?.user?.role]
+      const hasMentorAccess = allRoles.includes('MENTOR') || allRoles.includes('ADMIN')
+      if (!hasMentorAccess) {
         router.push('/dashboard')
         return
       }

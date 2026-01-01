@@ -104,7 +104,10 @@ export default function NewCoursePage() {
       return
     }
     if (status === 'authenticated') {
-      if (!['ADMIN', 'MENTOR'].includes(session?.user?.role || '')) {
+      // Check allRoles for multi-role support (user may have MENTOR as additional role)
+      const allRoles = session?.user?.allRoles || [session?.user?.role]
+      const hasMentorAccess = allRoles.includes('MENTOR') || allRoles.includes('ADMIN')
+      if (!hasMentorAccess) {
         router.push('/dashboard')
         return
       }
