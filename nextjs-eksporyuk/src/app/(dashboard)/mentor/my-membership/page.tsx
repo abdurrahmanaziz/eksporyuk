@@ -1,21 +1,2 @@
-'use client'
-
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
-export default function MentorMyMembershipRedirect() {
-  const router = useRouter()
-  
-  useEffect(() => {
-    router.replace('/dashboard/my-membership')
-  }, [router])
-  
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Memuat...</p>
-      </div>
-    </div>
-  )
-}
+// Re-export the my-membership page component for /mentor/my-membership path
+export { default } from '@/app/(dashboard)/dashboard/my-membership/page'

@@ -219,14 +219,28 @@ export async function GET(request: NextRequest) {
     console.error('❌ [Affiliate Links] Error:', error)
     console.error('❌ [Affiliate Links] Stack:', error.stack)
     console.error('❌ [Affiliate Links] Message:', error.message)
+    console.error('❌ [Affiliate Links] Name:', error.name)
+    console.error('❌ [Affiliate Links] Code:', error.code)
     
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch affiliate links',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    // Return empty result instead of error to prevent page crash
+    // This allows users to still access the page while we fix database issues
+    return NextResponse.json({
+      links: [],
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0,
+        hasNext: false,
+        hasPrev: false
       },
-      { status: 500 }
-    )
+      error: 'Database connection issue. Please contact support.',
+      _debug: process.env.NODE_ENV === 'development' ? {
+        message: error.message,
+        code: error.code,
+        name: error.name
+      } : undefined
+    })
   }
 }
 

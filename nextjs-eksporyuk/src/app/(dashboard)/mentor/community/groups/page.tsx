@@ -1,21 +1,2 @@
-'use client'
-
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
-export default function MentorCommunityGroupsRedirect() {
-  const router = useRouter()
-  
-  useEffect(() => {
-    router.replace('/community/groups')
-  }, [router])
-  
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Memuat...</p>
-      </div>
-    </div>
-  )
-}
+// Re-export the community groups page component for /mentor/community/groups path
+export { default } from '@/app/(dashboard)/community/groups/page'

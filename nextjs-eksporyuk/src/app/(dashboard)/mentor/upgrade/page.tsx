@@ -1,21 +1,2 @@
-'use client'
-
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
-export default function MentorUpgradeRedirect() {
-  const router = useRouter()
-  
-  useEffect(() => {
-    router.replace('/dashboard/upgrade')
-  }, [router])
-  
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Memuat...</p>
-      </div>
-    </div>
-  )
-}
+// Re-export the upgrade page component for /mentor/upgrade path
+export { default } from '@/app/(dashboard)/dashboard/upgrade/page'
