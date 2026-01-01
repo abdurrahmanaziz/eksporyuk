@@ -112,20 +112,11 @@ export async function GET(
     }
     
     if (!vaNumber) {
-      // Check if there's a paymentUrl fallback (only if it's NOT a self-referencing URL)
-      // Avoid redirect loop by checking if paymentUrl points to /payment/va/
-      if (transaction.paymentUrl && !transaction.paymentUrl.includes('/payment/va/')) {
-        return NextResponse.json({
-          redirect: true,
-          redirectUrl: transaction.paymentUrl,
-          message: 'Detail Virtual Account tidak ditemukan, redirect ke halaman pembayaran',
-        })
-      }
-      
       // Get bank code from metadata (user already selected this bank)
       const bankCode = metadata?.bankCode || metadata?.xenditBankCode || metadata?.paymentChannel
       
-      // Try to create a NEW VA with the same bank that user selected
+      // PRIORITY 1: Try to create a NEW VA with the same bank that user selected
+      // This way user doesn't need to select bank again
       try {
         const { xenditService } = await import('@/lib/xendit')
         const isConfigured = await xenditService.isConfigured()
@@ -135,7 +126,7 @@ export async function GET(
           
           // Try to create VA first (so user doesn't need to select bank again)
           const vaResult = await xenditService.createVirtualAccount({
-            externalId: transaction.externalId || transaction.id,
+            externalId: `${transaction.externalId || transaction.id}_retry_${Date.now()}`,
             bankCode: bankCode,
             name: transaction.customerName || user?.name || 'Customer',
             amount: Number(transaction.amount),
@@ -220,13 +211,11 @@ export async function GET(
           console.log('[VA API] VA creation failed, falling back to Invoice with bank:', bankCode)
           
           const invoice = await xenditService.createInvoice({
-            external_id: transaction.externalId || transaction.id,
+            external_id: `${transaction.externalId || transaction.id}_inv_${Date.now()}`,
             amount: Number(transaction.amount),
             payer_email: transaction.customerEmail || user?.email || 'customer@eksporyuk.com',
             description: transaction.description || 'Pembayaran',
             invoice_duration: paymentExpiryHours * 3600,
-            // Specify payment method to pre-select the bank user chose
-            payment_methods: bankCode ? [bankCode] : undefined,
           })
           
           if (invoice?.invoiceUrl) {
@@ -245,6 +234,15 @@ export async function GET(
         }
       } catch (invoiceError) {
         console.error('[VA API] Failed to create VA/invoice fallback:', invoiceError)
+      }
+      
+      // LAST RESORT: Check if there's a valid paymentUrl (not self-referencing)
+      if (transaction.paymentUrl && !transaction.paymentUrl.includes('/payment/va/')) {
+        return NextResponse.json({
+          redirect: true,
+          redirectUrl: transaction.paymentUrl,
+          message: 'Silakan selesaikan pembayaran melalui halaman pembayaran',
+        })
       }
       
       return NextResponse.json(
