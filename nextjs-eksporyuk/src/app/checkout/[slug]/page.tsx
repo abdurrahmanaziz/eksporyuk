@@ -56,6 +56,8 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
   const [checkingCoupon, setCheckingCoupon] = useState(false)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [affiliatePartner, setAffiliatePartner] = useState<string | null>(null)
 
   // Payment method selection
   const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'ewallet' | 'qris' | 'retail' | 'paylater' | 'manual'>('bank_transfer')
@@ -141,6 +143,80 @@ export default function CheckoutPage() {
     }
     autoValidateCoupon()
   }, [searchParams, plan, couponCode])
+
+  // Auto-detect coupon while typing (with 800ms debounce)
+  useEffect(() => {
+    // Skip if coupon code is too short or already applied
+    if (!couponCode.trim() || couponCode.length < 3 || !plan) {
+      setCouponError(null)
+      return
+    }
+    
+    // Skip if this coupon is already applied
+    if (appliedCoupon && appliedCoupon.code === couponCode) {
+      return
+    }
+    
+    const debounceTimer = setTimeout(async () => {
+      setCheckingCoupon(true)
+      setCouponError(null)
+      
+      try {
+        const response = await fetch(
+          `/api/coupons/validate?code=${encodeURIComponent(couponCode)}&membershipId=${plan.id}`
+        )
+        const data = await response.json()
+        
+        if (response.ok && data.valid) {
+          setAppliedCoupon(data.coupon)
+          setCouponError(null)
+        } else {
+          setAppliedCoupon(null)
+          setCouponError(data.message || 'Kupon tidak valid')
+        }
+      } catch (error) {
+        console.error('Error validating coupon:', error)
+        setCouponError('Gagal memvalidasi kupon')
+      } finally {
+        setCheckingCoupon(false)
+      }
+    }, 800)
+    
+    return () => clearTimeout(debounceTimer)
+  }, [couponCode, plan])
+
+  // Load affiliate partner from cookies
+  useEffect(() => {
+    const loadAffiliatePartner = async () => {
+      // Get affiliate code from cookies
+      const cookies = document.cookie.split(';')
+      let affiliateCode: string | null = null
+      
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split('=')
+        if (name === 'affiliate_code' || name === 'ref') {
+          affiliateCode = value
+          break
+        }
+      }
+      
+      if (!affiliateCode) return
+      
+      try {
+        const response = await fetch(`/api/affiliate/by-code?code=${encodeURIComponent(affiliateCode)}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.affiliate?.user?.name) {
+            setAffiliatePartner(data.affiliate.user.name)
+          }
+        }
+      } catch (error) {
+        console.error('Error loading affiliate partner:', error)
+      }
+    }
+    
+    loadAffiliatePartner()
+  }, [])
 
   // Fetch payment logos and manual banks
   useEffect(() => {

@@ -95,7 +95,6 @@ export default function CheckoutProPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
   const [couponChecking, setCouponChecking] = useState(false)
   const [couponError, setCouponError] = useState<string | null>(null)
-  const [affiliatePartner, setAffiliatePartner] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [userData, setUserData] = useState({
@@ -153,34 +152,6 @@ export default function CheckoutProPage() {
       }
     }
   }, [searchParams])
-
-  // Load affiliate partner from cookies
-  useEffect(() => {
-    const loadAffiliatePartner = async () => {
-      try {
-        // Check for affiliate cookie
-        const cookies = document.cookie.split(';')
-        const affiliateCookie = cookies.find(c => c.trim().startsWith('affiliate_code='))
-        const refCookie = cookies.find(c => c.trim().startsWith('ref='))
-        
-        const affiliateCode = affiliateCookie?.split('=')[1] || refCookie?.split('=')[1]
-        
-        if (affiliateCode) {
-          // Fetch affiliate name
-          const res = await fetch(`/api/affiliate/by-code?code=${affiliateCode}`)
-          if (res.ok) {
-            const data = await res.json()
-            if (data.affiliate?.user?.name) {
-              setAffiliatePartner(data.affiliate.user.name)
-            }
-          }
-        }
-      } catch (err) {
-        console.error('[Checkout Pro] Error loading affiliate partner:', err)
-      }
-    }
-    loadAffiliatePartner()
-  }, [])
 
   // Auto-detect coupon as user types (with debounce)
   useEffect(() => {
