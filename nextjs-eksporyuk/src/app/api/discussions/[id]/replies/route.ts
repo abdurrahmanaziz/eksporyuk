@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -116,6 +117,16 @@ export async function POST(
             link: `/learn/${parentDiscussion.course.slug}?tab=discussions&thread=${parentDiscussion.id}`
           }
         })
+        
+        // Send push notification
+        await notificationService.send({
+          userId: parentDiscussion.userId,
+          type: 'COMMENT_REPLY',
+          title: '💬 Balasan Diskusi Baru',
+          message: `${session.user.name} membalas diskusi Anda: "${parentDiscussion.title?.substring(0, 30)}..."`,
+          link: `/learn/${parentDiscussion.course.slug}?tab=discussions&thread=${parentDiscussion.id}`,
+          channels: ['pusher', 'onesignal']
+        })
       } catch (notifError) {
         console.error('Failed to send notification:', notifError)
       }
@@ -132,6 +143,16 @@ export async function POST(
             message: `${session.user.name} replied in: "${parentDiscussion.title?.substring(0, 50)}..."`,
             link: `/learn/${parentDiscussion.course.slug}?tab=discussions&thread=${parentDiscussion.id}`
           }
+        })
+        
+        // Send push notification to mentor
+        await notificationService.send({
+          userId: parentDiscussion.course.mentorId,
+          type: 'COMMENT_REPLY',
+          title: '💬 Balasan Diskusi',
+          message: `${session.user.name} membalas di: "${parentDiscussion.title?.substring(0, 30)}..."`,
+          link: `/learn/${parentDiscussion.course.slug}?tab=discussions&thread=${parentDiscussion.id}`,
+          channels: ['pusher', 'onesignal']
         })
       } catch (notifError) {
         console.error('Failed to send notification:', notifError)

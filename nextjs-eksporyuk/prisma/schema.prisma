@@ -3162,6 +3162,85 @@ model CourseMentor {
   @@unique([courseId, mentorId])
 }
 
+model SystemScan {
+  id            String       @id @default(cuid())
+  scanType      ScanType     @default(FULL)
+  status        ScanStatus   @default(RUNNING)
+  startedAt     DateTime     @default(now())
+  completedAt   DateTime?
+  totalChecks   Int          @default(0)
+  passedChecks  Int          @default(0)
+  failedChecks  Int          @default(0)
+  warningChecks Int          @default(0)
+  healthScore   Int          @default(100)
+  runBy         String?
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  results       ScanResult[]
+
+  @@index([status])
+  @@index([scanType])
+  @@index([createdAt])
+}
+
+model ScanResult {
+  id         String       @id @default(cuid())
+  scanId     String
+  category   ScanCategory
+  checkName  String
+  status     ResultStatus
+  level      ErrorLevel   @default(INFO)
+  message    String
+  details    String?
+  location   String?
+  impact     String?
+  suggestion String?
+  isFixed    Boolean      @default(false)
+  fixedAt    DateTime?
+  fixedBy    String?
+  fixMethod  String?
+  isIgnored  Boolean      @default(false)
+  ignoredAt  DateTime?
+  ignoredBy  String?
+  createdAt  DateTime     @default(now())
+  scan       SystemScan   @relation(fields: [scanId], references: [id], onDelete: Cascade)
+
+  @@index([scanId])
+  @@index([category])
+  @@index([status])
+  @@index([level])
+}
+
+model FixLog {
+  id           String       @id @default(cuid())
+  resultId     String?
+  category     ScanCategory
+  errorType    String
+  errorMessage String
+  fixMethod    String
+  fixedBy      String
+  isAutoFix    Boolean      @default(false)
+  success      Boolean      @default(true)
+  notes        String?
+  createdAt    DateTime     @default(now())
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+model ScanSchedule {
+  id        String    @id @default(cuid())
+  name      String
+  scanType  ScanType  @default(FULL)
+  interval  String    @default("daily")
+  isActive  Boolean   @default(true)
+  lastRunAt DateTime?
+  nextRunAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 enum AccessLevel {
   PUBLIC
   MEMBER_ONLY
@@ -3528,89 +3607,6 @@ enum TransactionType {
   COMMISSION
   PAYOUT
   SUPPLIER_MEMBERSHIP
-}
-
-// ==========================================
-// HEALTH MONITOR & SCANNER SYSTEM
-// ==========================================
-
-model SystemScan {
-  id          String       @id @default(cuid())
-  scanType    ScanType     @default(FULL)
-  status      ScanStatus   @default(RUNNING)
-  startedAt   DateTime     @default(now())
-  completedAt DateTime?
-  totalChecks Int          @default(0)
-  passedChecks Int         @default(0)
-  failedChecks Int         @default(0)
-  warningChecks Int        @default(0)
-  healthScore Int          @default(100)
-  runBy       String?
-  metadata    Json?
-  results     ScanResult[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  @@index([status])
-  @@index([scanType])
-  @@index([createdAt])
-}
-
-model ScanResult {
-  id          String      @id @default(cuid())
-  scanId      String
-  scan        SystemScan  @relation(fields: [scanId], references: [id], onDelete: Cascade)
-  category    ScanCategory
-  checkName   String
-  status      ResultStatus
-  level       ErrorLevel  @default(INFO)
-  message     String
-  details     String?
-  location    String?
-  impact      String?
-  suggestion  String?
-  isFixed     Boolean     @default(false)
-  fixedAt     DateTime?
-  fixedBy     String?
-  fixMethod   String?
-  isIgnored   Boolean     @default(false)
-  ignoredAt   DateTime?
-  ignoredBy   String?
-  createdAt   DateTime    @default(now())
-
-  @@index([scanId])
-  @@index([category])
-  @@index([status])
-  @@index([level])
-}
-
-model FixLog {
-  id           String    @id @default(cuid())
-  resultId     String?
-  category     ScanCategory
-  errorType    String
-  errorMessage String
-  fixMethod    String
-  fixedBy      String
-  isAutoFix    Boolean   @default(false)
-  success      Boolean   @default(true)
-  notes        String?
-  createdAt    DateTime  @default(now())
-
-  @@index([category])
-  @@index([createdAt])
-}
-
-model ScanSchedule {
-  id          String    @id @default(cuid())
-  name        String
-  scanType    ScanType  @default(FULL)
-  interval    String    @default("daily")
-  isActive    Boolean   @default(true)
-  lastRunAt   DateTime?
-  nextRunAt   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
 }
 
 enum ScanType {

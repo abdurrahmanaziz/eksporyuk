@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -163,6 +164,18 @@ export async function POST(
         link: `/quiz/${params.quizId}/result/${attemptId}`
       }
     })
+    
+    // Send push notification via OneSignal/Pusher
+    await notificationService.send({
+      userId: session.user.id,
+      type: isPassed ? 'ACHIEVEMENT' : 'SYSTEM',
+      title: isPassed 
+        ? `🎉 Quiz Lulus: ${attempt.quiz.title}`
+        : `📝 Quiz Selesai: ${attempt.quiz.title}`,
+      message: `Skor Anda ${scorePercentage}%. ${isPassed ? 'Kerja bagus!' : 'Terus semangat!'}`,
+      link: `/quiz/${params.quizId}/result/${attemptId}`,
+      channels: ['pusher', 'onesignal']
+    });
 
     return NextResponse.json({
       success: true,

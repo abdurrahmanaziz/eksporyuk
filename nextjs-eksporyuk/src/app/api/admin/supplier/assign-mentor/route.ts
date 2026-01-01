@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
 import { prisma } from '@/lib/prisma';
+import { notificationService } from '@/lib/services/notificationService';
 
 /**
  * POST /api/admin/supplier/assign-mentor
@@ -99,6 +100,21 @@ export async function POST(request: NextRequest) {
     });
 
     // TODO: Send notification to mentor
+
+    // Send notification to mentor via all channels
+    await notificationService.send({
+      userId: mentorId,
+      type: 'SYSTEM' as any,
+      title: '📦 Supplier Baru Perlu Direview',
+      message: `Anda ditugaskan untuk mereview supplier "${supplier.companyName}". Silakan cek dan lakukan review.`,
+      link: `${process.env.NEXT_PUBLIC_APP_URL}/mentor/supplier/${supplierId}`,
+      channels: ['pusher', 'onesignal', 'email'],
+      metadata: {
+        supplierId,
+        supplierName: supplier.companyName,
+        assignedBy: session.user.name || 'Admin'
+      }
+    });
 
     return NextResponse.json({
       success: true,

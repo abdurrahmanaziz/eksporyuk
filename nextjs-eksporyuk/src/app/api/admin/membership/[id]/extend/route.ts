@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -68,6 +69,23 @@ export async function POST(
 
     // Log the extension (optional - you can add an activity log model later)
     console.log(`Membership extended by ${days} days for user ${existingUser?.name || 'Unknown'} by admin ${session.user.name}`)
+
+    // Send notification to user about membership extension
+    await notificationService.send({
+      userId: existingMembership.userId,
+      type: 'MEMBERSHIP' as any,
+      title: '🎉 Membership Anda Diperpanjang!',
+      message: `Selamat! Membership ${existingMembershipPlan?.name || 'Anda'} telah diperpanjang ${days} hari. Berlaku hingga ${newEndDate.toLocaleDateString('id-ID')}.`,
+      link: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+      channels: ['pusher', 'onesignal', 'email'],
+      metadata: {
+        membershipId: existingMembership.membershipId,
+        membershipName: existingMembershipPlan?.name,
+        extensionDays: days,
+        newEndDate: newEndDate.toISOString(),
+        reason: reason || 'Extended by admin'
+      }
+    })
 
     return NextResponse.json({
       message: `Membership extended by ${days} days successfully`,

@@ -235,6 +235,45 @@ export async function PUT(request: NextRequest) {
       select: { name: true, email: true },
     })
 
+    // Send notification to supplier about verification status
+    const { notificationService } = await import('@/lib/services/notificationService')
+    
+    const notificationMessages: Record<string, { title: string; message: string }> = {
+      approve: {
+        title: '✅ Supplier Terverifikasi!',
+        message: `Selamat! Akun supplier "${supplier.companyName}" Anda telah diverifikasi dan sekarang bisa berjualan di platform EksporYuk.`
+      },
+      reject: {
+        title: '❌ Verifikasi Ditolak',
+        message: `Maaf, verifikasi supplier "${supplier.companyName}" tidak dapat diproses. Alasan: ${reason || 'Tidak memenuhi kriteria'}. Silakan cek dan perbaiki data Anda.`
+      },
+      suspend: {
+        title: '⚠️ Akun Supplier Disuspend',
+        message: `Akun supplier "${supplier.companyName}" Anda telah disuspend. Alasan: ${reason}. Hubungi admin untuk informasi lebih lanjut.`
+      },
+      unsuspend: {
+        title: '✅ Suspense Dicabut',
+        message: `Akun supplier "${supplier.companyName}" Anda telah aktif kembali. Anda bisa melanjutkan aktivitas di platform.`
+      }
+    }
+
+    const notif = notificationMessages[action]
+    if (notif) {
+      await notificationService.send({
+        userId: supplier.userId,
+        type: 'SYSTEM' as any,
+        title: notif.title,
+        message: notif.message,
+        link: `${process.env.NEXT_PUBLIC_APP_URL}/supplier/dashboard`,
+        channels: ['pusher', 'onesignal', 'email', 'whatsapp'],
+        metadata: {
+          supplierId,
+          action,
+          reason
+        }
+      })
+    }
+
     return NextResponse.json({
       success: true,
       message: `Supplier ${action} successfully`,

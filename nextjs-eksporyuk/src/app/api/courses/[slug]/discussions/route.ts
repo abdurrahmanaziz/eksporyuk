@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -242,6 +243,16 @@ export async function POST(
           message: `${session.user.name} started a discussion: "${title.substring(0, 50)}..."`,
           link: `/learn/${course.slug}?tab=discussions&thread=${discussion.id}`
         }
+      })
+      
+      // Send push notification to mentor
+      await notificationService.send({
+        userId: course.mentorId,
+        type: 'COURSE_DISCUSSION',
+        title: '💬 Diskusi Baru di Kursus',
+        message: `${session.user.name} memulai diskusi: "${title.substring(0, 30)}..."`,
+        link: `/learn/${course.slug}?tab=discussions&thread=${discussion.id}`,
+        channels: ['pusher', 'onesignal']
       })
     } catch (notifError) {
       console.error('Failed to send notification:', notifError)

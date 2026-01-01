@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -93,6 +94,17 @@ export async function POST(
         },
       })
 
+      // Notify user about suspension via email
+      await notificationService.send({
+        userId: id,
+        type: 'SYSTEM' as any,
+        title: '⚠️ Akun Anda Disuspend',
+        message: `Akun Anda telah disuspend. Alasan: ${reason}. Hubungi admin untuk informasi lebih lanjut.`,
+        link: `${process.env.NEXT_PUBLIC_APP_URL}/support`,
+        channels: ['email', 'whatsapp'],
+        metadata: { reason, suspendedBy: session.user.id }
+      })
+
       return NextResponse.json({
         success: true,
         message: 'User berhasil disuspend',
@@ -123,6 +135,17 @@ export async function POST(
             unsuspendedBy: session.user.id,
           },
         },
+      })
+
+      // Notify user about reactivation
+      await notificationService.send({
+        userId: id,
+        type: 'SYSTEM' as any,
+        title: '✅ Akun Anda Aktif Kembali',
+        message: 'Selamat! Akun Anda telah diaktifkan kembali. Anda bisa melanjutkan aktivitas di platform EksporYuk.',
+        link: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+        channels: ['pusher', 'onesignal', 'email'],
+        metadata: { unsuspendedBy: session.user.id }
       })
 
       return NextResponse.json({

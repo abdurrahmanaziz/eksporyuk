@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useSession, signIn } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -47,6 +47,7 @@ interface MembershipPlan {
 export default function CheckoutPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { data: session, status } = useSession()
   const [plan, setPlan] = useState<MembershipPlan | null>(null)
   const [selectedPrice, setSelectedPrice] = useState<PriceOption | null>(null)
@@ -119,6 +120,27 @@ export default function CheckoutPage() {
     }
     return logos[code] || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%230066CC'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='16' fill='white' font-family='Arial'%3E${code.substring(0, 3)}%3C/text%3E%3C/svg%3E`
   }
+
+  // Auto-fill coupon from URL parameter
+  useEffect(() => {
+    const couponFromUrl = searchParams.get('coupon')
+    if (couponFromUrl && !couponCode) {
+      console.log('[Checkout] Auto-filling coupon from URL:', couponFromUrl)
+      setCouponCode(couponFromUrl)
+    }
+  }, [searchParams])
+
+  // Auto-validate coupon when couponCode is set from URL and plan is loaded
+  useEffect(() => {
+    const autoValidateCoupon = async () => {
+      const couponFromUrl = searchParams.get('coupon')
+      if (couponFromUrl && couponFromUrl === couponCode && plan && !appliedCoupon) {
+        console.log('[Checkout] Auto-validating coupon:', couponCode)
+        await applyCoupon(couponCode)
+      }
+    }
+    autoValidateCoupon()
+  }, [searchParams, plan, couponCode])
 
   // Fetch payment logos and manual banks
   useEffect(() => {

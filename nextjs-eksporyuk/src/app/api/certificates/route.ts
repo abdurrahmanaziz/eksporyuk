@@ -8,6 +8,7 @@ import {
   generateCertificateNumber 
 } from '@/lib/certificate-generator'
 import { sendCertificateEmail } from '@/lib/email/certificate-email'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -257,6 +258,16 @@ export async function POST(req: NextRequest) {
         isRead: false
       }
     })
+    
+    // Send push notification via OneSignal/Pusher
+    await notificationService.send({
+      userId: session.user.id,
+      type: 'ACHIEVEMENT',
+      title: '🎓 Sertifikat Tersedia!',
+      message: `Selamat! Sertifikat Anda untuk kursus "${course.title}" sudah siap diunduh.`,
+      link: `/certificates`,
+      channels: ['pusher', 'onesignal', 'email']
+    });
 
     // Send certificate via email
     try {

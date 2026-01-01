@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
 import { prisma } from '@/lib/prisma';
+import { notificationService } from '@/lib/services/notificationService';
 
 /**
  * GET /api/mentor/supplier/reviews/[id]
@@ -216,6 +217,51 @@ export async function POST(
     });
 
     // TODO: Send notification to admin (if APPROVE) or supplier (if REJECT/REQUEST_CHANGES)
+
+    // Send notifications based on recommendation
+    if (recommendation === 'APPROVE') {
+      // Notify all admins about approved supplier
+      const admins = await prisma.user.findMany({
+        where: { role: 'ADMIN' },
+        select: { id: true }
+      });
+
+      for (const admin of admins) {
+        await notificationService.send({
+          userId: admin.id,
+          type: 'SYSTEM' as any,
+          title: '✅ Supplier Direkomendasikan Mentor',
+          message: `Mentor ${mentor.name} merekomendasikan supplier "${supplier.companyName}" untuk disetujui. Perlu approval final.`,
+          link: `${process.env.NEXT_PUBLIC_APP_URL}/admin/supplier/${params.id}`,
+          channels: ['pusher', 'onesignal', 'email'],
+          metadata: {
+            supplierId: params.id,
+            supplierName: supplier.companyName,
+            mentorId: session.user.id,
+            mentorName: mentor.name,
+            recommendation
+          }
+        });
+      }
+    } else if (recommendation === 'REJECT' || recommendation === 'REQUEST_CHANGES') {
+      // Notify supplier about the decision
+      await notificationService.send({
+        userId: supplier.userId,
+        type: 'SYSTEM' as any,
+        title: recommendation === 'REJECT' ? '❌ Pendaftaran Supplier Ditolak' : '📝 Perubahan Diperlukan',
+        message: recommendation === 'REJECT' 
+          ? `Maaf, pendaftaran supplier "${supplier.companyName}" tidak dapat diproses. ${notes ? `Catatan: ${notes}` : ''}`
+          : `Pendaftaran supplier "${supplier.companyName}" memerlukan perubahan. ${notes ? `Catatan: ${notes}` : 'Silakan cek dan perbaiki data Anda.'}`,
+        link: `${process.env.NEXT_PUBLIC_APP_URL}/supplier/profile`,
+        channels: ['pusher', 'onesignal', 'email', 'whatsapp'],
+        metadata: {
+          supplierId: params.id,
+          supplierName: supplier.companyName,
+          recommendation,
+          notes
+        }
+      });
+    }
 
     return NextResponse.json({
       success: true,

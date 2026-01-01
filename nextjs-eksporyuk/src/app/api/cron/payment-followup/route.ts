@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { oneSignalService } from '@/lib/onesignal'
+import { pusherService } from '@/lib/pusher'
+import { starsenderService } from '@/lib/services/starsenderService'
+import { mailketingService } from '@/lib/services/mailketingService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -209,99 +213,103 @@ async function sendFollowUpFromTemplate(
 // Integration Functions
 async function sendViaMailkiting(email: string, message: string, apiKey: string) {
   try {
-    // TODO: Implement actual Mailkiting API call
-    console.log(`[Mailkiting] Sending to ${email}:`, message)
+    if (!mailketingService.isConfigured()) {
+      console.log('[Mailkiting] Not configured, skipping')
+      return { success: false, channel: 'mailketing', error: 'Not configured' }
+    }
+
+    await mailketingService.sendEmail({
+      to: email,
+      subject: '⏰ Reminder Pembayaran - EksporYuk',
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Reminder Pembayaran</h2>
+          <p style="white-space: pre-line; color: #555;">${message}</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #888; font-size: 12px;">Email ini dikirim otomatis oleh sistem EksporYuk</p>
+        </div>
+      `
+    })
     
-    // Example API call:
-    // const response = await fetch('https://api.mailkiting.com/v1/send', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${apiKey}`,
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({
-    //     to: email,
-    //     subject: 'Reminder Pembayaran',
-    //     message: message
-    //   })
-    // })
-    
-    return { success: true, channel: 'mailkiting' }
+    console.log(`[Mailketing] ✅ Email sent to ${email}`)
+    return { success: true, channel: 'mailketing' }
   } catch (error) {
-    console.error('Mailkiting error:', error)
-    return { success: false, channel: 'mailkiting', error }
+    console.error('[Mailketing] Error:', error)
+    return { success: false, channel: 'mailketing', error }
   }
 }
 
 async function sendViaStarsender(whatsapp: string, message: string, apiKey: string) {
   try {
-    // TODO: Implement actual Starsender API call
-    console.log(`[Starsender] Sending to ${whatsapp}:`, message)
+    if (!starsenderService.isConfigured()) {
+      console.log('[Starsender] Not configured, skipping')
+      return { success: false, channel: 'starsender', error: 'Not configured' }
+    }
+
+    await starsenderService.sendWhatsApp({
+      to: whatsapp,
+      message: message
+    })
     
-    // Example API call:
-    // const response = await fetch('https://api.starsender.online/api/sendText', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': apiKey,
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({
-    //     phone: whatsapp,
-    //     message: message
-    //   })
-    // })
-    
+    console.log(`[Starsender] ✅ WhatsApp sent to ${whatsapp}`)
     return { success: true, channel: 'starsender' }
   } catch (error) {
-    console.error('Starsender error:', error)
+    console.error('[Starsender] Error:', error)
     return { success: false, channel: 'starsender', error }
   }
 }
 
 async function sendViaOneSignal(userId: string, message: string, settings: any) {
   try {
-    // TODO: Implement actual OneSignal API call
-    console.log(`[OneSignal] Sending to user ${userId}:`, message)
+    if (!oneSignalService.isConfigured()) {
+      console.log('[OneSignal] Not configured, skipping')
+      return { success: false, channel: 'onesignal', error: 'Not configured' }
+    }
+
+    const result = await oneSignalService.sendToUser(
+      userId,
+      '⏰ Reminder Pembayaran',
+      message,
+      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+    )
     
-    // Example API call:
-    // const response = await fetch('https://onesignal.com/api/v1/notifications', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Basic ${settings.onesignalApiKey}`,
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({
-    //     app_id: settings.onesignalAppId,
-    //     filters: [{ field: 'tag', key: 'userId', value: userId }],
-    //     contents: { en: message }
-    //   })
-    // })
+    if (result.success) {
+      console.log(`[OneSignal] ✅ Push notification sent to user ${userId}`)
+    } else {
+      console.log(`[OneSignal] ⚠️ Failed to send to user ${userId}:`, result.error)
+    }
     
-    return { success: true, channel: 'onesignal' }
+    return { success: result.success, channel: 'onesignal', error: result.error }
   } catch (error) {
-    console.error('OneSignal error:', error)
+    console.error('[OneSignal] Error:', error)
     return { success: false, channel: 'onesignal', error }
   }
 }
 
 async function sendViaPusher(userId: string, message: string, settings: any) {
   try {
-    // TODO: Implement actual Pusher call
-    console.log(`[Pusher] Sending to user ${userId}:`, message)
+    if (!pusherService.isConfigured()) {
+      console.log('[Pusher] Not configured, skipping')
+      return { success: false, channel: 'pusher', error: 'Not configured' }
+    }
+
+    const result = await pusherService.notifyUser(userId, 'payment-reminder', {
+      id: `reminder-${Date.now()}`,
+      title: '⏰ Reminder Pembayaran',
+      message: message,
+      type: 'payment_reminder',
+      timestamp: new Date().toISOString()
+    })
     
-    // Example:
-    // const Pusher = require('pusher')
-    // const pusher = new Pusher({
-    //   appId: settings.pusherAppId,
-    //   key: settings.pusherKey,
-    //   secret: settings.pusherSecret,
-    //   cluster: settings.pusherCluster
-    // })
-    // await pusher.trigger(`user-${userId}`, 'payment-reminder', { message })
+    if (result.success) {
+      console.log(`[Pusher] ✅ Real-time notification sent to user ${userId}`)
+    } else {
+      console.log(`[Pusher] ⚠️ Failed to send to user ${userId}:`, result.error)
+    }
     
-    return { success: true, channel: 'pusher' }
+    return { success: result.success, channel: 'pusher', error: result.error }
   } catch (error) {
-    console.error('Pusher error:', error)
+    console.error('[Pusher] Error:', error)
     return { success: false, channel: 'pusher', error }
   }
 }

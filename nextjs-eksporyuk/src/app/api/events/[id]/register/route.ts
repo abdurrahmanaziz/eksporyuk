@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
 import { prisma } from '@/lib/prisma';
+import { notificationService } from '@/lib/services/notificationService';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -118,6 +119,18 @@ export async function POST(
           },
         },
       });
+      
+      // Send notification for new RSVP
+      if (status === 'GOING') {
+        await notificationService.send({
+          userId: session.user.id,
+          type: 'SYSTEM',
+          title: '📅 Event Registration Confirmed',
+          message: `You have successfully registered for "${rsvp.event.title}". Event starts on ${new Date(rsvp.event.startDate).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`,
+          link: `/events/${params.id}`,
+          channels: ['pusher', 'onesignal']
+        });
+      }
     }
 
     return NextResponse.json({ rsvp }, { status: existingRsvp ? 200 : 201 });

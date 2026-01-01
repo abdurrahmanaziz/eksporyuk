@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -154,6 +155,44 @@ export async function POST(
         }
       }
     })
+
+    // Send push notification to mentor about new lesson comment
+    if (course.mentorId && course.mentorId !== session.user.id) {
+      try {
+        await notificationService.send({
+          userId: course.mentorId,
+          type: 'COMMENT',
+          title: '💬 Komentar Baru di Materi',
+          message: `${session.user.name} mengomentari materi "${lesson.title}"`,
+          link: `/learn/${course.slug}?lessonId=${lessonId}`,
+          channels: ['pusher', 'onesignal']
+        });
+      } catch (notifError) {
+        console.error('Failed to send lesson comment notification:', notifError);
+      }
+    }
+
+    // If reply, notify parent comment author
+    if (parentId) {
+      const parentComment = await prisma.courseDiscussion.findUnique({
+        where: { id: parentId },
+        select: { userId: true }
+      });
+      if (parentComment && parentComment.userId !== session.user.id) {
+        try {
+          await notificationService.send({
+            userId: parentComment.userId,
+            type: 'COMMENT_REPLY',
+            title: '💬 Balasan Komentar',
+            message: `${session.user.name} membalas komentar Anda`,
+            link: `/learn/${course.slug}?lessonId=${lessonId}`,
+            channels: ['pusher', 'onesignal']
+          });
+        } catch (notifError) {
+          console.error('Failed to send reply notification:', notifError);
+        }
+      }
+    }
 
     return NextResponse.json({ comment })
   } catch (error) {

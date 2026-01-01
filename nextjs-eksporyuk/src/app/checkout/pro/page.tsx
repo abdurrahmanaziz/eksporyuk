@@ -140,6 +140,41 @@ export default function CheckoutProPage() {
     fetchPaymentMethods()
   }, [searchParams]) // Add searchParams dependency
 
+  // Auto-fill coupon from URL parameter
+  useEffect(() => {
+    if (searchParams) {
+      const couponFromUrl = searchParams.get('coupon')
+      if (couponFromUrl && !couponCode) {
+        console.log('[Checkout Pro] Auto-filling coupon from URL:', couponFromUrl)
+        setCouponCode(couponFromUrl)
+      }
+    }
+  }, [searchParams])
+
+  // Auto-validate coupon when couponCode is set from URL and package is selected
+  useEffect(() => {
+    const autoValidateCoupon = async () => {
+      if (searchParams && selectedPackage && couponCode) {
+        const couponFromUrl = searchParams.get('coupon')
+        // Only auto-validate if coupon came from URL
+        if (couponFromUrl && couponFromUrl === couponCode && !appliedCoupon) {
+          console.log('[Checkout Pro] Auto-validating coupon:', couponCode)
+          try {
+            const res = await fetch(`/api/coupons/validate?code=${couponCode}&membershipId=${selectedPackage.id}`)
+            const data = await res.json()
+            if (res.ok && data.valid) {
+              console.log('[Checkout Pro] Coupon validated successfully:', data.coupon)
+              setAppliedCoupon(data.coupon)
+            }
+          } catch (err) {
+            console.error('[Checkout Pro] Error auto-validating coupon:', err)
+          }
+        }
+      }
+    }
+    autoValidateCoupon()
+  }, [searchParams, selectedPackage, couponCode])
+
   // Load user data from session and fetch latest from API
   useEffect(() => {
     const loadUserData = async () => {
