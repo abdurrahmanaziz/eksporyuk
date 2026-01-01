@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
-// import { prisma } from '@/lib/prisma' // COMMENTED: Causing 500 error on import
+import { prisma } from '@/lib/prisma'
 import validator from 'validator'
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -102,7 +102,6 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ [Affiliate Links] User: ${session.user.id}`)
     
-  try {
     // Parse query parameters for pagination and filtering
     const { searchParams } = new URL(request.url)
     const showArchived = searchParams.get('archived') === 'true'
