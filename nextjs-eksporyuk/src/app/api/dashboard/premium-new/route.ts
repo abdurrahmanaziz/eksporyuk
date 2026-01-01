@@ -138,6 +138,8 @@ export async function GET(req: NextRequest) {
     // Get community posts using existing feed system
     console.log('[DASHBOARD] Fetching community posts...')
     
+    let postsData: any[] = []
+    
     // Use direct fetch to community feed endpoint to ensure consistency
     try {
       const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
@@ -152,7 +154,7 @@ export async function GET(req: NextRequest) {
       }
       
       const feedData = await feedResponse.json()
-      const postsData = feedData.posts?.slice(0, 5).map((post: any) => ({
+      postsData = feedData.posts?.slice(0, 5).map((post: any) => ({
         id: post.id,
         content: post.content || '',
         author: {
