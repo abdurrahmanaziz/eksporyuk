@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
-import { prisma } from '@/lib/prisma'
+// import { prisma } from '@/lib/prisma' // COMMENTED: Causing 500 error on import
 import validator from 'validator'
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -90,33 +90,18 @@ const rateLimiter = new RateLimiter()
 
 // GET /api/affiliate/links - Get user's affiliate links
 export async function GET(request: NextRequest) {
-  // TEMPORARY: Return empty data to prevent page crash while debugging DB connection
   console.log('🔍 [Affiliate Links] GET request started')
   
-  const session = await getServerSession(authOptions)
-  
-  if (!session) {
-    console.log('❌ [Affiliate Links] No session')
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      console.log('❌ [Affiliate Links] No session')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-  console.log(`✅ [Affiliate Links] User: ${session.user.id}`)
-  
-  // Return empty data temporarily
-  return NextResponse.json({
-    links: [],
-    pagination: {
-      page: 1,
-      limit: 20,
-      total: 0,
-      totalPages: 0,
-      hasNext: false,
-      hasPrev: false
-    },
-    _temp: 'Database connection being debugged. Link generation will work once DB is fixed.'
-  })
-
-  /* COMMENTED OUT UNTIL DB FIXED
+    console.log(`✅ [Affiliate Links] User: ${session.user.id}`)
+    
   try {
     // Parse query parameters for pagination and filtering
     const { searchParams } = new URL(request.url)
@@ -257,8 +242,10 @@ export async function GET(request: NextRequest) {
         name: error.name
       } : undefined
     })
+  } catch (outerError: any) {
+    console.error('💥 [Affiliate Links] OUTER ERROR:', outerError)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-  */
 }
 
 // POST /api/affiliate/links - Generate new affiliate link

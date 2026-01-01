@@ -308,7 +308,7 @@ const navigationByRole = {
     {
       title: 'PENGATURAN',
       items: [
-        { name: 'Profil Saya', href: '/profile', icon: User },
+        { name: 'Profil Saya', href: '/affiliate/user-profile', icon: User },
         { name: 'Pengaturan', href: '/affiliate/profile', icon: Settings },
       ]
     },
@@ -317,53 +317,53 @@ const navigationByRole = {
     {
       title: 'UTAMA',
       items: [
-        { name: 'Dashboard', href: '/dashboard', icon: Home },
-        { name: 'Kelas', href: '/learn', icon: GraduationCap },
-        { name: 'Grup', href: '/community/groups', icon: UsersRound },
+        { name: 'Dashboard', href: '/member/dashboard', icon: Home },
+        { name: 'Kelas', href: '/member/learn', icon: GraduationCap },
+        { name: 'Grup', href: '/member/community/groups', icon: UsersRound },
       ]
     },
     {
       title: 'PEMBELAJARAN',
       items: [
-        { name: 'Kursus Saya', href: '/learn', icon: BookOpen },
-        { name: 'Jelajah Kursus', href: '/courses', icon: GraduationCap },
-        { name: 'Sertifikat', href: '/certificates', icon: Award },
+        { name: 'Kursus Saya', href: '/member/learn', icon: BookOpen },
+        { name: 'Jelajah Kursus', href: '/member/courses', icon: GraduationCap },
+        { name: 'Sertifikat', href: '/member/certificates', icon: Award },
       ]
     },
     {
       title: 'KOMUNITAS',
       items: [
-        { name: 'Feed', href: '/community/feed', icon: MessageSquare },
-        { name: 'Grup', href: '/community/groups', icon: UsersRound },
-        { name: 'Acara', href: '/community/events', icon: Calendar },
-        { name: 'Region', href: '/member-directory', icon: MapPin },
-        { name: 'Tersimpan', href: '/saved-posts', icon: Bookmark },
+        { name: 'Feed', href: '/member/community/feed', icon: MessageSquare },
+        { name: 'Grup', href: '/member/community/groups', icon: UsersRound },
+        { name: 'Acara', href: '/member/community/events', icon: Calendar },
+        { name: 'Region', href: '/member/member-directory', icon: MapPin },
+        { name: 'Tersimpan', href: '/member/saved-posts', icon: Bookmark },
       ]
     },
     {
       title: 'DATABASE',
       items: [
-        { name: 'Buyer', href: '/databases/buyers', icon: Building2 },
-        { name: 'Supplier', href: '/databases/suppliers', icon: Database },
-        { name: 'Forwarder', href: '/databases/forwarders', icon: Truck },
-        { name: 'Dokumen', href: '/dashboard/documents', icon: FileText },
+        { name: 'Buyer', href: '/member/databases/buyers', icon: Building2 },
+        { name: 'Supplier', href: '/member/databases/suppliers', icon: Database },
+        { name: 'Forwarder', href: '/member/databases/forwarders', icon: Truck },
+        { name: 'Dokumen', href: '/member/documents', icon: FileText },
       ]
     },
     {
       title: 'MEMBERSHIP',
       items: [
-        { name: 'My Membership', href: '/dashboard/my-membership', icon: Crown },
-        { name: 'Produk Saya', href: '/my-products', icon: Package },
-        { name: 'Tagihan Saya', href: '/dashboard/billing', icon: Receipt },
-        { name: 'Riwayat Transaksi', href: '/dashboard/transactions', icon: CreditCard },
-        { name: 'Upgrade', href: '/dashboard/upgrade', icon: Zap },
+        { name: 'My Membership', href: '/member/my-membership', icon: Crown },
+        { name: 'Produk Saya', href: '/member/my-products', icon: Package },
+        { name: 'Tagihan Saya', href: '/member/billing', icon: Receipt },
+        { name: 'Riwayat Transaksi', href: '/member/transactions', icon: CreditCard },
+        { name: 'Upgrade', href: '/member/upgrade', icon: Zap },
       ]
     },
     {
       title: 'AKUN',
       items: [
-        { name: 'Saldo Saya', href: '/dashboard/wallet', icon: Wallet },
-        { name: 'Profil Saya', href: '/profile', icon: User },
+        { name: 'Saldo Saya', href: '/member/wallet', icon: Wallet },
+        { name: 'Profil Saya', href: '/member/profile', icon: User },
       ]
     },
   ],
@@ -371,8 +371,8 @@ const navigationByRole = {
     {
       title: 'UTAMA',
       items: [
-        { name: 'Dashboard', href: '/dashboard', icon: Home },
-        { name: 'Profil Saya', href: '/profile', icon: User },
+        { name: 'Dashboard', href: '/member-free/dashboard', icon: Home },
+        { name: 'Profil Saya', href: '/member-free/profile', icon: User },
       ]
     },
     {
@@ -386,9 +386,9 @@ const navigationByRole = {
     {
       title: 'MEMBERSHIP',
       items: [
-        { name: 'My Membership', href: '/dashboard/my-membership', icon: Crown },
-        { name: 'Tagihan Saya', href: '/dashboard/billing', icon: Receipt },
-        { name: '🚀 Upgrade Premium', href: '/dashboard/upgrade', icon: Zap, badge: '🔥' },
+        { name: 'My Membership', href: '/member-free/my-membership', icon: Crown },
+        { name: 'Tagihan Saya', href: '/member-free/billing', icon: Receipt },
+        { name: '🚀 Upgrade Premium', href: '/member-free/upgrade', icon: Zap, badge: '🔥' },
       ]
     },
   ],
@@ -417,7 +417,7 @@ const navigationByRole = {
     {
       title: 'AKUN',
       items: [
-        { name: 'Profil Saya', href: '/profile', icon: User },
+        { name: 'Profil Saya', href: '/supplier/user-profile', icon: User },
       ]
     },
   ]
@@ -449,6 +449,8 @@ export default function DashboardSidebar() {
     if (pathname?.startsWith('/mentor')) return 'MENTOR'
     if (pathname?.startsWith('/affiliate')) return 'AFFILIATE'
     if (pathname?.startsWith('/supplier')) return 'SUPPLIER'
+    if (pathname?.startsWith('/member-free')) return 'MEMBER_FREE'
+    if (pathname?.startsWith('/member')) return 'MEMBER_PREMIUM'
     
     // For ALL other paths, use preferredDashboard if set
     // This includes: /dashboard/*, /learn, /courses, /community/*, /profile, etc.
@@ -465,7 +467,9 @@ export default function DashboardSidebar() {
           if (allRoles.includes('AFFILIATE') || allRoles.includes('ADMIN')) return 'AFFILIATE'
           break
         case 'member':
-          return 'MEMBER_PREMIUM'
+          return userRole === 'MEMBER_FREE' ? 'MEMBER_FREE' : 'MEMBER_PREMIUM'
+        case 'member-free':
+          return 'MEMBER_FREE'
       }
     }
     
@@ -473,7 +477,7 @@ export default function DashboardSidebar() {
     // But for AFFILIATE/MENTOR primary roles accessing member pages, show member menu
     const memberPaths = ['/dashboard', '/community', '/learn', '/courses', '/chat', '/profile', '/notifications', '/certificates', '/saved-posts', '/member-directory', '/my-events', '/databases', '/documents', '/wallet']
     if (memberPaths.some(path => pathname?.startsWith(path))) {
-      return 'MEMBER_PREMIUM'
+      return userRole === 'MEMBER_FREE' ? 'MEMBER_FREE' : 'MEMBER_PREMIUM'
     }
     
     // Final fallback to primary role
