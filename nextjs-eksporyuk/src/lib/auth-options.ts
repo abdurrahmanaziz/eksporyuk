@@ -134,12 +134,20 @@ const providers: any[] = [
           throw new Error('Password salah. Silakan coba lagi.')
         }
 
-        console.log('[AUTH] Login successful for:', user.email, 'Role:', user.role)
+        // Get additional roles for credentials login
+        const userRoles = await prisma.userRole.findMany({
+          where: { userId: user.id },
+          select: { role: true }
+        })
+        const allRoles = [user.role, ...userRoles.map(ur => ur.role)]
+        
+        console.log('[AUTH] Login successful for:', user.email, 'Role:', user.role, 'All roles:', allRoles)
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          allRoles: allRoles, // NEW: Include all roles
           avatar: user.avatar,
           username: user.username,
           whatsapp: user.whatsapp,
@@ -415,6 +423,7 @@ export const authOptions: NextAuthOptions = {
         console.log(`[AUTH ${timestamp}] JWT - Setting token from user object`)
         token.id = user.id
         token.role = user.role || 'MEMBER_FREE'
+        token.allRoles = (user as any).allRoles || [user.role || 'MEMBER_FREE'] // NEW: Include all roles from credentials login
         token.username = user.username || user.email?.split('@')[0]
         token.whatsapp = user.whatsapp
         token.emailVerified = user.emailVerified ? true : false
@@ -489,10 +498,20 @@ export const authOptions: NextAuthOptions = {
           }
           
           if (dbUser) {
+            // Get additional roles from UserRole table
+            const userRoles = await prisma.userRole.findMany({
+              where: { userId: dbUser.id },
+              select: { role: true }
+            })
+            
+            // Create allRoles array (primary + additional)
+            const allRoles = [dbUser.role, ...userRoles.map(ur => ur.role)]
+            
             console.log(`[AUTH ${timestamp}] JWT - Found user in database:`, {
               id: dbUser.id,
               email: dbUser.email,
               role: dbUser.role,
+              allRoles: allRoles,
               memberCode: dbUser.memberCode,
               affiliateMenuEnabled: dbUser.affiliateMenuEnabled,
               hasAffiliateProfile: !!dbAffiliateProfile
@@ -500,6 +519,7 @@ export const authOptions: NextAuthOptions = {
             
             token.id = dbUser.id
             token.role = dbUser.role
+            token.allRoles = allRoles // NEW: Include all roles in token
             token.username = dbUser.username || dbUser.email?.split('@')[0]
             token.whatsapp = dbUser.whatsapp
             token.emailVerified = dbUser.emailVerified
@@ -545,6 +565,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
+        session.user.allRoles = token.allRoles as string[] || [token.role as string] // NEW: Include all roles
         session.user.username = token.username as string || ''
         session.user.whatsapp = token.whatsapp as string
         session.user.isGoogleAuth = token.isGoogleAuth as boolean
@@ -558,6 +579,7 @@ export const authOptions: NextAuthOptions = {
           id: session.user.id,
           email: session.user.email,
           role: session.user.role,
+          allRoles: session.user.allRoles,
           username: session.user.username,
           affiliateMenuEnabled: session.user.affiliateMenuEnabled,
           hasAffiliateProfile: session.user.hasAffiliateProfile

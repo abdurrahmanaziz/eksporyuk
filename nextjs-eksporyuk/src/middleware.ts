@@ -68,9 +68,16 @@ const authMiddleware = withAuth(
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
-    if (pathname.startsWith('/mentor') && !['MENTOR', 'ADMIN'].includes(role)) {
-      console.log('[MIDDLEWARE] Access denied: mentor route for non-mentor/admin')
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (pathname.startsWith('/mentor')) {
+      // Check if user has MENTOR role (primary or additional) OR is ADMIN
+      const allRoles = token.allRoles as string[] || [role]
+      const hasMentorAccess = allRoles.includes('MENTOR') || allRoles.includes('ADMIN')
+      
+      if (!hasMentorAccess) {
+        console.log('[MIDDLEWARE] Access denied: mentor route for non-mentor/admin. User roles:', allRoles)
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      console.log('[MIDDLEWARE] Mentor access granted. User roles:', allRoles)
     }
 
     if (pathname.startsWith('/affiliate')) {

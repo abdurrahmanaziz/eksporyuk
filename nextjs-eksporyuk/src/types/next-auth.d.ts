@@ -7,6 +7,7 @@ declare module 'next-auth' {
       email: string
       name: string
       role: string
+      allRoles?: string[] // NEW: Include all roles array
       avatar?: string | null
       username?: string | null
       whatsapp?: string | null
@@ -27,6 +28,7 @@ declare module 'next-auth' {
     email: string
     name: string
     role: string
+    allRoles?: string[] // NEW: Include all roles array
     avatar?: string | null
     username?: string | null
     whatsapp?: string | null
@@ -42,6 +44,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string
     role: string
+    allRoles?: string[] // NEW: Include all roles array
     username?: string | null
     whatsapp?: string | null
     isGoogleAuth?: boolean
