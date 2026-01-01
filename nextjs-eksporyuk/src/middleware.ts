@@ -80,27 +80,16 @@ const authMiddleware = withAuth(
         return NextResponse.next()
       }
       
-      // Allow AFFILIATE role
-      if (role === 'AFFILIATE') {
-        console.log('[MIDDLEWARE] Access granted: AFFILIATE role')
-        return NextResponse.next()
-      }
+      // For all other roles, check if user has active affiliate profile
+      // This applies to any role: MEMBER_FREE, MEMBER_PREMIUM, MENTOR, etc
+      const hasActiveAffiliateProfile = token.hasAffiliateProfile
       
-      // Allow MEMBER_PREMIUM role (auto-gets affiliate access)
-      if (role === 'MEMBER_PREMIUM') {
-        console.log('[MIDDLEWARE] Access granted: MEMBER_PREMIUM role')
-        return NextResponse.next()
-      }
-      
-      // Allow access if user has affiliate menu enabled (multi-role support)
-      const hasAffiliateAccess = token.affiliateMenuEnabled && token.hasAffiliateProfile
-      
-      if (!hasAffiliateAccess) {
-        console.log('[MIDDLEWARE] Access denied: affiliate route for non-affiliate without menu enabled')
+      if (!hasActiveAffiliateProfile) {
+        console.log('[MIDDLEWARE] Access denied: no active affiliate profile')
         return NextResponse.redirect(new URL('/dashboard', request.url))
       }
       
-      console.log('[MIDDLEWARE] Access granted: user has affiliate menu enabled')
+      console.log('[MIDDLEWARE] Access granted: user has active affiliate profile')
     }
 
     if (pathname.startsWith('/supplier') && !['SUPPLIER', 'ADMIN'].includes(role)) {

@@ -112,12 +112,8 @@ export default function PremiumDashboardNew() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<DashboardData | null>(null)
   const [bannerIndex, setBannerIndex] = useState(0)
-  const [newPostContent, setNewPostContent] = useState('')
-  const [posting, setPosting] = useState(false)
-  const [feedFilter, setFeedFilter] = useState('Terbaru')
   
   const userName = session?.user?.name?.split(' ')[0] || 'Member'
-  const userInitial = userName.charAt(0).toUpperCase()
 
   useEffect(() => {
     fetchDashboardData()
@@ -145,39 +141,6 @@ export default function PremiumDashboardNew() {
       console.error('Error fetching dashboard:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleCreatePost = async () => {
-    if (!newPostContent.trim()) {
-      toast.error('Tulis sesuatu untuk diposting')
-      return
-    }
-
-    try {
-      setPosting(true)
-      const res = await fetch('/api/community/feed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: newPostContent,
-          type: 'PUBLIC'
-        })
-      })
-
-      if (res.ok) {
-        toast.success('Post berhasil dibuat!')
-        setNewPostContent('')
-        fetchDashboardData()
-      } else {
-        const error = await res.json()
-        toast.error(error.error || 'Gagal membuat post')
-      }
-    } catch (error) {
-      console.error('Error creating post:', error)
-      toast.error('Gagal membuat post')
-    } finally {
-      setPosting(false)
     }
   }
 
@@ -224,12 +187,12 @@ export default function PremiumDashboardNew() {
           </p>
         </div>
 
-        {/* Main Grid: 2 Column Layout */}
+        {/* Main Dashboard Layout - Using 70/30 split like community feed */}
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row lg:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
             
-            {/* Left Column - Main Content 70% */}
-            <div className="w-full lg:w-[70%] space-y-6">
+            {/* Main Feed Content - 70% (3 cols) */}
+            <div className="lg:col-span-3 space-y-6">
 
             {/* Hero Banner Card - Blue Gradient */}
             {data?.banners && data.banners.length > 0 ? (
@@ -355,174 +318,107 @@ export default function PremiumDashboardNew() {
             )}
 
             {/* Community Feed Section */}
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-blue-600" />
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-bold text-xl text-gray-900 flex items-center gap-2">
+                  <MessageSquare className="w-6 h-6 text-blue-600" />
                   Community Feed
-                </h3>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:flex-none">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input 
-                      className="w-full sm:w-auto bg-white border-gray-200 rounded-lg py-1.5 pl-8 pr-3 text-xs focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Search discussions..."
-                    />
-                  </div>
-                  <select 
-                    value={feedFilter}
-                    onChange={(e) => setFeedFilter(e.target.value)}
-                    className="bg-white border border-gray-200 text-xs rounded-lg py-1.5 px-3 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option>Terbaru</option>
-                    <option>Populer</option>
-                    <option>Diskusi Saya</option>
-                  </select>
-                </div>
+                </h2>
+                <Link href="/community/feed" className="text-sm font-semibold text-blue-600 hover:underline">
+                  Lihat Semua
+                </Link>
               </div>
-
-              {/* Create Post Card */}
-              <Card className="rounded-xl shadow-sm border-gray-100">
-                <CardContent className="p-4">
-                  <div className="flex gap-3 md:gap-4">
-                    <Avatar className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0">
-                      <AvatarImage src={session?.user?.image || ''} />
-                      <AvatarFallback className="bg-green-500 text-white font-bold">
-                        {userInitial}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <Input
-                        value={newPostContent}
-                        onChange={(e) => setNewPostContent(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault()
-                            handleCreatePost()
-                          }
-                        }}
-                        placeholder={`Apa yang ingin kamu diskusikan hari ini, ${userName}?`}
-                        className="w-full bg-gray-50 border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-blue-500 mb-3 text-sm"
-                        disabled={posting}
-                      />
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex gap-1 md:gap-2">
-                          <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                            <ImageIcon className="w-5 h-5" />
-                          </button>
-                          <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                            <Paperclip className="w-5 h-5" />
-                          </button>
-                          <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                            <Smile className="w-5 h-5" />
-                          </button>
-                        </div>
-                        <Button 
-                          onClick={handleCreatePost}
-                          disabled={posting || !newPostContent.trim()}
-                          className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
-                        >
-                          {posting ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Posting...
-                            </>
-                          ) : (
-                            'Post'
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Feed Posts */}
+              
+              {/* Posts Display */}
               {data?.recentPosts && data.recentPosts.length > 0 ? (
-                <>
-                  {data.recentPosts.map((post, index) => (
-                    <Card key={post.id} className="rounded-xl shadow-sm border-gray-100">
-                      <CardContent className="p-4 md:p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-3">
+                <div className="space-y-6">
+                  {data.recentPosts.map((post, postIndex) => (
+                    <article key={post.id} className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0">
+                      {/* Post Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <Link href={`/profile/${post.author.id}`}>
+                            <Avatar className="w-10 h-10 hover:ring-2 hover:ring-blue-200 transition-all cursor-pointer">
+                              <AvatarImage src={post.author.avatar || ''} />
+                              <AvatarFallback className="bg-blue-100 text-blue-600 font-bold">
+                                {post.author.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </Link>
+                          <div>
                             <Link href={`/profile/${post.author.id}`}>
-                              <Avatar className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all">
-                                <AvatarImage src={post.author.avatar || ''} />
-                                <AvatarFallback className="bg-blue-100 text-blue-600 font-bold">
-                                  {post.author.name.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
+                              <h4 className="font-bold text-gray-900 text-sm hover:text-blue-600 transition-colors cursor-pointer">
+                                {post.author.name}
+                              </h4>
                             </Link>
-                            <div>
-                              <Link href={`/profile/${post.author.id}`}>
-                                <h4 className="font-bold text-gray-900 text-sm hover:text-blue-600 transition-colors cursor-pointer">
-                                  {post.author.name}
-                                </h4>
-                              </Link>
-                              <p className="text-xs text-gray-500">
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <span>
                                 {post.author.role === 'MEMBER_PREMIUM' ? 'Member Premium' : 
                                  post.author.role === 'ADMIN' ? 'Admin' :
                                  post.author.role === 'MENTOR' ? 'Mentor' :
-                                 post.author.role} • {formatTimeAgo(post.createdAt)}
-                              </p>
+                                 'Member'}
+                              </span>
+                              {post.group && (
+                                <>
+                                  <span>•</span>
+                                  <Link href={`/community/groups/${post.group.slug}`} className="hover:text-blue-600">
+                                    {post.group.name}
+                                  </Link>
+                                </>
+                              )}
+                              <span>•</span>
+                              <span>{formatTimeAgo(post.createdAt)}</span>
                             </div>
                           </div>
-                          <button className="text-gray-400 hover:text-gray-600">
-                            <MoreHorizontal className="w-5 h-5" />
-                          </button>
                         </div>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <MoreHorizontal className="w-5 h-5" />
+                        </button>
+                      </div>
 
-                        <Link href={`/community/feed?post=${post.id}`}>
-                          <div className="mb-4 cursor-pointer hover:text-blue-600 transition-colors">
-                            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
-                              {post.content}
-                            </p>
-                          </div>
-                        </Link>
+                      {/* Post Content */}
+                      <Link href={`/posts/${post.id}`}>
+                        <div className="mb-4 cursor-pointer hover:text-blue-600 transition-colors">
+                          <p className="text-gray-700 text-sm leading-relaxed">
+                            {post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content}
+                          </p>
+                        </div>
+                      </Link>
 
-                        {post.images && post.images.length > 0 && (
-                          <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
-                            {post.images.slice(0, 4).map((img, imgIndex) => (
-                              <div key={imgIndex} className="relative aspect-video bg-gray-100">
-                                <Image src={img} alt={`Post image ${imgIndex + 1}`} fill className="object-cover" />
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      {/* Post Tags */}
+                      {post.hashtags && post.hashtags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          {post.hashtags.slice(0, 3).map((tag, tagIndex) => (
+                            <span key={tagIndex} className="px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-lg">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
 
-                        {post.tags && post.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {post.tags.map((tag, tagIndex) => (
-                              <span key={tagIndex} className="px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                          <div className="flex gap-4 md:gap-6">
-                            <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
-                              <ThumbsUp className="w-4 h-4" />
-                              <span>{post.likesCount}<span className="hidden sm:inline"> Likes</span></span>
-                            </button>
-                            <Link href={`/community/feed?post=${post.id}`}>
-                              <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
-                                <MessageSquare className="w-4 h-4" />
-                                <span>{post.commentsCount}<span className="hidden sm:inline"> Comments</span></span>
-                              </button>
-                            </Link>
-                          </div>
+                      {/* Post Actions */}
+                      <div className="flex items-center justify-between pt-3">
+                        <div className="flex gap-4">
                           <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
-                            <Share2 className="w-4 h-4" />
-                            <span className="hidden sm:inline">Share</span>
+                            <ThumbsUp className="w-4 h-4" />
+                            <span>{post.likesCount}</span>
                           </button>
+                          <Link href={`/posts/${post.id}`}>
+                            <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
+                              <MessageSquare className="w-4 h-4" />
+                              <span>{post.commentsCount}</span>
+                            </button>
+                          </Link>
                         </div>
-                      </CardContent>
-                    </Card>
+                        <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium">
+                          <Share2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </article>
                   ))}
                   
-                  <div className="text-center pt-2">
+                  {/* View More Link */}
+                  <div className="text-center pt-4 mt-4 border-t border-gray-100">
                     <Link href="/community/feed">
                       <Button variant="outline" className="w-full sm:w-auto px-8 py-3 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 font-semibold">
                         Lihat Semua Diskusi
@@ -530,24 +426,22 @@ export default function PremiumDashboardNew() {
                       </Button>
                     </Link>
                   </div>
-                </>
+                </div>
               ) : (
-                <Card className="rounded-xl shadow-sm border-gray-100">
-                  <CardContent className="p-8 text-center">
-                    <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <h4 className="font-semibold text-gray-700 mb-1">Belum ada diskusi</h4>
-                    <p className="text-sm text-gray-500 mb-4">Jadilah yang pertama memulai diskusi!</p>
-                    <Link href="/community/feed">
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white">Mulai Diskusi</Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+                <div className="text-center py-8">
+                  <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <h4 className="font-semibold text-gray-700 mb-1">Belum ada diskusi</h4>
+                  <p className="text-sm text-gray-500 mb-4">Jadilah yang pertama memulai diskusi!</p>
+                  <Link href="/community/feed">
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">Mulai Diskusi</Button>
+                  </Link>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Right Sidebar - 30% Width */}
-          <aside className="w-full lg:w-[30%] lg:flex-shrink-0 space-y-6 lg:mt-0 mt-6">
+          {/* Right Sidebar - 30% (1 col) */}
+          <aside className="space-y-6">
             
             {/* Progress Kelas */}
             <Card className="rounded-xl shadow-sm border border-gray-100 bg-white">

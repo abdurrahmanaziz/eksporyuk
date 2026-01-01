@@ -102,9 +102,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Affiliate dashboard - if has affiliate role OR affiliate menu enabled with profile
-    const hasAffiliateAccess = hasAffiliateRole || (user.affiliateMenuEnabled && affiliateProfile?.isActive)
-    if (hasAffiliateAccess) {
+    // Affiliate dashboard - only if user has active affiliate profile (any role can be affiliate)
+    if (affiliateProfile?.isActive) {
       dashboardOptions.push({
         id: 'affiliate',
         title: 'Rich Affiliate',

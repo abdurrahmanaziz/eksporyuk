@@ -29,82 +29,16 @@ export async function activateMembership(
       await prisma.user.update({
         where: { id: userId },
         data: { 
-          role: 'MEMBER_PREMIUM',
-          affiliateMenuEnabled: true // Auto-enable affiliate menu for premium members
+          role: 'MEMBER_PREMIUM'
+          // Do not auto-enable affiliate - user must register manually
         }
       })
-      console.log(`[Membership] User ${userId} upgraded from MEMBER_FREE to MEMBER_PREMIUM with affiliate access`)
-    } else if (user?.role === 'MEMBER_PREMIUM' && !user.affiliateMenuEnabled) {
-      // Enable affiliate menu if not already enabled for existing premium members
-      await prisma.user.update({
-        where: { id: userId },
-        data: { affiliateMenuEnabled: true }
-      })
-      console.log(`[Membership] Enabled affiliate menu for existing MEMBER_PREMIUM user ${userId}`)
+      console.log(`[Membership] User ${userId} upgraded from MEMBER_FREE to MEMBER_PREMIUM`)
     }
 
-    // 0.1. Add AFFILIATE role to UserRole table for multi-role support
-    const existingAffiliateRole = await prisma.userRole.findUnique({
-      where: {
-        userId_role: {
-          userId,
-          role: 'AFFILIATE'
-        }
-      }
-    })
-
-    if (!existingAffiliateRole) {
-      await prisma.userRole.create({
-        data: {
-          id: `${userId}-AFFILIATE-${Date.now()}`,
-          userId,
-          role: 'AFFILIATE'
-        }
-      })
-      console.log(`[Membership] Added AFFILIATE role to user ${userId}`)
-    }
-
-    // 0.2. Create or activate AffiliateProfile if not exists
-    const existingAffiliateProfile = await prisma.affiliateProfile.findUnique({
-      where: { userId }
-    })
-
-    if (!existingAffiliateProfile) {
-      // Generate unique affiliate code
-      const baseCode = user?.role === 'MEMBER_FREE' ? 'EKS' : 'PREMIUM'
-      let affiliateCode = baseCode + Math.random().toString(36).substring(2, 8).toUpperCase()
-      
-      // Ensure uniqueness
-      let codeExists = await prisma.affiliateProfile.findFirst({
-        where: { affiliateCode }
-      })
-      
-      while (codeExists) {
-        affiliateCode = baseCode + Math.random().toString(36).substring(2, 8).toUpperCase()
-        codeExists = await prisma.affiliateProfile.findFirst({
-          where: { affiliateCode }
-        })
-      }
-
-      await prisma.affiliateProfile.create({
-        data: {
-          id: `affiliate-${userId}-${Date.now()}`,
-          userId,
-          affiliateCode,
-          isActive: true,
-          tier: 'BRONZE',
-          totalEarnings: 0,
-          totalReferrals: 0
-        }
-      })
-      console.log(`[Membership] Created AffiliateProfile for user ${userId} with code ${affiliateCode}`)
-    } else if (!existingAffiliateProfile.isActive) {
-      await prisma.affiliateProfile.update({
-        where: { userId },
-        data: { isActive: true }
-      })
-      console.log(`[Membership] Activated existing AffiliateProfile for user ${userId}`)
-    }
+    // Note: Affiliate registration is now manual opt-in
+    // Users can register as affiliate through /api/affiliate/register endpoint
+    // regardless of their primary role (MEMBER_FREE, MEMBER_PREMIUM, MENTOR, etc)
 
     // 1. Deactivate all existing active memberships for this user
     await prisma.userMembership.updateMany({
