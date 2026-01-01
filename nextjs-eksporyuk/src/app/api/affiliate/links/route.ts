@@ -91,16 +91,22 @@ const rateLimiter = new RateLimiter()
 // GET /api/affiliate/links - Get user's affiliate links
 export async function GET(request: NextRequest) {
   console.log('🔍 [Affiliate Links] GET request started')
+  console.log('🔍 [Affiliate Links] URL:', request.url)
+  console.log('🔍 [Affiliate Links] Method:', request.method)
   
   try {
+    console.log('🔍 [Affiliate Links] Getting session...')
     const session = await getServerSession(authOptions)
+    console.log('🔍 [Affiliate Links] Session result:', session ? 'EXISTS' : 'NULL')
     
     if (!session) {
-      console.log('❌ [Affiliate Links] No session')
+      console.log('❌ [Affiliate Links] No session - returning 401')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log(`✅ [Affiliate Links] User: ${session.user.id}`)
+    console.log(`✅ [Affiliate Links] User ID: ${session.user?.id}`)
+    console.log(`✅ [Affiliate Links] User email: ${session.user?.email}`)
+    console.log(`✅ [Affiliate Links] User role: ${session.user?.role}`)
     
     // Parse query parameters for pagination and filtering
     const { searchParams } = new URL(request.url)
