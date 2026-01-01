@@ -135,115 +135,78 @@ export async function GET(req: NextRequest) {
       reviewCount: 0 // Default review count
     }))
 
-    // Get recent community posts using proper feed system
-    console.log('[DASHBOARD] Fetching community feed posts...')
+    // Get community posts using existing feed system
+    console.log('[DASHBOARD] Fetching community posts...')
     
-    // Get user's active memberships for community access
-    const userMemberships = await prisma.userMembership.findMany({
-      where: {
-        userId,
-        isActive: true,
-        startDate: { lte: new Date() },
-        endDate: { gte: new Date() }
-      },
-      select: { membershipId: true }
-    })
-    const userMembershipIds = userMemberships.map(m => m.membershipId)
-
-    // Get user's direct group memberships  
-    const userGroupMemberships = await prisma.groupMember.findMany({
-      where: { userId },
-      select: { groupId: true }
-    })
-    const userGroupIds = userGroupMemberships.map(gm => gm.groupId)
-
-    // Get groups accessible via membership
-    const membershipGroupAccess = userMembershipIds.length > 0 ? await prisma.membershipGroup.findMany({
-      where: { membershipId: { in: userMembershipIds } },
-      select: { groupId: true }
-    }) : []
-    const membershipGroupIds = membershipGroupAccess.map(mg => mg.groupId)
-    
-    // Combined accessible groups
-    const accessibleGroupIds = [...new Set([...userGroupIds, ...membershipGroupIds])]
-
-    // Get community posts (public + user's groups + user's own posts)
-    const communityPosts = await prisma.post.findMany({
-      where: {
-        approvalStatus: 'APPROVED',
-        OR: [
-          { groupId: null }, // Public posts
-          { groupId: { in: accessibleGroupIds } }, // Group posts user has access to  
-          { authorId: userId } // User's own posts
-        ]
-      },
-      take: 5,
-      orderBy: [
-        { isPinned: 'desc' },
-        { createdAt: 'desc' }
-      ]
-    })
-
-    // Get post details (authors, groups, interaction counts)
-    const postAuthorIds = communityPosts.map(p => p.authorId)
-    const postGroupIds = communityPosts.filter(p => p.groupId).map(p => p.groupId!)
-    
-    const [postAuthors, postGroups, postLikes, postComments] = await Promise.all([
-      prisma.user.findMany({
-        where: { id: { in: postAuthorIds } },
-        select: { id: true, name: true, avatar: true, role: true, province: true, city: true }
-      }),
-      postGroupIds.length > 0 ? prisma.group.findMany({
-        where: { id: { in: postGroupIds } },
-        select: { id: true, name: true, slug: true, avatar: true, type: true }
-      }) : [],
-      prisma.postLike.groupBy({
-        by: ['postId'],
-        where: { postId: { in: communityPosts.map(p => p.id) } },
-        _count: { id: true }
-      }),
-      prisma.postComment.groupBy({
-        by: ['postId'], 
-        where: { postId: { in: communityPosts.map(p => p.id) } },
-        _count: { id: true }
+    // Use direct fetch to community feed endpoint to ensure consistency
+    try {
+      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      const feedResponse = await fetch(`${baseUrl}/api/community/feed?limit=5`, {
+        headers: {
+          'Cookie': request.headers.get('cookie') || '',
+        },
       })
-    ])
-
-    // Create lookup maps
-    const authorMap = new Map(postAuthors.map(a => [a.id, a]))
-    const groupMap = new Map(postGroups.map(g => [g.id, g]))
-    const likesMap = new Map(postLikes.map(l => [l.postId, l._count.id]))
-    const commentsMap = new Map(postComments.map(c => [c.postId, c._count.id]))
-
-    const postsData = communityPosts.map(post => {
-      const author = authorMap.get(post.authorId)
-      const group = post.groupId ? groupMap.get(post.groupId) : null
-      const hashtags = (post.content || '').match(/#\w+/g)?.map(tag => tag.slice(1)) || []
       
-      return {
+      if (!feedResponse.ok) {
+        throw new Error(`Feed API failed: ${feedResponse.status}`)
+      }
+      
+      const feedData = await feedResponse.json()
+      const postsData = feedData.posts?.slice(0, 5).map((post: any) => ({
         id: post.id,
         content: post.content || '',
         author: {
-          id: post.authorId,
-          name: author?.name || 'Unknown',
-          avatar: author?.avatar || null,
-          role: author?.role || 'MEMBER_FREE',
-          location: author ? `${author.city || ''}, ${author.province || ''}`.replace(/^, |, $/, '') : ''
+          id: post.author?.id || post.authorId,
+          name: post.author?.name || 'Unknown',
+          avatar: post.author?.avatar || null,
+          role: post.author?.role || 'MEMBER_FREE',
+          location: post.author ? `${post.author.city || ''}, ${post.author.province || ''}`.replace(/^, |, $/, '') : ''
         },
-        group: group ? {
-          id: group.id,
-          name: group.name,
-          slug: group.slug,
-          avatar: group.avatar,
-          type: group.type
-        } : null,
-        createdAt: post.createdAt.toISOString(),
-        likesCount: likesMap.get(post.id) || 0,
-        commentsCount: commentsMap.get(post.id) || 0,
-        tags: hashtags,
-        images: p.images ? (Array.isArray(p.images) ? p.images : []) : []
-      }
-    })
+        group: post.group || null,
+        createdAt: post.createdAt,
+        likesCount: post._count?.likes || 0,
+        commentsCount: post._count?.comments || 0,
+        hashtags: (post.content || '').match(/#\w+/g)?.map((tag: string) => tag.slice(1)) || []
+      })) || []
+      
+      console.log('[DASHBOARD] Community posts loaded:', postsData.length)
+      
+    } catch (feedError) {
+      console.error('[DASHBOARD] Feed fetch error:', feedError)
+      // Fallback: Get recent approved posts directly
+      const fallbackPosts = await prisma.post.findMany({
+        where: { approvalStatus: 'APPROVED' },
+        take: 5,
+        orderBy: { createdAt: 'desc' }
+      })
+      
+      const postAuthorIds = fallbackPosts.map(p => p.authorId)
+      const postAuthors = await prisma.user.findMany({
+        where: { id: { in: postAuthorIds } },
+        select: { id: true, name: true, avatar: true, role: true }
+      })
+      const authorMap = new Map(postAuthors.map(a => [a.id, a]))
+      
+      postsData = fallbackPosts.map(p => {
+        const author = authorMap.get(p.authorId)
+        return {
+          id: p.id,
+          content: p.content || '',
+          author: {
+            id: p.authorId,
+            name: author?.name || 'Unknown',
+            avatar: author?.avatar || null,
+            role: author?.role || 'MEMBER_FREE',
+            location: ''
+          },
+          group: null,
+          createdAt: p.createdAt.toISOString(),
+          likesCount: 0,
+          commentsCount: 0,
+          hashtags: (p.content || '').match(/#\w+/g)?.map(tag => tag.slice(1)) || []
+        }
+      })
+    }
 
     // Format banners data
     const bannersData = banners.map(b => ({

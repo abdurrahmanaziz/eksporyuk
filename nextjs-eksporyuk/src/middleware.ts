@@ -86,6 +86,12 @@ const authMiddleware = withAuth(
         return NextResponse.next()
       }
       
+      // Allow MEMBER_PREMIUM role (auto-gets affiliate access)
+      if (role === 'MEMBER_PREMIUM') {
+        console.log('[MIDDLEWARE] Access granted: MEMBER_PREMIUM role')
+        return NextResponse.next()
+      }
+      
       // Allow access if user has affiliate menu enabled (multi-role support)
       const hasAffiliateAccess = token.affiliateMenuEnabled && token.hasAffiliateProfile
       

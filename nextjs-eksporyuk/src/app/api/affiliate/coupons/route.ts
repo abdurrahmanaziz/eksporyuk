@@ -19,12 +19,12 @@ export async function GET() {
 
     console.log('[GET /api/affiliate/coupons] User:', session.user.name, 'Role:', session.user.role)
     
-    // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
-    const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
+    // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER, and MEMBER_PREMIUM roles
+    const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER', 'MEMBER_PREMIUM']
     if (!session.user.role || !allowedRoles.includes(session.user.role)) {
       console.log('[GET /api/affiliate/coupons] Access denied. Role:', session.user.role, 'Allowed:', allowedRoles)
       return NextResponse.json({ 
-        error: 'Unauthorized - Role ' + (session.user.role || 'undefined') + ' tidak memiliki akses. Hanya AFFILIATE, ADMIN, FOUNDER, atau CO_FOUNDER yang dapat mengakses fitur ini.' 
+        error: 'Unauthorized - Role ' + (session.user.role || 'undefined') + ' tidak memiliki akses. Hanya AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER, atau MEMBER_PREMIUM yang dapat mengakses fitur ini.' 
       }, { status: 401 })
     }
 
@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
 
     console.log('[POST /api/affiliate/coupons] User:', session.user.name, 'Role:', session.user.role)
     
-    // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER roles
-    const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER']
+    // Allow AFFILIATE, ADMIN, FOUNDER, CO_FOUNDER, and MEMBER_PREMIUM roles
+    const allowedRoles = ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER', 'MEMBER_PREMIUM']
     if (!session.user.role || !allowedRoles.includes(session.user.role)) {
       console.log('[POST /api/affiliate/coupons] Access denied. Role:', session.user.role)
       return NextResponse.json({ 
