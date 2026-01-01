@@ -218,35 +218,35 @@ const navigationByRole = {
     {
       title: 'PEMBELAJARAN',
       items: [
-        { name: 'Belajar Kursus', href: '/learn', icon: BookOpen },
-        { name: 'Jelajah Kursus', href: '/courses', icon: GraduationCap },
-        { name: 'Sertifikat Saya', href: '/certificates', icon: Award },
+        { name: 'Belajar Kursus', href: '/mentor/learn', icon: BookOpen },
+        { name: 'Jelajah Kursus', href: '/mentor/explore-courses', icon: GraduationCap },
+        { name: 'Sertifikat Saya', href: '/mentor/certificates', icon: Award },
       ]
     },
     {
       title: 'MEMBERSHIP',
       items: [
-        { name: 'My Membership', href: '/dashboard/my-membership', icon: Crown },
-        { name: 'Produk Saya', href: '/my-products', icon: Package },
-        { name: 'Upgrade', href: '/dashboard/upgrade', icon: Zap },
+        { name: 'My Membership', href: '/mentor/my-membership', icon: Crown },
+        { name: 'Produk Saya', href: '/mentor/my-products', icon: Package },
+        { name: 'Upgrade', href: '/mentor/upgrade', icon: Zap },
       ]
     },
     {
       title: 'KOMUNITAS',
       items: [
-        { name: 'Feed', href: '/community/feed', icon: MessageSquare },
-        { name: 'Grup', href: '/community/groups', icon: UsersRound },
-        { name: 'Acara', href: '/events', icon: Calendar },
-        { name: 'Region', href: '/member-directory', icon: MapPin },
+        { name: 'Feed', href: '/mentor/community/feed', icon: MessageSquare },
+        { name: 'Grup', href: '/mentor/community/groups', icon: UsersRound },
+        { name: 'Acara', href: '/mentor/events', icon: Calendar },
+        { name: 'Region', href: '/mentor/member-directory', icon: MapPin },
       ]
     },
     {
       title: 'DATABASE',
       items: [
-        { name: 'Buyer', href: '/databases/buyers', icon: Building2 },
-        { name: 'Supplier', href: '/databases/suppliers', icon: Database },
-        { name: 'Forwarder', href: '/databases/forwarders', icon: Truck },
-        { name: 'Dokumen', href: '/dashboard/documents', icon: FileText },
+        { name: 'Buyer', href: '/mentor/databases/buyers', icon: Building2 },
+        { name: 'Supplier', href: '/mentor/databases/suppliers', icon: Database },
+        { name: 'Forwarder', href: '/mentor/databases/forwarders', icon: Truck },
+        { name: 'Dokumen', href: '/mentor/documents', icon: FileText },
       ]
     },
     {
@@ -259,7 +259,7 @@ const navigationByRole = {
     {
       title: 'PENGATURAN',
       items: [
-        { name: 'Profil Saya', href: '/profile', icon: User },
+        { name: 'Profil Saya', href: '/mentor/user-profile', icon: User },
         { name: 'Pengaturan', href: '/mentor/profile', icon: Settings },
       ]
     },
