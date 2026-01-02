@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
           }
         },
         _count: {
-          select: { userProducts: true }
+          select: { UserProduct: true }
         }
       },
       skip,

@@ -79,7 +79,7 @@ interface Event {
     email: string;
   };
   _count?: {
-    userProducts: number;
+    UserProduct: number;
   };
 }
 
@@ -170,11 +170,11 @@ export default function AdminEventsPage() {
   const calculateStats = (eventsData: Event[]) => {
     const totalEvents = eventsData.length;
     const totalAttendees = eventsData.reduce(
-      (sum, e) => sum + (e._count?.userProducts || 0),
+      (sum, e) => sum + (e._count?.UserProduct || 0),
       0
     );
     const totalRevenue = eventsData.reduce((sum, e) => {
-      const attendees = e._count?.userProducts || 0;
+      const attendees = e._count?.UserProduct || 0;
       return sum + attendees * e.price;
     }, 0);
     
@@ -421,7 +421,7 @@ export default function AdminEventsPage() {
                 <TableBody>
                   {filteredEvents.map((event) => {
                     const statusInfo = getStatusBadge(event);
-                    const attendeeCount = event._count?.userProducts || 0;
+                    const attendeeCount = event._count?.UserProduct || 0;
                     const hasCapacity = event.maxParticipants && event.maxParticipants > 0;
                     const isFull = hasCapacity && attendeeCount >= (event.maxParticipants || 0);
 

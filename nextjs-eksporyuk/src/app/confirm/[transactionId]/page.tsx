@@ -51,7 +51,7 @@ interface PaymentSettings {
 export default function ConfirmPaymentPage() {
   const params = useParams()
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const transactionId = params.transactionId as string
 
   const [details, setDetails] = useState<TransactionDetails | null>(null)
@@ -67,6 +67,18 @@ export default function ConfirmPaymentPage() {
   const [csWhatsApp, setCSWhatsApp] = useState('')
   const [manualBanks, setManualBanks] = useState<Array<{id: string, bankName: string, bankCode: string}>>([])  
   const hasAutoFilledRef = useRef(false)
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === 'loading') return // Still loading session
+    
+    if (!session) {
+      // Not logged in, redirect to login with return URL
+      const returnUrl = encodeURIComponent(`/confirm/${transactionId}`)
+      router.push(`/auth/login?callbackUrl=${returnUrl}&message=login_required`)
+      return
+    }
+  }, [session, status, transactionId, router])
 
   // Fetch transaction details
   const fetchDetails = useCallback(async () => {
@@ -290,16 +302,9 @@ export default function ConfirmPaymentPage() {
 
       toast.success('Bukti pembayaran berhasil dikirim! Admin akan memverifikasi dalam 1x24 jam.')
       
-      // Redirect ke halaman waiting confirmation
+      // Redirect ke halaman waiting confirmation (user sudah pasti login karena wajib login)
       setTimeout(() => {
-        if (session?.user) {
-          // User logged in -> redirect to dedicated waiting page
-          router.push('/dashboard/waiting-confirmation?invoice=' + (details?.invoiceNumber || transactionId))
-        } else {
-          // User not logged in -> redirect to login with return URL to waiting page
-          const returnUrl = encodeURIComponent('/dashboard/waiting-confirmation?invoice=' + (details?.invoiceNumber || transactionId))
-          router.push('/auth/login?callbackUrl=' + returnUrl + '&message=payment_success')
-        }
+        router.push('/dashboard/waiting-confirmation?invoice=' + (details?.invoiceNumber || transactionId))
       }, 2000)
     } catch (err: any) {
       toast.error(err.message)
@@ -380,13 +385,15 @@ export default function ConfirmPaymentPage() {
     }
   }
 
-  // Loading state
-  if (loading) {
+  // Loading state (including session check)
+  if (status === 'loading' || loading || !session) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-orange-500 mx-auto mb-4" />
-          <p className="text-slate-600">Memuat data transaksi...</p>
+          <p className="text-slate-600">
+            {status === 'loading' ? 'Memeriksa login...' : 'Memuat data transaksi...'}
+          </p>
         </div>
       </div>
     )

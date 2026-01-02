@@ -25,6 +25,9 @@ function LoginForm() {
   // Check if this is payment success redirect
   const isPaymentSuccessFlow = searchParams.get('message') === 'payment_success'
   
+  // Check if this is login requirement for payment confirmation
+  const isLoginRequiredFlow = searchParams.get('message') === 'login_required'
+  
   // Get safe callback URL (avoid auth pages loop)
   const rawCallbackUrl = searchParams.get('callbackUrl') || searchParams.get('redirect') || '/dashboard'
   const callbackUrl = (rawCallbackUrl.includes('/login') || 
@@ -192,6 +195,23 @@ function LoginForm() {
                 </div>
                 <p className="text-green-700 text-xs">
                   Silakan login untuk melihat status verifikasi pembayaran Anda di dashboard.
+                </p>
+              </div>
+            )}
+            {isLoginRequiredFlow && (
+              <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-9a2 2 0 00-2-2H6a2 2 0 00-2 2v9a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-orange-900 text-sm font-medium">
+                    🔐 Login Diperlukan
+                  </p>
+                </div>
+                <p className="text-orange-700 text-xs">
+                  Untuk melanjutkan upload bukti pembayaran, Anda perlu login terlebih dahulu ke akun Anda.
                 </p>
               </div>
             )}
