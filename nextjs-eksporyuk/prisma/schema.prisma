@@ -3630,6 +3630,7 @@ enum TicketStatus {
 
 enum TransactionStatus {
   PENDING
+  PENDING_CONFIRMATION
   SUCCESS
   FAILED
   REFUNDED
