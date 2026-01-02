@@ -15,6 +15,7 @@ export async function GET(
 ) {
   try {
     const { transactionId } = await params
+    console.log('[Payment Confirm GET] Transaction ID:', transactionId)
 
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
@@ -37,7 +38,14 @@ export async function GET(
       }
     })
 
+    console.log('[Payment Confirm GET] Transaction found:', !!transaction)
+    if (transaction) {
+      console.log('[Payment Confirm GET] Transaction type:', transaction.type)
+      console.log('[Payment Confirm GET] Transaction status:', transaction.status)
+    }
+
     if (!transaction) {
+      console.log('[Payment Confirm GET] Transaction not found with ID:', transactionId)
       return NextResponse.json(
         { error: 'Transaksi tidak ditemukan' },
         { status: 404 }
@@ -119,10 +127,15 @@ export async function GET(
         bankAccount
       }
     })
-  } catch (error) {
-    console.error('[Payment Confirm API] Error:', error)
+  } catch (error: any) {
+    console.error('[Payment Confirm GET] Error:', error)
+    console.error('[Payment Confirm GET] Error message:', error.message)
+    console.error('[Payment Confirm GET] Error stack:', error.stack)
     return NextResponse.json(
-      { error: 'Terjadi kesalahan server' },
+      { 
+        error: 'Terjadi kesalahan server',
+        debug: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     )
   }
