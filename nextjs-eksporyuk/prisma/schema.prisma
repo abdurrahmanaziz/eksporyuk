@@ -1305,7 +1305,6 @@ model EventGroup {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  @@unique([productId, groupId])
   @@index([productId])
   @@index([groupId])
 }
@@ -1318,7 +1317,6 @@ model EventMembership {
   product      Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   membership   Membership  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
-  @@unique([productId, membershipId])
   @@index([productId])
   @@index([membershipId])
 }

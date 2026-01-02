@@ -129,13 +129,26 @@ export default function ConfirmPaymentPage() {
           })));
         }
       } else {
-        // Fallback to common banks if API fails
+        // Fallback to common banks and e-wallets if API fails
         const fallbackBanks = [
-          { id: 'bca', bankName: 'Bank Central Asia', bankCode: 'BCA' },
-          { id: 'bri', bankName: 'Bank Rakyat Indonesia', bankCode: 'BRI' },
-          { id: 'bni', bankName: 'Bank Negara Indonesia', bankCode: 'BNI' },
-          { id: 'btn', bankName: 'Bank Tabungan Negara', bankCode: 'BTN' },
+          // Traditional Banks
+          { id: 'bca', bankName: 'Bank Central Asia (BCA)', bankCode: 'BCA' },
+          { id: 'bri', bankName: 'Bank Rakyat Indonesia (BRI)', bankCode: 'BRI' },
+          { id: 'bni', bankName: 'Bank Negara Indonesia (BNI)', bankCode: 'BNI' },
+          { id: 'btn', bankName: 'Bank Tabungan Negara (BTN)', bankCode: 'BTN' },
           { id: 'mandiri', bankName: 'Bank Mandiri', bankCode: 'MANDIRI' },
+          { id: 'cimb', bankName: 'CIMB Niaga', bankCode: 'CIMB' },
+          { id: 'danamon', bankName: 'Bank Danamon', bankCode: 'DANAMON' },
+          { id: 'permata', bankName: 'Bank Permata', bankCode: 'PERMATA' },
+          // E-Wallets
+          { id: 'gopay', bankName: 'GoPay', bankCode: 'GOPAY' },
+          { id: 'ovo', bankName: 'OVO', bankCode: 'OVO' },
+          { id: 'dana', bankName: 'DANA', bankCode: 'DANA' },
+          { id: 'linkaja', bankName: 'LinkAja', bankCode: 'LINKAJA' },
+          { id: 'shopeepay', bankName: 'ShopeePay', bankCode: 'SHOPEEPAY' },
+          { id: 'jenius', bankName: 'Jenius', bankCode: 'JENIUS' },
+          { id: 'sakuku', bankName: 'Sakuku', bankCode: 'SAKUKU' },
+          { id: 'tcash', bankName: 'T-Cash', bankCode: 'TCASH' },
         ];
         setManualBanks(fallbackBanks);
       }
@@ -143,13 +156,26 @@ export default function ConfirmPaymentPage() {
     } catch (error) {
       console.error('Error fetching payment settings:', error);
       
-      // Fallback banks on error
+      // Fallback banks and e-wallets on error
       const fallbackBanks = [
-        { id: 'bca', bankName: 'Bank Central Asia', bankCode: 'BCA' },
-        { id: 'bri', bankName: 'Bank Rakyat Indonesia', bankCode: 'BRI' },
-        { id: 'bni', bankName: 'Bank Negara Indonesia', bankCode: 'BNI' },
-        { id: 'btn', bankName: 'Bank Tabungan Negara', bankCode: 'BTN' },
+        // Traditional Banks
+        { id: 'bca', bankName: 'Bank Central Asia (BCA)', bankCode: 'BCA' },
+        { id: 'bri', bankName: 'Bank Rakyat Indonesia (BRI)', bankCode: 'BRI' },
+        { id: 'bni', bankName: 'Bank Negara Indonesia (BNI)', bankCode: 'BNI' },
+        { id: 'btn', bankName: 'Bank Tabungan Negara (BTN)', bankCode: 'BTN' },
         { id: 'mandiri', bankName: 'Bank Mandiri', bankCode: 'MANDIRI' },
+        { id: 'cimb', bankName: 'CIMB Niaga', bankCode: 'CIMB' },
+        { id: 'danamon', bankName: 'Bank Danamon', bankCode: 'DANAMON' },
+        { id: 'permata', bankName: 'Bank Permata', bankCode: 'PERMATA' },
+        // E-Wallets
+        { id: 'gopay', bankName: 'GoPay', bankCode: 'GOPAY' },
+        { id: 'ovo', bankName: 'OVO', bankCode: 'OVO' },
+        { id: 'dana', bankName: 'DANA', bankCode: 'DANA' },
+        { id: 'linkaja', bankName: 'LinkAja', bankCode: 'LINKAJA' },
+        { id: 'shopeepay', bankName: 'ShopeePay', bankCode: 'SHOPEEPAY' },
+        { id: 'jenius', bankName: 'Jenius', bankCode: 'JENIUS' },
+        { id: 'sakuku', bankName: 'Sakuku', bankCode: 'SAKUKU' },
+        { id: 'tcash', bankName: 'T-Cash', bankCode: 'TCASH' },
       ];
       setManualBanks(fallbackBanks);
     }
@@ -161,6 +187,20 @@ export default function ConfirmPaymentPage() {
       fetchPaymentSettings()
     }
   }, [transactionId, fetchDetails, fetchPaymentSettings])
+
+  // Set default sender name only once when details first load
+  useEffect(() => {
+    if (details?.customerName && senderName === '') {
+      setSenderName(details.customerName)
+    }
+  }, [details?.customerName]) // Remove senderName dependency to prevent re-runs
+
+  // Set default sender name only once when details first load
+  useEffect(() => {
+    if (details?.customerName && senderName === '') {
+      setSenderName(details.customerName)
+    }
+  }, [details?.customerName])
 
   // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -534,7 +574,7 @@ export default function ConfirmPaymentPage() {
               {/* Sender Bank */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Bank Pengirim <span className="text-red-500">*</span>
+                  Bank/E-Wallet Pengirim <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={senderBank}
@@ -542,21 +582,12 @@ export default function ConfirmPaymentPage() {
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                   disabled={submitting}
                 >
-                  <option value="">Pilih bank pengirim</option>
+                  <option value="">Pilih bank/e-wallet pengirim</option>
                   {manualBanks.map((bank) => (
                     <option key={bank.id} value={bank.bankName}>
                       {bank.bankName}
                     </option>
                   ))}
-                  <option value="BCA">BCA</option>
-                  <option value="Mandiri">Mandiri</option>
-                  <option value="BNI">BNI</option>
-                  <option value="BRI">BRI</option>
-                  <option value="BSI">BSI</option>
-                  <option value="CIMB Niaga">CIMB Niaga</option>
-                  <option value="Permata">Permata</option>
-                  <option value="Danamon">Danamon</option>
-                  <option value="Lainnya">Lainnya</option>
                 </select>
               </div>
             </div>
