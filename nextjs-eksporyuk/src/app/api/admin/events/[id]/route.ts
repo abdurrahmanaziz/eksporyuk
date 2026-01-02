@@ -316,3 +316,57 @@ export async function DELETE(
     )
   }
 }
+
+// PATCH - Partial update (form settings)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    })
+
+    if (user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { id } = await params
+    const body = await req.json()
+
+    const {
+      salesPageUrl,
+      formLogo,
+      formBanner,
+      formDescription,
+    } = body
+
+    const event = await prisma.product.update({
+      where: { id },
+      data: {
+        ...(salesPageUrl !== undefined && { salesPageUrl: salesPageUrl || null }),
+        ...(formLogo !== undefined && { formLogo: formLogo || null }),
+        ...(formBanner !== undefined && { formBanner: formBanner || null }),
+        ...(formDescription !== undefined && { formDescription: formDescription || null }),
+      },
+    })
+
+    return NextResponse.json(event)
+  } catch (error) {
+    console.error('Error patching event:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json(
+      {
+        error: 'Failed to update event',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
+      { status: 500 }
+    )
+  }
+}

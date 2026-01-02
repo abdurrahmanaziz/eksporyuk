@@ -73,6 +73,7 @@ interface Event {
   isFeatured: boolean;
   productStatus?: string;
   accessLevel?: string;
+  salesPageUrl?: string;
   creator?: {
     id: string;
     name: string | null;
@@ -526,6 +527,20 @@ export default function AdminEventsPage() {
                                   Buka Link Meeting
                                 </DropdownMenuItem>
                               )}
+                              {event.salesPageUrl && (
+                                <DropdownMenuItem
+                                  onClick={() => window.open(event.salesPageUrl!, "_blank")}
+                                >
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  Lihat Sales Page
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                onClick={() => router.push(`/admin/events/${event.id}/form`)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Atur Form
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 className="text-red-600"
