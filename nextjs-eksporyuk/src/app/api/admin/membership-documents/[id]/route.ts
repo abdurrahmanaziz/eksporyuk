@@ -2,19 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { unlink } from 'fs/promises'
-import { join } from 'path'
+import { del } from '@vercel/blob'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
-
 // GET /api/admin/membership-documents/[id] - Get document details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -26,7 +26,21 @@ export async function GET(
     }
 
     const document = await prisma.membershipDocument.findUnique({
-      where: { id: params.id },
+      where: { id },
+      include: {
+        uploader: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: {
+            downloadLogs: true,
+          },
+        },
+      },
     })
 
     if (!document) {
@@ -43,9 +57,11 @@ export async function GET(
 // PUT /api/admin/membership-documents/[id] - Update document
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -60,13 +76,14 @@ export async function PUT(
     const { title, description, category, minimumLevel, isActive } = body
 
     const document = await prisma.membershipDocument.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         description,
         category,
         minimumLevel,
         isActive,
+        updatedAt: new Date(),
       },
     })
 
@@ -84,9 +101,11 @@ export async function PUT(
 // DELETE /api/admin/membership-documents/[id] - Delete document
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -99,25 +118,26 @@ export async function DELETE(
 
     // Get document to delete file
     const document = await prisma.membershipDocument.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!document) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
 
-    // Delete file from filesystem
-    try {
-      const filepath = join(process.cwd(), 'public', document.fileUrl)
-      await unlink(filepath)
-    } catch (error) {
-      console.error('Error deleting file:', error)
-      // Continue even if file deletion fails
+    // Delete file from Vercel Blob if it's a blob URL
+    if (document.fileUrl && document.fileUrl.includes('blob.vercel-storage.com')) {
+      try {
+        await del(document.fileUrl)
+      } catch (error) {
+        console.error('Error deleting file from blob storage:', error)
+        // Continue even if file deletion fails
+      }
     }
 
     // Delete document record (cascade will delete download logs)
     await prisma.membershipDocument.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({

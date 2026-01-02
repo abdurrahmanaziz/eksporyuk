@@ -1189,16 +1189,22 @@ model CourseSettings {
 }
 
 model DocumentDownloadLog {
-  id              String         @id
+  id              String              @id
   userId          String
   documentId      String
   membershipLevel String
-  downloadedAt    DateTime       @default(now())
+  downloadedAt    DateTime            @default(now())
   ipAddress       String?
   userAgent       String?
-  status          DownloadStatus @default(SUCCESS)
-  adminVerified   Boolean        @default(false)
+  status          DownloadStatus      @default(SUCCESS)
+  adminVerified   Boolean             @default(false)
   notes           String?
+  user            User                @relation("DocumentDownloader", fields: [userId], references: [id], onDelete: Cascade)
+  document        MembershipDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([documentId])
+  @@index([downloadedAt])
 }
 
 model Documentation {
@@ -1720,7 +1726,7 @@ model MembershipCourse {
 }
 
 model MembershipDocument {
-  id            String   @id
+  id            String                @id
   title         String
   description   String?
   category      String
@@ -1730,11 +1736,18 @@ model MembershipDocument {
   fileType      String
   minimumLevel  String
   uploaderId    String
-  isActive      Boolean  @default(true)
-  viewCount     Int      @default(0)
-  downloadCount Int      @default(0)
-  createdAt     DateTime @default(now())
+  isActive      Boolean               @default(true)
+  viewCount     Int                   @default(0)
+  downloadCount Int                   @default(0)
+  createdAt     DateTime              @default(now())
   updatedAt     DateTime
+  uploader      User                  @relation("DocumentUploader", fields: [uploaderId], references: [id], onDelete: Cascade)
+  downloadLogs  DocumentDownloadLog[]
+
+  @@index([uploaderId])
+  @@index([category])
+  @@index([minimumLevel])
+  @@index([isActive])
 }
 
 model MembershipFeatureAccess {
@@ -2913,13 +2926,13 @@ model TypingIndicator {
 }
 
 model User {
-  id                              String            @id @default(cuid())
-  memberCode                      String?           @unique
-  email                           String            @unique
-  username                        String?           @unique
+  id                              String                @id @default(cuid())
+  memberCode                      String?               @unique
+  email                           String                @unique
+  username                        String?               @unique
   name                            String
   password                        String?
-  role                            Role              @default(MEMBER_FREE)
+  role                            Role                  @default(MEMBER_FREE)
   avatar                          String?
   bio                             String?
   phone                           String?
@@ -2931,28 +2944,28 @@ model User {
   postalCode                      String?
   latitude                        Float?
   longitude                       Float?
-  locationVerified                Boolean           @default(false)
-  profileCompleted                Boolean           @default(false)
-  isOnline                        Boolean           @default(false)
+  locationVerified                Boolean               @default(false)
+  profileCompleted                Boolean               @default(false)
+  isOnline                        Boolean               @default(false)
   lastSeenAt                      DateTime?
   lastActiveAt                    DateTime?
-  emailVerified                   Boolean           @default(false)
-  isActive                        Boolean           @default(true)
-  isSuspended                     Boolean           @default(false)
+  emailVerified                   Boolean               @default(false)
+  isActive                        Boolean               @default(true)
+  isSuspended                     Boolean               @default(false)
   suspendReason                   String?
   suspendedAt                     DateTime?
   suspendedBy                     String?
-  isFounder                       Boolean           @default(false)
-  isCoFounder                     Boolean           @default(false)
-  affiliateMenuEnabled            Boolean           @default(false)
+  isFounder                       Boolean               @default(false)
+  isCoFounder                     Boolean               @default(false)
+  affiliateMenuEnabled            Boolean               @default(false)
   revenueSharePercent             Float?
-  emailNotifications              Boolean           @default(true)
-  whatsappNotifications           Boolean           @default(false)
+  emailNotifications              Boolean               @default(true)
+  whatsappNotifications           Boolean               @default(false)
   oneSignalPlayerId               String?
   oneSignalSubscribedAt           DateTime?
   oneSignalTags                   Json?
-  createdAt                       DateTime          @default(now())
-  updatedAt                       DateTime          @updatedAt
+  createdAt                       DateTime              @default(now())
+  updatedAt                       DateTime              @updatedAt
   referredById                    String?
   mailketingLists                 Json?
   mailketingSubscriberId          String?
@@ -2963,12 +2976,14 @@ model User {
   affiliateLinks                  AffiliateLink[]
   affiliateProfile                AffiliateProfile?
   chatParticipants                ChatParticipant[]
-  chatRoomsAsUser1                ChatRoom[]        @relation("ChatRoom_user1")
-  chatRoomsAsUser2                ChatRoom[]        @relation("ChatRoom_user2")
+  chatRoomsAsUser1                ChatRoom[]            @relation("ChatRoom_user1")
+  chatRoomsAsUser2                ChatRoom[]            @relation("ChatRoom_user2")
   CommentReaction                 CommentReaction[]
-  Follow_Follow_followerIdToUser  Follow[]          @relation("Follow_followerIdToUser")
-  Follow_Follow_followingIdToUser Follow[]          @relation("Follow_followingIdToUser")
-  messagesAsSender                Message[]         @relation("Message_sender")
+  documentDownloads               DocumentDownloadLog[] @relation("DocumentDownloader")
+  uploadedDocuments               MembershipDocument[]  @relation("DocumentUploader")
+  Follow_Follow_followerIdToUser  Follow[]              @relation("Follow_followerIdToUser")
+  Follow_Follow_followingIdToUser Follow[]              @relation("Follow_followingIdToUser")
+  messagesAsSender                Message[]             @relation("Message_sender")
   Post                            Post[]
   PostComment                     PostComment[]
   PostReaction                    PostReaction[]

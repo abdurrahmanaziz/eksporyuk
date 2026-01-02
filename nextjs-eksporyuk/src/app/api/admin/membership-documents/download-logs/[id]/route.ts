@@ -6,13 +6,14 @@ import { prisma } from '@/lib/prisma'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
-
 // PATCH /api/admin/membership-documents/download-logs/[id] - Verify download log
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -27,7 +28,7 @@ export async function PATCH(
     const { adminVerified, notes } = body
 
     const log = await prisma.documentDownloadLog.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         adminVerified,
         notes,

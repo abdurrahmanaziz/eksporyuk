@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
     if (category) where.category = category
     if (search) {
       where.OR = [
-        { title: { contains: search } },
-        { description: { contains: search } },
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
       ]
     }
 
@@ -43,6 +43,20 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          uploader: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          _count: {
+            select: {
+              downloadLogs: true,
+            },
+          },
+        },
       }),
       prisma.membershipDocument.count({ where }),
     ])
@@ -124,6 +138,7 @@ export async function POST(request: NextRequest) {
         fileSize: file.size,
         fileType: file.type,
         uploaderId: session.user.id,
+        updatedAt: new Date(),
       },
     })
 
