@@ -33,34 +33,44 @@ export async function GET(
         id,
         productType: 'EVENT'
       },
-      include: {
-        User: {
-          select: { id: true, name: true, email: true }
-        },
-        userProducts: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true }
-            }
-          }
-        },
-        eventMemberships: {
-          include: {
-            membership: {
-              select: { id: true, name: true }
-            }
-          }
-        },
-        eventGroups: {
-          include: {
-            group: {
-              select: { id: true, name: true }
-            }
-          }
-        },
-        _count: {
-          select: { userProducts: true }
-        }
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        checkoutSlug: true,
+        description: true,
+        shortDescription: true,
+        price: true,
+        originalPrice: true,
+        thumbnail: true,
+        category: true,
+        tags: true,
+        productStatus: true,
+        eventDate: true,
+        eventEndDate: true,
+        eventDuration: true,
+        eventUrl: true,
+        meetingId: true,
+        meetingPassword: true,
+        eventVisibility: true,
+        eventPassword: true,
+        maxParticipants: true,
+        isActive: true,
+        isFeatured: true,
+        accessLevel: true,
+        salesPageUrl: true,
+        formLogo: true,
+        formBanner: true,
+        formDescription: true,
+        seoMetaTitle: true,
+        seoMetaDescription: true,
+        ctaButtonText: true,
+        reminders: true,
+        creatorId: true,
+        upsaleTargetMemberships: true,
+        upsaleDiscount: true,
+        createdAt: true,
+        updatedAt: true,
       }
     })
 
@@ -68,10 +78,24 @@ export async function GET(
       return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
+    // Get creator info
+    const creator = await prisma.user.findUnique({
+      where: { id: event.creatorId },
+      select: { id: true, name: true, email: true }
+    })
+
+    // Get attendee count
+    const attendeeCount = await prisma.userProduct.count({
+      where: { productId: id }
+    })
+
     // Map upsaleTargetMemberships to targetMembershipId for frontend
+    const { creatorId, ...eventData } = event
     const eventWithAlias = {
-      ...event,
-      targetMembershipId: event.upsaleTargetMemberships
+      ...eventData,
+      creator,
+      targetMembershipId: event.upsaleTargetMemberships,
+      _count: { UserProduct: attendeeCount }
     }
 
     return NextResponse.json({ event: eventWithAlias })

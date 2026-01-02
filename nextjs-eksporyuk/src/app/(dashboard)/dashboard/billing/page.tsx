@@ -240,6 +240,7 @@ export default function BillingPage() {
               <SelectContent>
                 <SelectItem value="ALL">Semua Status</SelectItem>
                 <SelectItem value="PENDING">Menunggu Pembayaran</SelectItem>
+                <SelectItem value="PENDING_CONFIRMATION">Menunggu Konfirmasi</SelectItem>
                 <SelectItem value="SUCCESS">Lunas</SelectItem>
                 <SelectItem value="FAILED">Gagal</SelectItem>
                 <SelectItem value="REFUNDED">Refunded</SelectItem>
@@ -328,6 +329,12 @@ export default function BillingPage() {
                               Menunggu
                             </span>
                           )}
+                          {tx.status === 'PENDING_CONFIRMATION' && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              Menunggu Konfirmasi
+                            </span>
+                          )}
                           {tx.status === 'SUCCESS' && (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                               <CheckCircle className="w-3 h-3" />
@@ -369,6 +376,11 @@ export default function BillingPage() {
                                 </button>
                               </Link>
                             )
+                          )}
+                          {tx.status === 'PENDING_CONFIRMATION' && (
+                            <span className="text-xs text-blue-600 font-medium">
+                              Sedang Diverifikasi
+                            </span>
                           )}
                           {tx.status === 'SUCCESS' && tx.paidAt && (
                             <span className="text-xs text-slate-400">

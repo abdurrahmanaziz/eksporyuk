@@ -75,38 +75,80 @@ export async function GET(request: NextRequest) {
 
     const events = await prisma.product.findMany({
       where: whereCondition,
-      orderBy: { eventDate: 'desc' },
-      include: {
-        User: {
-          select: { id: true, name: true, email: true }
-        },
-        eventMemberships: {
-          include: {
-            membership: {
-              select: { id: true, name: true }
-            }
-          }
-        },
-        eventGroups: {
-          include: {
-            group: {
-              select: { id: true, name: true }
-            }
-          }
-        },
-        _count: {
-          select: { UserProduct: true }
-        }
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        checkoutSlug: true,
+        price: true,
+        originalPrice: true,
+        thumbnail: true,
+        shortDescription: true,
+        eventDate: true,
+        eventEndDate: true,
+        eventDuration: true,
+        eventUrl: true,
+        meetingId: true,
+        meetingPassword: true,
+        maxParticipants: true,
+        eventVisibility: true,
+        isActive: true,
+        isFeatured: true,
+        productStatus: true,
+        accessLevel: true,
+        salesPageUrl: true,
+        formLogo: true,
+        formBanner: true,
+        formDescription: true,
+        creatorId: true,
+        createdAt: true,
+        updatedAt: true,
       },
+      orderBy: { eventDate: 'desc' },
       skip,
       take: limit
+    })
+
+    // Get attendee counts and creators in parallel
+    const eventIds = events.map(e => e.id)
+    const creatorIds = [...new Set(events.map(e => e.creatorId))]
+
+    const [attendeeCounts, creators] = await Promise.all([
+      prisma.userProduct.groupBy({
+        by: ['productId'],
+        where: { productId: { in: eventIds } },
+        _count: true
+      }),
+      prisma.user.findMany({
+        where: { id: { in: creatorIds } },
+        select: { id: true, name: true, email: true }
+      })
+    ])
+
+    const attendeeMap = new Map(
+      attendeeCounts.map(ac => [ac.productId, ac._count])
+    )
+    const creatorMap = new Map(
+      creators.map(c => [c.id, c])
+    )
+
+    // Enrich events with attendee counts and creator info
+    const enrichedEvents = events.map((event) => {
+      const { creatorId, ...eventData } = event
+      return {
+        ...eventData,
+        creator: creatorMap.get(creatorId) || null,
+        _count: {
+          UserProduct: attendeeMap.get(event.id) || 0
+        }
+      }
     })
 
     // Calculate pagination info
     const totalPages = Math.ceil(total / limit)
 
     return NextResponse.json({
-      events,
+      events: enrichedEvents,
       pagination: {
         total,
         page,
