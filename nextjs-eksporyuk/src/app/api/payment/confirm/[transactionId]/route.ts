@@ -215,8 +215,8 @@ export async function POST(
       )
     }
 
-    // Only allow for PENDING or PENDING_CONFIRMATION status
-    if (!['PENDING', 'PENDING_CONFIRMATION'].includes(transaction.status)) {
+    // Only allow for PENDING status
+    if (!['PENDING'].includes(transaction.status)) {
       console.log('[Payment Confirm POST] Invalid status:', transaction.status)
       return NextResponse.json(
         { error: 'Transaksi tidak dapat dikonfirmasi' },
@@ -244,9 +244,14 @@ export async function POST(
       data: {
         paymentProofUrl,
         paymentProofSubmittedAt: new Date(),
-        status: 'PENDING_CONFIRMATION',
-        // Store additional transfer data in notes field
-        notes: JSON.stringify(transferMetadata)
+        status: 'PENDING', // Keep as PENDING until admin approval
+        // Store additional transfer data in notes field with proof submission flag
+        notes: JSON.stringify({
+          ...transferMetadata,
+          paymentProofSubmitted: true,
+          needsAdminReview: true
+        }),
+        updatedAt: new Date()
       }
     })
 

@@ -53,22 +53,23 @@ export async function POST(
       )
     }
 
-    if (transaction.status !== 'PENDING_CONFIRMATION') {
+    if (transaction.status !== 'PENDING') {
       return NextResponse.json(
         { error: 'Transaksi tidak dapat ditolak' },
         { status: 400 }
       )
     }
 
-    // Update transaction status to REJECTED
+    // Update transaction status to FAILED
     await prisma.transaction.update({
       where: { id: transactionId },
       data: {
-        status: 'REJECTED', // This will be seen by /admin/sales as well  
-        rejectedAt: new Date(),
-        rejectedBy: session.user.id,
-        adminNotes: reason,
-        // Also update fields used by /admin/sales
+        status: 'FAILED', // This will be seen by /admin/sales as well  
+        notes: JSON.stringify({
+          rejectedBy: session.user.id,
+          rejectedAt: new Date().toISOString(),
+          rejectionReason: reason
+        }),
         updatedAt: new Date()
       }
     })

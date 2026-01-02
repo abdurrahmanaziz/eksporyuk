@@ -52,22 +52,24 @@ export async function POST(
       )
     }
 
-    if (transaction.status !== 'PENDING_CONFIRMATION') {
+    if (transaction.status !== 'PENDING') {
       return NextResponse.json(
         { error: 'Transaksi tidak dapat diapprove' },
         { status: 400 }
       )
     }
 
-    // Update transaction status to COMPLETED
+    // Update transaction status to SUCCESS (not COMPLETED)
     const updatedTransaction = await prisma.transaction.update({
       where: { id: transactionId },
       data: {
-        status: 'COMPLETED', // This will be seen by /admin/sales as well
-        completedAt: new Date(),
-        approvedBy: session.user.id,
-        adminNotes: notes || 'Payment approved by admin',
-        // Also update fields used by /admin/sales
+        status: 'SUCCESS', // This will be seen by /admin/sales as well
+        paidAt: new Date(),
+        notes: JSON.stringify({
+          approvedBy: session.user.id,
+          adminNotes: notes || 'Payment approved by admin',
+          approvedAt: new Date().toISOString()
+        }),
         updatedAt: new Date()
       }
     })
