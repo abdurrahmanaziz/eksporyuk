@@ -529,7 +529,7 @@ export default function PremiumMemberDashboard() {
                     <Calendar className="w-5 h-5 text-green-600" />
                     Event Mendatang
                   </CardTitle>
-                  <Link href="/community/events">
+                  <Link href="/events">
                     <Button variant="ghost" size="sm" className="text-green-600 h-8 px-2">
                       <ChevronRight className="w-4 h-4" />
                     </Button>
