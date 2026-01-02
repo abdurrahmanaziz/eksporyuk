@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
+
 // GET - Get single event
 export async function GET(
   req: NextRequest,
@@ -34,9 +35,6 @@ export async function GET(
         productType: 'EVENT'
       },
       include: {
-        User: {
-          select: { id: true, name: true, email: true }
-        },
         userProducts: {
           include: {
             user: {
@@ -77,14 +75,7 @@ export async function GET(
     return NextResponse.json({ event: eventWithAlias })
   } catch (error) {
     console.error('Error fetching event:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch event',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 })
   }
 }
 
@@ -133,7 +124,7 @@ export async function PUT(
       maxParticipants,
       membershipIds,
       groupIds,
-      targetMembershipId,
+      targetMembershipId, // Target membership untuk upgrade affiliate
       isActive,
       isFeatured,
       accessLevel,
@@ -176,8 +167,8 @@ export async function PUT(
         ...(category !== undefined && { category }),
         ...(tags !== undefined && { tags }),
         ...(eventDate && { eventDate: new Date(eventDate) }),
-        ...(eventEndDate !== undefined && {
-          eventEndDate: eventEndDate ? new Date(eventEndDate) : null
+        ...(eventEndDate !== undefined && { 
+          eventEndDate: eventEndDate ? new Date(eventEndDate) : null 
         }),
         ...(eventDuration !== undefined && { eventDuration }),
         ...(eventUrl !== undefined && { eventUrl }),
@@ -186,7 +177,7 @@ export async function PUT(
         ...(eventVisibility !== undefined && { eventVisibility }),
         ...(eventPassword !== undefined && { eventPassword }),
         ...(maxParticipants !== undefined && { maxParticipants }),
-        ...(isActive !== undefined && {
+        ...(isActive !== undefined && { 
           isActive,
           productStatus: isActive ? 'PUBLISHED' : 'DRAFT'
         }),
@@ -206,7 +197,7 @@ export async function PUT(
       await prisma.eventMembership.deleteMany({
         where: { productId: id }
       })
-
+      
       // Create new relations
       if (membershipIds && membershipIds.length > 0) {
         await prisma.eventMembership.createMany({
@@ -225,7 +216,7 @@ export async function PUT(
       await prisma.eventGroup.deleteMany({
         where: { productId: id }
       })
-
+      
       // Create new relations
       if (groupIds && groupIds.length > 0) {
         await prisma.eventGroup.createMany({
@@ -241,14 +232,7 @@ export async function PUT(
     return NextResponse.json({ event })
   } catch (error) {
     console.error('Error updating event:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json(
-      {
-        error: 'Failed to update event',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to update event' }, { status: 500 })
   }
 }
 
@@ -287,32 +271,16 @@ export async function DELETE(
 
     // Check if has attendees
     if (event._count.userProducts > 0) {
-      return NextResponse.json({
-        error: 'Cannot delete event with attendees. Deactivate it instead.'
+      return NextResponse.json({ 
+        error: 'Cannot delete event with attendees. Deactivate it instead.' 
       }, { status: 400 })
     }
-
-    // Delete related records
-    await prisma.eventMembership.deleteMany({
-      where: { productId: id }
-    })
-
-    await prisma.eventGroup.deleteMany({
-      where: { productId: id }
-    })
 
     await prisma.product.delete({ where: { id } })
 
     return NextResponse.json({ message: 'Event deleted successfully' })
   } catch (error) {
     console.error('Error deleting event:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json(
-      {
-        error: 'Failed to delete event',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 })
   }
 }

@@ -20,10 +20,12 @@ export async function GET(request: NextRequest) {
     const settings = await prisma.settings.findUnique({
       where: { id: 1 },
       select: {
-        customerServiceWhatsApp: true,
+        whatsappNumber: true,
         paymentExpiryHours: true,
-        adminBankAccount: true,
-        paymentInstructions: true
+        paymentBankAccounts: true,
+        paymentEnableManual: true,
+        paymentMinAmount: true,
+        paymentMaxAmount: true
       }
     });
 
@@ -32,10 +34,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        customerServiceWhatsApp: settings?.customerServiceWhatsApp || '',
+        customerServiceWhatsApp: settings?.whatsappNumber || '',
         paymentExpiryHours: settings?.paymentExpiryHours || 24,
-        adminBankAccount: settings?.adminBankAccount || '',
-        paymentInstructions: settings?.paymentInstructions || ''
+        bankAccounts: settings?.paymentBankAccounts || [],
+        enableManualPayment: settings?.paymentEnableManual || true,
+        minAmount: settings?.paymentMinAmount || 10000,
+        maxAmount: settings?.paymentMaxAmount || 100000000
       }
     });
 

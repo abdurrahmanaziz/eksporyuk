@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
@@ -6,8 +6,9 @@ import { prisma } from '@/lib/prisma'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
+
 // GET - Fetch all events (Products with type EVENT)
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
@@ -31,11 +32,6 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') // upcoming, ongoing, past, all
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const search = searchParams.get('search') || ''
-    
-    const skip = (page - 1) * limit
 
     const now = new Date()
     let dateFilter: any = {}
@@ -56,86 +52,35 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const whereCondition = {
-      productType: 'EVENT',
-      ...dateFilter,
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' as const } },
-          { slug: { contains: search, mode: 'insensitive' as const } },
-          { description: { contains: search, mode: 'insensitive' as const } }
-        ]
-      })
-    }
-
-    // Get total count for pagination
-    const total = await prisma.product.count({
-      where: whereCondition
-    })
-
     const events = await prisma.product.findMany({
-      where: whereCondition,
+      where: {
+        productType: 'EVENT',
+        ...dateFilter
+      },
       orderBy: { eventDate: 'desc' },
       include: {
-        User: {
-          select: { id: true, name: true, email: true }
-        },
-        eventMemberships: {
-          include: {
-            membership: {
-              select: { id: true, name: true }
-            }
-          }
-        },
-        eventGroups: {
-          include: {
-            group: {
-              select: { id: true, name: true }
-            }
-          }
-        },
         _count: {
-          select: { userProducts: true }
-        }
+          select: { userProducts: true },
+        },
       },
-      skip,
-      take: limit
     })
 
-    // Calculate pagination info
-    const totalPages = Math.ceil(total / limit)
-
-    return NextResponse.json({
-      events,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages
-      }
-    })
+    return NextResponse.json({ events })
   } catch (error) {
     console.error('Error fetching events:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch events',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })
   }
 }
 
 // POST - Create new event
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin
+    // Check if user is admin - first check session role, then fallback to database
     let isAdmin = session.user.role === 'ADMIN'
     
     if (!isAdmin) {
@@ -162,6 +107,7 @@ export async function POST(request: NextRequest) {
       thumbnail,
       category,
       tags,
+      // Event specific
       eventDate,
       eventEndDate,
       eventDuration,
@@ -173,20 +119,23 @@ export async function POST(request: NextRequest) {
       maxParticipants,
       membershipIds,
       groupIds,
-      targetMembershipId,
+      targetMembershipId, // Target membership untuk upgrade affiliate
+      // Settings
       isActive,
       isFeatured,
       accessLevel,
+      // Marketing
       seoMetaTitle,
       seoMetaDescription,
       ctaButtonText,
+      // Reminder settings
       reminders,
     } = body
 
     // Validation
     if (!name || !eventDate) {
-      return NextResponse.json({
-        error: 'Name and event date are required'
+      return NextResponse.json({ 
+        error: 'Name and event date are required' 
       }, { status: 400 })
     }
 
@@ -205,8 +154,8 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingProduct) {
-      return NextResponse.json({
-        error: 'Slug already exists'
+      return NextResponse.json({ 
+        error: 'Slug already exists' 
       }, { status: 400 })
     }
 
@@ -226,6 +175,7 @@ export async function POST(request: NextRequest) {
         productType: 'EVENT',
         productStatus: isActive ? 'PUBLISHED' : 'DRAFT',
         accessLevel: accessLevel || 'PUBLIC',
+        // Event fields
         eventDate: new Date(eventDate),
         eventEndDate: eventEndDate ? new Date(eventEndDate) : null,
         eventDuration,
@@ -235,12 +185,16 @@ export async function POST(request: NextRequest) {
         eventVisibility: eventVisibility || 'PUBLIC',
         eventPassword,
         maxParticipants,
+        // Settings
         isActive: isActive ?? true,
         isFeatured: isFeatured ?? false,
+        // Marketing
         seoMetaTitle,
         seoMetaDescription,
         ctaButtonText: ctaButtonText || 'Daftar Sekarang',
+        // Target membership untuk upgrade affiliate
         upsaleTargetMemberships: targetMembershipId || null,
+        // Reminders
         reminders,
       },
     })
@@ -270,13 +224,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ event }, { status: 201 })
   } catch (error) {
     console.error('Error creating event:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json(
-      {
-        error: 'Failed to create event',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create event' }, { status: 500 })
   }
 }
