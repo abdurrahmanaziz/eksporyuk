@@ -688,8 +688,8 @@ export default function VirtualAccountPage() {
           <div className={`bg-gradient-to-r ${getBankColor(vaDetails.bankCode)} p-5`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/95 font-medium mb-1">Virtual Account</p>
-                <h2 className="text-xl font-bold text-white drop-shadow-sm">{vaDetails.bankName || vaDetails.bankCode}</h2>
+                <p className="text-sm text-white font-medium mb-1">Virtual Account</p>
+                <h2 className="text-xl font-bold text-white">{vaDetails.bankName || vaDetails.bankCode}</h2>
               </div>
               <div className="bg-white rounded-lg p-2 shadow-md">
                 <img 
