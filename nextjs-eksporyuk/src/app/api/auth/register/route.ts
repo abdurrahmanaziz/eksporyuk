@@ -167,42 +167,40 @@ export async function POST(request: NextRequest) {
       // Don't fail registration if email fails
     }
 
-    // Send welcome email via Mailketing
+    // Send welcome email using branded template
     try {
-      await mailketing.sendEmail({
-        to: email,
-        subject: 'Selamat Datang di EksporYuk!',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-              <h1 style="margin: 0; font-size: 28px;">Selamat Datang!</h1>
-            </div>
-            <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-              <p style="font-size: 16px;">Halo <strong>${name}</strong>,</p>
-              <p style="font-size: 16px;">Terima kasih telah bergabung dengan EksporYuk!</p>
-              <p style="font-size: 16px;">Akun Anda telah berhasil dibuat. Berikut adalah langkah selanjutnya:</p>
-              <ul style="font-size: 14px; color: #4b5563;">
-                <li>Verifikasi email Anda (cek email verifikasi)</li>
-                <li>Lengkapi profil Anda</li>
-                <li>Pilih membership yang sesuai dengan kebutuhan</li>
-                <li>Mulai belajar ekspor!</li>
-              </ul>
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}/dashboard" 
-                   style="display: inline-block; background: #f97316; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                  Kunjungi Dashboard
-                </a>
-              </div>
-              <p style="font-size: 14px; color: #6b7280;">Jika ada pertanyaan, hubungi kami via WhatsApp atau email.</p>
-              <p style="font-size: 14px; color: #6b7280;">Salam sukses,<br><strong>Tim EksporYuk</strong></p>
-            </div>
-          </div>
-        `,
-        tags: ['welcome', 'registration']
+      console.log('[Register] 📧 Sending welcome email to:', email)
+      const { renderBrandedTemplateBySlug } = await import('@/lib/branded-template-engine')
+      const registrationDate = user.createdAt.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       })
-      console.log('[Register] Welcome email sent to:', email)
+      
+      const emailTemplate = await renderBrandedTemplateBySlug('welcome-registration', {
+        name: name,
+        email: email,
+        registration_date: registrationDate,
+        role: 'Member Free',
+        support_email: 'support@eksporyuk.com',
+        support_phone: '+62 812-3456-7890',
+        dashboard_link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'}/dashboard`
+      })
+
+      if (emailTemplate) {
+        await mailketing.sendEmail({
+          to: email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          tags: ['welcome', 'registration', 'onboarding']
+        })
+        console.log('[Register] ✅ Welcome email sent successfully to:', email)
+      } else {
+        console.warn('[Register] ⚠️ Welcome template not found, skipping email')
+      }
     } catch (welcomeEmailError) {
-      console.error('Failed to send welcome email:', welcomeEmailError)
+      console.error('[Register] ⚠️ Failed to send welcome email:', welcomeEmailError)
       // Don't fail registration if welcome email fails
     }
 

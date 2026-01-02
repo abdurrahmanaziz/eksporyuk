@@ -365,58 +365,54 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // 📧 SEND ORDER CONFIRMATION EMAIL
+    // 📧 SEND ORDER CONFIRMATION EMAIL using branded template
     try {
+      const { renderBrandedTemplateBySlug } = await import('@/lib/branded-template-engine')
       const { mailketing } = await import('@/lib/integrations/mailketing')
       const customerEmail = email || session.user.email || ''
       const customerName = name || session.user.name || 'Member'
-      const expiredAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000)
+      const transactionDate = transaction.createdAt.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+      const dueDate = new Date(Date.now() + expiryHours * 60 * 60 * 1000).toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
       
-      await mailketing.sendEmail({
-        to: customerEmail,
-        subject: `📋 Pesanan Anda - ${plan.name}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-              <h1 style="margin: 0; font-size: 24px;">📋 Pesanan Anda Menunggu Pembayaran</h1>
-            </div>
-            <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
-              <p style="font-size: 16px;">Halo <strong>${customerName}</strong>,</p>
-              <p style="font-size: 16px;">Terima kasih! Pesanan Anda telah dibuat dan menunggu pembayaran.</p>
-              
-              <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin: 0 0 15px; color: #374151;">Detail Pesanan:</h3>
-                <table style="width: 100%; font-size: 14px;">
-                  <tr>
-                    <td style="padding: 8px 0; color: #6b7280;">Membership:</td>
-                    <td style="padding: 8px 0; font-weight: bold; text-align: right;">${plan.name}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #6b7280;">Durasi:</td>
-                    <td style="padding: 8px 0; text-align: right;">${membershipType}</td>
-                  </tr>
-                  ${discount > 0 ? `
-                  <tr>
-                    <td style="padding: 8px 0; color: #6b7280;">Harga Normal:</td>
-                    <td style="padding: 8px 0; text-align: right; text-decoration: line-through; color: #9ca3af;">Rp ${priceOption.price.toLocaleString('id-ID')}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #6b7280;">Diskon:</td>
-                    <td style="padding: 8px 0; text-align: right; color: #10b981;">- Rp ${discount.toLocaleString('id-ID')}</td>
-                  </tr>
-                  ` : ''}
-                  <tr style="border-top: 2px solid #e5e7eb;">
-                    <td style="padding: 12px 0; font-weight: bold;">Total Bayar:</td>
-                    <td style="padding: 12px 0; font-weight: bold; text-align: right; color: #f97316; font-size: 18px;">Rp ${amount.toLocaleString('id-ID')}</td>
-                  </tr>
-                </table>
-              </div>
-              
-              <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 0; color: #92400e; font-size: 14px;">
-                  ⏰ <strong>Batas Pembayaran:</strong> ${expiredAt.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })}
-                </p>
-              </div>
+      const emailTemplate = await renderBrandedTemplateBySlug('order-confirmation', {
+        name: customerName,
+        email: customerEmail,
+        invoice_number: transaction.invoiceNumber || transaction.id,
+        transaction_date: transactionDate,
+        product_name: plan.name,
+        product_description: `${membershipType} - ${plan.description || 'Akses penuh ke semua fitur EksporYuk'}`,
+        amount: `Rp ${amount.toLocaleString('id-ID')}`,
+        due_date: dueDate,
+        support_email: 'support@eksporyuk.com',
+        support_phone: '+62 812-3456-7890',
+        payment_link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'}/payment/${transaction.invoiceNumber || transaction.id}`
+      })
+
+      if (emailTemplate) {
+        await mailketing.sendEmail({
+          to: customerEmail,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          tags: ['order', 'payment', 'transaction', 'confirmation']
+        })
+        console.log('[API Checkout] ✅ Order confirmation email sent to:', customerEmail)
+      } else {
+        console.warn('[API Checkout] ⚠️ Order confirmation template not found')
+      }
+    } catch (emailError) {
+      console.error('[API Checkout] ⚠️ Failed to send order confirmation email:', emailError)
+      // Don't fail checkout if email fails
+    }
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${paymentUrl}" style="display: inline-block; background: #f97316; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
@@ -437,9 +433,9 @@ export async function POST(request: NextRequest) {
         `,
         tags: ['order-confirmation', 'membership']
       })
-      console.log('[Checkout] ✅ Order confirmation email sent')
+      console.log('[Checkout] ✅ Order confirmation email sent to:', customerEmail)
     } catch (emailError) {
-      console.error('[Checkout] ⚠️ Failed to send order confirmation email:', emailError)
+      console.error('[Checkout] ⚠️ Failed to send order confirmation email to:', customerEmail, 'Error:', emailError)
       // Don't block checkout if email fails
     }
 

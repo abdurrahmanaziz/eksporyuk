@@ -257,6 +257,52 @@ export async function POST(
 
     console.log('[Payment Confirm POST] Transaction updated successfully')
 
+    // Send confirmation email to customer using branded template
+    try {
+      console.log('[Payment Confirm POST] 📧 Sending confirmation email to customer...')
+      const { renderBrandedTemplateBySlug } = await import('@/lib/branded-template-engine')
+      const { mailketing } = await import('@/lib/integrations/mailketing')
+      
+      const customerEmail = transaction.customerEmail
+      const customerName = transaction.customerName || 'Member'
+      const invoiceNumber = transaction.invoiceNumber || transactionId
+      const amount = transaction.amount
+      const transactionDate = new Date().toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+      
+      const emailTemplate = await renderBrandedTemplateBySlug('payment-confirmation', {
+        name: customerName,
+        email: customerEmail,
+        invoice_number: invoiceNumber,
+        amount: `Rp ${amount.toLocaleString('id-ID')}`,
+        transaction_date: transactionDate,
+        support_email: 'support@eksporyuk.com',
+        support_phone: '+62 812-3456-7890',
+        dashboard_link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'}/dashboard`
+      })
+
+      if (emailTemplate) {
+        await mailketing.sendEmail({
+          to: customerEmail,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          tags: ['payment-confirmation', 'order-confirmation', 'transaction']
+        })
+        console.log('[Payment Confirm POST] ✅ Confirmation email sent successfully to:', customerEmail)
+      } else {
+        console.warn('[Payment Confirm POST] ⚠️ Payment confirmation template not found')
+      }
+    } catch (emailError) {
+      console.error('[Payment Confirm POST] ⚠️ Failed to send confirmation email:', emailError)
+      // Don't fail the main operation if email fails
+    }
+
     // Create notification for admin
     try {
       console.log('[Payment Confirm POST] Creating admin notifications...')
