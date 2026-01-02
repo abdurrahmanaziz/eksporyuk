@@ -5679,3 +5679,303 @@ post_backgrounds
 ✔ Siap langsung diimplementasi
 ✔ Cocok untuk desain di Stitch
 
+---
+
+# 📕 PRD – Website Scanner, Error Detection & Auto-Fix System
+
+## (Health Monitor & Self-Healing System)
+
+---
+
+## 1. TUJUAN FITUR
+
+Menyediakan **sistem pemindaian (scanner) otomatis** untuk:
+
+* Mendeteksi error di website & sistem
+* Mengelompokkan error berdasarkan level & jenis
+* Memberikan **opsi perbaikan (auto-fix / manual)**
+* Menyimpan **riwayat scan & perbaikan**
+* Menyediakan **laporan & checklist validasi sistem**
+
+Fitur ini bertujuan:
+
+* Menjaga **stabilitas platform Eksporyuk**
+* Mempercepat troubleshooting
+* Mengurangi error silent (tidak terlihat user)
+
+---
+
+## 2. CAKUPAN SCAN (SCOPE PEMERIKSAAN)
+
+### 2.1 Website & Frontend Scan
+
+* Halaman 404 / 500
+* Broken route
+* Blank page
+* JS error (console)
+* Missing asset (CSS, JS, image)
+* Broken component
+* Permission page error
+
+---
+
+### 2.2 API Scan
+
+* API endpoint tidak aktif
+* Response error (4xx / 5xx)
+* Timeout
+* Invalid response schema
+* Authentication failure
+* Rate limit error
+
+---
+
+### 2.3 Sistem & Backend Scan
+
+* Cron job gagal
+* Queue stuck
+* Background job error
+* Memory leak (indikasi)
+* CPU spike
+* Disk hampir penuh
+
+---
+
+### 2.4 Database Scan
+
+* Koneksi database gagal
+* Query error
+* Missing table / column
+* Foreign key conflict
+* Duplicate data
+* Data inconsistency (relasi rusak)
+
+---
+
+### 2.5 Security & Integrity Scan
+
+* Token expired
+* Invalid session
+* Permission leak
+* Role access mismatch
+* API exposed tanpa auth
+* Failed login anomaly
+
+---
+
+## 3. LEVEL ERROR (PRIORITAS)
+
+| Level    | Warna     | Contoh            |
+| -------- | --------- | ----------------- |
+| Critical | 🔴 Merah  | DB down, API mati |
+| High     | 🟠 Oranye | Checkout error    |
+| Medium   | 🟡 Kuning | Page error        |
+| Low      | 🔵 Biru   | Warning           |
+| Info     | ⚪ Abu     | Log informatif    |
+
+---
+
+## 4. ALUR KERJA FITUR (FLOW)
+
+### 4.1 Manual Scan
+
+1. Admin klik **“Scan Sekarang”**
+2. Pilih scope:
+
+   * Full Scan
+   * API only
+   * Database only
+   * Frontend only
+3. Sistem menjalankan scan
+4. Hasil ditampilkan real-time
+
+---
+
+### 4.2 Auto Scan (Terjadwal)
+
+* Interval:
+
+  * 5 menit
+  * 15 menit
+  * 1 jam
+  * 6 jam
+  * Harian
+* Bisa diaktifkan / dimatikan admin
+
+---
+
+## 5. HASIL SCAN (SCAN RESULT)
+
+Setiap hasil scan menampilkan:
+
+* Jenis error
+* Lokasi (URL / API / table)
+* Level error
+* Timestamp
+* Dampak (impact)
+* Status:
+
+  * ❌ Belum diperbaiki
+  * 🔧 Dalam perbaikan
+  * ✅ Sudah diperbaiki
+  * ⚠️ Dilewati (ignored)
+
+---
+
+## 6. SISTEM AUTO-FIX & MANUAL FIX
+
+### 6.1 Auto-Fix (Jika Aman)
+
+Contoh:
+
+* Restart queue
+* Clear cache
+* Re-run migration
+* Reconnect DB
+* Restart service
+* Rebuild index
+
+> Auto-fix **hanya untuk error yang aman & terdefinisi**
+
+---
+
+### 6.2 Manual Fix (Admin / Developer)
+
+* Link ke file / modul terkait
+* Saran perbaikan (hint)
+* Checklist tindakan
+* Tombol **“Tandai Sudah Diperbaiki”**
+
+---
+
+## 7. CHECKLIST VALIDASI (POST-FIX)
+
+Setelah perbaikan:
+
+* Error sudah tidak muncul
+* API response normal
+* Database konsisten
+* Page bisa diakses
+* Tidak ada error turunan
+
+Checklist disimpan sebagai **log audit**
+
+---
+
+## 8. RIWAYAT & AUDIT LOG
+
+### 8.1 Scan History
+
+* Tanggal scan
+* Jenis scan
+* Total error
+* Error critical
+* Status overall (Healthy / Warning / Critical)
+
+---
+
+### 8.2 Fix History
+
+* Error ID
+* Siapa yang memperbaiki
+* Waktu perbaikan
+* Metode (auto/manual)
+* Catatan tambahan
+
+---
+
+## 9. NOTIFIKASI & ALERT
+
+### 9.1 Real-time Alert
+
+* Telegram
+* Email
+* Dashboard badge
+
+---
+
+### 9.2 Trigger Alert
+
+* Critical error
+* API mati
+* Checkout error
+* DB error
+* Security breach
+
+---
+
+## 10. DASHBOARD UI (ADMIN)
+
+### 10.1 Widget Utama
+
+* System Health Score (%)
+* Total error aktif
+* Critical error
+* Last scan time
+
+---
+
+### 10.2 Error Table
+
+* Filter by:
+
+  * Module
+  * Level
+  * Status
+  * Date
+* Search error
+
+---
+
+## 11. DATA & DATABASE (HIGH LEVEL)
+
+### 11.1 Tabel Utama
+
+* `system_scans`
+* `scan_results`
+* `error_logs`
+* `fix_logs`
+* `system_health_reports`
+
+---
+
+## 12. KEAMANAN & BATASAN
+
+* Hanya admin (dan super admin) bisa:
+
+  * Run scan
+  * Auto-fix
+* Log **tidak bisa dihapus**
+* Semua tindakan tercatat
+
+---
+
+## 13. NON-FUNCTIONAL REQUIREMENTS
+
+* Tidak mengganggu performa
+* Scan berjalan async
+* Tidak blocking user
+* Bisa scale (microservice ready)
+* Aman (read-only default)
+
+---
+
+## 14. FUTURE EXTENSION (OPSIONAL)
+
+* AI Error Diagnosis (beri rekomendasi)
+* Predictive error (sebelum crash)
+* SLA uptime report
+* Export laporan PDF
+* Integrasi DevOps (CI/CD)
+
+---
+
+## 15. CATATAN PENTING
+
+> ❗ Sistem **TIDAK BOLEH**:
+
+* Mengubah data tanpa izin
+* Auto-fix error berisiko tinggi
+* Menghapus data
+
+--
