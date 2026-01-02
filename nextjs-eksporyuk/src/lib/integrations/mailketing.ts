@@ -54,7 +54,9 @@ export class MailketingService {
   constructor() {
     // Initialize with env vars as fallback
     this.apiKey = process.env.MAILKETING_API_KEY || ''
-    this.apiUrl = process.env.MAILKETING_API_URL || 'https://api.mailketing.co.id/api/v1'
+    // Note: api.mailketing.co.id redirects to https://be.mailketing.co.id/
+    // Use /v1/send endpoint with Bearer token authentication
+    this.apiUrl = process.env.MAILKETING_API_URL || 'https://be.mailketing.co.id'
     this.fromEmail = process.env.MAILKETING_FROM_EMAIL || 'noreply@eksporyuk.com'
     this.fromName = process.env.MAILKETING_FROM_NAME || 'EksporYuk'
   }
@@ -114,7 +116,7 @@ export class MailketingService {
 
       // CORRECT endpoint and format for Mailketing API v1/send
       // Uses Bearer token authentication with JSON body (not form-urlencoded)
-      const url = 'https://api.mailketing.co.id/v1/send'
+      const url = `${this.apiUrl}/v1/send`
       
       console.log(`📧 Sending email via Mailketing: ${url}`)
       console.log('   To:', payload.to)
@@ -381,7 +383,7 @@ export class MailketingService {
       console.log('📋 [MAILKETING] Fetching lists from API...')
       console.log('🔑 API Token:', this.apiKey.substring(0, 10) + '...')
 
-      const response = await fetch('https://api.mailketing.co.id/api/v1/viewlist', {
+      const response = await fetch(`${this.apiUrl}/api/v1/viewlist`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -669,7 +671,7 @@ export class MailketingService {
 
       console.log('💰 [MAILKETING] Fetching account balance via ceksaldo...')
 
-      const response = await fetch('https://api.mailketing.co.id/api/v1/ceksaldo', {
+      const response = await fetch(`${this.apiUrl}/api/v1/ceksaldo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -751,7 +753,7 @@ export class MailketingService {
 
       console.log('👤 [MAILKETING] Fetching account info...')
 
-      const response = await fetch('https://api.mailketing.co.id/api/v1/account', {
+      const response = await fetch(`${this.apiUrl}/api/v1/account`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
