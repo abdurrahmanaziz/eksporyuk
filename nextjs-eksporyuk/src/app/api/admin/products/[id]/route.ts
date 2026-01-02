@@ -10,9 +10,10 @@ export const dynamic = 'force-dynamic'
 // GET - Fetch single product
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,7 +29,7 @@ export async function GET(
     }
 
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         group: true,
         userProducts: true,
@@ -41,7 +42,7 @@ export async function GET(
 
     // Get courses for this product manually
     const productCourses = await prisma.productCourse.findMany({
-      where: { productId: params.id }
+      where: { productId: id }
     })
     const courseIds = productCourses.map(pc => pc.courseId)
     const courses = courseIds.length > 0 
@@ -70,9 +71,10 @@ export async function GET(
 // PUT - Update product
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -122,7 +124,7 @@ export async function PUT(
 
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingProduct) {
@@ -131,7 +133,7 @@ export async function PUT(
 
     // Update product
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         slug,
@@ -168,14 +170,14 @@ export async function PUT(
     if (courseIds !== undefined) {
       // Delete existing course associations
       await prisma.productCourse.deleteMany({
-        where: { productId: params.id },
+        where: { productId: id },
       })
 
       // Create new associations
       if (courseIds.length > 0) {
         await prisma.productCourse.createMany({
           data: courseIds.map((courseId: string) => ({
-            productId: params.id,
+            productId: id,
             courseId,
           })),
         })
@@ -192,9 +194,10 @@ export async function PUT(
 // DELETE - Delete product
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -211,7 +214,7 @@ export async function DELETE(
 
     // Check if product exists and has sales (safety check as per rule #1)
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -237,11 +240,11 @@ export async function DELETE(
 
     // Delete related data first
     await prisma.productCourse.deleteMany({
-      where: { productId: params.id },
+      where: { productId: id },
     })
 
     await prisma.product.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })
