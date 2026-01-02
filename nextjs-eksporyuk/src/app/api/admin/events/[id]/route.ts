@@ -68,6 +68,8 @@ export async function GET(
         reminders: true,
         creatorId: true,
         upsaleTargetMemberships: true,
+        commissionType: true,
+        affiliateCommissionRate: true,
         upsaleDiscount: true,
         createdAt: true,
         updatedAt: true,
@@ -165,6 +167,8 @@ export async function PUT(
       seoMetaDescription,
       ctaButtonText,
       reminders,
+      commissionType,
+      affiliateCommissionRate,
     } = body
 
     // Check if event exists
@@ -221,6 +225,8 @@ export async function PUT(
         ...(ctaButtonText !== undefined && { ctaButtonText }),
         ...(reminders !== undefined && { reminders }),
         ...(targetMembershipId !== undefined && { upsaleTargetMemberships: targetMembershipId || null }),
+        ...(commissionType !== undefined && { commissionType }),
+        ...(affiliateCommissionRate !== undefined && { affiliateCommissionRate }),
       },
     })
 
