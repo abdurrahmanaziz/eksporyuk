@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('[API Checkout] Request body:', JSON.stringify(body, null, 2))
     
-    const { planId, priceOption, couponCode, finalPrice, name, email, phone, whatsapp } = body
+    const { planId, priceOption, couponCode, finalPrice, name, email, phone, whatsapp, affiliateCode } = body
 
     // Validate plan exists
     const plan = await prisma.membership.findUnique({
@@ -129,7 +129,23 @@ export async function POST(request: NextRequest) {
     // Validate and apply coupon if provided
     let discount = 0
     let affiliateId = null
+    let affiliateUser = null
     let coupon = null
+
+    // First, try to get affiliate from affiliateCode parameter
+    if (affiliateCode) {
+      console.log('[API Checkout] Looking up affiliate by code:', affiliateCode)
+      const affiliateLink = await prisma.affiliateLink.findFirst({
+        where: { code: affiliateCode },
+        include: { user: { select: { id: true, name: true, email: true } } }
+      })
+      
+      if (affiliateLink?.user) {
+        affiliateId = affiliateLink.user.id
+        affiliateUser = affiliateLink.user
+        console.log('[API Checkout] Found affiliate from code:', affiliateUser.name, affiliateUser.id)
+      }
+    }
 
     if (couponCode) {
       coupon = await prisma.coupon.findFirst({
@@ -163,7 +179,11 @@ export async function POST(request: NextRequest) {
           discount = coupon.discountValue
         }
 
-        affiliateId = coupon.createdBy || null
+        // Only override affiliateId from coupon if not already set from affiliateCode
+        if (!affiliateId && coupon.createdBy) {
+          affiliateId = coupon.createdBy
+          console.log('[API Checkout] Got affiliate from coupon creator:', affiliateId)
+        }
       }
     }
 
@@ -232,7 +252,11 @@ export async function POST(request: NextRequest) {
         membershipDuration: plan.duration,
         originalAmount: priceOption.price,
         discountAmount: discount,
-        expiryHours: expiryHours
+        expiryHours: expiryHours,
+        // Store affiliate info in metadata for reference
+        affiliateId: affiliateId || null,
+        affiliateName: affiliateUser?.name || null,
+        affiliateCode: affiliateCode || null
       })
     }
 

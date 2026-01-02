@@ -31,15 +31,9 @@ export async function GET(
         paymentProofSubmittedAt: true,
         createdAt: true,
         metadata: true,
-        product: {
-          select: { id: true, name: true }
-        },
-        membership: {
-          select: { id: true, name: true }
-        },
-        course: {
-          select: { id: true, title: true }
-        }
+        productId: true,
+        membershipId: true,
+        courseId: true
       }
     })
 
@@ -50,14 +44,38 @@ export async function GET(
       )
     }
 
+    // Manual enrichment - fetch related data
+    let product = null, membership = null, course = null
+
+    if (transaction.productId) {
+      product = await prisma.product.findUnique({
+        where: { id: transaction.productId },
+        select: { id: true, name: true }
+      })
+    }
+
+    if (transaction.membershipId) {
+      membership = await prisma.membership.findUnique({
+        where: { id: transaction.membershipId },
+        select: { id: true, name: true }
+      })
+    }
+
+    if (transaction.courseId) {
+      course = await prisma.course.findUnique({
+        where: { id: transaction.courseId },
+        select: { id: true, title: true }
+      })
+    }
+
     // Determine item name
     let itemName = 'Produk'
-    if (transaction.product) {
-      itemName = transaction.product.name
-    } else if (transaction.membership) {
-      itemName = transaction.membership.name
-    } else if (transaction.course) {
-      itemName = transaction.course.title
+    if (product) {
+      itemName = product.name
+    } else if (membership) {
+      itemName = membership.name
+    } else if (course) {
+      itemName = course.title
     }
 
     // Get bank account if manual payment

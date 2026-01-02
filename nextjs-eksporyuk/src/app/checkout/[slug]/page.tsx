@@ -186,25 +186,33 @@ export default function CheckoutPage() {
     return () => clearTimeout(debounceTimer)
   }, [couponCode, plan])
 
-  // Load affiliate partner from cookies
+  // Load affiliate partner from URL params or cookies
   useEffect(() => {
     const loadAffiliatePartner = async () => {
-      // Get affiliate code from cookies
-      const cookies = document.cookie.split(';')
-      let foundAffiliateCode: string | null = null
+      // Priority 1: Get affiliate code from URL parameter (?ref=CODE or ?affiliate=CODE)
+      let foundAffiliateCode = searchParams.get('ref') || searchParams.get('affiliate')
       
-      for (const cookie of cookies) {
-        const [name, value] = cookie.trim().split('=')
-        if (name === 'affiliate_code' || name === 'ref') {
-          foundAffiliateCode = value
-          break
+      // Priority 2: Fallback to cookies
+      if (!foundAffiliateCode) {
+        const cookies = document.cookie.split(';')
+        for (const cookie of cookies) {
+          const [name, value] = cookie.trim().split('=')
+          if (name === 'affiliate_code' || name === 'ref') {
+            foundAffiliateCode = value
+            break
+          }
         }
       }
       
       if (!foundAffiliateCode) return
       
+      console.log('[Checkout] Found affiliate code:', foundAffiliateCode)
+      
       // Store the affiliate code for later use in checkout
       setAffiliateCode(foundAffiliateCode)
+      
+      // Also save to cookie for persistence (30 days)
+      document.cookie = `affiliate_code=${foundAffiliateCode}; path=/; max-age=${30 * 24 * 60 * 60}`
       
       try {
         const response = await fetch(`/api/affiliate/by-code?code=${encodeURIComponent(foundAffiliateCode)}`)
@@ -212,6 +220,7 @@ export default function CheckoutPage() {
           const data = await response.json()
           if (data.success && data.affiliate?.user?.name) {
             setAffiliatePartner(data.affiliate.user.name)
+            console.log('[Checkout] Affiliate partner loaded:', data.affiliate.user.name)
           }
         }
       } catch (error) {
@@ -220,7 +229,7 @@ export default function CheckoutPage() {
     }
     
     loadAffiliatePartner()
-  }, [])
+  }, [searchParams])
 
   // Fetch payment logos and manual banks
   useEffect(() => {
@@ -615,7 +624,8 @@ export default function CheckoutPage() {
           name: registerData.name,
           email: registerData.email,
           phone: registerData.phone,
-          whatsapp: registerData.whatsapp || registerData.phone
+          whatsapp: registerData.whatsapp || registerData.phone,
+          affiliateCode: affiliateCode // Pass affiliate code from URL/cookie
         })
       })
 
