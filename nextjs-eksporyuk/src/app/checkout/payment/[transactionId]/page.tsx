@@ -71,6 +71,23 @@ function PaymentPageContent() {
   const [selectedMethod, setSelectedMethod] = useState<string>('')
   const [paymentInstructions, setPaymentInstructions] = useState<any>(null)
   const [timeRemaining, setTimeRemaining] = useState(24 * 60 * 60) // 24 hours in seconds
+  const [csWhatsapp, setCsWhatsapp] = useState<string>('')
+
+  // Fetch CS WhatsApp from settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/admin/settings/payment')
+        if (response.ok) {
+          const data = await response.json()
+          setCsWhatsapp(data.data?.customerServiceWhatsApp || '')
+        }
+      } catch (error) {
+        console.error('Failed to fetch CS WhatsApp:', error)
+      }
+    }
+    fetchSettings()
+  }, [])
 
   useEffect(() => {
     fetchTransaction()
@@ -250,7 +267,8 @@ function PaymentPageContent() {
 
 Mohon dicek dan dikonfirmasi. Terima kasih!`
 
-    const whatsappUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`
+    const waNumber = csWhatsapp.replace(/\D/g, '')
+    const whatsappUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 

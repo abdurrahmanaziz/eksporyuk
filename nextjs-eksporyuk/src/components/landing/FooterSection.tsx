@@ -41,11 +41,6 @@ export function FooterSection() {
                 </Link>
               </li>
               <li>
-                <Link href="/events" className="hover:text-white transition-colors">
-                  Event
-                </Link>
-              </li>
-              <li>
                 <Link href="/community" className="hover:text-white transition-colors">
                   Komunitas
                 </Link>

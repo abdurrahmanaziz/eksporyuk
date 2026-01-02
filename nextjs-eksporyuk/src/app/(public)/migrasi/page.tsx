@@ -413,7 +413,7 @@ export default function MigrationPage() {
             
             <div className="grid md:grid-cols-2 gap-6">
               <a 
-                href="https://wa.me/6281234567890"
+                href={csWhatsapp ? `https://wa.me/${csWhatsapp.replace(/\D/g, '')}` : '#'}
                 target="_blank"
                 className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all group"
               >
@@ -422,7 +422,7 @@ export default function MigrationPage() {
                   <span className="text-xl font-bold">WhatsApp Support</span>
                 </div>
                 <p className="text-white/80 mb-3">Chat langsung dengan tim kami</p>
-                <p className="text-2xl font-bold">+62 812-3456-7890</p>
+                <p className="text-2xl font-bold">{csWhatsapp || '+62 812-3456-7890'}</p>
               </a>
               
               <a 

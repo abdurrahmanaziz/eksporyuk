@@ -32,6 +32,23 @@ function SuccessPageContent() {
   const [memberships, setMemberships] = useState<any[]>([])
   const [countdown, setCountdown] = useState(10) // Auto-redirect countdown
   const [autoRedirect, setAutoRedirect] = useState(true)
+  const [csWhatsapp, setCsWhatsapp] = useState<string>('')
+
+  // Fetch CS WhatsApp from settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/admin/settings/payment')
+        if (response.ok) {
+          const data = await response.json()
+          setCsWhatsapp(data.data?.customerServiceWhatsApp || '')
+        }
+      } catch (error) {
+        console.error('Failed to fetch CS WhatsApp:', error)
+      }
+    }
+    fetchSettings()
+  }, [])
 
   // Auto-redirect to dashboard after countdown
   useEffect(() => {
@@ -305,7 +322,10 @@ function SuccessPageContent() {
           )}
           
           <Button
-            onClick={() => window.open('https://wa.me/6281234567890?text=Halo, saya sudah berhasil melakukan pembayaran dan ingin bergabung ke group WhatsApp.', '_blank')}
+            onClick={() => {
+              const waNumber = csWhatsapp.replace(/\D/g, '')
+              window.open(`https://wa.me/${waNumber}?text=Halo, saya sudah berhasil melakukan pembayaran dan ingin bergabung ke group WhatsApp.`, '_blank')
+            }}
             className="bg-green-500 hover:bg-green-600 text-white"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
