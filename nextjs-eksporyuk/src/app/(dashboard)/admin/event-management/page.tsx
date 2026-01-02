@@ -43,6 +43,7 @@ interface Event {
   isFeatured: boolean
   productStatus?: string
   eventVisibility?: string
+  salesPageUrl?: string
   _count?: {
     UserProduct: number
   }
@@ -287,21 +288,10 @@ export default function EventManagementPage() {
                                     Edit Event
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={() => window.open(`/events/${event.slug}`, '_blank')}
+                                    onClick={() => window.open(event.salesPageUrl || `/checkout/product/${event.checkoutSlug || event.slug}`, '_blank')}
                                   >
                                     <Eye className="mr-2 h-4 w-4" />
-                                    Lihat Halaman
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      window.open(
-                                        `/checkout/product/${event.checkoutSlug || event.slug}`,
-                                        '_blank'
-                                      )
-                                    }
-                                  >
-                                    <DollarSign className="mr-2 h-4 w-4" />
-                                    Lihat Checkout
+                                    {event.salesPageUrl ? 'Lihat Sales Page' : 'Lihat Halaman'}
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
