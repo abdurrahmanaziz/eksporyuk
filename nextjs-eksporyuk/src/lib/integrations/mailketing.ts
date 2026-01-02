@@ -112,33 +112,33 @@ export class MailketingService {
         }
       }
 
-      // Correct endpoint and format based on getLists() working implementation
-      const url = 'https://api.mailketing.co.id/api/v1/send'
+      // CORRECT endpoint and format for Mailketing API v1/send
+      // Uses Bearer token authentication with JSON body (not form-urlencoded)
+      const url = 'https://api.mailketing.co.id/v1/send'
       
       console.log(`📧 Sending email via Mailketing: ${url}`)
       console.log('   To:', payload.to)
       console.log('   Subject:', payload.subject)
       
-      // Use same format as getLists() - form-urlencoded with api_token
-      const formData = new URLSearchParams({
-        api_token: this.apiKey,
+      // Prepare JSON body with correct field names for Mailketing API
+      const emailPayload = {
+        to: Array.isArray(payload.to) ? payload.to : [payload.to],
         from_email: payload.from_email || this.fromEmail,
         from_name: payload.from_name || this.fromName,
-        recipient: Array.isArray(payload.to) ? payload.to.join(',') : payload.to, // FIXED: 'recipient' not 'to'
         subject: payload.subject,
-        content: payload.html // FIXED: 'content' not 'html'
-      })
-
-      // Add optional fields if provided
-      if (payload.text) formData.append('text', payload.text)
-      if (payload.reply_to) formData.append('reply_to', payload.reply_to)
+        html: payload.html,
+        text: payload.text,
+        reply_to: payload.reply_to,
+        tags: payload.tags || []
+      }
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
         },
-        body: formData
+        body: JSON.stringify(emailPayload)
       })
 
       // Check content-type
