@@ -195,7 +195,7 @@ export async function sendCertificateReminderEmail(
   certificateNumber: string
 ): Promise<boolean> {
   const mailketingApiKey = process.env.MAILKETING_API_KEY
-  const mailketingUrl = process.env.MAILKETING_API_URL || 'https://api.mailketing.co.id'
+  const mailketingUrl = process.env.MAILKETING_API_URL || 'https://be.mailketing.co.id'
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   if (!mailketingApiKey) {

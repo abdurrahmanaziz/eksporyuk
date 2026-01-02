@@ -402,7 +402,7 @@ async function sendEmail(campaign: any, user: any, config: any, logId: string): 
       emailPayload.cc = config.MAILKETING_FORWARD_EMAIL
     }
 
-    const response = await fetch(`https://api.mailketing.co.id/api/send`, {
+    const response = await fetch(`https://be.mailketing.co.id/v1/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

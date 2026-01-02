@@ -185,7 +185,7 @@ async function sendEmailReminder(
   progress: number
 ) {
   const mailketingApiKey = process.env.MAILKETING_API_KEY
-  const mailketingUrl = process.env.MAILKETING_API_URL || 'https://api.mailketing.co.id'
+  const mailketingUrl = process.env.MAILKETING_API_URL || 'https://be.mailketing.co.id'
 
   if (!mailketingApiKey) {
     console.warn('Mailketing API key not configured')

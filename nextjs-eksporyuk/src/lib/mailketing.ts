@@ -23,7 +23,7 @@ class MailketingService {
   constructor() {
     this.config = {
       apiKey: process.env.MAILKETING_API_KEY || '',
-      apiUrl: process.env.MAILKETING_API_URL || 'https://api.mailketing.co.id/v1',
+      apiUrl: process.env.MAILKETING_API_URL || 'https://be.mailketing.co.id',
       fromEmail: process.env.MAILKETING_SENDER_EMAIL || 'noreply@eksporyuk.com',
       fromName: process.env.MAILKETING_SENDER_NAME || 'EksporYuk'
     }

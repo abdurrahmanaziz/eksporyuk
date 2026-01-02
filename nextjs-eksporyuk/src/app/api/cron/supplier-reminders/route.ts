@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
 
 async function sendRenewalReminder(data: any) {
   const apiKey = process.env.MAILKETING_API_KEY
-  const apiUrl = process.env.MAILKETING_API_URL || 'https://api.mailketing.co.id'
+  const apiUrl = process.env.MAILKETING_API_URL || 'https://be.mailketing.co.id'
 
   if (!apiKey) return false
 

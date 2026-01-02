@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const mailketingConfig = config.config as any
 
     // Send via Mailketing API
-    const response = await fetch('https://api.mailketing.co.id/v1/send', {
+    const response = await fetch('https://be.mailketing.co.id/v1/send', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${mailketingConfig.MAILKETING_API_KEY}`,
