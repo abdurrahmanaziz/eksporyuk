@@ -81,13 +81,39 @@ export async function POST(
         select: { name: true, username: true, avatar: true }
       })
 
-      // Send notification via Pusher + OneSignal (using safe pattern from chatService)
+      const followerName = follower?.name || follower?.username || 'Seseorang'
+      const followerUsername = follower?.username || 'user'
+
+      // Create notification record in database
       try {
-        // Trigger real-time notification
+        await prisma.notification.create({
+          data: {
+            userId: targetUserId,
+            type: 'FOLLOW',
+            title: 'Pengikut Baru',
+            message: `${followerName} mulai mengikuti Anda`,
+            sourceType: 'follow',
+            sourceId: follow.id,
+            link: `/${followerUsername}`,
+            redirectUrl: `/${followerUsername}`,
+            actorId: session.user.id,
+            actorName: followerName,
+            actorAvatar: follower?.avatar || null,
+            isRead: false,
+            isSent: true,
+            sentAt: new Date()
+          }
+        })
+      } catch (e) {
+        console.log('[Follow API] Failed to create notification record:', e)
+      }
+
+      // Send notification via Pusher (real-time)
+      try {
         await pusherService.notifyUser(targetUserId, 'new-follower', {
           userId: session.user.id,
-          name: follower?.name || 'Seseorang',
-          username: follower?.username || 'user',
+          name: followerName,
+          username: followerUsername,
           avatar: follower?.avatar || null
         })
       } catch (e) {
