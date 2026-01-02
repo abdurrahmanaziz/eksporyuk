@@ -413,31 +413,6 @@ export async function POST(request: NextRequest) {
       console.error('[API Checkout] ⚠️ Failed to send order confirmation email:', emailError)
       // Don't fail checkout if email fails
     }
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${paymentUrl}" style="display: inline-block; background: #f97316; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-                  💳 Bayar Sekarang
-                </a>
-              </div>
-              
-              <p style="font-size: 14px; color: #6b7280; text-align: center;">
-                Setelah pembayaran dikonfirmasi, membership Anda akan langsung aktif!
-              </p>
-              
-              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-              <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-                Butuh bantuan? Hubungi kami via WhatsApp atau email support@eksporyuk.com
-              </p>
-            </div>
-          </div>
-        `,
-        tags: ['order-confirmation', 'membership']
-      })
-      console.log('[Checkout] ✅ Order confirmation email sent to:', customerEmail)
-    } catch (emailError) {
-      console.error('[Checkout] ⚠️ Failed to send order confirmation email to:', customerEmail, 'Error:', emailError)
-      // Don't block checkout if email fails
-    }
 
     // 🔔 SEND IN-APP NOTIFICATION
     try {
