@@ -1,5 +1,7 @@
 import { prisma } from './prisma'
 import { sendPendingRevenueNotification } from './commission-notification-service'
+import { renderBrandedTemplateBySlug } from './branded-template-engine'
+import { sendEmail } from './integrations/mailketing'
 
 /**
  * Configuration untuk pembagian revenue
@@ -130,6 +132,7 @@ export async function processTransactionCommission(
       // Update affiliateProfile statistics for realtime sync
       const affiliateProfile = await prisma.affiliateProfile.findUnique({
         where: { userId: affiliateUserId },
+        include: { user: true }
       })
       
       if (affiliateProfile) {
@@ -158,6 +161,32 @@ export async function processTransactionCommission(
             throw err
           }
         })
+
+        // 📧 Send affiliate commission notification email
+        try {
+          const emailData = {
+            userName: affiliateProfile.user?.name || 'Affiliate',
+            commissionAmount: commission.affiliateCommission,
+            commissionRate: affiliateCommissionRate,
+            commissionType,
+            totalEarnings: affiliateProfile.totalEarnings + commission.affiliateCommission,
+            transactionId,
+          }
+          
+          const renderedEmail = await renderBrandedTemplateBySlug('affiliate-commission-received', emailData, {
+            userId: affiliateUserId,
+            context: 'affiliate_commission_earned',
+          })
+          
+          await sendEmail({
+            recipient: affiliateProfile.user?.email || '',
+            subject: renderedEmail.subject,
+            content: renderedEmail.html,
+          })
+        } catch (error) {
+          console.error('Error sending affiliate commission email:', error)
+          // Don't throw - email failure shouldn't block commission processing
+        }
       }
     }
     

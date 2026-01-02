@@ -34,6 +34,13 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'approve-all': {
         // Approve all pending affiliates
+        const pendingAffiliates = await prisma.affiliateProfile.findMany({
+          where: {
+            approvedAt: null
+          },
+          select: { userId: true }
+        })
+        
         const updated = await prisma.affiliateProfile.updateMany({
           where: {
             approvedAt: null
@@ -43,9 +50,18 @@ export async function POST(request: NextRequest) {
             isActive: true
           }
         })
+        
+        // Auto-grant AFFILIATE role to approved users
+        for (const affiliate of pendingAffiliates) {
+          await prisma.user.update({
+            where: { id: affiliate.userId },
+            data: { role: 'AFFILIATE' }
+          })
+        }
+        
         result = {
           success: true,
-          message: `${updated.count} affiliate berhasil di-approve`,
+          message: `${updated.count} affiliate berhasil di-approve dan diberi akses AFFILIATE role`,
           count: updated.count
         }
         break
@@ -53,6 +69,13 @@ export async function POST(request: NextRequest) {
 
       case 'activate-all': {
         // Activate ALL affiliates (also approve if not approved yet)
+        const inactiveAffiliates = await prisma.affiliateProfile.findMany({
+          where: {
+            isActive: false
+          },
+          select: { userId: true }
+        })
+        
         const updated = await prisma.affiliateProfile.updateMany({
           where: {
             isActive: false
@@ -62,9 +85,18 @@ export async function POST(request: NextRequest) {
             isActive: true
           }
         })
+        
+        // Auto-grant AFFILIATE role to activated users
+        for (const affiliate of inactiveAffiliates) {
+          await prisma.user.update({
+            where: { id: affiliate.userId },
+            data: { role: 'AFFILIATE' }
+          })
+        }
+        
         result = {
           success: true,
-          message: `${updated.count} affiliate berhasil diaktifkan`,
+          message: `${updated.count} affiliate berhasil diaktifkan dan diberi akses AFFILIATE role`,
           count: updated.count
         }
         break
@@ -74,6 +106,14 @@ export async function POST(request: NextRequest) {
         if (!affiliateIds || !Array.isArray(affiliateIds) || affiliateIds.length === 0) {
           return NextResponse.json({ error: 'affiliateIds is required' }, { status: 400 })
         }
+        
+        const selectedAffiliates = await prisma.affiliateProfile.findMany({
+          where: {
+            id: { in: affiliateIds },
+            approvedAt: null
+          },
+          select: { userId: true }
+        })
         
         const updated = await prisma.affiliateProfile.updateMany({
           where: {
@@ -85,9 +125,18 @@ export async function POST(request: NextRequest) {
             isActive: true
           }
         })
+        
+        // Auto-grant AFFILIATE role to approved users
+        for (const affiliate of selectedAffiliates) {
+          await prisma.user.update({
+            where: { id: affiliate.userId },
+            data: { role: 'AFFILIATE' }
+          })
+        }
+        
         result = {
           success: true,
-          message: `${updated.count} affiliate berhasil di-approve`,
+          message: `${updated.count} affiliate berhasil di-approve dan diberi akses AFFILIATE role`,
           count: updated.count
         }
         break
@@ -97,6 +146,13 @@ export async function POST(request: NextRequest) {
         if (!affiliateIds || !Array.isArray(affiliateIds) || affiliateIds.length === 0) {
           return NextResponse.json({ error: 'affiliateIds is required' }, { status: 400 })
         }
+        
+        const selectedAffiliates = await prisma.affiliateProfile.findMany({
+          where: {
+            id: { in: affiliateIds }
+          },
+          select: { userId: true }
+        })
         
         // Activate selected affiliates (also approve if not approved yet)
         const updated = await prisma.affiliateProfile.updateMany({
@@ -108,9 +164,18 @@ export async function POST(request: NextRequest) {
             isActive: true
           }
         })
+        
+        // Auto-grant AFFILIATE role to activated users
+        for (const affiliate of selectedAffiliates) {
+          await prisma.user.update({
+            where: { id: affiliate.userId },
+            data: { role: 'AFFILIATE' }
+          })
+        }
+        
         result = {
           success: true,
-          message: `${updated.count} affiliate berhasil diaktifkan`,
+          message: `${updated.count} affiliate berhasil diaktifkan dan diberi akses AFFILIATE role`,
           count: updated.count
         }
         break
