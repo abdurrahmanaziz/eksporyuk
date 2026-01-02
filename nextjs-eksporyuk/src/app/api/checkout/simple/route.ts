@@ -205,6 +205,22 @@ export async function POST(request: NextRequest) {
     
     console.log('[Simple Checkout] Original:', originalAmount, 'Discount:', discountAmount, 'Final:', amountStr)
 
+    // Get payment expiry settings from database BEFORE creating transaction
+    const globalSettings = await prisma.settings.findFirst({
+      select: {
+        paymentExpiryHours: true,
+        paymentUniqueCodeEnabled: true,
+        paymentUniqueCodeType: true,
+        paymentUniqueCodeMin: true,
+        paymentUniqueCodeMax: true,
+      }
+    })
+    const paymentExpiryHours = globalSettings?.paymentExpiryHours || 72 // Default 72 hours (3 days)
+    const paymentExpiryMs = paymentExpiryHours * 60 * 60 * 1000
+    const paymentExpirySeconds = paymentExpiryHours * 60 * 60
+    
+    console.log('[Simple Checkout] Payment expiry hours:', paymentExpiryHours)
+
     // Generate invoice number using centralized invoice generator
     let invoiceNumber: string
     try {
@@ -291,22 +307,6 @@ export async function POST(request: NextRequest) {
     let paymentUrl = ''
     let xenditData: any = null
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://eksporyuk.com'
-
-    // Get payment expiry settings from database
-    const globalSettings = await prisma.settings.findFirst({
-      select: {
-        paymentExpiryHours: true,
-        paymentUniqueCodeEnabled: true,
-        paymentUniqueCodeType: true,
-        paymentUniqueCodeMin: true,
-        paymentUniqueCodeMax: true,
-      }
-    })
-    const paymentExpiryHours = globalSettings?.paymentExpiryHours || 72 // Default 72 hours (3 days)
-    const paymentExpiryMs = paymentExpiryHours * 60 * 60 * 1000
-    const paymentExpirySeconds = paymentExpiryHours * 60 * 60
-    
-    console.log('[Simple Checkout] Payment expiry hours:', paymentExpiryHours)
 
     // === MANUAL PAYMENT - Skip Xendit, redirect to manual payment page ===
     if (paymentMethod === 'manual') {
