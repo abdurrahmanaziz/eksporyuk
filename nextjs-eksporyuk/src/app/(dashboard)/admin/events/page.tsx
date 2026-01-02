@@ -127,19 +127,30 @@ export default function AdminEventsPage() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
+      console.log('[Events] Fetching events from API...');
       const response = await fetch("/api/admin/events", {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      if (!response.ok) throw new Error("Failed to fetch events");
+      
+      console.log('[Events] Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[Events] API error:', errorData);
+        throw new Error(errorData.error || "Failed to fetch events");
+      }
+      
       const data = await response.json();
+      console.log('[Events] Data received:', data);
+      console.log('[Events] Events count:', data.events?.length || 0);
       
       setEvents(data.events || []);
       calculateStats(data.events || []);
     } catch (error) {
-      console.error("Error fetching events:", error);
+      console.error("[Events] Error fetching events:", error);
       toast.error("Gagal memuat event");
     } finally {
       setLoading(false);
