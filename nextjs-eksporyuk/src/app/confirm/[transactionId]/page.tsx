@@ -175,10 +175,15 @@ export default function ConfirmPaymentPage() {
       ];
       setManualBanks(fallbackBanks);
     }
+  }
+
   // Handle sender name input change
   const handleSenderNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSenderName(e.target.value)
   }, [])
+
+  // Fetch data on mount and when transactionId changes
+  useEffect(() => {
     if (transactionId) {
       fetchDetails()
       fetchPaymentSettings()
