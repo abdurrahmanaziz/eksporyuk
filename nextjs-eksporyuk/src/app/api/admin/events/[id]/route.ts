@@ -70,6 +70,7 @@ export async function GET(
         upsaleTargetMemberships: true,
         commissionType: true,
         affiliateCommissionRate: true,
+        affiliateEnabled: true,
         upsaleDiscount: true,
         createdAt: true,
         updatedAt: true,
@@ -167,6 +168,7 @@ export async function PUT(
       seoMetaDescription,
       ctaButtonText,
       reminders,
+      affiliateEnabled,
       commissionType,
       affiliateCommissionRate,
     } = body
@@ -225,6 +227,7 @@ export async function PUT(
         ...(ctaButtonText !== undefined && { ctaButtonText }),
         ...(reminders !== undefined && { reminders }),
         ...(targetMembershipId !== undefined && { upsaleTargetMemberships: targetMembershipId || null }),
+        ...(affiliateEnabled !== undefined && { affiliateEnabled }),
         ...(commissionType !== undefined && { commissionType }),
         ...(affiliateCommissionRate !== undefined && { affiliateCommissionRate }),
       },

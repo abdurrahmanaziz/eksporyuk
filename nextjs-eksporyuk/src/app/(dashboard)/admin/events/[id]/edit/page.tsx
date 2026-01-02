@@ -54,6 +54,7 @@ interface Event {
   accessLevel?: string;
   isActive: boolean;
   isFeatured: boolean;
+  affiliateEnabled?: boolean;
   commissionType?: string;
   affiliateCommissionRate?: number;
   seoMetaTitle?: string;
@@ -118,6 +119,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
     accessLevel: "PUBLIC",
     isActive: true,
     isFeatured: false,
+    affiliateEnabled: true, // Enable/disable affiliate for this event
     commissionType: "PERCENTAGE",
     affiliateCommissionRate: 30,
     targetMembershipId: "", // Target membership untuk upgrade dari affiliate
@@ -217,6 +219,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
         accessLevel: ev.accessLevel || "PUBLIC",
         isActive: ev.isActive !== false,
         isFeatured: ev.isFeatured === true,
+        affiliateEnabled: ev.affiliateEnabled !== false,
         commissionType: ev.commissionType || "PERCENTAGE",
         affiliateCommissionRate: Number(ev.affiliateCommissionRate) || 30,
         targetMembershipId: ev.targetMembershipId || "",
