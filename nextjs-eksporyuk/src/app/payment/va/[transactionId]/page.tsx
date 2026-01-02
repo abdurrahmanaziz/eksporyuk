@@ -678,8 +678,8 @@ export default function VirtualAccountPage() {
 
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Transfer Virtual Account</h1>
-          <p className="text-gray-600">Selesaikan pembayaran Anda</p>
+          <h1 className="text-2xl font-bold text-white drop-shadow-md mb-1">Transfer Virtual Account</h1>
+          <p className="text-white/80">Selesaikan pembayaran Anda</p>
         </div>
 
         {/* VA Card */}
