@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { getRoleTheme } from '@/lib/role-themes'
@@ -46,6 +46,7 @@ import {
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [emailVerified, setEmailVerified] = useState(false)
   const [profileCompleted, setProfileCompleted] = useState(false)
@@ -69,7 +70,14 @@ export default function DashboardPage() {
   const theme = session?.user?.role ? getRoleTheme(session.user.role) : getRoleTheme('MEMBER_FREE')
   
   // Detect if user just submitted payment proof OR has awaiting confirmation from database
-  const hasPaymentSubmission = searchParams?.get('payment_submitted') === 'true' || hasAwaitingConfirmation
+  const hasPaymentSubmission = searchParams?.get('payment_submitted') === 'true'
+  
+  // Auto-redirect to waiting confirmation page if user has pending confirmation
+  useEffect(() => {
+    if (hasAwaitingConfirmation && !hasPaymentSubmission) {
+      router.push('/dashboard/waiting-confirmation')
+    }
+  }, [hasAwaitingConfirmation, hasPaymentSubmission, router])
   
   // Check if user is free member - show special dashboard
   const isFreeUser = session?.user?.role === 'MEMBER_FREE'
@@ -218,34 +226,6 @@ export default function DashboardPage() {
     )}
     
     <div className="min-h-screen bg-gray-50 p-6 space-y-6">
-      {/* Payment Submission Status Banner - Show for users who just submitted payment OR have awaiting confirmation */}
-      {hasPaymentSubmission && (
-        <div className="relative overflow-hidden rounded-2xl shadow-sm border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <div className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Clock className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                  Menunggu Verifikasi Pembayaran
-                </h3>
-                <p className="text-blue-700 mb-3">
-                  {searchParams?.get('payment_submitted') === 'true' 
-                    ? 'Bukti pembayaran Anda telah berhasil dikirim. Tim admin kami akan memverifikasi dalam'
-                    : 'Anda memiliki transaksi yang sedang menunggu verifikasi admin. Proses verifikasi memakan waktu'
-                  } <strong>1x24 jam</strong>.
-                </p>
-                <div className="flex items-center gap-2 text-sm text-blue-600">
-                  <span>Status: Menunggu verifikasi admin</span>
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Email Verification Banner */}
       <EmailVerificationBanner />
       
