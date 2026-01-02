@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { 
@@ -66,6 +66,7 @@ export default function ConfirmPaymentPage() {
   const [senderBank, setSenderBank] = useState('')
   const [csWhatsApp, setCSWhatsApp] = useState('')
   const [manualBanks, setManualBanks] = useState<Array<{id: string, bankName: string, bankCode: string}>>([])  
+  const hasAutoFilledRef = useRef(false)
 
   // Fetch transaction details
   const fetchDetails = useCallback(async () => {
@@ -85,17 +86,12 @@ export default function ConfirmPaymentPage() {
       if (data.transaction.paymentProofUrl) {
         setPreviewUrl(data.transaction.paymentProofUrl)
       }
-
-      // Set default sender name from customer name (only if empty)
-      if (data.transaction.customerName && senderName === '') {
-        setSenderName(data.transaction.customerName)
-      }
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [transactionId, senderName])
+  }, [transactionId])
 
   // Fetch payment settings (CS WhatsApp and manual banks)
   const fetchPaymentSettings = useCallback(async () => {
@@ -179,9 +175,10 @@ export default function ConfirmPaymentPage() {
       ];
       setManualBanks(fallbackBanks);
     }
+  // Handle sender name input change
+  const handleSenderNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSenderName(e.target.value)
   }, [])
-
-  useEffect(() => {
     if (transactionId) {
       fetchDetails()
       fetchPaymentSettings()
@@ -190,15 +187,9 @@ export default function ConfirmPaymentPage() {
 
   // Set default sender name only once when details first load
   useEffect(() => {
-    if (details?.customerName && senderName === '') {
+    if (details?.customerName && !hasAutoFilledRef.current && senderName === '') {
       setSenderName(details.customerName)
-    }
-  }, [details?.customerName]) // Remove senderName dependency to prevent re-runs
-
-  // Set default sender name only once when details first load
-  useEffect(() => {
-    if (details?.customerName && senderName === '') {
-      setSenderName(details.customerName)
+      hasAutoFilledRef.current = true
     }
   }, [details?.customerName])
 
@@ -561,7 +552,7 @@ export default function ConfirmPaymentPage() {
                 <input
                   type="text"
                   value={senderName}
-                  onChange={(e) => setSenderName(e.target.value)}
+                  onChange={handleSenderNameChange}
                   placeholder="Masukkan nama pengirim sesuai rekening"
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
                   disabled={submitting}
