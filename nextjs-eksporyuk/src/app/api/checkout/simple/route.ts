@@ -244,32 +244,33 @@ export async function POST(request: NextRequest) {
     if (affiliateCode) {
       console.log('[Simple Checkout] Looking up affiliate with code:', affiliateCode)
       try {
-        // First try to find by referralCode
-        let affiliateUser = await prisma.user.findFirst({
-          where: { 
-            referralCode: affiliateCode,
-            role: { in: ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER', 'MENTOR'] }
-          },
-          select: { id: true, name: true, email: true }
+        // First try to find by AffiliateLink.code (e.g., "abdurrahmanaziz-CWM3HN")
+        const affiliateLink = await prisma.affiliateLink.findFirst({
+          where: { code: affiliateCode },
+          include: { user: { select: { id: true, name: true, email: true } } }
         })
         
-        // If not found, try to find by username
-        if (!affiliateUser) {
-          affiliateUser = await prisma.user.findFirst({
+        if (affiliateLink?.user) {
+          affiliateId = affiliateLink.user.id
+          affiliateName = affiliateLink.user.name
+          console.log('[Simple Checkout] ✅ Affiliate found from AffiliateLink:', affiliateName, affiliateId)
+        } else {
+          // Fallback: try to find by username
+          const affiliateUser = await prisma.user.findFirst({
             where: { 
               username: affiliateCode,
               role: { in: ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER', 'MENTOR'] }
             },
             select: { id: true, name: true, email: true }
           })
-        }
-        
-        if (affiliateUser) {
-          affiliateId = affiliateUser.id
-          affiliateName = affiliateUser.name
-          console.log('[Simple Checkout] ✅ Affiliate found:', affiliateName, affiliateId)
-        } else {
-          console.log('[Simple Checkout] ⚠️ Affiliate not found for code:', affiliateCode)
+          
+          if (affiliateUser) {
+            affiliateId = affiliateUser.id
+            affiliateName = affiliateUser.name
+            console.log('[Simple Checkout] ✅ Affiliate found from username:', affiliateName, affiliateId)
+          } else {
+            console.log('[Simple Checkout] ⚠️ Affiliate not found for code:', affiliateCode)
+          }
         }
       } catch (affErr) {
         console.error('[Simple Checkout] ⚠️ Error looking up affiliate:', affErr)
