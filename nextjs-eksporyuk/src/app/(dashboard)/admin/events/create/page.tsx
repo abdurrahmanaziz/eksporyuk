@@ -111,8 +111,14 @@ export default function CreateEventPage() {
   const fetchData = async () => {
     try {
       const [membershipRes, groupsRes] = await Promise.all([
-        fetch("/api/admin/membership-plans"),
-        fetch("/api/admin/groups"),
+        fetch("/api/admin/membership-plans", {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }),
+        fetch("/api/admin/groups", {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }),
       ]);
 
       if (membershipRes.ok) {
@@ -192,6 +198,7 @@ export default function CreateEventPage() {
 
       const response = await fetch("/api/admin/events", {
         method: "POST",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(eventData),
       });

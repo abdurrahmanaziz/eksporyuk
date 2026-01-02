@@ -149,7 +149,11 @@ export async function POST(
 ) {
   try {
     const { transactionId } = await params
+    console.log('[Payment Confirm POST] Starting with transactionId:', transactionId)
+    
     const body = await request.json()
+    console.log('[Payment Confirm POST] Received body:', body)
+    
     const { 
       paymentProofUrl, 
       senderName, 
@@ -158,7 +162,16 @@ export async function POST(
       notes 
     } = body
 
+    console.log('[Payment Confirm POST] Extracted data:', {
+      paymentProofUrl: !!paymentProofUrl,
+      senderName,
+      senderBank,
+      transferAmount,
+      notes
+    })
+
     if (!paymentProofUrl) {
+      console.log('[Payment Confirm POST] Missing paymentProofUrl')
       return NextResponse.json(
         { error: 'URL bukti pembayaran diperlukan' },
         { status: 400 }
@@ -166,19 +179,14 @@ export async function POST(
     }
 
     if (!senderName || !senderBank) {
+      console.log('[Payment Confirm POST] Missing senderName or senderBank')
       return NextResponse.json(
         { error: 'Nama pengirim dan bank pengirim harus diisi' },
         { status: 400 }
       )
     }
 
-    console.log('[Payment Confirm POST] Updating transaction with:', {
-      transactionId,
-      paymentProofUrl,
-      senderName,
-      senderBank,
-      transferAmount
-    })
+    console.log('[Payment Confirm POST] Finding transaction:', transactionId)
 
     // Find transaction
     const transaction = await prisma.transaction.findUnique({
@@ -189,11 +197,18 @@ export async function POST(
         invoiceNumber: true,
         amount: true,
         customerName: true,
-        customerEmail: true
+        customerEmail: true,
+        userId: true
       }
     })
 
+    console.log('[Payment Confirm POST] Transaction found:', !!transaction)
+    if (transaction) {
+      console.log('[Payment Confirm POST] Transaction status:', transaction.status)
+    }
+
     if (!transaction) {
+      console.log('[Payment Confirm POST] Transaction not found')
       return NextResponse.json(
         { error: 'Transaksi tidak ditemukan' },
         { status: 404 }
@@ -202,6 +217,7 @@ export async function POST(
 
     // Only allow for PENDING or PENDING_CONFIRMATION status
     if (!['PENDING', 'PENDING_CONFIRMATION'].includes(transaction.status)) {
+      console.log('[Payment Confirm POST] Invalid status:', transaction.status)
       return NextResponse.json(
         { error: 'Transaksi tidak dapat dikonfirmasi' },
         { status: 400 }
@@ -220,36 +236,44 @@ export async function POST(
       transferMetadata.notes = notes
     }
 
+    console.log('[Payment Confirm POST] Updating transaction...')
+
     // Update transaction with proof and additional data
-    await prisma.transaction.update({
+    const updatedTransaction = await prisma.transaction.update({
       where: { id: transactionId },
       data: {
         paymentProofUrl,
         paymentProofSubmittedAt: new Date(),
         status: 'PENDING_CONFIRMATION',
-        // Store additional transfer data in metadata or notes field
+        // Store additional transfer data in notes field
         notes: JSON.stringify(transferMetadata)
       }
     })
 
+    console.log('[Payment Confirm POST] Transaction updated successfully')
+
     // Create notification for admin
     try {
+      console.log('[Payment Confirm POST] Creating admin notifications...')
+      
       // Find admin users
       const admins = await prisma.user.findMany({
         where: { role: 'ADMIN' },
-        select: { id: true }
+        select: { id: true, name: true, email: true }
       })
 
+      console.log('[Payment Confirm POST] Found', admins.length, 'admin users')
+
       // Create notification for each admin
-      for (const admin of admins) {
-        await prisma.notification.create({
+      const notificationPromises = admins.map(admin => 
+        prisma.notification.create({
           data: {
             userId: admin.id,
             type: 'TRANSACTION',
             title: 'Bukti Pembayaran Baru',
             message: `${transaction.customerName || 'Customer'} mengirim bukti pembayaran untuk invoice ${transaction.invoiceNumber || transactionId} dari ${senderName} (${senderBank})`,
-            link: '/admin/payment-confirmation',
-            redirectUrl: '/admin/payment-confirmation',
+            link: `/admin/payment-confirmation`,
+            redirectUrl: `/admin/payment-confirmation`,
             sourceType: 'transaction',
             sourceId: transactionId,
             isRead: false,
@@ -257,19 +281,47 @@ export async function POST(
             sentAt: new Date()
           }
         })
-      }
-    } catch (notifError) {
-      console.error('[Payment Confirm] Failed to create admin notification:', notifError)
+      )
+
+      await Promise.all(notificationPromises)
+      console.log('[Payment Confirm POST] Admin notifications created successfully')
+      
+    } catch (notifError: any) {
+      console.error('[Payment Confirm POST] Failed to create admin notification:', notifError)
+      console.error('[Payment Confirm POST] Notification error details:', {
+        message: notifError.message,
+        code: notifError.code,
+        meta: notifError.meta
+      })
+      // Don't fail the main operation if notifications fail
     }
+
+    console.log('[Payment Confirm POST] Operation completed successfully')
 
     return NextResponse.json({
       success: true,
-      message: 'Bukti pembayaran berhasil dikirim'
+      message: 'Bukti pembayaran berhasil dikirim',
+      transaction: {
+        id: updatedTransaction.id,
+        status: updatedTransaction.status,
+        paymentProofSubmittedAt: updatedTransaction.paymentProofSubmittedAt
+      }
     })
-  } catch (error) {
-    console.error('[Payment Confirm API] Error:', error)
+    
+  } catch (error: any) {
+    console.error('[Payment Confirm POST] Error:', error)
+    console.error('[Payment Confirm POST] Error message:', error.message)
+    console.error('[Payment Confirm POST] Error stack:', error.stack)
+    
     return NextResponse.json(
-      { error: 'Terjadi kesalahan server' },
+      { 
+        error: 'Terjadi kesalahan server',
+        debug: process.env.NODE_ENV === 'development' ? {
+          message: error.message,
+          code: error.code,
+          meta: error.meta
+        } : undefined
+      },
       { status: 500 }
     )
   }

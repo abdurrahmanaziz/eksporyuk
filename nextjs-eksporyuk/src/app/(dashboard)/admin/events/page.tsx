@@ -127,7 +127,12 @@ export default function AdminEventsPage() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/events");
+      const response = await fetch("/api/admin/events", {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error("Failed to fetch events");
       const data = await response.json();
       
@@ -200,8 +205,12 @@ export default function AdminEventsPage() {
     if (!deleteDialog.eventId) return;
 
     try {
-      const response = await fetch(`/api/admin/events/\${deleteDialog.eventId}`, {
+      const response = await fetch(`/api/admin/events/${deleteDialog.eventId}`, {
         method: "DELETE",
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (!response.ok) {
