@@ -1408,7 +1408,7 @@ model ExportDocument {
 }
 
 model Follow {
-  id                            String   @id
+  id                            String   @id @default(cuid())
   followerId                    String
   followingId                   String
   createdAt                     DateTime @default(now())
