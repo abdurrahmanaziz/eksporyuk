@@ -27,7 +27,8 @@ async function fixIssues() {
             userId: user.id,
             balance: 0,
             balancePending: 0,
-            currency: 'IDR'
+            totalEarnings: 0,
+            totalPayout: 0
           }
         });
       }
