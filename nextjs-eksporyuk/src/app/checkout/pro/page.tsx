@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -50,7 +49,14 @@ interface BankAccount {
 
 export default function CheckoutProPage() {
   const { data: session } = useSession()
-  const searchParams = useSearchParams()
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null)
+  
+  // Get URL parameters on client side only (after hydration)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setSearchParams(new URLSearchParams(window.location.search))
+    }
+  }, [])
   
   // Helper function to get logo URL
   const getLogoUrl = (code: string, customLogoUrl?: string) => {
@@ -136,14 +142,17 @@ export default function CheckoutProPage() {
   useEffect(() => {
     fetchPackages()
     fetchPaymentMethods()
-  }, []) // Only run on mount
+  }, [searchParams]) // Re-run when searchParams changes
 
   // Auto-fill coupon from URL parameter
   useEffect(() => {
-    const couponFromUrl = searchParams?.get('coupon')
-    if (couponFromUrl && !couponCode) {
-      console.log('[Checkout Pro] Auto-filling coupon from URL:', couponFromUrl)
-      setCouponCode(couponFromUrl)
+    if (searchParams) {
+      const couponFromUrl = searchParams.get('coupon')
+      // Only set coupon if URL has coupon parameter AND couponCode state is empty
+      if (couponFromUrl && !couponCode) {
+        console.log('[Checkout Pro] Auto-filling coupon from URL:', couponFromUrl)
+        setCouponCode(couponFromUrl)
+      }
     }
   }, [searchParams, couponCode])
 

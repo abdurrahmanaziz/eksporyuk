@@ -875,24 +875,41 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                 <CardDescription>Komisi affiliate dan status publikasi</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="commissionType">Tipe Komisi Affiliate</Label>
-                  <Select
-                    value={formData.commissionType}
-                    onValueChange={(value) => handleChange("commissionType", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
-                      <SelectItem value="FLAT">Flat (IDR)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Affiliate Enable/Disable Toggle */}
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">Aktifkan Affiliate</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Jika aktif, event ini akan tampil di dashboard affiliate dan bisa dipromosikan
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.affiliateEnabled}
+                    onCheckedChange={(checked) => handleChange("affiliateEnabled", checked)}
+                  />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="affiliateCommissionRate">
+                {/* Commission settings - only show if affiliate enabled */}
+                {formData.affiliateEnabled && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="commissionType">Tipe Komisi Affiliate</Label>
+                      <Select
+                        value={formData.commissionType}
+                        onValueChange={(value) => handleChange("commissionType", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
+                          <SelectItem value="FLAT">Flat (IDR)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="affiliateCommissionRate">
                     {formData.commissionType === "PERCENTAGE"
                       ? "Komisi Affiliate (%)"
                       : "Komisi Affiliate (IDR)"}
@@ -906,28 +923,30 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="targetMembershipId">Target Upgrade Membership</Label>
-                  <Select
-                    value={formData.targetMembershipId || "none"}
-                    onValueChange={(value) => handleChange("targetMembershipId", value === "none" ? "" : value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih membership tujuan upgrade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Tidak ada target</SelectItem>
-                      {membershipPlans.map((plan) => (
-                        <SelectItem key={plan.id} value={plan.id}>
-                          {plan.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Peserta event dengan affiliate cookies akan diarahkan untuk upgrade ke membership ini
-                  </p>
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="targetMembershipId">Target Upgrade Membership</Label>
+                      <Select
+                        value={formData.targetMembershipId || "none"}
+                        onValueChange={(value) => handleChange("targetMembershipId", value === "none" ? "" : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih membership tujuan upgrade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Tidak ada target</SelectItem>
+                          {membershipPlans.map((plan) => (
+                            <SelectItem key={plan.id} value={plan.id}>
+                              {plan.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Peserta event dengan affiliate cookies akan diarahkan untuk upgrade ke membership ini
+                      </p>
+                    </div>
+                  </>
+                )}
 
                 <div className="space-y-4 border-t pt-4">
                   <div className="flex items-center justify-between rounded-lg border p-4">
