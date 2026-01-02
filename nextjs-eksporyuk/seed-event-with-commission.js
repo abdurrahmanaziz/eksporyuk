@@ -21,7 +21,7 @@ async function main() {
   // Create event with commission settings
   const event = await prisma.product.create({
     data: {
-      creatorId: adminUser.id,
+      User: { connect: { id: adminUser.id } },
       name: 'Test Event with Commission - ' + new Date().toISOString().split('T')[0],
       slug: 'test-event-commission-' + Date.now(),
       checkoutSlug: 'checkout-test-event-' + Date.now(),
@@ -40,8 +40,6 @@ async function main() {
       meetingId: 'test123456',
       meetingPassword: 'password123',
       maxParticipants: 100,
-      isActive: true,
-      isFeatured: false,
       seoMetaTitle: 'Test Event with Commission',
       seoMetaDescription: 'Testing commission field persistence',
       ctaButtonText: 'Daftar Sekarang',
@@ -49,7 +47,6 @@ async function main() {
       affiliateEnabled: true,
       commissionType: 'PERCENTAGE',
       affiliateCommissionRate: 35,
-      reminders: [],
     },
     select: {
       id: true,
