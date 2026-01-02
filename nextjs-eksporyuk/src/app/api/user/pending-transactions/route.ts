@@ -20,11 +20,11 @@ export async function GET(request: NextRequest) {
 
     const userId = session.user.id
 
-    // Get pending transactions for this user
+    // Get pending transactions for this user (including those waiting for admin confirmation)
     const pendingTransactions = await prisma.transaction.findMany({
       where: {
         userId,
-        status: 'PENDING'
+        status: { in: ['PENDING', 'PENDING_CONFIRMATION'] }
       },
       orderBy: { createdAt: 'desc' },
       take: 10 // Limit to last 10 pending transactions

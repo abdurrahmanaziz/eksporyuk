@@ -290,9 +290,16 @@ export default function ConfirmPaymentPage() {
 
       toast.success('Bukti pembayaran berhasil dikirim! Admin akan memverifikasi dalam 1x24 jam.')
       
-      // Redirect ke dashboard dengan success message setelah 2 detik
+      // Check if user is logged in before redirect
       setTimeout(() => {
-        router.push('/dashboard?payment_submitted=true&invoice=' + (details?.invoiceNumber || transactionId))
+        if (session?.user) {
+          // User logged in -> redirect to dashboard with success message
+          router.push('/dashboard?payment_submitted=true&invoice=' + (details?.invoiceNumber || transactionId))
+        } else {
+          // User not logged in -> redirect to login with return URL to dashboard with success message
+          const returnUrl = encodeURIComponent('/dashboard?payment_submitted=true&invoice=' + (details?.invoiceNumber || transactionId))
+          router.push('/auth/login?callbackUrl=' + returnUrl + '&message=payment_success')
+        }
       }, 2000)
     } catch (err: any) {
       toast.error(err.message)

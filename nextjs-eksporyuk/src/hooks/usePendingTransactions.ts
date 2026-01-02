@@ -19,6 +19,7 @@ interface PendingTransactionResponse {
 
 export function usePendingTransactions() {
   const [hasPending, setHasPending] = useState(false)
+  const [hasAwaitingConfirmation, setHasAwaitingConfirmation] = useState(false)
   const [transactions, setTransactions] = useState<PendingTransaction[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -29,8 +30,13 @@ export function usePendingTransactions() {
         const data = await response.json() as PendingTransactionResponse
 
         if (data.success) {
-          setHasPending(data.hasPendingTransactions)
-          setTransactions(data.pendingTransactions)
+          const allTransactions = data.pendingTransactions
+          const pendingPayments = allTransactions.filter(t => t.status === 'PENDING')
+          const awaitingConfirmation = allTransactions.filter(t => t.status === 'PENDING_CONFIRMATION')
+          
+          setHasPending(pendingPayments.length > 0)
+          setHasAwaitingConfirmation(awaitingConfirmation.length > 0)
+          setTransactions(allTransactions)
         }
       } catch (error) {
         console.error('Error fetching pending transactions:', error)
@@ -42,5 +48,10 @@ export function usePendingTransactions() {
     fetchPendingTransactions()
   }, [])
 
-  return { hasPending, transactions, loading }
+  return { 
+    hasPending, 
+    hasAwaitingConfirmation,
+    transactions, 
+    loading 
+  }
 }

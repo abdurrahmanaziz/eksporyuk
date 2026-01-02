@@ -22,6 +22,9 @@ function LoginForm() {
   // Check if this is supplier registration flow
   const isSupplierFlow = searchParams.get('supplier') === 'true'
   
+  // Check if this is payment success redirect
+  const isPaymentSuccessFlow = searchParams.get('message') === 'payment_success'
+  
   // Get safe callback URL (avoid auth pages loop)
   const rawCallbackUrl = searchParams.get('callbackUrl') || searchParams.get('redirect') || '/dashboard'
   const callbackUrl = (rawCallbackUrl.includes('/login') || 
@@ -175,6 +178,23 @@ function LoginForm() {
             <CardDescription className="text-center">
               Pilih metode login yang Anda inginkan
             </CardDescription>
+            {isPaymentSuccessFlow && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="text-green-900 text-sm font-medium">
+                    ✅ Bukti Pembayaran Berhasil Dikirim!
+                  </p>
+                </div>
+                <p className="text-green-700 text-xs">
+                  Silakan login untuk melihat status verifikasi pembayaran Anda di dashboard.
+                </p>
+              </div>
+            )}
             {isSupplierFlow && (
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-blue-900 text-sm font-medium mb-1">

@@ -51,7 +51,7 @@ export default function DashboardPage() {
   const [profileCompleted, setProfileCompleted] = useState(false)
   
   // Check if user has pending transactions - skip modals if they do
-  const { hasPending: hasPendingTransaction } = usePendingTransactions()
+  const { hasPending: hasPendingTransaction, hasAwaitingConfirmation } = usePendingTransactions()
 
   // Use React Query for cached stats
   const { data: stats, isLoading: loading } = useQuery({
@@ -68,8 +68,8 @@ export default function DashboardPage() {
 
   const theme = session?.user?.role ? getRoleTheme(session.user.role) : getRoleTheme('MEMBER_FREE')
   
-  // Detect if user just submitted payment proof
-  const hasPaymentSubmission = searchParams?.get('payment_submitted') === 'true'
+  // Detect if user just submitted payment proof OR has awaiting confirmation from database
+  const hasPaymentSubmission = searchParams?.get('payment_submitted') === 'true' || hasAwaitingConfirmation
   
   // Check if user is free member - show special dashboard
   const isFreeUser = session?.user?.role === 'MEMBER_FREE'
@@ -218,7 +218,7 @@ export default function DashboardPage() {
     )}
     
     <div className="min-h-screen bg-gray-50 p-6 space-y-6">
-      {/* Payment Submission Status Banner - Show for users who just submitted payment */}
+      {/* Payment Submission Status Banner - Show for users who just submitted payment OR have awaiting confirmation */}
       {hasPaymentSubmission && (
         <div className="relative overflow-hidden rounded-2xl shadow-sm border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="p-6">
@@ -231,7 +231,10 @@ export default function DashboardPage() {
                   Menunggu Verifikasi Pembayaran
                 </h3>
                 <p className="text-blue-700 mb-3">
-                  Bukti pembayaran Anda telah berhasil dikirim. Tim admin kami akan memverifikasi dalam <strong>1x24 jam</strong>.
+                  {searchParams?.get('payment_submitted') === 'true' 
+                    ? 'Bukti pembayaran Anda telah berhasil dikirim. Tim admin kami akan memverifikasi dalam'
+                    : 'Anda memiliki transaksi yang sedang menunggu verifikasi admin. Proses verifikasi memakan waktu'
+                  } <strong>1x24 jam</strong>.
                 </p>
                 <div className="flex items-center gap-2 text-sm text-blue-600">
                   <span>Status: Menunggu verifikasi admin</span>
