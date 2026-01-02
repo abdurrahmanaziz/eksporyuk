@@ -56,9 +56,10 @@ export async function GET(request: NextRequest) {
     const productIds = [...new Set(transactions.map(t => t.productId).filter(Boolean))] as string[]
     const courseIds = [...new Set(transactions.map(t => t.courseId).filter(Boolean))] as string[]
     const couponIds = [...new Set(transactions.map(t => t.couponId).filter(Boolean))] as string[]
+    const membershipIds = [...new Set(transactions.map(t => t.membershipId).filter(Boolean))] as string[]
 
     // Fetch related data in parallel
-    const [users, products, courses, coupons] = await Promise.all([
+    const [users, products, courses, coupons, userMemberships] = await Promise.all([
       userIds.length > 0 ? prisma.user.findMany({
         where: { id: { in: userIds } },
         select: { id: true, name: true, email: true, phone: true, whatsapp: true }
@@ -75,6 +76,13 @@ export async function GET(request: NextRequest) {
         where: { id: { in: couponIds } },
         select: { id: true, code: true }
       }) : [],
+      membershipIds.length > 0 ? prisma.userMembership.findMany({
+        where: { id: { in: membershipIds } },
+        select: { 
+          id: true, 
+          membership: { select: { id: true, name: true, duration: true } }
+        }
+      }) : [],
     ])
 
     // Create lookup maps
@@ -82,6 +90,7 @@ export async function GET(request: NextRequest) {
     const productMap = new Map(products.map(p => [p.id, p]))
     const courseMap = new Map(courses.map(c => [c.id, c]))
     const couponMap = new Map(coupons.map(c => [c.id, c]))
+    const membershipMap = new Map(userMemberships.map(m => [m.id, m]))
 
     // Enrich transactions
     const enrichedTransactions = transactions.map(t => ({
@@ -90,6 +99,7 @@ export async function GET(request: NextRequest) {
       product: t.productId ? productMap.get(t.productId) || null : null,
       course: t.courseId ? courseMap.get(t.courseId) || null : null,
       coupon: t.couponId ? couponMap.get(t.couponId) || null : null,
+      membership: t.membershipId ? membershipMap.get(t.membershipId) || null : null,
     }));
 
     // Calculate stats

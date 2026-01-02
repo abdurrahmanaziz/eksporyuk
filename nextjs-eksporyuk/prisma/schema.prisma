@@ -2860,40 +2860,47 @@ model SupplierView {
 }
 
 model Transaction {
-  id               String            @id
-  userId           String
-  type             TransactionType
-  status           TransactionStatus @default(PENDING)
-  amount           Decimal
-  customerName     String?
-  customerEmail    String?
-  customerPhone    String?
-  customerWhatsapp String?
-  productId        String?
-  courseId         String?
-  eventId          String?
-  description      String?
-  reference        String?
-  originalAmount   Decimal?
-  notes            String?
-  paymentMethod    String?
-  paymentProvider  String?
-  externalId       String?
-  paymentUrl       String?
-  founderShare     Decimal?
-  coFounderShare   Decimal?
-  affiliateShare   Decimal?
-  mentorShare      Decimal?
-  companyFee       Decimal?
-  couponId         String?
-  discountAmount   Decimal?
-  affiliateId      String?
-  metadata         Json?
-  paidAt           DateTime?
-  expiredAt        DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime
-  invoiceNumber    String?
+  id                      String            @id @default(cuid())
+  userId                  String
+  type                    TransactionType
+  status                  TransactionStatus @default(PENDING)
+  amount                  Decimal
+  customerName            String?
+  customerEmail           String?
+  customerPhone           String?
+  customerWhatsapp        String?
+  productId               String?
+  courseId                String?
+  eventId                 String?
+  membershipId            String?
+  description             String?
+  reference               String?
+  originalAmount          Decimal?
+  notes                   String?
+  paymentMethod           String?
+  paymentProvider         String?
+  externalId              String?
+  paymentUrl              String?
+  paymentProofUrl         String?
+  paymentProofSubmittedAt DateTime?
+  founderShare            Decimal?
+  coFounderShare          Decimal?
+  affiliateShare          Decimal?
+  mentorShare             Decimal?
+  companyFee              Decimal?
+  couponId                String?
+  discountAmount          Decimal?
+  affiliateId             String?
+  metadata                Json?
+  paidAt                  DateTime?
+  expiredAt               DateTime?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  invoiceNumber           String?
+  
+  @@index([userId])
+  @@index([status])
+  @@index([invoiceNumber])
 }
 
 model TypingIndicator {

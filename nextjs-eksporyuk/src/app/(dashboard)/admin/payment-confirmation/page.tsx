@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Transaction {
   id: string;
@@ -57,6 +58,8 @@ interface Transaction {
   customerPhone: string | null;
   paymentMethod: string | null;
   paymentUrl: string | null;
+  paymentProofUrl?: string | null;
+  paymentProofSubmittedAt?: string | null;
   reference: string | null;
   createdAt: string;
   paidAt: string | null;
@@ -727,6 +730,53 @@ export default function PaymentConfirmationPage() {
                           Rp {Number(selectedTransaction.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
                         </span>
                       </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Payment Proof - Bukti Transfer */}
+                {selectedTransaction.paymentProofUrl && (
+                  <Card className="border-2 border-green-300 bg-green-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2 text-green-700">
+                        <ImageIcon className="w-4 h-4" />
+                        Bukti Transfer
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {selectedTransaction.paymentProofSubmittedAt && (
+                        <p className="text-xs text-green-600">
+                          Diupload pada: {new Date(selectedTransaction.paymentProofSubmittedAt).toLocaleString('id-ID')}
+                        </p>
+                      )}
+                      <div className="relative w-full max-w-md mx-auto">
+                        <a 
+                          href={selectedTransaction.paymentProofUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <Image
+                            src={selectedTransaction.paymentProofUrl}
+                            alt="Bukti Transfer"
+                            width={400}
+                            height={300}
+                            className="rounded-lg border shadow-sm object-contain w-full h-auto max-h-96 cursor-pointer hover:opacity-90 transition-opacity"
+                          />
+                        </a>
+                        <p className="text-xs text-center text-gray-500 mt-2">
+                          Klik gambar untuk membuka dalam tab baru
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2"
+                        onClick={() => window.open(selectedTransaction.paymentProofUrl!, '_blank')}
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        Buka Bukti Transfer
+                      </Button>
                     </CardContent>
                   </Card>
                 )}
