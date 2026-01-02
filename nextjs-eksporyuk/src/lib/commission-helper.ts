@@ -215,6 +215,33 @@ export async function processTransactionCommission(
           status: 'PENDING',
         },
       })
+      
+      // 📧 Send admin fee pending email notification
+      try {
+        const adminUser = await prisma.user.findUnique({
+          where: { id: adminUserId },
+          select: { email: true, name: true }
+        })
+        
+        if (adminUser?.email) {
+          const { renderBrandedTemplateBySlug } = await import('@/lib/branded-template-engine')
+          const emailTemplate = await renderBrandedTemplateBySlug('admin-fee-pending', {
+            userName: adminUser.name || 'Admin',
+            transactionId,
+            amount: commission.adminFee,
+          })
+          
+          if (emailTemplate) {
+            await sendEmail({
+              recipient: adminUser.email,
+              subject: emailTemplate.subject,
+              content: emailTemplate.html,
+            })
+          }
+        }
+      } catch (emailError) {
+        console.error('Error sending admin fee email:', emailError)
+      }
     }
     
     // 3. Founder Share (ke balancePending)
@@ -242,6 +269,33 @@ export async function processTransactionCommission(
           status: 'PENDING',
         },
       })
+      
+      // 📧 Send founder share pending email notification
+      try {
+        const founderUser = await prisma.user.findUnique({
+          where: { id: founderUserId },
+          select: { email: true, name: true }
+        })
+        
+        if (founderUser?.email) {
+          const { renderBrandedTemplateBySlug } = await import('@/lib/branded-template-engine')
+          const emailTemplate = await renderBrandedTemplateBySlug('founder-share-pending', {
+            userName: founderUser.name || 'Founder',
+            transactionId,
+            amount: commission.founderShare,
+          })
+          
+          if (emailTemplate) {
+            await sendEmail({
+              recipient: founderUser.email,
+              subject: emailTemplate.subject,
+              content: emailTemplate.html,
+            })
+          }
+        }
+      } catch (emailError) {
+        console.error('Error sending founder share email:', emailError)
+      }
     }
     
     // 4. Co-Founder Share (ke balancePending)

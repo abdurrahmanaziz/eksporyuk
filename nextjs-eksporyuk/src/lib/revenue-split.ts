@@ -331,7 +331,7 @@ export async function processRevenueDistribution(
       try {
         const user = await tx.user.findUnique({
           where: { id: mentorOrCreatorId },
-          select: { name: true, whatsapp: true, phone: true }
+          select: { name: true, email: true, whatsapp: true, phone: true }
         })
 
         // Determine message based on type
@@ -348,7 +348,7 @@ export async function processRevenueDistribution(
           title,
           message,
           link: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/earnings`,
-          channels: ['pusher', 'onesignal', 'email'],
+          channels: ['pusher', 'onesignal'],
           metadata: {
             commissionAmount: split.mentor,
             type: options.type,
@@ -356,6 +356,28 @@ export async function processRevenueDistribution(
             eventId: options.eventId,
           }
         })
+
+        // 📧 Send mentor commission email
+        try {
+          const { renderBrandedTemplateBySlug } = await import('@/lib/branded-template-engine')
+          const { sendEmail } = await import('@/lib/integrations/mailketing')
+          
+          const emailTemplate = await renderBrandedTemplateBySlug('mentor-commission-received', {
+            userName: user?.name || 'Mentor',
+            commissionAmount: split.mentor,
+            type: isMentor ? 'Kelas' : 'Event',
+          })
+          
+          if (emailTemplate && user?.email) {
+            await sendEmail({
+              recipient: user.email,
+              subject: emailTemplate.subject,
+              content: emailTemplate.html,
+            })
+          }
+        } catch (emailError) {
+          console.error('Error sending mentor commission email:', emailError)
+        }
 
         // Send WhatsApp notification
         const waNumber = user?.whatsapp || user?.phone
