@@ -86,8 +86,8 @@ export default function ConfirmPaymentPage() {
         setPreviewUrl(data.transaction.paymentProofUrl)
       }
 
-      // Set default sender name from customer name
-      if (data.transaction.customerName && !senderName) {
+      // Set default sender name from customer name (only if empty)
+      if (data.transaction.customerName && senderName === '') {
         setSenderName(data.transaction.customerName)
       }
     } catch (err: any) {
@@ -522,10 +522,13 @@ export default function ConfirmPaymentPage() {
                   type="text"
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
-                  placeholder="Masukkan nama pengirim transfer"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                  placeholder="Masukkan nama pengirim sesuai rekening"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
                   disabled={submitting}
                 />
+                <p className="text-xs text-slate-500 mt-1">
+                  Nama harus sesuai dengan nama pemilik rekening pengirim
+                </p>
               </div>
 
               {/* Sender Bank */}

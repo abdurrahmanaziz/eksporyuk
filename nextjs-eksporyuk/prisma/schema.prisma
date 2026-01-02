@@ -1528,29 +1528,30 @@ model GeneratedDocument {
 }
 
 model Group {
-  id              String    @id
+  id              String          @id
   name            String
   description     String
   avatar          String?
   coverImage      String?
-  type            GroupType @default(PUBLIC)
+  type            GroupType       @default(PUBLIC)
   ownerId         String
   bannedWords     Json?
-  requireApproval Boolean   @default(false)
-  isActive        Boolean   @default(true)
+  requireApproval Boolean         @default(false)
+  isActive        Boolean         @default(true)
   postingSettings Json?
-  allowRichText   Boolean   @default(true)
-  allowMedia      Boolean   @default(true)
-  allowPolls      Boolean   @default(true)
-  allowEvents     Boolean   @default(true)
-  allowScheduling Boolean   @default(true)
-  allowReactions  Boolean   @default(true)
-  allowMentions   Boolean   @default(true)
-  moderatesPosts  Boolean   @default(false)
-  createdAt       DateTime  @default(now())
+  allowRichText   Boolean         @default(true)
+  allowMedia      Boolean         @default(true)
+  allowPolls      Boolean         @default(true)
+  allowEvents     Boolean         @default(true)
+  allowScheduling Boolean         @default(true)
+  allowReactions  Boolean         @default(true)
+  allowMentions   Boolean         @default(true)
+  moderatesPosts  Boolean         @default(false)
+  createdAt       DateTime        @default(now())
   updatedAt       DateTime
-  slug            String?   @unique
+  slug            String?         @unique
   Product         Product[]
+  eventGroups     EventGroup[]
 }
 
 model GroupChallenge {
@@ -1719,6 +1720,7 @@ model Membership {
   createdAt               DateTime           @default(now())
   updatedAt               DateTime
   affiliateLinks          AffiliateLink[]
+  eventMemberships        EventMembership[]
 
   @@index([affiliateEnabled])
   @@index([duration])
