@@ -223,6 +223,9 @@ export async function POST(request: NextRequest) {
       seoMetaDescription,
       ctaButtonText,
       reminders,
+      affiliateEnabled,
+      commissionType,
+      affiliateCommissionRate,
     } = body
 
     // Validation
@@ -289,6 +292,9 @@ export async function POST(request: NextRequest) {
         ctaButtonText: ctaButtonText || 'Daftar Sekarang',
         upsaleTargetMemberships: targetMembershipId || null,
         reminders,
+        affiliateEnabled: affiliateEnabled ?? true,
+        commissionType: commissionType || 'PERCENTAGE',
+        affiliateCommissionRate: affiliateCommissionRate || 30,
       },
     })
 
