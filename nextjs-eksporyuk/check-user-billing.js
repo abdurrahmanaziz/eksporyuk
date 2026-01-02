@@ -1,12 +1,12 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-console.log('🔍 Checking user dheproject29@gmail.com...');
+console.log('🔍 Checking user mangikiwwdigital@gmail.com...');
 
 async function checkUser() {
-// Check user dheproject29@gmail.com
+// Check user mangikiwwdigital@gmail.com
 const user = await prisma.user.findUnique({
-  where: { email: 'dheproject29@gmail.com' }
+  where: { email: 'mangikiwwdigital@gmail.com' }
 });
 
 if (!user) {
@@ -58,6 +58,8 @@ if (txByEmail.length > 0) {
     console.log(`     Type: ${t.type}`);
     console.log(`     Created: ${t.createdAt.toISOString()}`);
   });
+} else {
+  console.log('❌ No transactions found by customer email either!');
 }
 
 // Find memberships
