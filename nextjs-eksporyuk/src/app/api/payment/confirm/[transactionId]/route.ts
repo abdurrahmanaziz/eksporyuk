@@ -244,7 +244,7 @@ export async function POST(
       data: {
         paymentProofUrl,
         paymentProofSubmittedAt: new Date(),
-        status: 'PENDING', // Keep as PENDING until admin approval
+        status: 'PENDING_CONFIRMATION', // Update to PENDING_CONFIRMATION when proof uploaded
         // Store additional transfer data in notes field with proof submission flag
         notes: JSON.stringify({
           ...transferMetadata,
