@@ -206,12 +206,15 @@ export default function CreateEventPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create event");
+        const errorMsg = data.error || data.details || "Failed to create event";
+        console.error('Event creation error:', errorMsg);
+        throw new Error(errorMsg);
       }
 
       toast.success("Event berhasil dibuat!");
       router.push("/admin/events");
     } catch (error: any) {
+      console.error('Event creation exception:', error);
       toast.error(error.message || "Gagal membuat event");
     } finally {
       setLoading(false);

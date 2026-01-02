@@ -290,8 +290,10 @@ export default function ConfirmPaymentPage() {
 
       toast.success('Bukti pembayaran berhasil dikirim! Admin akan memverifikasi dalam 1x24 jam.')
       
-      // Refresh details
-      fetchDetails()
+      // Redirect ke dashboard dengan success message setelah 2 detik
+      setTimeout(() => {
+        router.push('/dashboard?payment_submitted=true&invoice=' + (details?.invoiceNumber || transactionId))
+      }, 2000)
     } catch (err: any) {
       toast.error(err.message)
     } finally {

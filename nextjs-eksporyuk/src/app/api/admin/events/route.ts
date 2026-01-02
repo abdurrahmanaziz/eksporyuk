@@ -197,16 +197,21 @@ export async function POST(request: NextRequest) {
     // Check slug uniqueness
     const existingProduct = await prisma.product.findFirst({
       where: {
-        OR: [
-          { slug: finalSlug },
-          { checkoutSlug: finalCheckoutSlug }
+        AND: [
+          {
+            OR: [
+              { slug: finalSlug },
+              { checkoutSlug: finalCheckoutSlug }
+            ]
+          },
+          { id: { not: undefined } } // Ensure we're checking existing products
         ]
       }
     })
 
     if (existingProduct) {
       return NextResponse.json({
-        error: 'Slug already exists'
+        error: `Slug "${finalSlug}" atau checkout slug "${finalCheckoutSlug}" sudah digunakan`
       }, { status: 400 })
     }
 

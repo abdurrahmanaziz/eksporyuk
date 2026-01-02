@@ -3,6 +3,8 @@
 import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { getRoleTheme } from '@/lib/role-themes'
 import EmailVerificationBanner from '@/components/EmailVerificationBanner'
@@ -43,6 +45,7 @@ import {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
+  const searchParams = useSearchParams()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [emailVerified, setEmailVerified] = useState(false)
   const [profileCompleted, setProfileCompleted] = useState(false)
@@ -65,6 +68,9 @@ export default function DashboardPage() {
 
   const theme = session?.user?.role ? getRoleTheme(session.user.role) : getRoleTheme('MEMBER_FREE')
   
+  // Detect if user just submitted payment proof
+  const hasPaymentSubmission = searchParams?.get('payment_submitted') === 'true'
+  
   // Check if user is free member - show special dashboard
   const isFreeUser = session?.user?.role === 'MEMBER_FREE'
   
@@ -81,18 +87,41 @@ export default function DashboardPage() {
     }
   }, [status, session, isAdmin])
 
+  // Handle payment submission success notification
+  useEffect(() => {
+    const paymentSubmitted = searchParams?.get('payment_submitted')
+    const invoice = searchParams?.get('invoice')
+    
+    if (paymentSubmitted === 'true' && invoice) {
+      toast.success(
+        `Bukti pembayaran untuk invoice ${invoice} berhasil dikirim! Admin akan memverifikasi dalam 1x24 jam.`,
+        { duration: 6000 }
+      )
+      
+      // Clean URL parameters after showing notification
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('payment_submitted')
+        url.searchParams.delete('invoice')
+        window.history.replaceState({}, '', url.pathname + url.search)
+      }
+    }
+  }, [searchParams])
+
   // Callback when email is verified
   const handleEmailVerified = () => {
     setEmailVerified(true)
   }
 
-  // Callback when profile is completed - show upgrade modal
+  // Callback when profile is completed - skip upgrade modal if payment submitted
   const handleProfileComplete = () => {
     setProfileCompleted(true)
-    // Small delay to show the upgrade modal after profile modal closes
-    setTimeout(() => {
-      setShowUpgradeModal(true)
-    }, 500)
+    // Only show upgrade modal if user hasn't just submitted payment proof
+    if (!hasPaymentSubmission) {
+      setTimeout(() => {
+        setShowUpgradeModal(true)
+      }, 500)
+    }
   }
 
   if (loading) {
@@ -111,8 +140,8 @@ export default function DashboardPage() {
   if (isFreeUser) {
     return (
       <>
-        {/* Skip modals if user has pending transaction - let them focus on payment */}
-        {!hasPendingTransaction && (
+        {/* Skip ALL modals if user has pending transaction OR just submitted payment */}
+        {!hasPendingTransaction && !hasPaymentSubmission && (
           <>
             {/* Step 1: Email Verification Modal - Shows first if email not verified */}
             <EmailVerificationModal onComplete={handleEmailVerified} />
@@ -135,11 +164,16 @@ export default function DashboardPage() {
         {/* Membership Expiry Banner - Shows countdown when membership expiring */}
         <MembershipExpiryBanner />
         
-        {/* Email Verification Modal */}
-        {!isAdmin && <EmailVerificationModal onComplete={handleEmailVerified} />}
-        
-        {/* Profile Completion Modal - Shows if profile incomplete */}
-        {emailVerified && <ProfileCompletionModal onComplete={handleProfileComplete} />}
+        {/* Skip modals if user just submitted payment */}
+        {!hasPaymentSubmission && (
+          <>
+            {/* Email Verification Modal */}
+            {!isAdmin && <EmailVerificationModal onComplete={handleEmailVerified} />}
+            
+            {/* Profile Completion Modal - Shows if profile incomplete */}
+            {emailVerified && <ProfileCompletionModal onComplete={handleProfileComplete} />}
+          </>
+        )}
         
         {/* Premium Member Dashboard - New Design */}
         <PremiumDashboardNew />
@@ -161,35 +195,65 @@ export default function DashboardPage() {
     {/* Membership Expiry Banner - Shows countdown for premium users when membership expiring */}
     {isPremiumUser && <MembershipExpiryBanner />}
     
-    {/* Trial Reminder Banner - Fixed at top for FREE users */}
-    <TrialReminderBanner />
+    {/* Trial Reminder Banner - Hide for payment submission users */}
+    {!hasPaymentSubmission && <TrialReminderBanner />}
     
     <ResponsivePageWrapper>
-    {/* Step 1: Email Verification Modal - Shows first if email not verified (except admin) */}
-    {!isAdmin && <EmailVerificationModal onComplete={handleEmailVerified} />}
-    
-    {/* Step 2: Profile Completion Modal - Shows after email verified, if profile incomplete */}
-    {emailVerified && <ProfileCompletionModal onComplete={handleProfileComplete} />}
-    
-    {/* Step 3: Upgrade Modal - Shows after profile is complete */}
-    <UpgradeModal 
-      showAfterProfileComplete={true}
-      forceOpen={showUpgradeModal}
-      onDismiss={() => setShowUpgradeModal(false)}
-    />
+    {/* Skip ALL modals if user just submitted payment */}
+    {!hasPaymentSubmission && (
+      <>
+        {/* Step 1: Email Verification Modal - Shows first if email not verified (except admin) */}
+        {!isAdmin && <EmailVerificationModal onComplete={handleEmailVerified} />}
+        
+        {/* Step 2: Profile Completion Modal - Shows after email verified, if profile incomplete */}
+        {emailVerified && <ProfileCompletionModal onComplete={handleProfileComplete} />}
+        
+        {/* Step 3: Upgrade Modal - Shows after profile is complete */}
+        <UpgradeModal 
+          showAfterProfileComplete={true}
+          forceOpen={showUpgradeModal}
+          onDismiss={() => setShowUpgradeModal(false)}
+        />
+      </>
+    )}
     
     <div className="min-h-screen bg-gray-50 p-6 space-y-6">
+      {/* Payment Submission Status Banner - Show for users who just submitted payment */}
+      {hasPaymentSubmission && (
+        <div className="relative overflow-hidden rounded-2xl shadow-sm border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Clock className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                  Menunggu Verifikasi Pembayaran
+                </h3>
+                <p className="text-blue-700 mb-3">
+                  Bukti pembayaran Anda telah berhasil dikirim. Tim admin kami akan memverifikasi dalam <strong>1x24 jam</strong>.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <span>Status: Menunggu verifikasi admin</span>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Email Verification Banner */}
       <EmailVerificationBanner />
       
-      {/* Member Onboarding Checklist - Shows if profile incomplete */}
-      <MemberOnboardingChecklist variant="full" />
+      {/* Member Onboarding Checklist - Shows if profile incomplete and not payment submission */}
+      {!hasPaymentSubmission && <MemberOnboardingChecklist variant="full" />}
       
-      {/* Upgrade Banner - Shows if no membership */}
-      <UpgradeBanner variant="full" showDismiss />
+      {/* Upgrade Banner - Hide for payment submission users */}
+      {!hasPaymentSubmission && <UpgradeBanner variant="full" showDismiss />}
       
-      {/* Profile Completion Card */}
-      <ProfileCompletionCard />
+      {/* Profile Completion Card - Hide for payment submission users */}
+      {!hasPaymentSubmission && <ProfileCompletionCard />}
       
       {/* Dashboard Banner - Promotional Carousel */}
       <DashboardBanner placement="DASHBOARD" />

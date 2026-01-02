@@ -520,115 +520,79 @@ export default function PaymentConfirmationPage() {
 
         {/* Detail Transaction Modal */}
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+              <DialogTitle className="flex items-center gap-2 text-lg">
                 <ShieldCheck className="w-5 h-5 text-orange-600" />
                 Review Pembayaran
               </DialogTitle>
-              <DialogDescription>
-                Verifikasi detail transaksi sebelum approve atau reject
-              </DialogDescription>
             </DialogHeader>
 
             {selectedTransaction && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Expired Warning */}
                 {isExpired(selectedTransaction) && (
-                  <Card className="border-2 border-red-500 bg-red-50">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-3 text-red-700">
-                        <AlertTriangle className="w-5 h-5" />
-                        <div>
-                          <div className="font-bold">Pembayaran Sudah Expired</div>
-                          <div className="text-sm">
-                            Expired pada: {new Date(selectedTransaction.expiredAt!).toLocaleString('id-ID')}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Invoice Info */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <CreditCard className="w-4 h-4" />
-                      Informasi Invoice
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Invoice Number:</span>
-                      <span className="font-mono font-bold text-orange-600">
-                        {selectedTransaction.invoiceNumber || `INV${selectedTransaction.id.slice(0, 8).toUpperCase()}`}
+                  <div className="p-3 bg-red-50 border-l-4 border-red-500 rounded-r-md">
+                    <div className="flex items-center gap-2 text-red-700">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span className="font-medium">Pembayaran Expired</span>
+                      <span className="text-sm">
+                        ({new Date(selectedTransaction.expiredAt!).toLocaleDateString('id-ID')})
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Transaction ID:</span>
-                      <span className="font-mono text-xs text-gray-500">{selectedTransaction.id}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Tanggal:</span>
-                      <span>{new Date(selectedTransaction.createdAt).toLocaleString('id-ID')}</span>
-                    </div>
-                    {selectedTransaction.expiredAt && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Expired At:</span>
-                        <span className={isExpired(selectedTransaction) ? 'text-red-600 font-bold' : 'text-gray-700'}>
-                          {new Date(selectedTransaction.expiredAt).toLocaleString('id-ID')}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Status:</span>
-                      <Badge variant="secondary" className="bg-yellow-500 text-white">
-                        {selectedTransaction.status}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                )}
 
-                {/* Customer Info */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
+                {/* Header Card - Invoice & Status */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-semibold text-blue-900">
+                        {selectedTransaction.invoiceNumber || `INV${selectedTransaction.id.slice(0, 8).toUpperCase()}`}
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        {new Date(selectedTransaction.createdAt).toLocaleDateString('id-ID', {
+                          day: '2-digit',
+                          month: 'long', 
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    <Badge className="bg-yellow-500 text-white">
+                      {selectedTransaction.status}
+                    </Badge>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-900">
+                    Rp {Number(selectedTransaction.amount).toLocaleString('id-ID')}
+                  </div>
+                </div>
+
+                {/* Customer & Product Info - Simplified Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Customer */}
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      Data Customer
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Nama:</span>
-                      <span className="font-medium">{selectedTransaction.customerName || selectedTransaction.user.name}</span>
+                      Customer
+                    </h4>
+                    <div className="space-y-1 text-sm">
+                      <p className="font-medium">{selectedTransaction.customerName || selectedTransaction.user.name}</p>
+                      <p className="text-gray-600">{selectedTransaction.customerEmail || selectedTransaction.user.email}</p>
+                      {(selectedTransaction.customerPhone || selectedTransaction.user.phone) && (
+                        <p className="text-gray-600">{selectedTransaction.customerPhone || selectedTransaction.user.phone}</p>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Email:</span>
-                      <span>{selectedTransaction.customerEmail || selectedTransaction.user.email}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Phone:</span>
-                      <span>{selectedTransaction.customerPhone || selectedTransaction.user.phone || '-'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">WhatsApp:</span>
-                      <span>{selectedTransaction.user.whatsapp || '-'}</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
 
-                {/* Product Info */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
+                  {/* Product */}
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
                       <Package className="w-4 h-4" />
-                      Detail Produk
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Tipe:</span>
+                      Produk
+                    </h4>
+                    <div className="space-y-2">
                       <Badge 
                         variant="outline"
                         className={
@@ -639,118 +603,54 @@ export default function PaymentConfirmationPage() {
                       >
                         {selectedTransaction.type}
                       </Badge>
+                      <p className="text-sm font-medium">{getProductName(selectedTransaction)}</p>
+                      {selectedTransaction.membership?.membership?.duration && (
+                        <p className="text-xs text-gray-600">Durasi: {selectedTransaction.membership.membership.duration} bulan</p>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Nama Produk:</span>
-                      <span className="font-medium">{getProductName(selectedTransaction)}</span>
-                    </div>
-                    {selectedTransaction.membership && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Durasi:</span>
-                        <span className="font-medium">{selectedTransaction.membership.membership.duration} bulan</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Harga:</span>
-                      <span className="font-bold text-green-600 text-lg">
-                        Rp {Number(selectedTransaction.amount).toLocaleString('id-ID')}
-                      </span>
-                    </div>
-                    {selectedTransaction.coupon && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Kupon:</span>
-                        <Badge variant="secondary" className="font-mono">
-                          {selectedTransaction.coupon.code}
-                        </Badge>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                {/* Payment Info */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
+                {/* Payment Method */}
+                {selectedTransaction.paymentMethod && (
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center gap-2 text-blue-900">
                       <CreditCard className="w-4 h-4" />
-                      Informasi Pembayaran
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Metode:</span>
-                      <span className="font-medium">{selectedTransaction.paymentMethod || 'Belum dipilih'}</span>
+                      <span className="text-sm font-medium">Metode: {selectedTransaction.paymentMethod}</span>
                     </div>
-                    {getPaymentUrl(selectedTransaction) && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Link Pembayaran:</span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(getPaymentUrl(selectedTransaction)!, '_blank')}
-                          className="gap-1"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          Buka Xendit
-                        </Button>
-                      </div>
-                    )}
-                    {selectedTransaction.reference && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Reference:</span>
-                        <span className="font-mono text-xs">{selectedTransaction.reference}</span>
-                      </div>
-                    )}
-                    {selectedTransaction.notes && (
-                      <div className="pt-2 border-t">
-                        <div className="text-gray-600 mb-1">Catatan:</div>
-                        <div className="text-gray-700 bg-gray-50 p-2 rounded">{selectedTransaction.notes}</div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                  </div>
+                )}
 
                 {/* Affiliate Info */}
                 {selectedTransaction.affiliateConversion && (
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <User className="w-4 h-4" />
-                        Informasi Affiliate
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Nama Affiliate:</span>
-                        <span className="font-medium">
-                          {selectedTransaction.affiliateConversion.affiliate.user.name}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Komisi:</span>
-                        <span className="font-bold text-orange-600">
-                          Rp {Number(selectedTransaction.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-orange-900">
+                        Affiliate: {selectedTransaction.affiliateConversion.affiliate.user.name}
+                      </span>
+                      <span className="text-sm font-bold text-orange-700">
+                        Komisi: Rp {Number(selectedTransaction.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                  </div>
                 )}
 
                 {/* Payment Proof - Bukti Transfer */}
                 {selectedTransaction.paymentProofUrl && (
-                  <Card className="border-2 border-green-300 bg-green-50">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center gap-2 text-green-700">
+                  <div className="border-2 border-green-200 rounded-xl overflow-hidden">
+                    <div className="p-4 bg-green-50 border-b border-green-200">
+                      <h4 className="font-medium text-green-800 flex items-center gap-2">
                         <ImageIcon className="w-4 h-4" />
                         Bukti Transfer
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {selectedTransaction.paymentProofSubmittedAt && (
-                        <p className="text-xs text-green-600">
-                          Diupload pada: {new Date(selectedTransaction.paymentProofSubmittedAt).toLocaleString('id-ID')}
-                        </p>
-                      )}
-                      <div className="relative w-full max-w-md mx-auto">
+                        {selectedTransaction.paymentProofSubmittedAt && (
+                          <span className="text-xs font-normal text-green-600 ml-auto">
+                            {new Date(selectedTransaction.paymentProofSubmittedAt).toLocaleDateString('id-ID')}
+                          </span>
+                        )}
+                      </h4>
+                    </div>
+                    <div className="p-4 bg-white">
+                      <div className="relative w-full max-w-sm mx-auto">
                         <a 
                           href={selectedTransaction.paymentProofUrl} 
                           target="_blank" 
@@ -760,68 +660,74 @@ export default function PaymentConfirmationPage() {
                           <Image
                             src={selectedTransaction.paymentProofUrl}
                             alt="Bukti Transfer"
-                            width={400}
-                            height={300}
-                            className="rounded-lg border shadow-sm object-contain w-full h-auto max-h-96 cursor-pointer hover:opacity-90 transition-opacity"
+                            width={300}
+                            height={400}
+                            className="rounded-lg border shadow-sm object-contain w-full h-auto max-h-80 cursor-pointer hover:opacity-90 transition-opacity"
                           />
                         </a>
                         <p className="text-xs text-center text-gray-500 mt-2">
-                          Klik gambar untuk membuka dalam tab baru
+                          Klik untuk memperbesar
                         </p>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full gap-2"
-                        onClick={() => window.open(selectedTransaction.paymentProofUrl!, '_blank')}
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        Buka Bukti Transfer
-                      </Button>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
+                )}
+
+                {/* Transfer Notes */}
+                {selectedTransaction.notes && (
+                  <div className="p-3 bg-gray-50 rounded-lg border">
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm">Catatan Transfer</h4>
+                    <div className="text-sm text-gray-700 bg-white p-3 rounded border">
+                      {(() => {
+                        try {
+                          const notes = JSON.parse(selectedTransaction.notes);
+                          return (
+                            <div className="space-y-1">
+                              {notes.senderName && <p><strong>Pengirim:</strong> {notes.senderName}</p>}
+                              {notes.senderBank && <p><strong>Bank:</strong> {notes.senderBank}</p>}
+                              {notes.transferAmount && <p><strong>Jumlah:</strong> Rp {Number(notes.transferAmount).toLocaleString('id-ID')}</p>}
+                              {notes.notes && <p><strong>Catatan:</strong> {notes.notes}</p>}
+                            </div>
+                          );
+                        } catch {
+                          return selectedTransaction.notes;
+                        }
+                      })()}
+                    </div>
+                  </div>
                 )}
 
                 {/* Action Buttons */}
-                <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2 text-orange-700">
-                      <ShieldCheck className="w-4 h-4" />
-                      Keputusan
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Confirm Button */}
-                      <Button
-                        className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all"
-                        onClick={() => setConfirmDialogOpen(true)}
-                        disabled={processing}
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        Approve & Aktivasi
-                      </Button>
-                      
-                      {/* Reject Button */}
-                      <Button
-                        variant="destructive"
-                        className="w-full gap-2 shadow-md hover:shadow-lg transition-all"
-                        onClick={() => setRejectDialogOpen(true)}
-                        disabled={processing}
-                      >
-                        <XCircle className="w-4 h-4" />
-                        Reject Pembayaran
-                      </Button>
-                    </div>
+                <div className="pt-4 border-t">
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Approve Button */}
+                    <Button
+                      className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white h-12 font-medium"
+                      onClick={() => setConfirmDialogOpen(true)}
+                      disabled={processing}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Approve
+                    </Button>
+                    
+                    {/* Reject Button */}
+                    <Button
+                      variant="destructive"
+                      className="w-full gap-2 h-12 font-medium"
+                      onClick={() => setRejectDialogOpen(true)}
+                      disabled={processing}
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Reject
+                    </Button>
+                  </div>
 
-                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                      <p className="text-xs text-blue-700">
-                        ⚠️ <strong>Perhatian:</strong> Approve akan langsung mengaktifkan membership/produk dan mengirim email konfirmasi. 
-                        Reject akan membatalkan transaksi dan memberi notifikasi ke customer.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-xs text-amber-700">
+                      <strong>Perhatian:</strong> Approve akan langsung mengaktifkan produk dan mengirim notifikasi ke customer.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </DialogContent>
