@@ -85,8 +85,9 @@ export async function POST(
       const followerUsername = follower?.username || 'user'
 
       // Create notification record in database
+      let notificationId = ''
       try {
-        await prisma.notification.create({
+        const notification = await prisma.notification.create({
           data: {
             userId: targetUserId,
             type: 'FOLLOW',
@@ -104,17 +105,21 @@ export async function POST(
             sentAt: new Date()
           }
         })
+        notificationId = notification.id
       } catch (e) {
         console.log('[Follow API] Failed to create notification record:', e)
       }
 
-      // Send notification via Pusher (real-time)
+      // Send notification via Pusher (real-time) - use 'notification' event to match NotificationBell listener
       try {
-        await pusherService.notifyUser(targetUserId, 'new-follower', {
-          userId: session.user.id,
-          name: followerName,
-          username: followerUsername,
-          avatar: follower?.avatar || null
+        await pusherService.notifyUser(targetUserId, 'notification', {
+          id: notificationId || `follow-${follow.id}`,
+          type: 'FOLLOW',
+          title: 'Pengikut Baru',
+          message: `${followerName} mulai mengikuti Anda`,
+          link: `/${followerUsername}`,
+          isRead: false,
+          createdAt: new Date().toISOString()
         })
       } catch (e) {
         console.log('[Follow API] Pusher notification skipped:', e)
