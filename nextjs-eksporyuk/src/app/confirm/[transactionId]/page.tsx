@@ -100,24 +100,58 @@ export default function ConfirmPaymentPage() {
   // Fetch payment settings (CS WhatsApp and manual banks)
   const fetchPaymentSettings = useCallback(async () => {
     try {
-      const res = await fetch('/api/settings/public')
-      if (res.ok) {
-        const data = await res.json()
-        if (data.settings?.csWhatsApp) {
-          setCSWhatsApp(data.settings.csWhatsApp)
+      console.log('Fetching payment settings...');
+      
+      // Fetch CS WhatsApp from settings
+      const settingsResponse = await fetch('/api/admin/settings/payment');
+      if (settingsResponse.ok) {
+        const settingsData = await settingsResponse.json();
+        console.log('Settings data:', settingsData);
+        
+        // Extract CS WhatsApp
+        if (settingsData.success && settingsData.data) {
+          const settings = settingsData.data;
+          setCSWhatsApp(settings.customerServiceWhatsApp || '');
         }
       }
-
+      
       // Fetch manual banks
-      const banksRes = await fetch('/api/manual-banks')
-      if (banksRes.ok) {
-        const banksData = await banksRes.json()
-        if (banksData.banks) {
-          setManualBanks(banksData.banks)
+      const banksResponse = await fetch('/api/manual-banks');
+      if (banksResponse.ok) {
+        const banksData = await banksResponse.json();
+        console.log('Manual banks data:', banksData);
+        
+        if (banksData.success && banksData.data) {
+          setManualBanks(banksData.data.map((bank: any) => ({
+            id: bank.id,
+            bankName: bank.bankName,
+            bankCode: bank.bankCode
+          })));
         }
+      } else {
+        // Fallback to common banks if API fails
+        const fallbackBanks = [
+          { id: 'bca', bankName: 'Bank Central Asia', bankCode: 'BCA' },
+          { id: 'bri', bankName: 'Bank Rakyat Indonesia', bankCode: 'BRI' },
+          { id: 'bni', bankName: 'Bank Negara Indonesia', bankCode: 'BNI' },
+          { id: 'btn', bankName: 'Bank Tabungan Negara', bankCode: 'BTN' },
+          { id: 'mandiri', bankName: 'Bank Mandiri', bankCode: 'MANDIRI' },
+        ];
+        setManualBanks(fallbackBanks);
       }
-    } catch (err) {
-      console.error('Failed to fetch settings:', err)
+      
+    } catch (error) {
+      console.error('Error fetching payment settings:', error);
+      
+      // Fallback banks on error
+      const fallbackBanks = [
+        { id: 'bca', bankName: 'Bank Central Asia', bankCode: 'BCA' },
+        { id: 'bri', bankName: 'Bank Rakyat Indonesia', bankCode: 'BRI' },
+        { id: 'bni', bankName: 'Bank Negara Indonesia', bankCode: 'BNI' },
+        { id: 'btn', bankName: 'Bank Tabungan Negara', bankCode: 'BTN' },
+        { id: 'mandiri', bankName: 'Bank Mandiri', bankCode: 'MANDIRI' },
+      ];
+      setManualBanks(fallbackBanks);
     }
   }, [])
 

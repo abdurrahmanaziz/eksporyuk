@@ -152,7 +152,13 @@ export async function POST(
   try {
     const { transactionId } = await params
     const body = await request.json()
-    const { paymentProofUrl } = body
+    const { 
+      paymentProofUrl, 
+      senderName, 
+      senderBank, 
+      transferAmount,
+      notes 
+    } = body
 
     if (!paymentProofUrl) {
       return NextResponse.json(
@@ -160,6 +166,21 @@ export async function POST(
         { status: 400 }
       )
     }
+
+    if (!senderName || !senderBank) {
+      return NextResponse.json(
+        { error: 'Nama pengirim dan bank pengirim harus diisi' },
+        { status: 400 }
+      )
+    }
+
+    console.log('[Payment Confirm POST] Updating transaction with:', {
+      transactionId,
+      paymentProofUrl,
+      senderName,
+      senderBank,
+      transferAmount
+    })
 
     // Find transaction
     const transaction = await prisma.transaction.findUnique({
@@ -189,13 +210,27 @@ export async function POST(
       )
     }
 
-    // Update transaction with proof
+    // Prepare metadata for additional transfer information
+    const transferMetadata = {
+      senderName,
+      senderBank,
+      transferAmount: transferAmount || transaction.amount,
+      submittedAt: new Date().toISOString()
+    }
+
+    if (notes) {
+      transferMetadata.notes = notes
+    }
+
+    // Update transaction with proof and additional data
     await prisma.transaction.update({
       where: { id: transactionId },
       data: {
         paymentProofUrl,
         paymentProofSubmittedAt: new Date(),
-        status: 'PENDING_CONFIRMATION'
+        status: 'PENDING_CONFIRMATION',
+        // Store additional transfer data in metadata or notes field
+        notes: JSON.stringify(transferMetadata)
       }
     })
 
@@ -214,7 +249,7 @@ export async function POST(
             userId: admin.id,
             type: 'TRANSACTION',
             title: 'Bukti Pembayaran Baru',
-            message: `${transaction.customerName || 'Customer'} mengirim bukti pembayaran untuk invoice ${transaction.invoiceNumber || transactionId}`,
+            message: `${transaction.customerName || 'Customer'} mengirim bukti pembayaran untuk invoice ${transaction.invoiceNumber || transactionId} dari ${senderName} (${senderBank})`,
             link: '/admin/payment-confirmation',
             redirectUrl: '/admin/payment-confirmation',
             sourceType: 'transaction',

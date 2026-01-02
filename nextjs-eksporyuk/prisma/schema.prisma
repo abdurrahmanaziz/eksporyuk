@@ -1302,13 +1302,25 @@ model EventGroup {
   productId String
   groupId   String
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, groupId])
+  @@index([productId])
+  @@index([groupId])
 }
 
 model EventMembership {
-  id           String   @id
+  id           String      @id
   productId    String
   membershipId String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime    @default(now())
+  product      Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  membership   Membership  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, membershipId])
+  @@index([productId])
+  @@index([membershipId])
 }
 
 model EventRSVP {
@@ -2283,6 +2295,8 @@ model Product {
   User                    User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   Group                   Group?          @relation(fields: [groupId], references: [id])
   UserProduct             UserProduct[]
+  eventMemberships        EventMembership[]
+  eventGroups             EventGroup[]
 }
 
 model ProductCourse {
