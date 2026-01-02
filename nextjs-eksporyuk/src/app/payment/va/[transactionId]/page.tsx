@@ -678,8 +678,8 @@ export default function VirtualAccountPage() {
 
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-white drop-shadow-md mb-1">Transfer Virtual Account</h1>
-          <p className="text-white/80">Selesaikan pembayaran Anda</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Transfer Virtual Account</h1>
+          <p className="text-gray-600">Selesaikan pembayaran Anda</p>
         </div>
 
         {/* VA Card */}
@@ -687,9 +687,9 @@ export default function VirtualAccountPage() {
           {/* Bank Header */}
           <div className={`bg-gradient-to-r ${getBankColor(vaDetails.bankCode)} p-5`}>
             <div className="flex items-center justify-between">
-              <div className="text-white">
-                <p className="text-sm opacity-90 mb-1">Virtual Account</p>
-                <h2 className="text-xl font-bold">{vaDetails.bankName || vaDetails.bankCode}</h2>
+              <div>
+                <p className="text-sm text-white/95 font-medium mb-1">Virtual Account</p>
+                <h2 className="text-xl font-bold text-white drop-shadow-sm">{vaDetails.bankName || vaDetails.bankCode}</h2>
               </div>
               <div className="bg-white rounded-lg p-2 shadow-md">
                 <img 
