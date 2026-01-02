@@ -135,7 +135,13 @@ const navigationByRole = {
         { name: 'Grup Komunitas', href: '/community/groups', icon: UsersRound },
         { name: 'Feed (Admin)', href: '/admin/feed', icon: MessageSquare },
         { name: 'Grup (Admin)', href: '/admin/groups', icon: UsersRound },
-        { name: 'Acara', href: '/admin/events', icon: Calendar },
+      ]
+    },
+    {
+      title: 'MANAJEMEN EVENT',
+      items: [
+        { name: 'Semua Event', href: '/admin/event-management', icon: Calendar },
+        { name: 'Buat Event', href: '/admin/events/create', icon: UserPlus },
       ]
     },
     {
