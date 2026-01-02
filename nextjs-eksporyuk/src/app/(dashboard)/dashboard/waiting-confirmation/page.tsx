@@ -15,10 +15,31 @@ export default function WaitingConfirmationPage() {
   const { transactions, hasAwaitingConfirmation, loading } = usePendingTransactions()
   
   const [timeAgo, setTimeAgo] = useState('')
+  const [csWhatsappNumber, setCsWhatsappNumber] = useState('')
+  const [csWhatsappLoading, setCsWhatsappLoading] = useState(true)
   const invoice = searchParams?.get('invoice')
 
   // Get the most recent pending confirmation transaction
   const pendingTransaction = transactions.find(t => t.status === 'PENDING_CONFIRMATION')
+
+  // Fetch CS WhatsApp number from settings
+  useEffect(() => {
+    const fetchCSWhatsapp = async () => {
+      try {
+        const response = await fetch('/api/admin/settings/payment')
+        if (response.ok) {
+          const data = await response.json()
+          setCsWhatsappNumber(data.data?.customerServiceWhatsApp || '')
+        }
+      } catch (error) {
+        console.error('Failed to fetch CS WhatsApp number:', error)
+      } finally {
+        setCsWhatsappLoading(false)
+      }
+    }
+    
+    fetchCSWhatsapp()
+  }, [])
 
   useEffect(() => {
     if (pendingTransaction) {
@@ -197,14 +218,23 @@ export default function WaitingConfirmationPage() {
                   <p className="text-gray-600 text-sm mb-3">
                     Jika ada pertanyaan atau kendala, jangan ragu untuk menghubungi customer service kami.
                   </p>
-                  <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
-                    <a
-                      href="https://wa.me/6281234567890?text=Halo, saya butuh bantuan terkait pembayaran"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Hubungi CS via WhatsApp
-                    </a>
+                  <Button 
+                    asChild 
+                    size="sm" 
+                    className="bg-green-600 hover:bg-green-700"
+                    disabled={csWhatsappLoading || !csWhatsappNumber}
+                  >
+                    {csWhatsappNumber ? (
+                      <a
+                        href={`https://wa.me/${csWhatsappNumber.replace(/[^\d]/g, '')}?text=Halo, saya butuh bantuan terkait pembayaran`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Hubungi CS via WhatsApp
+                      </a>
+                    ) : (
+                      <span>Hubungi CS via WhatsApp</span>
+                    )}
                   </Button>
                 </div>
               </div>

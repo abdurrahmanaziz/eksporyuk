@@ -718,14 +718,18 @@ export default function ConfirmPaymentPage() {
         <div className="bg-slate-50 rounded-xl p-4 text-center">
           <p className="text-sm text-slate-600">
             Butuh bantuan?{' '}
-            <a 
-              href="https://wa.me/6281234567890" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-orange-600 font-medium hover:underline"
-            >
-              Hubungi CS kami
-            </a>
+            {csWhatsApp ? (
+              <a 
+                href={`https://wa.me/${csWhatsApp.replace(/\D/g, '')}`}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-orange-600 font-medium hover:underline"
+              >
+                Hubungi CS kami
+              </a>
+            ) : (
+              <span className="text-orange-600 font-medium">Hubungi CS kami</span>
+            )}
           </p>
         </div>
       </main>

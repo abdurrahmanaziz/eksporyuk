@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   CheckCircle2, 
   AlertCircle, 
@@ -22,6 +22,22 @@ import Link from 'next/link'
 
 export default function MigrationPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [csWhatsapp, setCsWhatsapp] = useState<string>('')
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/admin/settings/payment')
+        if (response.ok) {
+          const data = await response.json()
+          setCsWhatsapp(data.data?.customerServiceWhatsApp || '')
+        }
+      } catch (error) {
+        console.error('Failed to fetch CS WhatsApp:', error)
+      }
+    }
+    fetchSettings()
+  }, [])
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
