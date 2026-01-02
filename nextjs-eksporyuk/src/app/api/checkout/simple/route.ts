@@ -130,7 +130,8 @@ export async function POST(request: NextRequest) {
       membershipSlug,
       couponCode,
       paymentMethod = 'bank_transfer', // Default to bank_transfer
-      paymentChannel = 'BCA' // Default to BCA
+      paymentChannel = 'BCA', // Default to BCA
+      affiliateCode // Affiliate code from cookie
     } = body
 
     console.log('[Simple Checkout] Parsed values:', {
@@ -140,7 +141,8 @@ export async function POST(request: NextRequest) {
       whatsapp,
       paymentMethod,
       paymentChannel,
-      finalPrice
+      finalPrice,
+      affiliateCode
     })
 
     // Validate required fields
@@ -234,6 +236,46 @@ export async function POST(request: NextRequest) {
       console.log('[Simple Checkout] Using fallback invoice:', invoiceNumber)
     }
 
+    // Lookup affiliate from code
+    let affiliateId: string | null = null
+    let affiliateName: string | null = null
+    let affiliateCommissionRate = plan.affiliateCommissionRate || 0
+    
+    if (affiliateCode) {
+      console.log('[Simple Checkout] Looking up affiliate with code:', affiliateCode)
+      try {
+        // First try to find by referralCode
+        let affiliateUser = await prisma.user.findFirst({
+          where: { 
+            referralCode: affiliateCode,
+            role: { in: ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER', 'MENTOR'] }
+          },
+          select: { id: true, name: true, email: true }
+        })
+        
+        // If not found, try to find by username
+        if (!affiliateUser) {
+          affiliateUser = await prisma.user.findFirst({
+            where: { 
+              username: affiliateCode,
+              role: { in: ['AFFILIATE', 'ADMIN', 'FOUNDER', 'CO_FOUNDER', 'MENTOR'] }
+            },
+            select: { id: true, name: true, email: true }
+          })
+        }
+        
+        if (affiliateUser) {
+          affiliateId = affiliateUser.id
+          affiliateName = affiliateUser.name
+          console.log('[Simple Checkout] ✅ Affiliate found:', affiliateName, affiliateId)
+        } else {
+          console.log('[Simple Checkout] ⚠️ Affiliate not found for code:', affiliateCode)
+        }
+      } catch (affErr) {
+        console.error('[Simple Checkout] ⚠️ Error looking up affiliate:', affErr)
+      }
+    }
+
     // Create transaction with Decimal amount
     let transaction
     try {
@@ -250,7 +292,14 @@ export async function POST(request: NextRequest) {
         customerEmail: email || session.user.email || '',
         customerPhone: phone || '',
         customerWhatsapp: whatsapp || phone || '',
+        affiliateId,
+        affiliateName,
       })
+      
+      // Calculate affiliate commission for metadata
+      const affiliateCommission = affiliateId && affiliateCommissionRate > 0 
+        ? Math.round(amountNum * affiliateCommissionRate / 100)
+        : 0
       
       transaction = await prisma.transaction.create({
         data: {
@@ -268,6 +317,7 @@ export async function POST(request: NextRequest) {
           customerWhatsapp: whatsapp || phone || '',
           description: `Membership: ${plan.name} - ${priceOption?.label || ''}`,
           externalId: `TXN-${Date.now()}-${session.user.id.slice(0, 8)}`, // For Xendit
+          affiliateId: affiliateId, // Store affiliate ID directly on transaction
           updatedAt: getCurrentTimestamp(),
           metadata: {
             membershipId: plan.id,
@@ -280,7 +330,13 @@ export async function POST(request: NextRequest) {
             paymentMethodType: paymentMethod || 'bank_transfer',
             paymentChannel: paymentChannel || 'MANDIRI',
             paymentChannelName: getPaymentChannelName(paymentChannel || 'MANDIRI'),
-            expiryHours: paymentExpiryHours // Use dynamic expiry from settings
+            expiryHours: paymentExpiryHours, // Use dynamic expiry from settings
+            // Affiliate data in metadata for reference
+            affiliateId: affiliateId,
+            affiliateName: affiliateName,
+            affiliateCode: affiliateCode,
+            affiliateCommissionRate: affiliateCommissionRate,
+            affiliateCommission: affiliateCommission
           }
         }
       })

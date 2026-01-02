@@ -58,6 +58,7 @@ export default function CheckoutPage() {
   const [checkingCoupon, setCheckingCoupon] = useState(false)
   const [couponError, setCouponError] = useState<string | null>(null)
   const [affiliatePartner, setAffiliatePartner] = useState<string | null>(null)
+  const [affiliateCode, setAffiliateCode] = useState<string | null>(null) // Store affiliate code for API
 
   // Payment method selection
   const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'ewallet' | 'qris' | 'retail' | 'paylater' | 'manual'>('bank_transfer')
@@ -190,20 +191,23 @@ export default function CheckoutPage() {
     const loadAffiliatePartner = async () => {
       // Get affiliate code from cookies
       const cookies = document.cookie.split(';')
-      let affiliateCode: string | null = null
+      let foundAffiliateCode: string | null = null
       
       for (const cookie of cookies) {
         const [name, value] = cookie.trim().split('=')
         if (name === 'affiliate_code' || name === 'ref') {
-          affiliateCode = value
+          foundAffiliateCode = value
           break
         }
       }
       
-      if (!affiliateCode) return
+      if (!foundAffiliateCode) return
+      
+      // Store the affiliate code for later use in checkout
+      setAffiliateCode(foundAffiliateCode)
       
       try {
-        const response = await fetch(`/api/affiliate/by-code?code=${encodeURIComponent(affiliateCode)}`)
+        const response = await fetch(`/api/affiliate/by-code?code=${encodeURIComponent(foundAffiliateCode)}`)
         if (response.ok) {
           const data = await response.json()
           if (data.success && data.affiliate?.user?.name) {
@@ -699,7 +703,8 @@ export default function CheckoutPage() {
         phone: registerData.phone || registerData.whatsapp,
         whatsapp: registerData.whatsapp,
         paymentMethod: paymentMethod, // 'bank_transfer', 'ewallet', 'qris'
-        paymentChannel: paymentChannel // 'BCA', 'MANDIRI', 'OVO', 'DANA', etc
+        paymentChannel: paymentChannel, // 'BCA', 'MANDIRI', 'OVO', 'DANA', etc
+        affiliateCode: affiliateCode // Pass affiliate code from cookie
       }
       
       console.log('[DEBUG] Request body:', JSON.stringify(requestBody, null, 2))

@@ -159,10 +159,27 @@ export async function GET(request: NextRequest) {
     })
     const membershipMap = Object.fromEntries(memberships.map(m => [m.id, m]))
     
-    // Fetch affiliate users for conversions
-    const affiliateUserIds = [...new Set(conversions.map(c => c.affiliateId).filter(Boolean))]
+    // Collect all affiliate IDs from multiple sources:
+    // 1. AffiliateConversion records
+    // 2. Transaction.affiliateId field
+    // 3. metadata.affiliateId
+    const allAffiliateIds = new Set<string>()
+    
+    // From conversions
+    conversions.forEach(c => {
+      if (c.affiliateId) allAffiliateIds.add(c.affiliateId)
+    })
+    
+    // From transaction.affiliateId and metadata
+    rawTransactions.forEach(tx => {
+      if (tx.affiliateId) allAffiliateIds.add(tx.affiliateId)
+      const metadata = tx.metadata as Record<string, any> | null
+      if (metadata?.affiliateId) allAffiliateIds.add(metadata.affiliateId)
+    })
+    
+    // Fetch all affiliate users
     const affiliateUsers = await prisma.user.findMany({
-      where: { id: { in: affiliateUserIds } },
+      where: { id: { in: [...allAffiliateIds] } },
       select: { id: true, name: true, email: true, phone: true, whatsapp: true }
     })
     const affiliateUserMap = Object.fromEntries(affiliateUsers.map(u => [u.id, u]))
@@ -171,6 +188,41 @@ export async function GET(request: NextRequest) {
     const transactions = rawTransactions.map(tx => {
       const conversion = conversionMap[tx.id]
       const userMembership = userMembershipMap[tx.id]
+      const metadata = tx.metadata as Record<string, any> | null
+      
+      // Determine affiliate info from various sources
+      let affiliateFromMetadata = null
+      
+      // Check transaction.affiliateId first
+      if (tx.affiliateId && affiliateUserMap[tx.affiliateId]) {
+        affiliateFromMetadata = {
+          id: tx.affiliateId,
+          name: affiliateUserMap[tx.affiliateId].name,
+          email: affiliateUserMap[tx.affiliateId].email,
+          affiliateId: tx.affiliateId,
+          affiliate: affiliateUserMap[tx.affiliateId]
+        }
+      }
+      // Then check metadata.affiliateId  
+      else if (metadata?.affiliateId && affiliateUserMap[metadata.affiliateId]) {
+        affiliateFromMetadata = {
+          id: metadata.affiliateId,
+          name: affiliateUserMap[metadata.affiliateId].name,
+          email: affiliateUserMap[metadata.affiliateId].email,
+          affiliateId: metadata.affiliateId,
+          affiliate: affiliateUserMap[metadata.affiliateId]
+        }
+      }
+      // Fallback to metadata.affiliateName (legacy data)
+      else if (metadata?.affiliateName || metadata?.affiliate_name) {
+        affiliateFromMetadata = {
+          id: null,
+          name: metadata.affiliateName || metadata.affiliate_name,
+          email: null,
+          affiliateId: null,
+          affiliate: null
+        }
+      }
       
       return {
         ...tx,
@@ -191,7 +243,8 @@ export async function GET(request: NextRequest) {
           affiliate: {
             user: affiliateUserMap[conversion.affiliateId] || null
           }
-        } : null
+        } : null,
+        affiliateFromMetadata
       }
     })
     
