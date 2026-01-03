@@ -17,8 +17,7 @@ interface UpgradeCalculation {
     id: string
     name: string
     price: number
-    durationType: string
-    duration: number
+    duration: string
     endDate: string
     remainingDays: number
   }
@@ -26,8 +25,7 @@ interface UpgradeCalculation {
     id: string
     name: string
     price: number
-    durationType: string
-    duration: number
+    duration: string
   }
   upgradePrice: number
   discount: number
@@ -128,11 +126,15 @@ export default function UpgradeConfirmPage() {
     }).format(amount)
   }
 
-  const formatDuration = (durationType: string, duration: number) => {
-    if (durationType === 'LIFETIME') return 'Selamanya'
-    if (durationType === 'YEAR') return `${duration} Tahun`
-    if (durationType === 'MONTH') return `${duration} Bulan`
-    return `${duration} Hari`
+  const formatDuration = (duration: string) => {
+    switch (duration) {
+      case 'ONE_MONTH': return '1 Bulan'
+      case 'THREE_MONTHS': return '3 Bulan'
+      case 'SIX_MONTHS': return '6 Bulan'
+      case 'TWELVE_MONTHS': return '12 Bulan'
+      case 'LIFETIME': return 'Selamanya'
+      default: return duration
+    }
   }
 
   if (loading) {
@@ -241,7 +243,7 @@ export default function UpgradeConfirmPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Durasi</p>
-                  <p className="font-semibold">{formatDuration(calculation.currentPackage.durationType, calculation.currentPackage.duration)}</p>
+                  <p className="font-semibold">{formatDuration(calculation.currentPackage.duration)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Berakhir</p>
@@ -296,7 +298,7 @@ export default function UpgradeConfirmPage() {
                 <p className="text-sm text-gray-500 mb-1">Durasi</p>
                 <div className="flex items-center gap-2">
                   {calculation.isLifetimeUpgrade && <Crown className="w-5 h-5 text-yellow-500" />}
-                  <p className="font-semibold">{formatDuration(calculation.targetPackage.durationType, calculation.targetPackage.duration)}</p>
+                  <p className="font-semibold">{formatDuration(calculation.targetPackage.duration)}</p>
                 </div>
               </div>
               {!calculation.isNewPurchase && !calculation.isLifetimeUpgrade && calculation.discount > 0 && (
