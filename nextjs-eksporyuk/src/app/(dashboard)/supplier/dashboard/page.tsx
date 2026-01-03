@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
+import EmailVerificationModal from '@/components/member/EmailVerificationModal'
+import EmailVerificationBanner from '@/components/EmailVerificationBanner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -163,8 +165,11 @@ export default function SupplierDashboardPage() {
   )
 
   return (
-    <ResponsivePageWrapper>
-      <div className="space-y-6">
+    <>
+      <EmailVerificationModal onComplete={() => window.location.reload()} />
+      <ResponsivePageWrapper>
+        <EmailVerificationBanner />
+        <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -694,5 +699,6 @@ export default function SupplierDashboardPage() {
         </Card>
       </div>
     </ResponsivePageWrapper>
+    </>
   )
 }

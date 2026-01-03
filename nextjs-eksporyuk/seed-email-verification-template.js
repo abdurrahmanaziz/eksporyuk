@@ -1,6 +1,5 @@
 /**
  * Seed Branded Template untuk Email Verification
- * Template untuk email verifikasi akun user
  */
 
 import { PrismaClient } from '@prisma/client'
@@ -12,7 +11,7 @@ async function seedEmailVerificationTemplate() {
     console.log('🌱 Seeding Email Verification Template...')
 
     // Check if template already exists
-    const existing = await prisma.brandedTemplate.findUnique({
+    const existing = await prisma.brandedTemplate.findFirst({
       where: { slug: 'email-verification' }
     })
 
@@ -25,12 +24,13 @@ async function seedEmailVerificationTemplate() {
     // Create template
     const template = await prisma.brandedTemplate.create({
       data: {
+        id: `tmpl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         slug: 'email-verification',
         name: 'Email Verification',
         category: 'VERIFICATION',
+        type: 'TRANSACTIONAL',
         subject: '✅ Verifikasi Email Anda - {site_name}',
-        htmlContent: `
-<!DOCTYPE html>
+        content: `<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -139,48 +139,20 @@ async function seedEmailVerificationTemplate() {
     </tr>
   </table>
 </body>
-</html>
-        `,
-        textContent: `
-Halo {name}!
-
-Terima kasih telah mendaftar di {site_name} - Platform pembelajaran ekspor terpercaya di Indonesia!
-
-Untuk melanjutkan, silakan verifikasi alamat email Anda dengan mengklik link berikut:
-
-{verification_url}
-
-Link verifikasi ini akan kadaluarsa dalam 24 jam. Segera verifikasi email Anda untuk mengakses semua fitur {site_name}.
-
-Apa yang bisa Anda lakukan di {site_name}?
-✅ Belajar ekspor dari mentor berpengalaman
-✅ Akses database buyer & supplier global
-✅ Bergabung dengan komunitas eksportir
-✅ Dapatkan sertifikat keahlian ekspor
-
-Jika Anda tidak mendaftar di {site_name}, abaikan email ini.
-
-© 2024-2026 {site_name}. All rights reserved.
-{site_url}
-
-Salam,
-Tim {site_name}
-        `,
-        variables: JSON.stringify({
-          name: 'Nama user',
-          email: 'Email user',
-          verification_url: 'URL untuk verifikasi email',
-          site_name: 'Nama website',
-          site_url: 'URL website',
-          login_link: 'Link ke halaman login',
-          dashboard_link: 'Link ke dashboard'
-        }),
+</html>`,
         ctaText: 'Verifikasi Email Saya',
         ctaLink: '{verification_url}',
         isActive: true,
         description: 'Template email untuk verifikasi akun user baru. Digunakan saat user register dan perlu memverifikasi email mereka.',
-        previewText: 'Verifikasi email Anda untuk mengaktifkan akun {site_name}',
-        usageCount: 0
+        usageCount: 0,
+        updatedAt: new Date(),
+        variables: {
+          name: 'Nama user',
+          email: 'Email user',
+          verification_url: 'URL untuk verifikasi email',
+          site_name: 'Nama website (EksporYuk)',
+          site_url: 'URL website (https://eksporyuk.com)'
+        }
       }
     })
 
