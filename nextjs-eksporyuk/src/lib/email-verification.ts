@@ -82,15 +82,18 @@ export async function sendVerificationEmail(email: string, token: string, name: 
   console.log('📧 Preparing verification email...')
   console.log('   Email:', email)
   console.log('   Name:', name)
+  console.log('   Token:', token)
   console.log('   URL:', verificationUrl)
   
   try {
-    // Check if Mailketing is configured (from DB or env)
+    // Check if Mailketing is configured
     const mailketingConfigured = !!process.env.MAILKETING_API_KEY
-    console.log('   Mailketing configured:', mailketingConfigured)
+    console.log('   Mailketing API configured:', mailketingConfigured)
     
-    // Try branded template first
+    // Try branded template first (priority 1)
     try {
+      console.log('   Trying branded template: email-verification')
+      
       const templateData: TemplateData = {
         name,
         email,
@@ -102,69 +105,78 @@ export async function sendVerificationEmail(email: string, token: string, name: 
       }
 
       const renderedEmail = await renderBrandedTemplateBySlug('email-verification', templateData, {
-        fallbackSubject: 'Verifikasi Email Anda - EksporYuk',
+        fallbackSubject: '✅ Verifikasi Email Anda - EksporYuk',
         fallbackContent: [
           'Halo {name},',
           '',
-          'Terima kasih telah mendaftar di EksporYuk.',
-          'Silakan verifikasi email Anda dengan klik tombol di bawah ini:',
+          'Terima kasih telah mendaftar di EksporYuk!',
+          '',
+          'Untuk mengaktifkan akun Anda, mohon verifikasi alamat email dengan klik tombol di bawah ini:',
           '',
           'Jika tombol tidak bisa diklik, salin link berikut ke browser:',
           '{verification_url}',
           '',
-          'Jika Anda tidak merasa mendaftar atau meminta perubahan ini, abaikan email ini.',
+          'Link verifikasi akan kadaluarsa dalam 24 jam.',
           '',
-          'Salam hangat,',
+          'Jika Anda tidak merasa mendaftar, abaikan email ini.',
+          '',
+          'Salam,',
           'Tim EksporYuk'
         ].join('\n'),
-        fallbackCtaText: 'Verifikasi Email Sekarang',
+        fallbackCtaText: 'Verifikasi Email',
         fallbackCtaLink: '{verification_url}',
       })
 
       if (renderedEmail) {
+        console.log('   ✅ Template rendered:', renderedEmail.templateName)
+        console.log('   Subject:', renderedEmail.subject)
+        
+        // Send via Mailketing API
         const result = await mailketing.sendEmail({
           to: email,
           subject: renderedEmail.subject,
           html: renderedEmail.html,
           text: renderedEmail.text,
-          tags: ['verification', 'onboarding']
+          tags: ['verification', 'onboarding', 'email-verification']
         })
 
         if (result.success) {
-          console.log('✅ Verification email sent via branded template to:', email)
+          console.log('✅ Verification email sent via branded template')
+          console.log('   Provider: Mailketing API')
+          console.log('   Template:', renderedEmail.templateName)
           return { success: true, provider: 'mailketing', template: renderedEmail.templateName }
+        } else {
+          console.warn('⚠️ Mailketing send failed:', result.error || result.message)
         }
+      } else {
+        console.warn('⚠️ Template rendering returned null')
       }
     } catch (templateError: any) {
-      console.warn('⚠️ Branded template error (will try fallback):', templateError?.message)
+      console.warn('⚠️ Branded template error:', templateError?.message)
+      console.warn('   Will try fallback method...')
     }
 
-    // Fallback to hardcoded template if branded template failed
-    console.log('⚠️ Branded template unavailable, using fallback')
-    const { sendVerificationEmail: sendMail } = await import('./integrations/mailketing')
-    const result = await sendMail(email, name, verificationUrl)
-    
-    if (result.success) {
-      console.log('✅ Verification email sent via fallback to:', email)
-      return { success: true, provider: 'mailketing', template: 'fallback' }
+    // Fallback: Use hardcoded template from mailketing.ts (priority 2)
+    if (mailketingConfigured) {
+      console.log('   Trying fallback: hardcoded template from mailketing.ts')
+      const { sendVerificationEmail: sendMail } = await import('./integrations/mailketing')
+      const result = await sendMail(email, name, verificationUrl)
+      
+      if (result.success) {
+        console.log('✅ Verification email sent via hardcoded template')
+        console.log('   Provider: Mailketing API')
+        console.log('   Template: Hardcoded HTML')
+        return { success: true, provider: 'mailketing', template: 'hardcoded' }
+      } else {
+        console.error('❌ Hardcoded template also failed:', result.error || result.message)
+      }
     }
     
-    // Dev mode fallback
-    if (!process.env.MAILKETING_API_KEY) {
-      console.log('💡 DEV MODE: Email would be sent to:', email)
-      console.log('📧 Verification URL:', verificationUrl)
-      return { success: true, devMode: true, provider: 'console' }
-    }
-    
-    return { success: false, error: 'Failed to send email' }
-    
-  } catch (error: any) {
-    console.error('❌ Email service error:', error.message)
-    console.error('   Stack:', error.stack)
-    
-    // Fallback: Log to console in dev mode
-    if (!process.env.MAILKETING_API_KEY) {
-      console.log('=== EMAIL VERIFIKASI (FALLBACK) ===')
+    // Dev mode: Console output only (priority 3)
+    if (!mailketingConfigured) {
+      console.log('💡 DEV MODE: Mailketing not configured')
+      console.log('===================================')
+      console.log('📧 EMAIL VERIFIKASI (DEV MODE)')
       console.log('To:', email)
       console.log('Name:', name)
       console.log('Verification URL:', verificationUrl)
@@ -172,7 +184,23 @@ export async function sendVerificationEmail(email: string, token: string, name: 
       return { success: true, devMode: true, provider: 'console' }
     }
     
-    return { success: false, error: error.message }
+    return { success: false, error: 'All email sending methods failed' }
+    
+  } catch (error: any) {
+    console.error('❌ Email verification send error:', error.message)
+    console.error('   Stack:', error.stack)
+    
+    // Final fallback: Log to console
+    console.log('===================================')
+    console.log('📧 EMAIL VERIFIKASI (ERROR FALLBACK)')
+    console.log('To:', email)
+    console.log('Name:', name)
+    console.log('Verification URL:', verificationUrl)
+    console.log('Error:', error.message)
+    console.log('===================================')
+    
+    // Don't block registration on email failure
+    return { success: true, devMode: true, provider: 'console', error: error.message }
   }
 }
 
