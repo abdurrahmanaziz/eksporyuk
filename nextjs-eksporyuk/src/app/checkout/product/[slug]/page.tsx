@@ -260,11 +260,29 @@ export default function ProductCheckoutPage() {
         setShowLoginModal(false)
         setLoginData({ email: '', password: '' })
         
-        // Refresh session in NextAuth
-        // This will update useSession() hook without redirecting
-        setTimeout(() => {
-          window.location.href = window.location.href
-        }, 1000)
+        // Close modal dan wait a bit for session to be established
+        // Gunakan setTimeout untuk memastikan session sudah tersimpan
+        // sebelum mereferesh data form
+        setTimeout(async () => {
+          // Fetch user profile setelah login
+          try {
+            const profileRes = await fetch('/api/user/profile')
+            if (profileRes.ok) {
+              const profileData = await profileRes.json()
+              if (profileData.user) {
+                setRegisterData({
+                  name: profileData.user.name || '',
+                  email: profileData.user.email || '',
+                  phone: profileData.user.phone || '',
+                  whatsapp: profileData.user.whatsapp || profileData.user.phone || '',
+                  password: ''
+                })
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching profile after login:', error)
+          }
+        }, 500)
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -284,10 +302,28 @@ export default function ProductCheckoutPage() {
       if (result?.ok) {
         toast.success('Login dengan Google berhasil!')
         setShowLoginModal(false)
-        // Refresh page to reload session and update form data
-        setTimeout(() => {
-          window.location.href = window.location.href
-        }, 1000)
+        
+        // Close modal dan wait untuk session tersimpan
+        // kemudian refresh data profile tanpa reload halaman
+        setTimeout(async () => {
+          try {
+            const profileRes = await fetch('/api/user/profile')
+            if (profileRes.ok) {
+              const profileData = await profileRes.json()
+              if (profileData.user) {
+                setRegisterData({
+                  name: profileData.user.name || '',
+                  email: profileData.user.email || '',
+                  phone: profileData.user.phone || '',
+                  whatsapp: profileData.user.whatsapp || profileData.user.phone || '',
+                  password: ''
+                })
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching profile after Google login:', error)
+          }
+        }, 500)
       } else if (result?.error) {
         toast.error('Gagal login dengan Google: ' + result.error)
       }
