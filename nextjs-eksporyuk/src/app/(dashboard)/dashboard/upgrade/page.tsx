@@ -112,8 +112,13 @@ export default function UpgradePage() {
       return
     }
 
-    // Use slug for checkout URL directly
-    router.push(`/checkout/${plan.slug}`)
+    // If user has active membership, go to upgrade confirmation with prorata calculation
+    if (currentMembership) {
+      router.push(`/dashboard/upgrade/confirm?package=${plan.id}`)
+    } else {
+      // New purchase - direct to checkout
+      router.push(`/checkout/${plan.slug}`)
+    }
   }
 
   const formatDuration = (duration: string): string => {
