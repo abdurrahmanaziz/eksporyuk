@@ -1390,37 +1390,39 @@ export default function ProductCheckoutPage() {
         </div>
       </div>
 
-      {/* Login Modal - Modern Design */}
+      {/* Login Modal - Premium Modern Design */}
       <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
-        <DialogContent className="sm:max-w-md border-0 shadow-2xl">
-          {/* Close button */}
-          <div className="absolute right-4 top-4">
+        <DialogContent className="sm:max-w-md border-0 shadow-2xl bg-white dark:bg-gray-950 p-0 overflow-hidden">
+          {/* Top Section - Gradient Background */}
+          <div className="relative bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 px-6 pt-8 pb-6">
+            {/* Close Button */}
             <button
               onClick={() => setShowLoginModal(false)}
-              className="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors duration-200"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+
+            {/* Header Text */}
+            <div className="text-center text-white">
+              <h2 className="text-3xl font-bold mb-3 tracking-tight">Masuk Akun</h2>
+              <p className="text-blue-100 text-sm font-medium">Lanjutkan checkout dengan mudah</p>
+            </div>
           </div>
 
-          {/* Header */}
-          <div className="text-center mb-6 mt-2">
-            <h2 className="text-2xl font-bold tracking-tight mb-2">Masuk Akun Anda</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Lanjutkan checkout dengan mudah</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-5">
-            {/* Google Login - Premium Style */}
+          {/* Form Section */}
+          <form onSubmit={handleLogin} className="px-8 py-8 space-y-6">
+            {/* Google Login Button */}
             <Button
               type="button"
               disabled={isLoggingIn}
               variant="outline"
-              className="w-full h-12 border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-200 font-medium"
+              className="w-full h-13 border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all duration-300 font-semibold text-gray-700 dark:text-gray-200 text-sm"
               onClick={handleGoogleLogin}
             >
-              <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
+              <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -1432,52 +1434,59 @@ export default function ProductCheckoutPage() {
             {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+                <span className="w-full border-t-2 border-gray-200 dark:border-gray-700" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white dark:bg-gray-950 px-3 text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  atau email
+                <span className="bg-white dark:bg-gray-950 px-4 text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                  ATAU
                 </span>
               </div>
             </div>
 
-            {/* Email Input */}
-            <div>
-              <Label htmlFor="login-email" className="text-sm font-semibold mb-2 block">Email</Label>
-              <Input
-                id="login-email"
-                type="email"
-                value={loginData.email}
-                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                placeholder="nama@example.com"
-                required
-                className="h-12 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
-            </div>
+            {/* Form Fields */}
+            <div className="space-y-4">
+              {/* Email Field */}
+              <div>
+                <Label htmlFor="login-email" className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 block uppercase tracking-wide">
+                  Email
+                </Label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  placeholder="nama@example.com"
+                  required
+                  className="h-13 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-colors text-sm"
+                />
+              </div>
 
-            {/* Password Input */}
-            <div>
-              <Label htmlFor="login-password" className="text-sm font-semibold mb-2 block">Password</Label>
-              <Input
-                id="login-password"
-                type="password"
-                value={loginData.password}
-                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                placeholder="••••••••"
-                required
-                className="h-12 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
+              {/* Password Field */}
+              <div>
+                <Label htmlFor="login-password" className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 block uppercase tracking-wide">
+                  Password
+                </Label>
+                <Input
+                  id="login-password"
+                  type="password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  placeholder="••••••••"
+                  required
+                  className="h-13 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-colors text-sm"
+                />
+              </div>
             </div>
 
             {/* Login Button */}
             <Button 
               type="submit"
-              className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-base shadow-md hover:shadow-lg transition-all duration-200"
+              className="w-full h-13 bg-gradient-to-r from-orange-500 via-orange-500 to-red-500 hover:from-orange-600 hover:via-orange-600 hover:to-red-600 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg"
               disabled={isLoggingIn || !loginData.email || !loginData.password}
             >
               {isLoggingIn ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-3 h-5 w-5 animate-spin" />
                   Sedang masuk...
                 </>
               ) : (
@@ -1486,20 +1495,22 @@ export default function ProductCheckoutPage() {
             </Button>
 
             {/* Register Link */}
-            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-              Belum punya akun?{' '}
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => {
-                  setShowLoginModal(false)
-                  scrollToRegistrationForm()
-                }}
-                className="p-0 h-auto text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-semibold underline"
-              >
-                Daftar gratis
-              </Button>
-            </p>
+            <div className="text-center pt-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Belum punya akun?{' '}
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => {
+                    setShowLoginModal(false)
+                    scrollToRegistrationForm()
+                  }}
+                  className="p-0 h-auto text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-bold transition-colors"
+                >
+                  Daftar sekarang
+                </Button>
+              </p>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
