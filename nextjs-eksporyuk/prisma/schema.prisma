@@ -936,6 +936,7 @@ model Coupon {
   productIds              Json?
   membershipIds           Json?
   courseIds               Json?
+  eventIds                Json?
   isAffiliateEnabled      Boolean   @default(false)
   isForRenewal            Boolean   @default(false)
   maxGeneratePerAffiliate Int?

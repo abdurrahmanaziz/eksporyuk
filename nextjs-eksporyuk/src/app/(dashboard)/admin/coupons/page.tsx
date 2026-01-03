@@ -97,6 +97,7 @@ export default function AdminCouponsPageNew() {
   const [products, setProducts] = useState<SelectableItem[]>([])
   const [memberships, setMemberships] = useState<SelectableItem[]>([])
   const [courses, setCourses] = useState<SelectableItem[]>([])
+  const [events, setEvents] = useState<SelectableItem[]>([])
   const [affiliates, setAffiliates] = useState<Affiliate[]>([])
   const [loadingData, setLoadingData] = useState(false)
   
@@ -116,6 +117,7 @@ export default function AdminCouponsPageNew() {
     selectedProducts: [] as string[],
     selectedMemberships: [] as string[],
     selectedCourses: [] as string[],
+    selectedEvents: [] as string[],
   })
 
   const [generateFormData, setGenerateFormData] = useState({
@@ -135,10 +137,11 @@ export default function AdminCouponsPageNew() {
   const fetchSelectableData = async () => {
     setLoadingData(true)
     try {
-      const [productsRes, membershipsRes, coursesRes] = await Promise.all([
+      const [productsRes, membershipsRes, coursesRes, eventsRes] = await Promise.all([
         fetch('/api/admin/products'),
         fetch('/api/admin/membership-plans'),
         fetch('/api/admin/courses'),
+        fetch('/api/admin/products?type=EVENT'),
       ])
 
       if (productsRes.ok) {
@@ -152,6 +155,10 @@ export default function AdminCouponsPageNew() {
       if (coursesRes.ok) {
         const data = await coursesRes.json()
         setCourses(data.courses || [])
+      }
+      if (eventsRes.ok) {
+        const data = await eventsRes.json()
+        setEvents(data.products || [])
       }
     } catch (error) {
       console.error('Error fetching selectable data:', error)
@@ -218,6 +225,7 @@ export default function AdminCouponsPageNew() {
         productIds: formData.selectedProducts.length > 0 ? formData.selectedProducts : null,
         membershipIds: formData.selectedMemberships.length > 0 ? formData.selectedMemberships : null,
         courseIds: formData.selectedCourses.length > 0 ? formData.selectedCourses : null,
+        eventIds: formData.selectedEvents.length > 0 ? formData.selectedEvents : null,
       }
 
       const url = editingCoupon
@@ -303,6 +311,7 @@ export default function AdminCouponsPageNew() {
       selectedProducts: Array.isArray(coupon.productIds) ? coupon.productIds : [],
       selectedMemberships: Array.isArray(coupon.membershipIds) ? coupon.membershipIds : [],
       selectedCourses: Array.isArray(coupon.courseIds) ? coupon.courseIds : [],
+      selectedEvents: Array.isArray(coupon.eventIds) ? coupon.eventIds : [],
     })
     setShowModal(true)
   }
@@ -371,6 +380,7 @@ export default function AdminCouponsPageNew() {
       selectedProducts: [],
       selectedMemberships: [],
       selectedCourses: [],
+      selectedEvents: [],
     })
     setEditingCoupon(null)
   }
@@ -1145,6 +1155,43 @@ export default function AdminCouponsPageNew() {
                                     className="rounded border-gray-300"
                                   />
                                   <span className="text-sm">{course.title || course.name}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="block mb-2 font-semibold">Pilih Event</Label>
+                        <div className="border rounded-lg p-3 max-h-32 overflow-y-auto">
+                          {loadingData ? (
+                            <p className="text-sm text-gray-500">Memuat event...</p>
+                          ) : events.length === 0 ? (
+                            <p className="text-sm text-gray-500">Tidak ada event</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {events.map((event) => (
+                                <label key={event.id} className="flex items-center space-x-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.selectedEvents.includes(event.id)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setFormData({
+                                          ...formData,
+                                          selectedEvents: [...formData.selectedEvents, event.id]
+                                        })
+                                      } else {
+                                        setFormData({
+                                          ...formData,
+                                          selectedEvents: formData.selectedEvents.filter(id => id !== event.id)
+                                        })
+                                      }
+                                    }}
+                                    className="rounded border-gray-300"
+                                  />
+                                  <span className="text-sm">{event.name}</span>
                                 </label>
                               ))}
                             </div>

@@ -24,7 +24,7 @@ export async function PATCH(
     const body = await request.json()
     const { 
       code, discountType, discountValue, usageLimit, validUntil, description, 
-      isActive, minPurchase, productIds, membershipIds, courseIds, 
+      isActive, minPurchase, productIds, membershipIds, courseIds, eventIds,
       isAffiliateEnabled, isForRenewal, maxGeneratePerAffiliate, maxUsagePerCoupon
     } = body
 
@@ -47,6 +47,9 @@ export async function PATCH(
     }
     if (courseIds !== undefined) {
       updateData.courseIds = courseIds && courseIds.length > 0 ? courseIds : Prisma.DbNull
+    }
+    if (eventIds !== undefined) {
+      updateData.eventIds = eventIds && eventIds.length > 0 ? eventIds : Prisma.DbNull
     }
     if (isAffiliateEnabled !== undefined) updateData.isAffiliateEnabled = isAffiliateEnabled
     if (isForRenewal !== undefined) updateData.isForRenewal = isForRenewal

@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { 
       code, description, discountType, discountValue, usageLimit, validUntil, 
-      minPurchase, isActive, productIds, membershipIds, courseIds, 
+      minPurchase, isActive, productIds, membershipIds, courseIds, eventIds,
       isAffiliateEnabled, isForRenewal, maxGeneratePerAffiliate, maxUsagePerCoupon
     } = body
 
@@ -151,6 +151,9 @@ export async function POST(request: NextRequest) {
     }
     if (courseIds && courseIds.length > 0) {
       couponData.courseIds = courseIds
+    }
+    if (eventIds && eventIds.length > 0) {
+      couponData.eventIds = eventIds
     }
 
     const coupon = await prisma.coupon.create({
