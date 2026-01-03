@@ -21,6 +21,7 @@ async function main() {
   // Create event with commission settings
   const event = await prisma.product.create({
     data: {
+      id: 'evt-' + Date.now(),
       User: { connect: { id: adminUser.id } },
       name: 'Test Event with Commission - ' + new Date().toISOString().split('T')[0],
       slug: 'test-event-commission-' + Date.now(),
@@ -43,6 +44,7 @@ async function main() {
       seoMetaTitle: 'Test Event with Commission',
       seoMetaDescription: 'Testing commission field persistence',
       ctaButtonText: 'Daftar Sekarang',
+      updatedAt: new Date(),
       // IMPORTANT: These are the fields we just fixed
       affiliateEnabled: true,
       commissionType: 'PERCENTAGE',

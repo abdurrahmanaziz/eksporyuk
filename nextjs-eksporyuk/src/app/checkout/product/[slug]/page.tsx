@@ -15,6 +15,8 @@ import { toast } from 'sonner'
 import Image from 'next/image'
 import { useCheckoutColors } from '@/hooks/useCheckoutColors'
 import AffiliatePartnerBadge from '@/components/checkout/AffiliatePartnerBadge'
+import { EventQuotaBar, EventQuotaBarSkeleton } from '@/components/modules/events/EventQuotaBar'
+import { QuotaAlertBox } from '@/components/modules/events/QuotaAlertBox'
 
 interface Product {
   id: string
@@ -56,6 +58,9 @@ export default function ProductCheckoutPage() {
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
   const [checkingCoupon, setCheckingCoupon] = useState(false)
+  const [registrationCount, setRegistrationCount] = useState(0)
+  const [paidCount, setPaidCount] = useState(0)
+  const [loadingQuota, setLoadingQuota] = useState(false)
 
   // Payment method selection
   const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'ewallet' | 'qris' | 'retail' | 'paylater' | 'manual'>('bank_transfer')
@@ -198,6 +203,11 @@ export default function ProductCheckoutPage() {
         if (!Array.isArray(tags)) tags = []
 
         setProduct({ ...data.product, tags })
+
+        // Fetch registration count if this is an event
+        if (data.product.productType === 'EVENT' && data.product.maxParticipants) {
+          fetchQuotaCount(data.product.id)
+        }
       } else {
         toast.error('Produk tidak ditemukan')
         router.push('/products')
@@ -207,6 +217,23 @@ export default function ProductCheckoutPage() {
       toast.error('Gagal memuat data produk')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchQuotaCount = async (productId: string) => {
+    try {
+      setLoadingQuota(true)
+      const response = await fetch(`/api/products/${productId}/registration-count`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        setPaidCount(data.paidCount || 0)
+        setRegistrationCount(data.count || 0)
+      }
+    } catch (error) {
+      console.error('Error fetching quota count:', error)
+    } finally {
+      setLoadingQuota(false)
     }
   }
 
@@ -510,6 +537,22 @@ export default function ProductCheckoutPage() {
           <p className="text-gray-600 dark:text-gray-400">{product.name}</p>
         </div>
 
+        {/* POSITION 1: Quota Alert - TOP (Eye-catching) */}
+        {product.productType === 'EVENT' && product.maxParticipants && (
+          <div className="mb-6">
+            {loadingQuota ? (
+              <div className="h-32 bg-gray-200 animate-pulse rounded-lg" />
+            ) : (
+              <QuotaAlertBox
+                maxParticipants={product.maxParticipants}
+                paidCount={paidCount}
+                eventName={product.name}
+                variant="top"
+              />
+            )}
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* 1. User Data / Registration */}
           <Card ref={registrationFormRef}>
@@ -689,6 +732,20 @@ export default function ProductCheckoutPage() {
                   {formatCurrency(product.price)}
                 </div>
               </div>
+
+              {/* POSITION 2: Quota Alert - PRODUCT CARD (Price Context) */}
+              {product.productType === 'EVENT' && product.maxParticipants && (
+                loadingQuota ? (
+                  <div className="h-20 bg-gray-200 animate-pulse rounded" />
+                ) : (
+                  <QuotaAlertBox
+                    maxParticipants={product.maxParticipants}
+                    paidCount={paidCount}
+                    eventName={product.name}
+                    variant="product"
+                  />
+                )
+              )}
 
               {/* Tags */}
               {tags.length > 0 && (
@@ -1253,6 +1310,20 @@ export default function ProductCheckoutPage() {
           {/* Buy Button */}
           {status === 'authenticated' && (
             <div className="space-y-4">
+              {/* Position 3: CTA Alert - Urgency Trigger Above Button */}
+              {product.productType === 'EVENT' && product.maxParticipants && (
+                <QuotaAlertBox 
+                  variant="cta" 
+                  paidCount={paidCount} 
+                  maxParticipants={product.maxParticipants} 
+                  eventName={product.name}
+                  onUrgencyTriggered={() => {
+                    // Analytics: Track when CTA alert appears
+                    console.log('CTA Alert Shown - High Urgency Trigger');
+                  }}
+                />
+              )}
+              
               <Button 
                 className="w-full h-16 text-white font-bold text-lg shadow-lg" 
                 size="lg"

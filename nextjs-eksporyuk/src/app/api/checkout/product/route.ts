@@ -77,6 +77,98 @@ export async function POST(request: NextRequest) {
 
     console.log('[API Checkout Product] ✅ Product found:', product.name)
 
+    // Check event quota (if this is an event product)
+    if (product.productType === 'EVENT' && product.maxParticipants) {
+      // Count ONLY SUCCESS (paid) transactions for quota
+      const paidParticipantCount = await prisma.transaction.count({
+        where: {
+          productId: product.id,
+          status: 'SUCCESS'
+        }
+      })
+
+      // Also count pending for logging
+      const pendingCount = await prisma.transaction.count({
+        where: {
+          productId: product.id,
+          status: 'PENDING_CONFIRMATION'
+        }
+      })
+
+      const percentFull = (paidParticipantCount / product.maxParticipants) * 100
+      const remaining = product.maxParticipants - paidParticipantCount
+
+      console.log('[API Checkout Product] Event quota check:', {
+        maxParticipants: product.maxParticipants,
+        paidCount: paidParticipantCount,
+        pendingCount: pendingCount,
+        remaining: remaining,
+        percentFull: percentFull.toFixed(1) + '%',
+        note: 'Only SUCCESS transactions count toward quota'
+      })
+
+      // QUOTA FULL - REJECT
+      if (paidParticipantCount >= product.maxParticipants) {
+        console.log('[API Checkout Product] ❌ Event quota FULL:', product.name)
+        
+        // Send admin notification about full quota
+        try {
+          const creator = await prisma.user.findUnique({
+            where: { id: product.creatorId },
+            select: { email: true, whatsapp: true, name: true }
+          })
+          
+          if (creator?.email) {
+            // Log notification (real integration would use notificationService)
+            console.log('[API Checkout Product] 🔔 QUOTA FULL ALERT:', {
+              event: product.name,
+              adminEmail: creator.email,
+              paidRegistrations: `${paidParticipantCount}/${product.maxParticipants}`,
+              pendingRegistrations: pendingCount,
+              action: 'Admin should increase maxParticipants or close registrations'
+            })
+          }
+        } catch (notifError) {
+          console.error('[API Checkout Product] Notification error:', notifError)
+        }
+        
+        return NextResponse.json(
+          {
+            error: 'Event quota full',
+            message: `Kuota event "${product.name}" sudah penuh. Total peserta (BAYAR): ${paidParticipantCount}/${product.maxParticipants}`
+          },
+          { status: 400 }
+        )
+      }
+
+      // WARNING: Quota almost full (80%)
+      if (percentFull >= 80 && percentFull < 100) {
+        console.log('[API Checkout Product] ⚠️ Event quota ALMOST FULL (80%+):', product.name)
+        
+        // Send admin warning notification
+        try {
+          const creator = await prisma.user.findUnique({
+            where: { id: product.creatorId },
+            select: { email: true, whatsapp: true, name: true }
+          })
+          
+          if (creator?.email) {
+            console.log('[API Checkout Product] 🟡 QUOTA WARNING ALERT:', {
+              event: product.name,
+              adminEmail: creator.email,
+              paidRegistrations: `${paidParticipantCount}/${product.maxParticipants}`,
+              pendingRegistrations: pendingCount,
+              percentFull: percentFull.toFixed(1) + '%',
+              remaining: remaining,
+              action: 'Consider increasing maxParticipants soon'
+            })
+          }
+        } catch (notifError) {
+          console.error('[API Checkout Product] Warning notification error:', notifError)
+        }
+      }
+    }
+
     // Check if user already purchased this product
     const existingPurchase = await prisma.userProduct.findFirst({
       where: {
