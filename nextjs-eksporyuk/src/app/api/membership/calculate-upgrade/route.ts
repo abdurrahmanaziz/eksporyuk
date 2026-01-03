@@ -112,8 +112,11 @@ export async function POST(request: NextRequest) {
     }
 
     const currentTotalDays = getDurationInDays(currentPackage.duration)
-    const currentPrice = parseFloat(currentPackage.price.toString())
-    const targetPrice = parseFloat(targetPackage.price.toString())
+    const currentPrice = Number(currentPackage.price)
+    const targetPrice = Number(targetPackage.price)
+
+    console.log('[Calculate Upgrade] Prices - Current:', currentPrice, 'Target:', targetPrice)
+    console.log('[Calculate Upgrade] Days - Total:', currentTotalDays, 'Remaining:', remainingDays)
 
     // Calculate prorata value
     const remainingValue = currentTotalDays > 0 
@@ -163,9 +166,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[Calculate Upgrade Error]:', error)
+    console.error('[Calculate Upgrade Error Stack]:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json({ 
       error: 'Failed to calculate upgrade price',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : String(error),
+      stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
     }, { status: 500 })
   }
 }
