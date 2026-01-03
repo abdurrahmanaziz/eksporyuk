@@ -259,7 +259,10 @@ export default function ProductCheckoutPage() {
         toast.success('Login berhasil!')
         setShowLoginModal(false)
         setLoginData({ email: '', password: '' })
-        window.location.reload()
+        // Reload session without page redirect
+        await fetch('/api/auth/session').then(() => {
+          // Session updated, modal closed, stay on checkout page
+        })
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -272,10 +275,22 @@ export default function ProductCheckoutPage() {
   const handleGoogleLogin = async () => {
     try {
       const currentUrl = window.location.href
-      await signIn('google', { 
+      // Use redirect: false and handle session update manually
+      const result = await signIn('google', { 
         callbackUrl: currentUrl,
-        redirect: true 
+        redirect: false
       })
+      
+      if (result?.ok) {
+        toast.success('Login dengan Google berhasil!')
+        setShowLoginModal(false)
+        // Reload session without page redirect
+        await fetch('/api/auth/session').then(() => {
+          // Session updated, modal closed, stay on checkout page
+        })
+      } else if (result?.error) {
+        toast.error('Gagal login dengan Google: ' + result.error)
+      }
     } catch (error) {
       console.error('Google login error:', error)
       toast.error('Gagal login dengan Google')
@@ -1375,24 +1390,35 @@ export default function ProductCheckoutPage() {
         </div>
       </div>
 
-      {/* Login Modal */}
+      {/* Login Modal - Modern Design */}
       <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Login ke Akun Anda</DialogTitle>
-            <DialogDescription>Masuk untuk melanjutkan checkout</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-md border-0 shadow-2xl">
+          {/* Close button */}
+          <div className="absolute right-4 top-4">
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Google Login */}
+          {/* Header */}
+          <div className="text-center mb-6 mt-2">
+            <h2 className="text-2xl font-bold tracking-tight mb-2">Masuk Akun Anda</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Lanjutkan checkout dengan mudah</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-5">
+            {/* Google Login - Premium Style */}
             <Button
               type="button"
+              disabled={isLoggingIn}
               variant="outline"
-              className="w-full h-12 border-2"
-              onClick={() => {
-                setShowLoginModal(false)
-                handleGoogleLogin()
-              }}
+              className="w-full h-12 border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-200 font-medium"
+              onClick={handleGoogleLogin}
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -1400,70 +1426,78 @@ export default function ProductCheckoutPage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              Lanjutkan dengan Google
+              {isLoggingIn ? 'Memproses...' : 'Lanjutkan dengan Google'}
             </Button>
 
+            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-gray-300 dark:border-gray-600" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Atau login dengan email
+              <div className="relative flex justify-center">
+                <span className="bg-white dark:bg-gray-950 px-3 text-sm text-gray-500 dark:text-gray-400 font-medium">
+                  atau email
                 </span>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="login-email">Email</Label>
-                <Input
-                  id="login-email"
-                  type="email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                  placeholder="email@example.com"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="login-password">Password</Label>
-                <Input
-                  id="login-password"
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  placeholder="Password"
-                  required
-                />
-              </div>
-
-              <Button 
-                type="submit"
-                className="w-full h-11 bg-orange-500 hover:bg-orange-600"
-                disabled={isLoggingIn}
-              >
-                {isLoggingIn ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Memproses...
-                  </>
-                ) : (
-                  'Login'
-                )}
-              </Button>
+            {/* Email Input */}
+            <div>
+              <Label htmlFor="login-email" className="text-sm font-semibold mb-2 block">Email</Label>
+              <Input
+                id="login-email"
+                type="email"
+                value={loginData.email}
+                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                placeholder="nama@example.com"
+                required
+                className="h-12 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
             </div>
 
-            <p className="text-center text-sm text-gray-600">
+            {/* Password Input */}
+            <div>
+              <Label htmlFor="login-password" className="text-sm font-semibold mb-2 block">Password</Label>
+              <Input
+                id="login-password"
+                type="password"
+                value={loginData.password}
+                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                placeholder="••••••••"
+                required
+                className="h-12 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Login Button */}
+            <Button 
+              type="submit"
+              className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-base shadow-md hover:shadow-lg transition-all duration-200"
+              disabled={isLoggingIn || !loginData.email || !loginData.password}
+            >
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Sedang masuk...
+                </>
+              ) : (
+                'Masuk'
+              )}
+            </Button>
+
+            {/* Register Link */}
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
               Belum punya akun?{' '}
               <Button
                 type="button"
                 variant="link"
-                onClick={scrollToRegistrationForm}
-                className="p-0 h-auto text-orange-500 hover:text-orange-600 font-semibold"
+                onClick={() => {
+                  setShowLoginModal(false)
+                  scrollToRegistrationForm()
+                }}
+                className="p-0 h-auto text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-semibold underline"
               >
-                Daftar di sini
+                Daftar gratis
               </Button>
             </p>
           </form>
