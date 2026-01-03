@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check, Zap, Crown, Star, Sparkles, Shield, Clock, Users, Loader2 } from 'lucide-react'
+import { Check, Zap, Crown, Star, Sparkles, Shield, Clock, Users, Loader2, TrendingUp, CheckCircle2 } from 'lucide-react'
 
 interface MembershipPackage {
   id: string
@@ -53,10 +53,26 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(true)
   const [selectedPackage, setSelectedPackage] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
+  const [currentMembership, setCurrentMembership] = useState<any>(null)
 
   useEffect(() => {
     fetchPackages()
+    fetchCurrentMembership()
   }, [])
+
+  const fetchCurrentMembership = async () => {
+    try {
+      const response = await fetch('/api/user/membership')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.membership) {
+          setCurrentMembership(data.membership)
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching current membership:', err)
+    }
+  }
 
   const fetchPackages = async () => {
     try {
@@ -116,8 +132,23 @@ export default function PricingPage() {
   }
 
   const getCheckoutUrl = (pkg: MembershipPackage) => {
+    // Check if user has current membership - redirect to upgrade confirm
+    if (currentMembership && currentMembership.membershipId !== pkg.id) {
+      return `/dashboard/upgrade/confirm?package=${pkg.id}`
+    }
     // Always use slug for checkout URL - realtime from database
     return `/checkout/${pkg.slug}`
+  }
+
+  const isCurrentPackage = (pkgId: string) => {
+    return currentMembership && currentMembership.membershipId === pkgId
+  }
+
+  const canUpgrade = (pkg: MembershipPackage) => {
+    if (!currentMembership) return false
+    if (currentMembership.membershipId === pkg.id) return false
+    if (currentMembership.membership?.durationType === 'LIFETIME') return false
+    return true
   }
 
   const parseFeatures = (features: any): string[] => {
@@ -191,6 +222,8 @@ export default function PricingPage() {
             const Icon = getIconForDuration(pkg.durationType, pkg.duration)
             const isSelected = selectedPackage === pkg.id
             const isPopular = pkg.isMostPopular || pkg.isBestSeller || pkg.isPopular
+            const isCurrent = isCurrentPackage(pkg.id)
+            const canUpgradeThis = canUpgrade(pkg)
             const gradientClass = getGradientClass(index, !!isPopular)
             
             // Calculate discount
@@ -206,15 +239,28 @@ export default function PricingPage() {
               <Card 
                 key={pkg.id}
                 className={`relative transition-all duration-300 cursor-pointer bg-white
-                  ${isPopular 
-                    ? 'border-2 border-orange-400 shadow-xl shadow-orange-100 scale-[1.02] lg:scale-105' 
-                    : 'border border-gray-100 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:scale-[1.02]'
+                  ${isCurrent
+                    ? 'border-2 border-green-500 shadow-xl shadow-green-100 ring-2 ring-green-200'
+                    : isPopular 
+                      ? 'border-2 border-orange-400 shadow-xl shadow-orange-100 scale-[1.02] lg:scale-105' 
+                      : 'border border-gray-100 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:scale-[1.02]'
                   } 
-                  ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+                  ${isSelected && !isCurrent ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
                 `}
-                onClick={() => handleSelectPackage(pkg.id)}
+                onClick={() => !isCurrent && handleSelectPackage(pkg.id)}
               >
-                {isPopular && (
+                {/* Current Package Badge */}
+                {isCurrent && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-1 shadow-lg">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Paket Anda Saat Ini
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Popular Badge */}
+                {!isCurrent && isPopular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-4 py-1 shadow-lg">
                       🔥 Paling Laris
@@ -223,7 +269,7 @@ export default function PricingPage() {
                 )}
 
                 {/* Discount Badge */}
-                {discount > 0 && (
+                {!isCurrent && discount > 0 && (
                   <div className="absolute top-4 right-4">
                     <Badge variant="secondary" className="bg-green-100 text-green-700 font-semibold">
                       -{discount}%
@@ -285,19 +331,38 @@ export default function PricingPage() {
                 </CardContent>
 
                 <CardFooter className="pt-4">
-                  <Link href={getCheckoutUrl(pkg)} className="w-full">
+                  {isCurrent ? (
                     <Button 
-                      className={`w-full h-12 text-base font-semibold transition-all ${
-                        isPopular 
-                          ? 'bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg shadow-orange-200' 
-                          : isSelected 
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                      }`}
+                      disabled
+                      className="w-full h-12 text-base font-semibold bg-green-100 text-green-700 cursor-not-allowed"
                     >
-                      {isSelected ? '✓ Dipilih' : 'Pilih Paket'}
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Paket Aktif
                     </Button>
-                  </Link>
+                  ) : canUpgradeThis ? (
+                    <Link href={getCheckoutUrl(pkg)} className="w-full">
+                      <Button 
+                        className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+                      >
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        Upgrade Sekarang
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link href={getCheckoutUrl(pkg)} className="w-full">
+                      <Button 
+                        className={`w-full h-12 text-base font-semibold transition-all ${
+                          isPopular 
+                            ? 'bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg shadow-orange-200' 
+                            : isSelected 
+                              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200'
+                              : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                        }`}
+                      >
+                        {isSelected ? '✓ Dipilih' : 'Pilih Paket'}
+                      </Button>
+                    </Link>
+                  )}
                 </CardFooter>
               </Card>
             )
