@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowRight, Calendar, CheckCircle2, Crown, Info, Loader2, Sparkles, TrendingUp } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 interface UpgradeCalculation {
   canUpgrade: boolean
@@ -40,7 +40,6 @@ interface UpgradeCalculation {
 export default function UpgradeConfirmPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useToast()
   
   const packageId = searchParams.get('package')
   
@@ -102,11 +101,7 @@ export default function UpgradeConfirmPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        toast({
-          title: 'Gagal',
-          description: data.error || 'Gagal memproses upgrade',
-          variant: 'destructive'
-        })
+        toast.error(data.error || 'Gagal memproses upgrade')
         return
       }
 
@@ -114,11 +109,7 @@ export default function UpgradeConfirmPage() {
       router.push(data.checkoutUrl)
     } catch (err) {
       console.error('[Process Upgrade Error]:', err)
-      toast({
-        title: 'Error',
-        description: 'Terjadi kesalahan saat memproses upgrade',
-        variant: 'destructive'
-      })
+      toast.error('Terjadi kesalahan saat memproses upgrade')
     } finally {
       setProcessing(false)
     }
