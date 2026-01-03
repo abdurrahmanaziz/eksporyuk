@@ -13,6 +13,8 @@ export async function POST(request: NextRequest) {
 
     const { targetPackageId } = await request.json()
 
+    console.log('[Calculate Upgrade] User:', session.user.id, 'Target Package:', targetPackageId)
+
     if (!targetPackageId) {
       return NextResponse.json({ error: 'Target package ID required' }, { status: 400 })
     }
@@ -38,6 +40,8 @@ export async function POST(request: NextRequest) {
     const targetPackage = await prisma.membership.findUnique({
       where: { id: targetPackageId }
     })
+
+    console.log('[Calculate Upgrade] Target package found:', !!targetPackage)
 
     if (!targetPackage) {
       return NextResponse.json({ error: 'Target package not found' }, { status: 404 })

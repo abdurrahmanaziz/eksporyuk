@@ -49,6 +49,7 @@ export default function UpgradeConfirmPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    console.log('[Upgrade Confirm] Package ID from URL:', packageId)
     if (packageId) {
       calculateUpgrade()
     } else {
@@ -60,6 +61,8 @@ export default function UpgradeConfirmPage() {
   const calculateUpgrade = async () => {
     try {
       setLoading(true)
+      console.log('[Upgrade Confirm] Calling API with packageId:', packageId)
+      
       const response = await fetch('/api/membership/calculate-upgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,6 +70,7 @@ export default function UpgradeConfirmPage() {
       })
 
       const data = await response.json()
+      console.log('[Upgrade Confirm] API Response:', data)
 
       if (!response.ok) {
         setError(data.error || 'Gagal menghitung harga upgrade')
