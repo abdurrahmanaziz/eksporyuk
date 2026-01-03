@@ -95,6 +95,7 @@ export default function AffiliateLinksPage() {
   const [products, setProducts] = useState<any[]>([])
   const [courses, setCourses] = useState<any[]>([])
   const [suppliers, setSuppliers] = useState<any[]>([])
+  const [events, setEvents] = useState<any[]>([])
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [affiliateCoupons, setAffiliateCoupons] = useState<any[]>([])
 
@@ -117,6 +118,7 @@ export default function AffiliateLinksPage() {
         fetchProducts(),
         fetchCourses(),
         fetchSuppliers(),
+        fetchEvents(),
         fetchCoupons(),
         fetchAffiliateCoupons()
       ])
@@ -213,6 +215,20 @@ export default function AffiliateLinksPage() {
     }
   }
 
+  const fetchEvents = async () => {
+    try {
+      // Fetch events that have affiliateEnabled = true
+      const response = await fetch('/api/products?type=EVENT&forAffiliate=true')
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      if (data.products) setEvents(data.products.filter((e: any) => e.affiliateEnabled !== false))
+      else setEvents([])
+    } catch (error) {
+      console.error('Error fetching events:', error)
+      setEvents([])
+    }
+  }
+
   const fetchCoupons = async () => {
     try {
       const response = await fetch('/api/affiliate/coupons/all')
@@ -296,6 +312,23 @@ export default function AffiliateLinksPage() {
       }
       if (selectedTargetType === 'supplier') {
         // Suppliers don't have specific coupon targeting yet
+        return true
+      }
+      if (selectedTargetType === 'event') {
+        // If child coupon, inherit from parent
+        if (coupon.basedOnCouponId) {
+          const parentCoupon = coupons.find(c => c.id === coupon.basedOnCouponId)
+          if (parentCoupon) {
+            const parentIds = (parentCoupon as any).eventIds || []
+            if (!parentIds || parentIds.length === 0) return true
+            if (selectedTargetId) return parentIds.includes(selectedTargetId)
+            return true
+          }
+        }
+        // Otherwise use own eventIds
+        const ids = (coupon as any).eventIds || []
+        if (!ids || ids.length === 0) return true
+        if (selectedTargetId) return ids.includes(selectedTargetId)
         return true
       }
       
@@ -1346,14 +1379,54 @@ export default function AffiliateLinksPage() {
                         </button>
                       ))}
 
-                      {/* Events placeholder - we can add this later */}
-                      {selectedTargetType === 'event' && (
+                      {/* Events */}
+                      {selectedTargetType === 'event' && events.length > 0 && events.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setSelectedTargetId(item.id)}
+                          className={`relative p-3 sm:p-5 rounded-xl sm:rounded-2xl border-2 transition-all text-left overflow-hidden group ${
+                            selectedTargetId === item.id
+                              ? 'border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 shadow-xl transform scale-[1.02]'
+                              : 'border-gray-200 hover:border-orange-300 hover:shadow-lg bg-white'
+                          }`}
+                        >
+                          {/* Icon/Image */}
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-red-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 mb-2 sm:mb-3 group-hover:shadow-lg transition-shadow">
+                            <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                          </div>
+                          
+                          {/* Content */}
+                          <h3 className="font-bold text-sm sm:text-lg text-gray-900 mb-1 sm:mb-2">{item.name}</h3>
+                          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-2 sm:mb-3">{item.shortDescription || item.description || 'Event menarik'}</p>
+                          
+                          {/* Event Date */}
+                          {item.eventDate && (
+                            <div className="text-xs sm:text-sm font-semibold text-red-600 mb-2 sm:mb-3">
+                              📅 {new Date(item.eventDate).toLocaleDateString('id-ID')}
+                            </div>
+                          )}
+                          
+                          {/* Price */}
+                          <div className="text-xs sm:text-sm font-bold text-green-600 mb-2 sm:mb-3">
+                            💰 Rp {Number(item.price).toLocaleString('id-ID')}
+                          </div>
+                          
+                          {/* Badge */}
+                          <div className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 bg-red-100 text-red-700 text-[10px] sm:text-xs font-medium rounded-full">
+                            <BookOpen className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                            Event
+                          </div>
+                        </button>
+                      ))}
+
+                      {/* Events placeholder if none available */}
+                      {selectedTargetType === 'event' && events.length === 0 && (
                         <div className="col-span-full p-6 sm:p-8 border-2 border-dashed border-gray-300 rounded-xl text-center">
                           <svg className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                           </svg>
-                          <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-2">Event Coming Soon</h3>
-                          <p className="text-gray-500 text-xs sm:text-base">Fitur affiliate event sedang dalam pengembangan</p>
+                          <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-2">Belum Ada Event</h3>
+                          <p className="text-gray-500 text-xs sm:text-base">Tidak ada event yang bisa di-affiliate-kan saat ini</p>
                         </div>
                       )}
                     </div>

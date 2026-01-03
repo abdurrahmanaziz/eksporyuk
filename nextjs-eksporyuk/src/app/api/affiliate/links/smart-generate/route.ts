@@ -22,10 +22,10 @@ export async function POST(request: NextRequest) {
     const { targetType, targetId, couponId } = await request.json()
     console.log(`🔍 [Smart Generate] User: ${session.user.id}, Type: ${targetType}, TargetID: ${targetId}, CouponID: ${couponId}`)
 
-    if (!targetType || !['membership', 'product', 'course', 'supplier'].includes(targetType)) {
+    if (!targetType || !['membership', 'product', 'course', 'supplier', 'event'].includes(targetType)) {
       console.log(`❌ [Smart Generate] Invalid targetType: ${targetType}`)
       return NextResponse.json({ 
-        error: 'Valid targetType required (membership, product, course, supplier)' 
+        error: 'Valid targetType required (membership, product, course, supplier, event)' 
       }, { status: 400 })
     }
 
