@@ -256,13 +256,15 @@ export default function ProductCheckoutPage() {
       if (result?.error) {
         toast.error('Email atau password salah')
       } else if (result?.ok) {
-        toast.success('Login berhasil!')
+        toast.success('Login berhasil! Data akun dimuat...')
         setShowLoginModal(false)
         setLoginData({ email: '', password: '' })
-        // Reload session without page redirect
-        await fetch('/api/auth/session').then(() => {
-          // Session updated, modal closed, stay on checkout page
-        })
+        
+        // Refresh session in NextAuth
+        // This will update useSession() hook without redirecting
+        setTimeout(() => {
+          window.location.href = window.location.href
+        }, 1000)
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -274,20 +276,18 @@ export default function ProductCheckoutPage() {
 
   const handleGoogleLogin = async () => {
     try {
-      const currentUrl = window.location.href
       // Use redirect: false and handle session update manually
       const result = await signIn('google', { 
-        callbackUrl: currentUrl,
         redirect: false
       })
       
       if (result?.ok) {
         toast.success('Login dengan Google berhasil!')
         setShowLoginModal(false)
-        // Reload session without page redirect
-        await fetch('/api/auth/session').then(() => {
-          // Session updated, modal closed, stay on checkout page
-        })
+        // Refresh page to reload session and update form data
+        setTimeout(() => {
+          window.location.href = window.location.href
+        }, 1000)
       } else if (result?.error) {
         toast.error('Gagal login dengan Google: ' + result.error)
       }
@@ -1393,12 +1393,12 @@ export default function ProductCheckoutPage() {
       {/* Login Modal - Premium Modern Design */}
       <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
         <DialogContent className="sm:max-w-md border-0 shadow-2xl bg-white dark:bg-gray-950 p-0 overflow-hidden">
-          {/* Top Section - Gradient Background */}
-          <div className="relative bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 px-6 pt-8 pb-6">
+          {/* Top Section - White Header with Shadow */}
+          <div className="relative bg-white dark:bg-gray-900 px-8 pt-8 pb-8 border-b border-gray-200 dark:border-gray-800">
             {/* Close Button */}
             <button
               onClick={() => setShowLoginModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors duration-200"
+              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors duration-200"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1406,9 +1406,9 @@ export default function ProductCheckoutPage() {
             </button>
 
             {/* Header Text */}
-            <div className="text-center text-white">
-              <h2 className="text-3xl font-bold mb-3 tracking-tight">Masuk Akun</h2>
-              <p className="text-blue-100 text-sm font-medium">Lanjutkan checkout dengan mudah</p>
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">Masuk Akun</h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Lanjutkan checkout dengan mudah</p>
             </div>
           </div>
 
@@ -1444,7 +1444,7 @@ export default function ProductCheckoutPage() {
             </div>
 
             {/* Form Fields */}
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Email Field */}
               <div>
                 <Label htmlFor="login-email" className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 block uppercase tracking-wide">
@@ -1457,7 +1457,7 @@ export default function ProductCheckoutPage() {
                   onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                   placeholder="nama@example.com"
                   required
-                  className="h-13 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-colors text-sm"
+                  className="h-13 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-colors text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
 
@@ -1473,7 +1473,7 @@ export default function ProductCheckoutPage() {
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                   placeholder="••••••••"
                   required
-                  className="h-13 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-colors text-sm"
+                  className="h-13 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-colors text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
             </div>
