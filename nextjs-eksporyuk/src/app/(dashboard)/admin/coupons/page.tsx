@@ -1163,12 +1163,13 @@ export default function AdminCouponsPageNew() {
                       </div>
 
                       <div>
-                        <Label className="block mb-2 font-semibold">Pilih Event</Label>
+                        <Label className="block mb-2 font-semibold">Pilih Event (Opsional)</Label>
+                        <p className="text-xs text-gray-500 mb-2">Biarkan kosong jika kupon bisa digunakan untuk semua event</p>
                         <div className="border rounded-lg p-3 max-h-32 overflow-y-auto">
                           {loadingData ? (
                             <p className="text-sm text-gray-500">Memuat event...</p>
                           ) : events.length === 0 ? (
-                            <p className="text-sm text-gray-500">Tidak ada event</p>
+                            <p className="text-sm text-gray-500">Belum ada event yang dibuat</p>
                           ) : (
                             <div className="space-y-2">
                               {events.map((event) => (

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 
 // GET - Fetch all products
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
@@ -31,10 +31,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // Check for type query parameter
+    const { searchParams } = new URL(request.url)
+    const type = searchParams.get('type')
+
     const products = await prisma.product.findMany({
-      where: {
-        productType: { not: 'EVENT' }, // Exclude EVENT type - managed in Events section
-      },
+      where: type === 'EVENT' 
+        ? { productType: 'EVENT' }
+        : { productType: { not: 'EVENT' } }, // Exclude EVENT type by default
       orderBy: { createdAt: 'desc' },
     })
 
