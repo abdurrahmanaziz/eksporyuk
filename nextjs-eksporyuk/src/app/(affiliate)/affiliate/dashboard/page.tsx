@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import OnboardingChecklist from '@/components/affiliate/OnboardingChecklist'
 import Leaderboard from '@/components/affiliate/Leaderboard'
+import EmailVerificationModal from '@/components/member/EmailVerificationModal'
+import EmailVerificationBanner from '@/components/EmailVerificationBanner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -175,9 +177,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-4 sm:px-6 sm:py-6 space-y-4 sm:space-y-6">
-      {/* Modern Header - Mobile Optimized */}
-      <div className="flex flex-col gap-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+    <>
+      <EmailVerificationModal onComplete={() => window.location.reload()} />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-4 sm:px-6 sm:py-6 space-y-4 sm:space-y-6">
+        <EmailVerificationBanner />
+        {/* Modern Header - Mobile Optimized */}
+        <div className="flex flex-col gap-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="p-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg sm:rounded-xl shadow-lg">
@@ -568,6 +573,7 @@ export default function DashboardPage() {
       <div className="mt-4 sm:mt-6">
         <Leaderboard period="weekly" limit={10} showCurrentUser={true} />
       </div>
-    </div>
+      </div>
+    </>
   )
 }

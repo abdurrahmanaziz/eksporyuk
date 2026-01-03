@@ -5,6 +5,8 @@ import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import EmailVerificationModal from '@/components/member/EmailVerificationModal'
+import EmailVerificationBanner from '@/components/EmailVerificationBanner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -113,9 +115,11 @@ export default function MentorDashboardPage() {
 
   return (
     <ResponsivePageWrapper>
-    <div className="container mx-auto py-8 px-4">
-      {/* Header */}
-      <div className="mb-8">
+      <EmailVerificationModal onComplete={() => window.location.reload()} />
+      <div className="container mx-auto py-8 px-4">
+        <EmailVerificationBanner />
+        {/* Header */}
+        <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Dashboard Mentor</h1>
         <p className="text-muted-foreground">Selamat datang kembali, {session?.user?.name}!</p>
       </div>
@@ -306,7 +310,7 @@ export default function MentorDashboardPage() {
           </Card>
         </Link>
       </div>
-    </div>
+      </div>
     </ResponsivePageWrapper>
   )
 }
