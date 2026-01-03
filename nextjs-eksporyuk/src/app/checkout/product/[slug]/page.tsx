@@ -733,20 +733,6 @@ export default function ProductCheckoutPage() {
                 </div>
               </div>
 
-              {/* POSITION 2: Quota Alert - PRODUCT CARD (Price Context) */}
-              {product.productType === 'EVENT' && product.maxParticipants && (
-                loadingQuota ? (
-                  <div className="h-20 bg-gray-200 animate-pulse rounded" />
-                ) : (
-                  <QuotaAlertBox
-                    maxParticipants={product.maxParticipants}
-                    paidCount={paidCount}
-                    eventName={product.name}
-                    variant="product"
-                  />
-                )
-              )}
-
               {/* Tags */}
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -1310,20 +1296,6 @@ export default function ProductCheckoutPage() {
           {/* Buy Button */}
           {status === 'authenticated' && (
             <div className="space-y-4">
-              {/* Position 3: CTA Alert - Urgency Trigger Above Button */}
-              {product.productType === 'EVENT' && product.maxParticipants && (
-                <QuotaAlertBox 
-                  variant="cta" 
-                  paidCount={paidCount} 
-                  maxParticipants={product.maxParticipants} 
-                  eventName={product.name}
-                  onUrgencyTriggered={() => {
-                    // Analytics: Track when CTA alert appears
-                    console.log('CTA Alert Shown - High Urgency Trigger');
-                  }}
-                />
-              )}
-              
               <Button 
                 className="w-full h-16 text-white font-bold text-lg shadow-lg" 
                 size="lg"
