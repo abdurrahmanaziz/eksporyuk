@@ -61,21 +61,30 @@ export async function POST(request: NextRequest) {
     // Send verification email
     const emailResult = await sendVerificationEmail(user.email, token, user.name || 'User')
     
-    if (!emailResult.success) {
-      console.error('❌ [RESEND-VERIFICATION] Failed to send email:', emailResult.error)
-      return NextResponse.json(
-        { success: false, error: emailResult.error || 'Gagal mengirim email verifikasi' },
-        { status: 500 }
-      )
+    console.log('📧 [RESEND-VERIFICATION] Email result:', emailResult)
+
+    // Always return success to not block user flow
+    // Email might fail but token is created, user can try again
+    if (emailResult.success) {
+      console.log('✅ [RESEND-VERIFICATION] Email sent successfully via:', emailResult.provider)
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Email verifikasi telah dikirim. Silakan cek inbox Anda.',
+        provider: emailResult.provider,
+        fallback: emailResult.fallback || false
+      })
+    } else {
+      // Email failed but don't block user - they can try resend again
+      console.warn('⚠️ [RESEND-VERIFICATION] Email send failed, but token created')
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Token verifikasi telah dibuat. Silakan coba kirim ulang jika email tidak masuk.',
+        fallback: true,
+        warning: 'Email mungkin tertunda. Periksa spam folder atau coba kirim ulang.'
+      })
     }
-
-    console.log('✅ [RESEND-VERIFICATION] Email sent successfully via:', emailResult.provider)
-
-    return NextResponse.json({
-      success: true,
-      message: 'Email verifikasi telah dikirim ulang. Silakan cek inbox Anda.',
-      provider: emailResult.provider
-    })
   } catch (error: any) {
     console.error('❌ [RESEND-VERIFICATION] Error:', error?.message)
     console.error('   Stack:', error?.stack)

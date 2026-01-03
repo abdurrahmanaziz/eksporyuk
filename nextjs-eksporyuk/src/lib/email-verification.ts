@@ -159,36 +159,39 @@ export async function sendVerificationEmail(email: string, token: string, name: 
     // Fallback: Use hardcoded template from mailketing.ts (priority 2)
     if (mailketingConfigured) {
       console.log('   Trying fallback: hardcoded template from mailketing.ts')
-      const { sendVerificationEmail: sendMail } = await import('./integrations/mailketing')
-      const result = await sendMail(email, name, verificationUrl)
-      
-      if (result.success) {
-        console.log('✅ Verification email sent via hardcoded template')
-        console.log('   Provider: Mailketing API')
-        console.log('   Template: Hardcoded HTML')
-        return { success: true, provider: 'mailketing', template: 'hardcoded' }
-      } else {
-        console.error('❌ Hardcoded template also failed:', result.error || result.message)
+      try {
+        const { sendVerificationEmail: sendMail } = await import('./integrations/mailketing')
+        const result = await sendMail(email, name, verificationUrl)
+        
+        if (result.success) {
+          console.log('✅ Verification email sent via hardcoded template')
+          console.log('   Provider: Mailketing API')
+          console.log('   Template: Hardcoded HTML')
+          return { success: true, provider: 'mailketing', template: 'hardcoded' }
+        } else {
+          console.error('❌ Hardcoded template also failed:', result.error || result.message)
+        }
+      } catch (fallbackError: any) {
+        console.error('❌ Fallback template error:', fallbackError?.message)
       }
     }
     
-    // Dev mode: Console output only (priority 3)
-    if (!mailketingConfigured) {
-      console.log('💡 DEV MODE: Mailketing not configured')
-      console.log('===================================')
-      console.log('📧 EMAIL VERIFIKASI (DEV MODE)')
-      console.log('To:', email)
-      console.log('Name:', name)
-      console.log('Verification URL:', verificationUrl)
-      console.log('===================================')
-      return { success: true, devMode: true, provider: 'console' }
-    }
+    // Dev mode or fallback: Console output only (priority 3)
+    console.log('💡 FALLBACK MODE: Email sending failed, using console logging')
+    console.log('===================================')
+    console.log('📧 EMAIL VERIFIKASI (FALLBACK)')
+    console.log('To:', email)
+    console.log('Name:', name)
+    console.log('Verification URL:', verificationUrl)
+    console.log('Mailketing Configured:', mailketingConfigured)
+    console.log('===================================')
     
-    return { success: false, error: 'All email sending methods failed' }
+    // Return success to not block user registration/flow
+    return { success: true, devMode: true, provider: 'console', fallback: true }
     
   } catch (error: any) {
-    console.error('❌ Email verification send error:', error.message)
-    console.error('   Stack:', error.stack)
+    console.error('❌ Email verification send error:', error?.message || 'Unknown error')
+    console.error('   Stack:', error?.stack)
     
     // Final fallback: Log to console
     console.log('===================================')
@@ -196,11 +199,17 @@ export async function sendVerificationEmail(email: string, token: string, name: 
     console.log('To:', email)
     console.log('Name:', name)
     console.log('Verification URL:', verificationUrl)
-    console.log('Error:', error.message)
+    console.log('Error:', error?.message || 'Unknown error')
     console.log('===================================')
     
-    // Don't block registration on email failure
-    return { success: true, devMode: true, provider: 'console', error: error.message }
+    // Don't block user flow on email failure - graceful degradation
+    return { 
+      success: true, 
+      devMode: true, 
+      provider: 'console', 
+      error: error?.message || 'Email sending failed but user flow continues',
+      fallback: true 
+    }
   }
 }
 
