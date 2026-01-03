@@ -323,6 +323,33 @@ export async function processTransactionCommission(
           status: 'PENDING',
         },
       })
+      
+      // 📧 Send co-founder share pending email notification
+      try {
+        const cofounderUser = await prisma.user.findUnique({
+          where: { id: cofounderUserId },
+          select: { email: true, name: true }
+        })
+        
+        if (cofounderUser?.email) {
+          const { renderBrandedTemplateBySlug } = await import('@/lib/branded-template-engine')
+          const emailTemplate = await renderBrandedTemplateBySlug('cofounder-share-pending', {
+            userName: cofounderUser.name || 'Co-Founder',
+            transactionId,
+            amount: commission.cofounderShare,
+          })
+          
+          if (emailTemplate) {
+            await sendEmail({
+              recipient: cofounderUser.email,
+              subject: emailTemplate.subject,
+              content: emailTemplate.html,
+            })
+          }
+        }
+      } catch (emailError) {
+        console.error('Error sending co-founder share email:', emailError)
+      }
     }
     
     // 5. Update transaction dengan breakdown
