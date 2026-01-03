@@ -54,9 +54,9 @@ export class MailketingService {
   constructor() {
     // Initialize with env vars as fallback
     this.apiKey = process.env.MAILKETING_API_KEY || ''
-    // Note: api.mailketing.co.id redirects to https://be.mailketing.co.id/
-    // Use /v1/send endpoint with Bearer token authentication
-    this.apiUrl = process.env.MAILKETING_API_URL || 'https://be.mailketing.co.id'
+    // Official Mailketing API endpoint: https://api.mailketing.co.id/api/v1/send
+    // Uses form-urlencoded with api_token parameter
+    this.apiUrl = process.env.MAILKETING_API_URL || 'https://api.mailketing.co.id/api'
     this.fromEmail = process.env.MAILKETING_FROM_EMAIL || 'noreply@eksporyuk.com'
     this.fromName = process.env.MAILKETING_FROM_NAME || 'EksporYuk'
   }
@@ -114,33 +114,31 @@ export class MailketingService {
         }
       }
 
-      // CORRECT endpoint and format for Mailketing API v1/send
-      // Uses Bearer token authentication with JSON body (not form-urlencoded)
+      // Official Mailketing API v1/send endpoint
+      // Uses form-urlencoded with api_token parameter (not Bearer token)
       const url = `${this.apiUrl}/v1/send`
       
       console.log(`📧 Sending email via Mailketing: ${url}`)
       console.log('   To:', payload.to)
       console.log('   Subject:', payload.subject)
       
-      // Prepare JSON body with correct field names for Mailketing API
-      const emailPayload = {
-        to: Array.isArray(payload.to) ? payload.to : [payload.to],
-        from_email: payload.from_email || this.fromEmail,
-        from_name: payload.from_name || this.fromName,
-        subject: payload.subject,
-        html: payload.html,
-        text: payload.text,
-        reply_to: payload.reply_to,
-        tags: payload.tags || []
-      }
+      // Prepare form-urlencoded body as per official Mailketing API documentation
+      // Ref: https://mailketing.co.id/docs/send-email-via-api/
+      const recipient = Array.isArray(payload.to) ? payload.to[0] : payload.to
+      const formData = new URLSearchParams()
+      formData.append('api_token', this.apiKey)
+      formData.append('from_name', payload.from_name || this.fromName)
+      formData.append('from_email', payload.from_email || this.fromEmail)
+      formData.append('recipient', recipient)
+      formData.append('subject', payload.subject)
+      formData.append('content', payload.html || payload.text || '')
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify(emailPayload)
+        body: formData.toString()
       })
 
       // Check content-type
