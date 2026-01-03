@@ -3,18 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import prisma from '@/lib/prisma'
 
-// Helper function to convert MembershipDuration enum to days
-function getDurationInDays(duration: string): number {
-  switch (duration) {
-    case 'ONE_MONTH': return 30
-    case 'THREE_MONTHS': return 90
-    case 'SIX_MONTHS': return 180
-    case 'TWELVE_MONTHS': return 365
-    case 'LIFETIME': return 0
-    default: return 0
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -39,6 +27,9 @@ export async function POST(request: NextRequest) {
         endDate: {
           gte: new Date()
         }
+      },
+      include: {
+        membership: true
       },
       orderBy: {
         endDate: 'desc'
@@ -65,6 +56,7 @@ export async function POST(request: NextRequest) {
           id: targetPackage.id,
           name: targetPackage.name,
           price: targetPackage.price,
+          durationType: targetPackage.durationType,
           duration: targetPackage.duration
         },
         upgradePrice: targetPackage.price,
@@ -74,16 +66,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Get current package details
-    const currentPackage = await prisma.membership.findUnique({
-      where: { id: currentMembership.membershipId }
-    })
+    const currentPackage = currentMembership.membership
 
-    if (!currentPackage) {
-      return NextResponse.json({ error: 'Current package not found' }, { status: 404 })
-    }
-
-    // Check if already same package
+    // Check if already same or higher package
     if (currentPackage.id === targetPackage.id) {
       return NextResponse.json({ 
         canUpgrade: false, 
@@ -92,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if current is LIFETIME
-    if (currentPackage.duration === 'LIFETIME') {
+    if (currentPackage.durationType === 'LIFETIME') {
       return NextResponse.json({ 
         canUpgrade: false, 
         error: 'Paket Lifetime tidak dapat diupgrade' 
@@ -102,37 +87,36 @@ export async function POST(request: NextRequest) {
     // Calculate remaining days
     const now = new Date()
     const endDate = new Date(currentMembership.endDate)
-    const remainingDays = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    const remainingDays = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 
-    if (remainingDays <= 0) {
-      return NextResponse.json({
-        canUpgrade: false,
-        error: 'Membership sudah expired'
-      }, { status: 400 })
+    // Calculate total days of current package
+    const currentTotalDays = currentPackage.durationType === 'LIFETIME' 
+      ? 36500 // 100 years for lifetime
+      : currentPackage.durationType === 'YEAR' 
+        ? currentPackage.duration * 365
+        : currentPackage.durationType === 'MONTH'
+          ? currentPackage.duration * 30
+          : currentPackage.duration
+
+    // Calculate remaining value (prorata)
+    const currentPrice = Number(currentMembership.price || currentPackage.price)
+    const remainingValue = (currentPrice / currentTotalDays) * remainingDays
+
+    // IMPORTANT: If target is LIFETIME, NO DISCOUNT/PRORATA
+    let upgradePrice: number
+    let discount: number
+    let isLifetimeUpgrade = false
+
+    if (targetPackage.durationType === 'LIFETIME') {
+      // LIFETIME upgrade = full price, no discount
+      upgradePrice = Number(targetPackage.price)
+      discount = 0
+      isLifetimeUpgrade = true
+    } else {
+      // Non-lifetime upgrade = apply prorata discount
+      upgradePrice = Math.max(0, Number(targetPackage.price) - remainingValue)
+      discount = remainingValue
     }
-
-    const currentTotalDays = getDurationInDays(currentPackage.duration)
-    const currentPrice = parseFloat(currentPackage.price.toString())
-    const targetPrice = parseFloat(targetPackage.price.toString())
-
-    // Calculate prorata value
-    const remainingValue = currentTotalDays > 0 
-      ? (currentPrice / currentTotalDays) * remainingDays 
-      : 0
-
-    // Check if upgrade to LIFETIME
-    const isLifetimeUpgrade = targetPackage.duration === 'LIFETIME'
-    
-    // If upgrading to LIFETIME, no discount
-    const upgradePrice = isLifetimeUpgrade 
-      ? targetPrice 
-      : Math.max(0, targetPrice - remainingValue)
-    
-    const discount = isLifetimeUpgrade ? 0 : remainingValue
-
-    console.log('[Calculate Upgrade] Current:', currentPackage.name, 'Target:', targetPackage.name)
-    console.log('[Calculate Upgrade] Remaining days:', remainingDays, 'Value:', remainingValue)
-    console.log('[Calculate Upgrade] Upgrade price:', upgradePrice)
 
     return NextResponse.json({
       canUpgrade: true,
@@ -142,19 +126,21 @@ export async function POST(request: NextRequest) {
         id: currentPackage.id,
         name: currentPackage.name,
         price: currentPrice,
+        durationType: currentPackage.durationType,
         duration: currentPackage.duration,
-        endDate: currentMembership.endDate.toISOString(),
+        endDate: currentMembership.endDate,
         remainingDays
       },
       targetPackage: {
         id: targetPackage.id,
         name: targetPackage.name,
-        price: targetPrice,
+        price: Number(targetPackage.price),
+        durationType: targetPackage.durationType,
         duration: targetPackage.duration
       },
-      upgradePrice,
-      discount,
-      remainingValue,
+      upgradePrice: Math.round(upgradePrice),
+      discount: Math.round(discount),
+      remainingValue: Math.round(remainingValue),
       remainingDays,
       message: isLifetimeUpgrade 
         ? 'Upgrade ke Lifetime selalu harga penuh, sisa masa aktif tidak dihitung'
