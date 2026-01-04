@@ -648,6 +648,8 @@ export async function getWalletSummary(userId: string) {
     })
 
     let affiliateEarnings = 0
+    let affiliatePendingEarnings = 0
+    let affiliatePaidEarnings = 0
     let affiliateConversions: any[] = []
     
     if (affiliateProfile) {
@@ -665,22 +667,41 @@ export async function getWalletSummary(userId: string) {
         }
       })
       
-      // Calculate total affiliate earnings from conversions
+      // Calculate affiliate earnings by status
       const totalConversions = await prisma.affiliateConversion.aggregate({
         where: { affiliateId: affiliateProfile.id },
         _sum: { commissionAmount: true }
       })
+      
+      const paidConversions = await prisma.affiliateConversion.aggregate({
+        where: { 
+          affiliateId: affiliateProfile.id,
+          paidOut: true 
+        },
+        _sum: { commissionAmount: true }
+      })
+      
+      const pendingConversions = await prisma.affiliateConversion.aggregate({
+        where: { 
+          affiliateId: affiliateProfile.id,
+          paidOut: false 
+        },
+        _sum: { commissionAmount: true }
+      })
+      
       affiliateEarnings = Number(totalConversions._sum.commissionAmount || 0)
+      affiliatePaidEarnings = Number(paidConversions._sum.commissionAmount || 0)
+      affiliatePendingEarnings = Number(pendingConversions._sum.commissionAmount || 0)
     }
 
-    // Determine the best balance source
-    // Priority: Wallet.balance > AffiliateConversion sum
-    const walletBalance = wallet ? Number(wallet.balance) : 0
-    const walletTotalEarnings = wallet ? Number(wallet.totalEarnings) : 0
+    // CORRECT LOGIC:
+    // Balance = Available amount (unpaid commissions)
+    // Total Earnings = All commissions ever earned
+    // Total Payout = All commissions that have been paid out
     
-    // Use wallet balance if available, otherwise use affiliate earnings
-    const effectiveBalance = walletBalance > 0 ? walletBalance : affiliateEarnings
-    const effectiveTotalEarnings = walletTotalEarnings > 0 ? walletTotalEarnings : affiliateEarnings
+    const effectiveBalance = affiliatePendingEarnings  // Only unpaid commissions
+    const effectiveTotalEarnings = affiliateEarnings   // All commissions
+    const effectiveTotalPayout = affiliatePaidEarnings // Only paid commissions
 
     // Map affiliate conversions to transaction format if no wallet transactions
     const effectiveTransactions = walletTransactions.length > 0 
@@ -695,17 +716,19 @@ export async function getWalletSummary(userId: string) {
         }))
 
     return {
-      balance: effectiveBalance,
+      balance: effectiveBalance,                    // Only unpaid commissions
       balancePending: wallet ? Number(wallet.balancePending) : 0,
-      totalEarnings: effectiveTotalEarnings,
-      totalPayout: wallet ? Number(wallet.totalPayout) : 0,
+      totalEarnings: effectiveTotalEarnings,       // All commissions ever
+      totalPayout: effectiveTotalPayout,           // All paid commissions  
       transactions: effectiveTransactions,
       payouts: payouts,
       // Additional data for debugging/transparency
       _debug: {
         walletExists: !!wallet,
-        walletBalance,
+        walletBalance: wallet ? Number(wallet.balance) : 0,
         affiliateEarnings,
+        affiliatePendingEarnings,
+        affiliatePaidEarnings,
         hasAffiliateProfile: !!affiliateProfile
       }
     }
