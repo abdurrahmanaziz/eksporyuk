@@ -613,6 +613,7 @@ export async function processPayout(
 
 /**
  * Get user wallet summary
+ * Also includes affiliate conversion data for comprehensive view
  */
 export async function getWalletSummary(userId: string) {
   try {
@@ -630,24 +631,73 @@ export async function getWalletSummary(userId: string) {
       }
     })
 
-    if (!wallet) {
-      return {
-        balance: 0,
-        balancePending: 0,
-        totalEarnings: 0,
-        totalPayout: 0,
-        transactions: [],
-        payouts: []
-      }
+    // Also get affiliate conversions for comprehensive earnings data
+    const affiliateProfile = await prisma.affiliateProfile.findUnique({
+      where: { userId }
+    })
+
+    let affiliateEarnings = 0
+    let affiliateConversions: any[] = []
+    
+    if (affiliateProfile) {
+      // Get recent conversions
+      affiliateConversions = await prisma.affiliateConversion.findMany({
+        where: { affiliateId: affiliateProfile.id },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: {
+          id: true,
+          commissionAmount: true,
+          paidOut: true,
+          createdAt: true,
+          transactionId: true,
+        }
+      })
+      
+      // Calculate total affiliate earnings from conversions
+      const totalConversions = await prisma.affiliateConversion.aggregate({
+        where: { affiliateId: affiliateProfile.id },
+        _sum: { commissionAmount: true }
+      })
+      affiliateEarnings = Number(totalConversions._sum.commissionAmount || 0)
     }
 
+    // Determine the best balance source
+    // Priority: Wallet.balance > AffiliateConversion sum
+    const walletBalance = wallet ? Number(wallet.balance) : 0
+    const walletTotalEarnings = wallet ? Number(wallet.totalEarnings) : 0
+    
+    // Use wallet balance if available, otherwise use affiliate earnings
+    const effectiveBalance = walletBalance > 0 ? walletBalance : affiliateEarnings
+    const effectiveTotalEarnings = walletTotalEarnings > 0 ? walletTotalEarnings : affiliateEarnings
+
+    // Map affiliate conversions to transaction format if no wallet transactions
+    const walletTransactions = wallet?.transactions || []
+    const effectiveTransactions = walletTransactions.length > 0 
+      ? walletTransactions 
+      : affiliateConversions.map(c => ({
+          id: c.id,
+          type: 'COMMISSION',
+          amount: Number(c.commissionAmount),
+          description: `Komisi affiliate${c.paidOut ? ' (sudah dibayar)' : ''}`,
+          createdAt: c.createdAt,
+          reference: c.transactionId
+        }))
+
     return {
-      balance: Number(wallet.balance),
-      balancePending: Number(wallet.balancePending),
-      totalEarnings: Number(wallet.totalEarnings),
-      totalPayout: Number(wallet.totalPayout),
-      transactions: wallet.transactions,
-      payouts: wallet.payouts
+      balance: effectiveBalance,
+      balancePending: wallet ? Number(wallet.balancePending) : 0,
+      totalEarnings: effectiveTotalEarnings,
+      totalPayout: wallet ? Number(wallet.totalPayout) : 0,
+      transactions: effectiveTransactions,
+      payouts: wallet?.payouts || [],
+      // Additional data for debugging/transparency
+      _debug: {
+        walletExists: !!wallet,
+        walletBalance,
+        affiliateEarnings,
+        hasAffiliateProfile: !!affiliateProfile
+      }
     }
   } catch (error) {
     console.error('Get wallet summary error:', error)

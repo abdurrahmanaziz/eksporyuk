@@ -662,75 +662,105 @@ export default function AffiliateTransactionsPage() {
         </Card>
       </div>
 
-      {/* Follow Up Dialog */}
+      {/* Follow Up Dialog - Modern Design */}
       <Dialog open={followUpOpen} onOpenChange={setFollowUpOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <WhatsAppIcon className="w-5 h-5 text-green-600" />
-              Follow Up WhatsApp
-            </DialogTitle>
-            <DialogDescription>
-              Kirim pesan follow up ke pembeli
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl">
+          {/* Header with WhatsApp Gradient */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-5 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <WhatsAppIcon className="w-7 h-7" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold">Follow Up WhatsApp</h2>
+                <p className="text-green-100 text-sm">Kirim pesan follow up ke pembeli</p>
+              </div>
+            </div>
+          </div>
           
           {followUpTx && (
-            <div className="space-y-4">
-              {/* Customer Info */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <User className="w-5 h-5 text-gray-400" />
-                  <span className="font-medium">{followUpTx.customerName || 'Pelanggan'}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Phone className="w-4 h-4" />
-                  <span>{followUpTx.customerPhone || '-'}</span>
-                </div>
-                <div className="mt-2 pt-2 border-t flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Invoice:</span>
-                  <span className="font-mono font-medium">{followUpTx.invoiceNumber || '-'}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm mt-1">
-                  <span className="text-gray-500">Produk:</span>
-                  <span className="font-medium">{followUpTx.itemName}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm mt-1">
-                  <span className="text-gray-500">Status:</span>
-                  {getStatusBadge(followUpTx.status)}
+            <div className="p-5 space-y-4">
+              {/* Customer Info Card - Modern Design */}
+              <div className="relative overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-5 border border-green-100">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-200/30 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-teal-200/30 rounded-full translate-y-1/2 -translate-x-1/2" />
+                
+                <div className="relative">
+                  {/* Customer Avatar & Name */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                      {(followUpTx.customerName || 'P')[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-lg">{followUpTx.customerName || 'Pelanggan'}</h3>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Phone className="w-4 h-4 text-green-500" />
+                        <span className="font-medium">{followUpTx.customerPhone || '-'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Transaction Info Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3">
+                      <div className="text-xs text-gray-500 mb-1">Invoice</div>
+                      <div className="font-mono font-bold text-gray-800 text-sm">{followUpTx.invoiceNumber || '-'}</div>
+                    </div>
+                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3">
+                      <div className="text-xs text-gray-500 mb-1">Status</div>
+                      {getStatusBadge(followUpTx.status)}
+                    </div>
+                  </div>
+                  
+                  {/* Product Info */}
+                  <div className="mt-3 bg-white/60 backdrop-blur-sm rounded-xl p-3">
+                    <div className="text-xs text-gray-500 mb-1">Produk</div>
+                    <div className="font-medium text-gray-800">{followUpTx.itemName}</div>
+                  </div>
                 </div>
               </div>
 
-              {/* Message */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Pesan WhatsApp
-                </label>
-                <textarea
-                  value={processedMessage}
-                  onChange={(e) => setProcessedMessage(e.target.value)}
-                  rows={8}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-                  placeholder="Tulis pesan..."
-                />
+              {/* Message Editor - Modern Design */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-green-500" />
+                    Pesan WhatsApp
+                  </label>
+                  <span className="text-xs text-gray-400">{processedMessage.length} karakter</span>
+                </div>
+                <div className="relative">
+                  <textarea
+                    value={processedMessage}
+                    onChange={(e) => setProcessedMessage(e.target.value)}
+                    rows={7}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-green-100 focus:border-green-400 text-sm resize-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                    placeholder="Tulis pesan follow up..."
+                  />
+                  <div className="absolute bottom-3 right-3 flex gap-1">
+                    <span className="text-2xl cursor-pointer hover:scale-110 transition-transform" onClick={() => setProcessedMessage(prev => prev + ' 👋')}>👋</span>
+                    <span className="text-2xl cursor-pointer hover:scale-110 transition-transform" onClick={() => setProcessedMessage(prev => prev + ' 🚀')}>🚀</span>
+                    <span className="text-2xl cursor-pointer hover:scale-110 transition-transform" onClick={() => setProcessedMessage(prev => prev + ' ✨')}>✨</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-2">
+              {/* Actions - Modern Buttons */}
+              <div className="flex gap-3 pt-2">
                 <Button
                   variant="outline"
-                  className="flex-1 gap-2"
+                  className="flex-1 gap-2 h-12 rounded-xl border-2 hover:bg-gray-50 font-semibold"
                   onClick={copyMessage}
                 >
                   <Copy className="w-4 h-4" />
-                  Salin Pesan
+                  Salin
                 </Button>
                 <Button
-                  className="flex-1 gap-2 bg-green-600 hover:bg-green-700"
+                  className="flex-1 gap-2 h-12 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 font-semibold shadow-lg shadow-green-200 transition-all duration-200 hover:shadow-xl hover:shadow-green-300"
                   onClick={sendWhatsApp}
                   disabled={!followUpTx.customerPhone}
                 >
-                  <Send className="w-4 h-4" />
+                  <WhatsAppIcon className="w-5 h-5" />
                   Kirim WhatsApp
                 </Button>
               </div>
@@ -739,98 +769,94 @@ export default function AffiliateTransactionsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Detail Dialog */}
+      {/* Detail Dialog - Modern Design */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Detail Transaksi
-            </DialogTitle>
-          </DialogHeader>
-          
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl">
           {selectedTx && (
-            <div className="space-y-4">
-              {/* Invoice */}
-              <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 border border-orange-200">
-                <div className="text-xs text-orange-600 font-medium mb-1">INVOICE</div>
-                <div className="text-xl font-mono font-bold text-orange-700">
-                  {selectedTx.invoiceNumber || `INV${selectedTx.id.slice(0, 6).toUpperCase()}`}
-                </div>
-                <div className="text-sm text-gray-600 mt-1">
-                  {formatDateTime(selectedTx.createdAt)}
-                </div>
-              </div>
-
-              {/* Customer */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="text-xs text-gray-500 font-medium mb-2">PEMBELI</div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-400" />
-                    <span className="font-medium">{selectedTx.customerName || '-'}</span>
+            <div className="relative">
+              {/* Header with Gradient */}
+              <div className="bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500 p-6 text-white">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="relative">
+                  <div className="text-orange-100 text-xs font-medium mb-1">INVOICE</div>
+                  <div className="text-2xl font-bold font-mono tracking-wide">
+                    {selectedTx.invoiceNumber || `INV${selectedTx.id.slice(0, 6).toUpperCase()}`}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Mail className="w-4 h-4 text-gray-400" />
-                    <span>{selectedTx.customerEmail || '-'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Phone className="w-4 h-4 text-gray-400" />
-                    <span>{selectedTx.customerPhone || '-'}</span>
+                  <div className="text-orange-100 text-sm mt-2 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {formatDateTime(selectedTx.createdAt)}
                   </div>
                 </div>
               </div>
 
-              {/* Product */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="text-xs text-gray-500 font-medium mb-2">PRODUK</div>
-                <div className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-blue-500" />
-                  <span className="font-medium">{selectedTx.itemName}</span>
-                </div>
-              </div>
-
-              {/* Amount & Commission */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                  <div className="text-xs text-green-600 font-medium mb-1">TOTAL TRANSAKSI</div>
-                  <div className="text-xl font-bold text-green-700">
-                    {formatCurrency(selectedTx.amount)}
+              {/* Content */}
+              <div className="p-6 space-y-5">
+                {/* Customer Card */}
+                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
+                    {(selectedTx.customerName || 'P')[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-gray-900 truncate">{selectedTx.customerName || '-'}</div>
+                    <div className="text-sm text-gray-500 truncate">{selectedTx.customerEmail || '-'}</div>
+                    <div className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                      <Phone className="w-3 h-3" />
+                      {selectedTx.customerPhone || '-'}
+                    </div>
                   </div>
                 </div>
-                <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-                  <div className="text-xs text-orange-600 font-medium mb-1">KOMISI ANDA</div>
-                  <div className="text-xl font-bold text-orange-700">
-                    {selectedTx.commission ? formatCurrency(selectedTx.commission.amount) : '-'}
+
+                {/* Product */}
+                <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                  <div className="text-xs text-blue-600 font-semibold mb-2 flex items-center gap-1">
+                    <Package className="w-3 h-3" />
+                    PRODUK
+                  </div>
+                  <div className="font-bold text-gray-900">{selectedTx.itemName}</div>
+                </div>
+
+                {/* Amount & Commission Cards */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-100">
+                    <div className="text-xs text-green-600 font-semibold mb-1">TOTAL</div>
+                    <div className="text-lg font-bold text-green-700">
+                      {formatCurrency(selectedTx.amount)}
+                    </div>
+                  </div>
+                  <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border border-orange-100">
+                    <div className="text-xs text-orange-600 font-semibold mb-1">KOMISI</div>
+                    <div className="text-lg font-bold text-orange-700">
+                      {selectedTx.commission ? formatCurrency(selectedTx.commission.amount) : '-'}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Status */}
-              <div className="flex items-center justify-between py-3 border-t">
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Status Transaksi</div>
-                  {getStatusBadge(selectedTx.status)}
+                {/* Status Row */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1.5">Status Transaksi</div>
+                    {getStatusBadge(selectedTx.status)}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500 mb-1.5">Status Komisi</div>
+                    {getCommissionStatusBadge(selectedTx.commission)}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-xs text-gray-500 mb-1">Status Komisi</div>
-                  {getCommissionStatusBadge(selectedTx.commission)}
-                </div>
-              </div>
 
-              {/* WhatsApp Button */}
-              {selectedTx.customerPhone && ['SUCCESS', 'PENDING', 'PAID', 'COMPLETED'].includes(selectedTx.status) && (
-                <Button
-                  className="w-full gap-2 bg-green-600 hover:bg-green-700"
-                  onClick={() => {
-                    setDetailOpen(false)
-                    handleFollowUp(selectedTx)
-                  }}
-                >
-                  <WhatsAppIcon className="w-5 h-5" />
-                  Follow Up via WhatsApp
-                </Button>
-              )}
+                {/* WhatsApp Button */}
+                {selectedTx.customerPhone && ['SUCCESS', 'PENDING', 'PAID', 'COMPLETED'].includes(selectedTx.status) && (
+                  <Button
+                    className="w-full gap-2 h-12 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 font-semibold shadow-lg shadow-green-200 transition-all duration-200"
+                    onClick={() => {
+                      setDetailOpen(false)
+                      handleFollowUp(selectedTx)
+                    }}
+                  >
+                    <WhatsAppIcon className="w-5 h-5" />
+                    Follow Up via WhatsApp
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </DialogContent>
