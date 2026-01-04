@@ -38,7 +38,8 @@ export default function UserWalletPage() {
     accountName: '',
     accountNumber: '',
     bankName: '',
-    notes: ''
+    notes: '',
+    withdrawalType: 'instant'
   })
   
   // PIN states
@@ -148,7 +149,8 @@ export default function UserWalletPage() {
         accountName: withdrawForm.accountName,
         accountNumber: withdrawForm.accountNumber,
         bankName: withdrawForm.bankName,
-        notes: withdrawForm.notes
+        notes: withdrawForm.notes,
+        withdrawalType: withdrawForm.withdrawalType
       })
       setShowWithdrawModal(false)
       setShowVerifyPINModal(true)
@@ -167,10 +169,16 @@ export default function UserWalletPage() {
         accountName: withdrawForm.accountName,
         accountNumber: withdrawForm.accountNumber,
         bankName: withdrawForm.bankName,
-        notes: withdrawForm.notes
+        notes: withdrawForm.notes,
+        withdrawalType: withdrawForm.withdrawalType
       }
 
-      const response = await fetch('/api/affiliate/payouts', {
+      // Choose endpoint based on withdrawal type
+      const endpoint = withdrawalData.withdrawalType === 'instant' 
+        ? '/api/affiliate/payouts/xendit' 
+        : '/api/affiliate/payouts'
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -182,10 +190,22 @@ export default function UserWalletPage() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Permintaan penarikan berhasil diajukan!')
+        if (withdrawalData.withdrawalType === 'instant') {
+          toast.success('🚀 Penarikan instant berhasil diproses! Dana akan dikirim dalam 5-10 menit.')
+        } else {
+          toast.success('Permintaan penarikan berhasil diajukan!')
+        }
+        
         setShowWithdrawModal(false)
         setShowVerifyPINModal(false)
-        setWithdrawForm({ amount: '', accountName: '', accountNumber: '', bankName: '', notes: '' })
+        setWithdrawForm({ 
+          amount: '', 
+          accountName: '', 
+          accountNumber: '', 
+          bankName: '', 
+          notes: '',
+          withdrawalType: 'instant'
+        })
         setPendingWithdrawal(null)
         fetchWallet()
       } else {
@@ -626,6 +646,44 @@ export default function UserWalletPage() {
                 />
               </div>
 
+              {/* Withdrawal Type Selection */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
+                <h4 className="font-semibold text-gray-800 mb-3">Pilih Jenis Penarikan</h4>
+                <div className="space-y-3">
+                  <label className="flex items-center p-3 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 cursor-pointer transition-all">
+                    <input
+                      type="radio"
+                      value="instant"
+                      checked={withdrawForm.withdrawalType === 'instant'}
+                      onChange={(e) => setWithdrawForm({ ...withdrawForm, withdrawalType: e.target.value })}
+                      className="mr-3 text-blue-600"
+                    />
+                    <div className="flex-1">
+                      <span className="font-medium text-gray-800">🚀 Penarikan Otomatis (Instant)</span>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Dana akan dikirim langsung ke rekening dalam 5-10 menit. Biaya admin Rp 5.000
+                      </p>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center p-3 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 cursor-pointer transition-all">
+                    <input
+                      type="radio"
+                      value="manual"
+                      checked={withdrawForm.withdrawalType === 'manual'}
+                      onChange={(e) => setWithdrawForm({ ...withdrawForm, withdrawalType: e.target.value })}
+                      className="mr-3 text-blue-600"
+                    />
+                    <div className="flex-1">
+                      <span className="font-medium text-gray-800">⏳ Penarikan Manual (1-3 hari)</span>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Akan diproses oleh admin dalam 1-3 hari kerja. Tanpa biaya admin
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               {/* Submit Buttons */}
               <div className="flex gap-3 pt-4">
                 <button
@@ -638,9 +696,18 @@ export default function UserWalletPage() {
                 <button
                   type="submit"
                   disabled={withdrawing}
-                  className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md disabled:opacity-50"
+                  className={`flex-1 py-3 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50 ${
+                    withdrawForm.withdrawalType === 'instant'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+                      : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+                  }`}
                 >
-                  {withdrawing ? 'Mengirim...' : 'Ajukan Penarikan'}
+                  {withdrawing 
+                    ? 'Memproses...' 
+                    : withdrawForm.withdrawalType === 'instant'
+                    ? '🚀 Tarik Dana Instant'
+                    : '⏳ Ajukan Penarikan Manual'
+                  }
                 </button>
               </div>
 

@@ -496,6 +496,63 @@ export default function PremiumDashboardNew() {
               </CardContent>
             </Card>
 
+            {/* Grup Saya */}
+            <Card className="rounded-xl shadow-sm border border-gray-100 bg-white">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                    <span className="text-lg">🏠</span>
+                    Grup Saya
+                  </h3>
+                  <Link href="/member/my-groups" className="text-xs font-semibold text-blue-600 hover:underline">Lihat Semua</Link>
+                </div>
+                
+                <div className="space-y-3">
+                  {data?.myGroups && data.myGroups.length > 0 ? (
+                    data.myGroups.slice(0, 3).map((group, index) => {
+                      const gradients = [
+                        'from-blue-400 to-blue-500',
+                        'from-purple-400 to-purple-500', 
+                        'from-indigo-400 to-indigo-500'
+                      ]
+                      return (
+                        <div key={group.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradients[index % 3]} overflow-hidden`}>
+                              {group.image ? (
+                                <Image src={group.image} alt={group.name} width={40} height={40} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-white text-lg font-bold">
+                                  {group.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-gray-900">{group.name}</h4>
+                              <p className="text-xs text-gray-500">{group.memberCount} member</p>
+                            </div>
+                          </div>
+                          <Link href={`/member/groups/${group.id}`}>
+                            <Button variant="outline" size="sm" className="text-xs px-3 py-1 h-7 border-gray-200 hover:bg-gray-50">
+                              Lihat
+                            </Button>
+                          </Link>
+                        </div>
+                      )
+                    })
+                  ) : (
+                    <div className="text-center py-4">
+                      <Users className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Belum bergabung grup</p>
+                      <Link href="/member/community/groups">
+                        <Button variant="link" className="text-blue-600 text-sm mt-2">Cari Grup →</Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Grup Rekomendasi */}
             <Card className="rounded-xl shadow-sm border border-gray-100 bg-white">
               <CardContent className="p-5">
