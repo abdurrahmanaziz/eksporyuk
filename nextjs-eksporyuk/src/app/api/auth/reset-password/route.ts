@@ -1,34 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
-import { mailketingService } from '@/lib/services/mailketingService'
 
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/auth/reset-password
- * Reset password menggunakan token dari forgot-password
- * Body: { token, newPassword }
+ * DEPRECATED API - Please use /api/auth/reset-password-new
+ * This endpoint is kept for backward compatibility but will be removed in future versions.
+ * 
+ * @deprecated Use /api/auth/reset-password-new instead
  */
 export async function POST(request: NextRequest) {
+  console.warn('⚠️ DEPRECATED: /api/auth/reset-password called. Use /api/auth/reset-password-new instead');
+  
+  // Forward to new API
   try {
     const body = await request.json()
-    const { token, newPassword } = body
-
-    // Validasi input
-    if (!token || !newPassword) {
-      return NextResponse.json(
-        { error: 'Token dan password baru harus diisi' },
-        { status: 400 }
-      )
-    }
-
-    if (newPassword.length < 8) {
-      return NextResponse.json(
-        { error: 'Password minimal 8 karakter' },
-        { status: 400 }
-      )
-    }
+    
+    // Call the new endpoint
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/reset-password-new`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body)
+    })
+    
+    const data = await response.json()
+    
+    return NextResponse.json(data, { 
+      status: response.status,
+      headers: {
+        'X-Deprecated-API': 'true',
+        'X-New-Endpoint': '/api/auth/reset-password-new'
+      }
+    })
 
     // Cek token valid dan tidak expired
     const resetToken = await prisma.emailVerificationToken.findFirst({

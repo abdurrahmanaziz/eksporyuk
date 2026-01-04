@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { mailketingService } from '@/lib/services/mailketingService'
 import bcrypt from 'bcryptjs'
+import { emailRateLimiter, getClientIP, createRateLimitResponse } from '@/lib/rate-limiter'
 
 const createId = () => crypto.randomBytes(16).toString('hex')
 
@@ -29,6 +30,26 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase().trim()
+
+    // Rate limiting: 3 requests per 15 minutes per email
+    const clientIP = getClientIP(request)
+    const rateLimitKey = `forgot-pwd:${normalizedEmail}:${clientIP}`
+    const rateLimit = await emailRateLimiter.check(rateLimitKey)
+    
+    if (rateLimit.limited) {
+      console.warn(`⚠️ Rate limit exceeded for forgot-password: ${normalizedEmail} from IP ${clientIP}`)
+      return NextResponse.json(
+        createRateLimitResponse(rateLimit.resetAt, rateLimit.current, 3),
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '3',
+            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+            'X-RateLimit-Reset': rateLimit.resetAt.toString()
+          }
+        }
+      )
+    }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -74,6 +95,10 @@ export async function POST(request: NextRequest) {
     const token = crypto.randomBytes(32).toString('hex')
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour expiry
 
+    // Get IP and User Agent for audit trail
+    const ipAddress = getClientIP(request)
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+
     // Store token in database
     await prisma.passwordResetToken.create({
       data: {
@@ -81,7 +106,8 @@ export async function POST(request: NextRequest) {
         email: normalizedEmail,
         token,
         expiresAt,
-        used: false
+        ipAddress,
+        userAgent: userAgent.substring(0, 255) // Limit length
       }
     })
 

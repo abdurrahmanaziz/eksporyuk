@@ -23,9 +23,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Enhanced password validation
     if (newPassword.length < 8) {
       return NextResponse.json(
         { error: 'Password minimal 8 karakter' },
+        { status: 400 }
+      )
+    }
+
+    // Strong password validation: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 symbol
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+    if (!passwordRegex.test(newPassword)) {
+      return NextResponse.json(
+        { 
+          error: 'Password harus mengandung minimal: 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 simbol (@$!%*?&)',
+          hint: 'Contoh: Ekspor123!'
+        },
         { status: 400 }
       )
     }
@@ -93,6 +106,8 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name
       })
+      
+      console.log('✅ Security notification email sent to:', user.email)
     } catch (emailError) {
       console.error('❌ Gagal kirim email konfirmasi reset:', emailError)
       // Jangan block response jika email gagal

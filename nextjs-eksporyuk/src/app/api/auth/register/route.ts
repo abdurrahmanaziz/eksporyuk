@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { createVerificationToken, sendVerificationEmail, isValidGmailEmail } from '@/lib/email-verification'
+import { createVerificationToken, sendVerificationEmail, isValidGmailEmail, autoVerifyGmailEmail } from '@/lib/email-verification'
 import { mailketing } from '@/lib/integrations/mailketing'
 import { getNextMemberCode } from '@/lib/member-code'
 
@@ -160,8 +160,17 @@ export async function POST(request: NextRequest) {
 
     // Create verification token and send email
     try {
-      const token = await createVerificationToken(user.id, email)
-      await sendVerificationEmail(email, token, name)
+      // Auto-verify Gmail emails for better UX
+      if (isValidGmailEmail(email)) {
+        const autoVerified = await autoVerifyGmailEmail(user.id)
+        if (autoVerified) {
+          console.log('✅ Gmail email auto-verified:', email)
+        }
+      } else {
+        // Send verification email for non-Gmail addresses
+        const token = await createVerificationToken(user.id, email)
+        await sendVerificationEmail(email, token, name)
+      }
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError)
       // Don't fail registration if email fails

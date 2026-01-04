@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyEmailToken } from '@/lib/email-verification'
+import { verificationRateLimiter, getClientIP, createRateLimitResponse } from '@/lib/rate-limiter'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -18,6 +19,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Token tidak ditemukan' },
         { status: 400 }
+      )
+    }
+
+    // Rate limiting: 5 requests per 30 minutes per IP
+    const clientIP = getClientIP(request)
+    const rateLimitKey = `verify-email:${clientIP}`
+    const rateLimit = await verificationRateLimiter.check(rateLimitKey)
+    
+    if (rateLimit.limited) {
+      console.warn(`⚠️ Rate limit exceeded for verify-email from IP ${clientIP}`)
+      return NextResponse.json(
+        createRateLimitResponse(rateLimit.resetAt, rateLimit.current, 5),
+        { status: 429 }
       )
     }
 

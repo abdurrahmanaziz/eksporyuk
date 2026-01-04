@@ -2087,6 +2087,8 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
   used      Boolean   @default(false)
   usedAt    DateTime?
+  ipAddress String?   // IP address for audit trail
+  userAgent String?   // User agent for security tracking
 
   @@index([email])
   @@index([expiresAt])
