@@ -132,14 +132,26 @@ export default function AffiliateOnboardingPage() {
 
       const data = await response.json()
       
-      if (response.ok) {
+      // Handle rate limiting
+      if (response.status === 429) {
+        toast.error(data.error || 'Terlalu banyak permintaan. Silakan coba lagi nanti.')
+        if (data.details) {
+          toast.info(data.details)
+        }
+        return
+      }
+      
+      if (response.ok && data.success) {
         toast.success('Email verifikasi telah dikirim! Cek inbox Anda.')
+        if (data.warning) {
+          toast.info(data.warning, { duration: 5000 })
+        }
       } else {
         toast.error(data.error || 'Gagal mengirim email verifikasi')
       }
     } catch (error) {
       console.error('Error sending verification email:', error)
-      toast.error('Gagal mengirim email verifikasi')
+      toast.error('Terjadi kesalahan koneksi. Silakan coba lagi.')
     } finally {
       setSendingVerificationEmail(false)
     }

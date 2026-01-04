@@ -105,15 +105,30 @@ export default function EmailVerificationModal({ onComplete }: EmailVerification
 
       const data = await response.json()
 
+      // Handle rate limiting
+      if (response.status === 429) {
+        toast.error(data.error || 'Terlalu banyak permintaan. Silakan coba lagi nanti.')
+        if (data.details) {
+          toast.info(data.details)
+        }
+        // Still set countdown to prevent spam
+        setCountdown(60)
+        return
+      }
+
       if (data.success) {
         toast.success('Email verifikasi telah dikirim!')
+        if (data.warning) {
+          toast.info(data.warning, { duration: 5000 })
+        }
         setSent(true)
         setCountdown(60) // 60 second cooldown
       } else {
         toast.error(data.error || 'Gagal mengirim email')
       }
     } catch (error) {
-      toast.error('Terjadi kesalahan')
+      console.error('Resend verification error:', error)
+      toast.error('Terjadi kesalahan koneksi. Silakan coba lagi.')
     } finally {
       setSending(false)
     }
