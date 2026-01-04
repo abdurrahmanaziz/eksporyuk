@@ -56,6 +56,7 @@ export default function UpgradePage() {
   const [plans, setPlans] = useState<MembershipPlan[]>([])
   const [currentMembership, setCurrentMembership] = useState<CurrentMembership | null>(null)
   const [loading, setLoading] = useState(true)
+  const [processingPlanId, setProcessingPlanId] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -113,9 +114,15 @@ export default function UpgradePage() {
       return
     }
 
+    // Set loading state for this specific plan
+    setProcessingPlanId(plan.id)
+
     // Detect current path to use correct confirm route
     const basePath = pathname || '/dashboard/upgrade'
     const confirmPath = `${basePath}/confirm`
+
+    // Small delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 300))
 
     // If user has active membership, go to upgrade confirmation with prorata calculation
     if (currentMembership) {
@@ -340,10 +347,30 @@ export default function UpgradePage() {
                   ) : (
                     <button
                       onClick={() => handleUpgrade(plan)}
-                      className="w-full py-3 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 hover:opacity-90"
+                      disabled={processingPlanId === plan.id}
+                      className="w-full py-3 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 hover:opacity-90 disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-2"
                       style={{ backgroundColor: themeColors.primary }}
                     >
-                      {isLifetime ? 'Upgrade ke Lifetime' : 'Upgrade Sekarang'}
+                      {processingPlanId === plan.id ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Memproses...</span>
+                        </>
+                      ) : (
+                        <>
+                          {isLifetime ? (
+                            <>
+                              <Rocket className="w-4 h-4" />
+                              <span>Upgrade ke Lifetime</span>
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="w-4 h-4" />
+                              <span>Lihat Perhitungan Upgrade</span>
+                            </>
+                          )}
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
