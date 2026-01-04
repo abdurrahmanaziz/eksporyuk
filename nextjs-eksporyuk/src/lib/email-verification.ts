@@ -82,7 +82,8 @@ export async function verifyEmailToken(token: string) {
 
 // Send verification email
 export async function sendVerificationEmail(email: string, token: string, name: string) {
-  const baseUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000'
+  // CRITICAL: .trim() to remove any whitespace/newlines from env vars
+  const baseUrl = (process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000').trim()
   const verificationUrl = `${baseUrl}/auth/verify-email?token=${token}`
   
   console.log('📧 Preparing verification email...')

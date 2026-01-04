@@ -264,6 +264,7 @@ class TicketNotificationService {
 
   private async sendTicketCreatedEmail(ticket: TicketNotificationData, user: UserInfo) {
     try {
+      const baseUrl = (process.env.NEXTAUTH_URL || 'https://eksporyuk.com').trim()
       const result = await sendBrandedEmail({
         templateSlug: 'support-ticket-created',
         recipientEmail: user.email,
@@ -273,7 +274,7 @@ class TicketNotificationService {
           ticketTitle: ticket.title,
           ticketCategory: CATEGORY_LABELS[ticket.category] || ticket.category,
           ticketMessage: ticket.message || '',
-          ticketUrl: `${process.env.NEXTAUTH_URL}/dashboard/bantuan/${ticket.ticketId}`,
+          ticketUrl: `${baseUrl}/dashboard/bantuan/${ticket.ticketId}`,
           createdAt: new Date().toLocaleDateString('id-ID', {
             weekday: 'long',
             year: 'numeric',
@@ -303,6 +304,7 @@ class TicketNotificationService {
   ) {
     try {
       const templateSlug = isAdminReply ? 'support-ticket-admin-reply' : 'support-ticket-user-reply'
+      const baseUrl = (process.env.NEXTAUTH_URL || 'https://eksporyuk.com').trim()
       
       const result = await sendBrandedEmail({
         templateSlug,
@@ -314,8 +316,8 @@ class TicketNotificationService {
           senderName: ticket.senderName || (isAdminReply ? 'Tim Support' : 'User'),
           replyMessage: ticket.message || '',
           ticketUrl: isAdminReply 
-            ? `${process.env.NEXTAUTH_URL}/dashboard/bantuan/${ticket.ticketId}`
-            : `${process.env.NEXTAUTH_URL}/admin/support/${ticket.ticketId}`,
+            ? `${baseUrl}/dashboard/bantuan/${ticket.ticketId}`
+            : `${baseUrl}/admin/support/${ticket.ticketId}`,
           repliedAt: new Date().toLocaleDateString('id-ID', {
             weekday: 'long',
             year: 'numeric',
@@ -354,7 +356,7 @@ class TicketNotificationService {
           ticketTitle: ticket.title,
           oldStatus: STATUS_LABELS[oldStatus] || oldStatus,
           newStatus: STATUS_LABELS[newStatus] || newStatus,
-          ticketUrl: `${process.env.NEXTAUTH_URL}/dashboard/bantuan/${ticket.ticketId}`,
+          ticketUrl: `${(process.env.NEXTAUTH_URL || 'https://eksporyuk.com').trim()}/dashboard/bantuan/${ticket.ticketId}`,
           changedAt: new Date().toLocaleDateString('id-ID', {
             weekday: 'long',
             year: 'numeric',
@@ -379,6 +381,7 @@ class TicketNotificationService {
 
   private async sendTicketResolvedEmail(ticket: TicketNotificationData, user: UserInfo) {
     try {
+      const baseUrl = (process.env.NEXTAUTH_URL || 'https://eksporyuk.com').trim()
       const result = await sendBrandedEmail({
         templateSlug: 'support-ticket-resolved',
         recipientEmail: user.email,
@@ -386,7 +389,7 @@ class TicketNotificationService {
         data: {
           ticketNumber: ticket.ticketNumber,
           ticketTitle: ticket.title,
-          ticketUrl: `${process.env.NEXTAUTH_URL}/dashboard/bantuan/${ticket.ticketId}`,
+          ticketUrl: `${baseUrl}/dashboard/bantuan/${ticket.ticketId}`,
           resolvedAt: new Date().toLocaleDateString('id-ID', {
             weekday: 'long',
             year: 'numeric',

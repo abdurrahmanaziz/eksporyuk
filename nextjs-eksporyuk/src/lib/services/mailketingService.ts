@@ -43,7 +43,7 @@ class MailketingService {
    * Generate tracking pixel URL
    */
   private getTrackingPixelUrl(broadcastId: string, leadId: string): string {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()
     return `${baseUrl}/api/track/open?bid=${broadcastId}&lid=${leadId}`
   }
 
@@ -51,7 +51,7 @@ class MailketingService {
    * Rewrite links in email body for click tracking
    */
   private rewriteLinksForTracking(html: string, broadcastId: string, leadId: string): string {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()
     
     // Replace all href links with tracking URL
     return html.replace(
@@ -414,7 +414,7 @@ class MailketingService {
       }
 
       const appName = process.env.NEXT_PUBLIC_APP_NAME || 'EksporYuk'
-      const loginUrl = `${process.env.NEXTAUTH_URL}/login`
+      const loginUrl = `${(process.env.NEXTAUTH_URL || 'https://eksporyuk.com').trim()}/login`
 
       const htmlTemplate = `
         <!DOCTYPE html>

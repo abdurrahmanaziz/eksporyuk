@@ -160,7 +160,7 @@ export async function sendCommissionNotification(
       type: 'GENERAL' as any,
       title,
       message,
-      link: `${process.env.NEXT_PUBLIC_APP_URL}${redirectUrl}`,
+      link: `${(process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()}${redirectUrl}`,
       channels: ['pusher', 'onesignal', 'email'],
       metadata: {
         commissionAmount: params.commissionAmount,
@@ -275,7 +275,7 @@ export async function sendPendingRevenueNotification(
       type: 'GENERAL' as any,
       title,
       message,
-      link: `${process.env.NEXT_PUBLIC_APP_URL}${redirectUrl}`,
+      link: `${(process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()}${redirectUrl}`,
       channels: ['pusher', 'onesignal', 'email'],
       metadata: {
         amount: params.amount,
@@ -377,7 +377,7 @@ export async function sendCommissionSettingsChangeNotification(
           type: 'GENERAL' as any,
           title,
           message,
-          link: `${process.env.NEXT_PUBLIC_APP_URL}/admin/commission-settings`,
+          link: `${(process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()}/admin/commission-settings`,
           channels: ['pusher', 'onesignal', 'email'],
           metadata: {
             itemType: params.itemType,
@@ -420,9 +420,10 @@ function formatWhatsAppMessage(
   amount: number,
   productName?: string
 ): string {
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()
   switch (type) {
     case 'AFFILIATE':
-      return `💰 *Komisi Affiliate Baru!*\n\nHalo ${userName}!\n\nSelamat, Anda mendapat komisi:\n\n💵 *Jumlah:* Rp ${amount.toLocaleString('id-ID')}\n📦 *Produk:* ${productName || 'Produk'}\n\n✨ Komisi sudah masuk ke saldo Anda. Terus semangat! 🚀\n\nCek saldo: ${process.env.NEXT_PUBLIC_APP_URL}/affiliate/earnings`
+      return `💰 *Komisi Affiliate Baru!*\n\nHalo ${userName}!\n\nSelamat, Anda mendapat komisi:\n\n💵 *Jumlah:* Rp ${amount.toLocaleString('id-ID')}\n📦 *Produk:* ${productName || 'Produk'}\n\n✨ Komisi sudah masuk ke saldo Anda. Terus semangat! 🚀\n\nCek saldo: ${appUrl}/affiliate/earnings`
     case 'MENTOR':
       return `💰 *Komisi Mentor!*\n\nHalo ${userName}!\n\nSelamat, Anda mendapat komisi mentor:\n\n💵 *Jumlah:* Rp ${amount.toLocaleString('id-ID')}\n📚 *Dari:* Penjualan Kelas\n\n✨ Komisi sudah masuk ke saldo Anda. Terima kasih! 🙏`
     case 'EVENT_CREATOR':

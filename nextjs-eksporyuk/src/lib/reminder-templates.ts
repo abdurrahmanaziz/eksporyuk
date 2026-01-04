@@ -4,7 +4,8 @@
  * Semua template menggunakan format email branded dengan header logo dan footer
  */
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'
+// CRITICAL: .trim() to remove any whitespace/newlines from env vars
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()
 const APP_NAME = 'EksporYuk'
 const SUPPORT_EMAIL = 'support@eksporyuk.com'
 const BRAND_COLOR = '#f97316'

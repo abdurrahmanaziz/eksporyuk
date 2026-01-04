@@ -19,7 +19,7 @@ interface CertificateEmailData {
  * Send certificate email with PDF attachment
  */
 export async function sendCertificateEmail(data: CertificateEmailData): Promise<boolean> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').trim()
 
   try {
     const formattedDate = new Intl.DateTimeFormat('id-ID', {
@@ -196,7 +196,7 @@ export async function sendCertificateReminderEmail(
 ): Promise<boolean> {
   const mailketingApiKey = process.env.MAILKETING_API_KEY
   const mailketingUrl = process.env.MAILKETING_API_URL || 'https://be.mailketing.co.id'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').trim()
 
   if (!mailketingApiKey) {
     console.warn('Mailketing API key not configured')

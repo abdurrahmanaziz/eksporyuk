@@ -44,7 +44,7 @@ const DEFAULT_BRAND_CONFIG = {
   textColor: '#1f2937',
   supportEmail: 'support@eksporyuk.com',
   supportPhone: '+62 812-3456-7890',
-  website: process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com',
+  website: (process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim(),
   address: 'Jakarta, Indonesia',
   copyrightText: 'EksporYuk. All rights reserved.',
   socialMedia: {
@@ -103,7 +103,7 @@ export async function getBrandConfig() {
     
     // If logo is relative path, convert to absolute URL
     if (logoUrl && logoUrl.startsWith('/')) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com'
+      const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()
       logoUrl = `${appUrl}${logoUrl}`
     }
     

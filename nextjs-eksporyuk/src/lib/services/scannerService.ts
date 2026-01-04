@@ -138,7 +138,7 @@ async function scanAPIs(): Promise<ScanCheckResult[]> {
     { name: 'Messages', url: '/api/messages', method: 'GET', category: 'Feature' },
   ]
 
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  const baseUrl = (process.env.NEXTAUTH_URL || 'http://localhost:3000').trim()
   
   // Scan APIs in parallel batches
   const batchSize = 10
@@ -555,7 +555,7 @@ async function scanFrontend(): Promise<ScanCheckResult[]> {
     { name: 'Migrasi', url: '/migrasi', category: 'Public' },
   ]
 
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  const baseUrl = (process.env.NEXTAUTH_URL || 'http://localhost:3000').trim()
 
   // Scan pages in parallel batches for speed
   const batchSize = 10

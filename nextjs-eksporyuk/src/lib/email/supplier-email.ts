@@ -38,7 +38,7 @@ interface VerificationEmailData {
  * Send welcome email after supplier registration
  */
 export async function sendSupplierWelcomeEmail(data: SupplierWelcomeEmailData): Promise<boolean> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').trim()
 
   try {
     const result = await mailketing.sendEmail({
@@ -162,7 +162,7 @@ export async function sendSupplierWelcomeEmail(data: SupplierWelcomeEmailData): 
  * Send payment confirmation email
  */
 export async function sendSupplierPaymentConfirmation(data: PaymentConfirmationEmailData): Promise<boolean> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').trim()
 
   try {
     const formattedAmount = new Intl.NumberFormat('id-ID', {
@@ -289,7 +289,7 @@ export async function sendSupplierPaymentConfirmation(data: PaymentConfirmationE
  * Send verification status email
  */
 export async function sendSupplierVerificationEmail(data: VerificationEmailData): Promise<boolean> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').trim()
   const isApproved = data.status === 'APPROVED'
 
   try {

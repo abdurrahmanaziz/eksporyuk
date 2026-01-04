@@ -9,7 +9,8 @@ interface EmailTemplateData {
   [key: string]: any
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+// CRITICAL: .trim() to remove any whitespace/newlines from env vars
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').trim()
 const APP_NAME = 'EksporYuk'
 const SUPPORT_EMAIL = 'support@eksporyuk.com'
 const BRAND_COLOR = '#f97316' // Orange

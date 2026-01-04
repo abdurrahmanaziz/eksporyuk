@@ -332,7 +332,7 @@ export async function sendWelcomeEmail(user: { id: string; name: string; email: 
         joinDate: new Date().toLocaleDateString('id-ID')
       },
       links: {
-        dashboard: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+        dashboard: `${(process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()}/dashboard`
       }
     },
     userId: user.id
@@ -359,7 +359,7 @@ export async function sendCommissionNotification(
       },
       transaction,
       links: {
-        affiliate: `${process.env.NEXT_PUBLIC_APP_URL}/affiliate`
+        affiliate: `${(process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()}/affiliate`
       }
     },
     userId: user.id
@@ -380,7 +380,7 @@ export async function sendPaymentConfirmation(
     data: {
       transaction,
       links: {
-        dashboard: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+        dashboard: `${(process.env.NEXT_PUBLIC_APP_URL || 'https://eksporyuk.com').trim()}/dashboard`
       }
     },
     userId: user.id
