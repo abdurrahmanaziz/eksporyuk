@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { createVerificationToken, sendVerificationEmail, isValidGmailEmail, autoVerifyGmailEmail } from '@/lib/email-verification'
 import { mailketing } from '@/lib/integrations/mailketing'
 import { getNextMemberCode } from '@/lib/member-code'
+import { addUserToRoleLists } from '@/lib/services/mailketing-list-service'
 
 
 export const dynamic = 'force-dynamic';
@@ -226,6 +227,21 @@ export async function POST(request: NextRequest) {
     } catch (logError) {
       console.error('[Register] Failed to create activity log:', logError)
       // Don't fail registration if activity log fails
+    }
+
+    // Add user to Mailketing lists based on role
+    try {
+      console.log('[Register] 📧 Adding user to Mailketing lists for role:', user.role)
+      const listResult = await addUserToRoleLists(user.id, user.role as any, { isRegistration: true })
+      if (listResult.listsAdded.length > 0) {
+        console.log('[Register] ✅ Added to lists:', listResult.listsAdded)
+      }
+      if (listResult.errors.length > 0) {
+        console.warn('[Register] ⚠️ Some list errors:', listResult.errors)
+      }
+    } catch (listError) {
+      console.error('[Register] ⚠️ Failed to add to Mailketing lists:', listError)
+      // Don't fail registration if list addition fails
     }
 
     console.log('[Register] Registration successful for:', email)

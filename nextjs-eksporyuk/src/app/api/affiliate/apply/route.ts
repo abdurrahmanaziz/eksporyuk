@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 import { starsenderService } from '@/lib/starsender'
 import { pusherService } from '@/lib/pusher'
+import { handleRoleChange } from '@/lib/services/mailketing-list-service'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -117,6 +118,7 @@ export async function POST(request: NextRequest) {
     }) as any
 
     // Update user
+    const oldRole = user.role
     await prisma.user.update({
       where: { id: session.user.id },
       data: { 
@@ -126,6 +128,15 @@ export async function POST(request: NextRequest) {
         ...(autoApprove && user.role !== 'ADMIN' && { role: 'AFFILIATE' }),
       },
     })
+    
+    // Add user to Mailketing lists for AFFILIATE role if auto approved
+    if (autoApprove && user.role !== 'ADMIN' && user.role !== 'AFFILIATE') {
+      try {
+        await handleRoleChange(session.user.id, 'AFFILIATE', oldRole as any)
+      } catch (roleListError) {
+        console.error('[Affiliate Apply] ⚠️ Failed to add to role lists:', roleListError)
+      }
+    }
 
     // Create wallet if auto approved
     if (autoApprove) {

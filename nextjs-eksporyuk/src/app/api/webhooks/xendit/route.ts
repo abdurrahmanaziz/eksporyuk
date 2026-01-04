@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { addUserToMailketingList, mailketing } from '@/lib/integrations/mailketing'
 import { emailTemplates } from '@/lib/email-templates'
 import { notificationService } from '@/lib/services/notificationService'
+import { handleRoleChange } from '@/lib/services/mailketing-list-service'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -359,11 +360,19 @@ async function handleInvoicePaid(data: any) {
 
             // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
             if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+              const oldRole = transaction.user.role as any
               await prisma.user.update({
                 where: { id: transaction.userId },
                 data: { role: 'MEMBER_PREMIUM' }
               })
               console.log(`[Xendit Webhook] ✅ User role upgraded to MEMBER_PREMIUM: ${transaction.userId}`)
+              
+              // Add user to Mailketing lists for new role
+              try {
+                await handleRoleChange(transaction.userId, 'MEMBER_PREMIUM', oldRole)
+              } catch (roleListError) {
+                console.error('[Xendit Webhook] ⚠️ Failed to add to role lists:', roleListError)
+              }
             }
 
             // Add user to Mailketing list if configured
@@ -514,11 +523,19 @@ async function handleInvoicePaid(data: any) {
 
           // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
           if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+            const oldRole = transaction.user.role as any
             await prisma.user.update({
               where: { id: transaction.userId },
               data: { role: 'MEMBER_PREMIUM' }
             })
             console.log(`[Xendit Webhook] ✅ User role upgraded to MEMBER_PREMIUM (reactivate): ${transaction.userId}`)
+            
+            // Add user to Mailketing lists for new role
+            try {
+              await handleRoleChange(transaction.userId, 'MEMBER_PREMIUM', oldRole)
+            } catch (roleListError) {
+              console.error('[Xendit Webhook] ⚠️ Failed to add to role lists:', roleListError)
+            }
           }
 
           console.log(`UserMembership activated for user ${transaction.userId}`)
@@ -1115,11 +1132,19 @@ async function handleVAPaymentComplete(data: any) {
 
             // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
             if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+              const oldRole = transaction.user.role as any
               await prisma.user.update({
                 where: { id: transaction.userId },
                 data: { role: 'MEMBER_PREMIUM' }
               })
               console.log(`[Xendit Webhook] ✅ User role upgraded to MEMBER_PREMIUM (VA): ${transaction.userId}`)
+              
+              // Add user to Mailketing lists for new role
+              try {
+                await handleRoleChange(transaction.userId, 'MEMBER_PREMIUM', oldRole)
+              } catch (roleListError) {
+                console.error('[Xendit Webhook] ⚠️ Failed to add to role lists:', roleListError)
+              }
             }
 
             console.log('[Xendit Webhook] ✅ UserMembership created:', membershipId)
@@ -1205,11 +1230,19 @@ async function handleVAPaymentComplete(data: any) {
           
           // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
           if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+            const oldRole = transaction.user.role as any
             await prisma.user.update({
               where: { id: transaction.userId },
               data: { role: 'MEMBER_PREMIUM' }
             })
             console.log(`[Xendit Webhook] ✅ User role upgraded to MEMBER_PREMIUM (VA reactivate): ${transaction.userId}`)
+            
+            // Add user to Mailketing lists for new role
+            try {
+              await handleRoleChange(transaction.userId, 'MEMBER_PREMIUM', oldRole)
+            } catch (roleListError) {
+              console.error('[Xendit Webhook] ⚠️ Failed to add to role lists:', roleListError)
+            }
           }
           
           console.log('[Xendit Webhook] ✅ UserMembership activated')

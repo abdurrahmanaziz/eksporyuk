@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, RefreshCw, Calendar, Copy, Check, Package, BookOpen, Crown, Settings, ChevronDown } from 'lucide-react'
+import { Plus, RefreshCw, Calendar, Copy, Check, Package, BookOpen, Crown, Settings, ChevronDown, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -339,6 +339,13 @@ export default function MailketingListsPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/admin/mailketing/lists/role-settings"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
+            >
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Role Settings</span>
+            </Link>
             <button
               onClick={handleRefresh}
               disabled={refreshing || loading}
