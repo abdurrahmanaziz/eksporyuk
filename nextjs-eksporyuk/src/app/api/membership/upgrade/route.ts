@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Target package ID required' }, { status: 400 })
     }
 
-    // Get current active membership
+    // Get current active membership  
     const currentMembership = await prisma.userMembership.findFirst({
       where: {
         userId: session.user.id,
@@ -26,13 +26,18 @@ export async function POST(request: NextRequest) {
           gte: new Date()
         }
       },
-      include: {
-        membership: true
-      },
       orderBy: {
         endDate: 'desc'
       }
     })
+
+    // Get current membership plan if exists
+    let currentPackage = null
+    if (currentMembership) {
+      currentPackage = await prisma.membership.findUnique({
+        where: { id: currentMembership.membershipId }
+      })
+    }
 
     // Get target package
     const targetPackage = await prisma.membership.findUnique({
@@ -44,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if current is LIFETIME
-    if (currentMembership?.membership.duration === 'LIFETIME') {
+    if (currentPackage?.duration === 'LIFETIME') {
       return NextResponse.json({ 
         error: 'Paket Lifetime tidak dapat diupgrade' 
       }, { status: 400 })
@@ -67,12 +72,11 @@ export async function POST(request: NextRequest) {
     let discount = 0
     let isLifetimeUpgrade = targetPackage.duration === 'LIFETIME'
 
-    if (currentMembership && !isLifetimeUpgrade) {
+    if (currentMembership && currentPackage && !isLifetimeUpgrade) {
       const now = new Date()
       const endDate = new Date(currentMembership.endDate)
       const remainingDays = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 
-      const currentPackage = currentMembership.membership
       const currentTotalDays = getDurationDays(currentPackage.duration)
 
       const currentPrice = Number(currentMembership.price || currentPackage.price)

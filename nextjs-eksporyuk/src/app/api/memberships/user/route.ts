@@ -31,17 +31,6 @@ export async function GET(request: NextRequest) {
           gte: new Date() // Not expired
         }
       },
-      include: {
-        membership: true,
-        transaction: {
-          select: {
-            id: true,
-            amount: true,
-            status: true,
-            createdAt: true
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       }
@@ -54,6 +43,18 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Fetch membership details separately (no relation in schema)
+    const membershipPlan = await prisma.membership.findUnique({
+      where: { id: userMembership.membershipId }
+    })
+
+    if (!membershipPlan) {
+      return NextResponse.json({
+        hasMembership: false,
+        message: 'Membership plan not found'
+      })
+    }
+
     // Calculate days remaining
     const now = new Date()
     const endDate = new Date(userMembership.endDate)
@@ -61,11 +62,11 @@ export async function GET(request: NextRequest) {
     
     // Check if expiring soon (within 7 days)
     const isExpiringSoon = daysRemaining <= 7 && daysRemaining > 0
-    const isLifetime = (userMembership as any).membership.duration === 'LIFETIME'
+    const isLifetime = membershipPlan.duration === 'LIFETIME'
 
     // Parse features from JSON
-    const features = Array.isArray((userMembership as any).membership.features) 
-      ? (userMembership as any).membership.features 
+    const features = Array.isArray(membershipPlan.features) 
+      ? membershipPlan.features 
       : []
 
     // Format response
@@ -84,17 +85,15 @@ export async function GET(request: NextRequest) {
         isLifetime,
         
         plan: {
-          id: (userMembership as any).membership.id,
-          name: (userMembership as any).membership.name,
-          slug: (userMembership as any).membership.slug,
-          description: (userMembership as any).membership.description,
-          duration: (userMembership as any).membership.duration,
-          price: (userMembership as any).membership.price,
-          originalPrice: (userMembership as any).membership.originalPrice,
+          id: membershipPlan.id,
+          name: membershipPlan.name,
+          slug: membershipPlan.slug,
+          description: membershipPlan.description,
+          duration: membershipPlan.duration,
+          price: membershipPlan.price,
+          originalPrice: membershipPlan.originalPrice,
           features
         },
-        
-        transaction: (userMembership as any).transaction,
         
         // Quick actions
         canRenew: isExpiringSoon || daysRemaining <= 0,

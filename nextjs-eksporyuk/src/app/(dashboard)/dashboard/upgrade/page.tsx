@@ -111,7 +111,10 @@ export default function UpgradePage() {
 
   const fetchCurrentMembership = async () => {
     try {
+      console.log('🚀 Fetching current membership...')
       const response = await fetch('/api/memberships/user')
+      console.log('📡 API response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
         console.log('📦 Membership data:', data)
@@ -132,9 +135,12 @@ export default function UpgradePage() {
           setCurrentMembership(membershipData)
         } else {
           console.log('ℹ️ No active membership found')
+          setCurrentMembership(null)
         }
       } else {
         console.error('❌ API response not OK:', response.status)
+        const errorText = await response.text()
+        console.error('❌ Error response:', errorText)
       }
     } catch (error) {
       console.error('❌ Error fetching current membership:', error)

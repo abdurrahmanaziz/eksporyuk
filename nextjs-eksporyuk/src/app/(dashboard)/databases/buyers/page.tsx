@@ -189,20 +189,6 @@ export default function BuyersPage() {
               <div className="text-xs text-gray-500">Tersisa</div>
             </div>
           </div>
-          {quota.remaining <= 5 && quota.total !== 999999 && (
-            <div className="mt-3 flex items-start gap-2 p-3 bg-orange-50 rounded-lg border border-orange-200">
-              <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <div className="font-semibold text-orange-900">Quota hampir habis!</div>
-                <div className="text-orange-700 mt-1">
-                  Upgrade membership Anda untuk akses unlimited ke database buyer.{' '}
-                  <Link href="/dashboard/upgrade" className="underline font-semibold">
-                    Upgrade Sekarang
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
       )}
