@@ -46,7 +46,8 @@ export default function AffiliateWithdrawalSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/admin/settings/withdrawal')
+        // Use public endpoint for fetching
+        const response = await fetch('/api/settings/withdrawal')
         const data = await response.json()
 
         if (data.settings) {

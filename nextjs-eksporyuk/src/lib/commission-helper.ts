@@ -617,19 +617,30 @@ export async function processPayout(
  */
 export async function getWalletSummary(userId: string) {
   try {
+    // Get wallet (without relations since they don't exist in schema)
     const wallet = await prisma.wallet.findUnique({
-      where: { userId },
-      include: {
-        transactions: {
-          orderBy: { createdAt: 'desc' },
-          take: 10
-        },
-        payouts: {
-          orderBy: { createdAt: 'desc' },
-          take: 5
-        }
-      }
+      where: { userId }
     })
+
+    // Get wallet transactions separately
+    let walletTransactions: any[] = []
+    if (wallet) {
+      walletTransactions = await prisma.walletTransaction.findMany({
+        where: { walletId: wallet.id },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      })
+    }
+
+    // Get payouts separately
+    let payouts: any[] = []
+    if (wallet) {
+      payouts = await prisma.payout.findMany({
+        where: { walletId: wallet.id },
+        orderBy: { createdAt: 'desc' },
+        take: 5
+      })
+    }
 
     // Also get affiliate conversions for comprehensive earnings data
     const affiliateProfile = await prisma.affiliateProfile.findUnique({
@@ -672,7 +683,6 @@ export async function getWalletSummary(userId: string) {
     const effectiveTotalEarnings = walletTotalEarnings > 0 ? walletTotalEarnings : affiliateEarnings
 
     // Map affiliate conversions to transaction format if no wallet transactions
-    const walletTransactions = wallet?.transactions || []
     const effectiveTransactions = walletTransactions.length > 0 
       ? walletTransactions 
       : affiliateConversions.map(c => ({
@@ -690,7 +700,7 @@ export async function getWalletSummary(userId: string) {
       totalEarnings: effectiveTotalEarnings,
       totalPayout: wallet ? Number(wallet.totalPayout) : 0,
       transactions: effectiveTransactions,
-      payouts: wallet?.payouts || [],
+      payouts: payouts,
       // Additional data for debugging/transparency
       _debug: {
         walletExists: !!wallet,

@@ -74,7 +74,7 @@ export default function UserWalletPage() {
 
   const fetchWithdrawalSettings = async () => {
     try {
-      const response = await fetch('/api/admin/settings/withdrawal')
+      const response = await fetch('/api/settings/withdrawal')
       const data = await response.json()
       if (data.settings) {
         setWithdrawalSettings(data.settings)

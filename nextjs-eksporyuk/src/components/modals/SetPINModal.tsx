@@ -27,7 +27,7 @@ export default function SetPINModal({ open, onClose, onSuccess, hasExistingPin =
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/admin/settings/withdrawal')
+        const response = await fetch('/api/settings/withdrawal')
         const data = await response.json()
         if (data.settings) {
           setPinLength(data.settings.withdrawalPinLength || 6)

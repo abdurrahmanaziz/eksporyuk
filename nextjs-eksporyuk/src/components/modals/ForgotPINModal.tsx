@@ -29,7 +29,7 @@ export default function ForgotPINModal({ open, onClose, onSuccess }: ForgotPINMo
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/admin/settings/withdrawal')
+        const response = await fetch('/api/settings/withdrawal')
         const data = await response.json()
         if (data.settings) {
           setPinLength(data.settings.withdrawalPinLength || 6)

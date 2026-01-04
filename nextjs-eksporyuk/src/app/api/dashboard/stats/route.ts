@@ -273,7 +273,7 @@ export async function GET(request: NextRequest) {
 
         // Generate realtime shortLink based on user's current username
         const displayUsername = userData?.username || affiliateProfile.shortLinkUsername || affiliateProfile.affiliateCode
-        const shortLink = `https://eksporyuk.app/${displayUsername}`
+        const shortLink = `https://eksporyuk.com?ref=${displayUsername}`
 
         stats.affiliate = {
           ...affiliateProfile,
