@@ -36,56 +36,55 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
-    const status = searchParams.get('status') || 'all' // all, PAID, PENDING, EXPIRED
+    const status = searchParams.get('status') || 'all'
     const search = searchParams.get('search') || ''
     const dateFrom = searchParams.get('dateFrom')
     const dateTo = searchParams.get('dateTo')
     
     const skip = (page - 1) * limit
 
-    // Build where clause for transactions
-    const whereClause: any = {
+    // STRATEGY: Query from AffiliateConversion first (source of truth for affiliate data)
+    // Then join with Transaction for details
+    
+    // Build where clause for conversions
+    const conversionWhere: any = {
       affiliateId: affiliateProfile.id,
-    }
-
-    // Filter by status
-    if (status !== 'all') {
-      whereClause.status = status
     }
 
     // Date range filter
     if (dateFrom || dateTo) {
-      whereClause.createdAt = {}
+      conversionWhere.createdAt = {}
       if (dateFrom) {
-        whereClause.createdAt.gte = new Date(dateFrom)
+        conversionWhere.createdAt.gte = new Date(dateFrom)
       }
       if (dateTo) {
-        whereClause.createdAt.lte = new Date(dateTo + 'T23:59:59')
+        conversionWhere.createdAt.lte = new Date(dateTo + 'T23:59:59')
       }
     }
 
-    // Search filter
-    if (search) {
-      whereClause.OR = [
-        { customerName: { contains: search, mode: 'insensitive' } },
-        { customerEmail: { contains: search, mode: 'insensitive' } },
-        { invoiceNumber: { contains: search, mode: 'insensitive' } },
-      ]
-    }
-
-    // Get total count
-    const total = await prisma.transaction.count({
-      where: whereClause,
+    // Get total conversions count
+    const total = await prisma.affiliateConversion.count({
+      where: conversionWhere,
     })
 
-    // Get transactions with pagination
-    const transactions = await prisma.transaction.findMany({
-      where: whereClause,
+    // Get conversions with pagination
+    const conversions = await prisma.affiliateConversion.findMany({
+      where: conversionWhere,
       orderBy: {
         createdAt: 'desc',
       },
       skip,
       take: limit,
+    })
+
+    // Get transaction IDs
+    const transactionIds = conversions.map(c => c.transactionId).filter(Boolean)
+
+    // Get transactions
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        id: { in: transactionIds }
+      },
       select: {
         id: true,
         invoiceNumber: true,
@@ -99,16 +98,18 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         productId: true,
         membershipId: true,
-        couponId: true,
-        metadata: true,
+        userId: true,
       }
     })
+
+    const txMap = new Map(transactions.map(t => [t.id, t]))
 
     // Get product/membership names
     const productIds = transactions.map(t => t.productId).filter(Boolean) as string[]
     const membershipIds = transactions.map(t => t.membershipId).filter(Boolean) as string[]
+    const userIds = transactions.map(t => t.userId).filter(Boolean) as string[]
 
-    const [products, memberships] = await Promise.all([
+    const [products, memberships, users] = await Promise.all([
       productIds.length > 0 ? prisma.product.findMany({
         where: { id: { in: productIds } },
         select: { id: true, name: true }
@@ -116,51 +117,79 @@ export async function GET(request: NextRequest) {
       membershipIds.length > 0 ? prisma.membership.findMany({
         where: { id: { in: membershipIds } },
         select: { id: true, name: true }
+      }) : [],
+      userIds.length > 0 ? prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, name: true, email: true }
       }) : []
     ])
 
     const productMap = new Map(products.map(p => [p.id, p.name]))
     const membershipMap = new Map(memberships.map(m => [m.id, m.name]))
+    const userMap = new Map(users.map(u => [u.id, { name: u.name, email: u.email }]))
 
-    // Get conversions for these transactions
-    const transactionIds = transactions.map(t => t.id)
-    const conversions = await prisma.affiliateConversion.findMany({
+    // Map conversions with transaction and product data
+    const enrichedTransactions = conversions.map(conv => {
+      const tx = txMap.get(conv.transactionId)
+      const user = tx?.userId ? userMap.get(tx.userId) : null
+      
+      return {
+        id: conv.id,
+        transactionId: conv.transactionId,
+        invoiceNumber: tx?.invoiceNumber || null,
+        amount: tx ? Number(tx.amount) : 0,
+        customerName: tx?.customerName || user?.name || null,
+        customerEmail: tx?.customerEmail || user?.email || null,
+        customerPhone: tx?.customerPhone || null,
+        status: tx?.status || 'SUCCESS',
+        paymentMethod: tx?.paymentMethod || null,
+        paidAt: tx?.paidAt || null,
+        createdAt: conv.createdAt,
+        productName: tx?.productId ? productMap.get(tx.productId) : null,
+        membershipName: tx?.membershipId ? membershipMap.get(tx.membershipId) : null,
+        itemName: tx?.productId ? productMap.get(tx.productId) : 
+                  tx?.membershipId ? membershipMap.get(tx.membershipId) : 'Produk',
+        commission: {
+          amount: Number(conv.commissionAmount),
+          rate: Number(conv.commissionRate),
+          paidOut: conv.paidOut,
+          paidOutAt: conv.paidOutAt,
+        }
+      }
+    }).filter(t => {
+      // Apply status filter (filter after mapping since status comes from transaction)
+      if (status !== 'all' && t.status !== status) return false
+      
+      // Apply search filter
+      if (search) {
+        const searchLower = search.toLowerCase()
+        const matchName = t.customerName?.toLowerCase().includes(searchLower)
+        const matchEmail = t.customerEmail?.toLowerCase().includes(searchLower)
+        const matchInvoice = t.invoiceNumber?.toLowerCase().includes(searchLower)
+        if (!matchName && !matchEmail && !matchInvoice) return false
+      }
+      
+      return true
+    })
+
+    // Calculate stats for all affiliate conversions
+    const allConversions = await prisma.affiliateConversion.findMany({
       where: {
-        transactionId: { in: transactionIds },
         affiliateId: affiliateProfile.id,
       },
       select: {
-        transactionId: true,
         commissionAmount: true,
-        commissionRate: true,
         paidOut: true,
-        paidOutAt: true,
-      }
-    })
-    const conversionMap = new Map(conversions.map(c => [c.transactionId, c]))
-
-    // Map transactions with additional data
-    const enrichedTransactions = transactions.map(tx => {
-      const conversion = conversionMap.get(tx.id)
-      return {
-        ...tx,
-        productName: tx.productId ? productMap.get(tx.productId) : null,
-        membershipName: tx.membershipId ? membershipMap.get(tx.membershipId) : null,
-        itemName: tx.productId ? productMap.get(tx.productId) : 
-                  tx.membershipId ? membershipMap.get(tx.membershipId) : 'Unknown',
-        commission: conversion ? {
-          amount: Number(conversion.commissionAmount),
-          rate: Number(conversion.commissionRate),
-          paidOut: conversion.paidOut,
-          paidOutAt: conversion.paidOutAt,
-        } : null
+        transactionId: true,
       }
     })
 
-    // Calculate stats for all affiliate transactions
-    const allTransactions = await prisma.transaction.findMany({
-      where: {
-        affiliateId: affiliateProfile.id,
+    // Get all related transactions for revenue calculation
+    const allTxIds = allConversions.map(c => c.transactionId).filter(Boolean)
+    const allTx = await prisma.transaction.findMany({
+      where: { 
+        id: { in: allTxIds },
+        status: { in: ['PAID', 'SUCCESS', 'COMPLETED'] }
       },
       select: {
         id: true,
@@ -169,23 +198,11 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const allConversions = await prisma.affiliateConversion.findMany({
-      where: {
-        affiliateId: affiliateProfile.id,
-      },
-      select: {
-        commissionAmount: true,
-        paidOut: true,
-      }
-    })
-
     const stats = {
-      totalTransactions: allTransactions.length,
-      paidTransactions: allTransactions.filter(t => t.status === 'PAID').length,
-      pendingTransactions: allTransactions.filter(t => t.status === 'PENDING').length,
-      totalRevenue: allTransactions
-        .filter(t => t.status === 'PAID')
-        .reduce((sum, t) => sum + Number(t.amount), 0),
+      totalTransactions: allConversions.length,
+      paidTransactions: allTx.length,
+      pendingTransactions: allConversions.length - allTx.length,
+      totalRevenue: allTx.reduce((sum, t) => sum + Number(t.amount), 0),
       totalCommission: allConversions.reduce((sum, c) => sum + Number(c.commissionAmount), 0),
       paidCommission: allConversions
         .filter(c => c.paidOut)
