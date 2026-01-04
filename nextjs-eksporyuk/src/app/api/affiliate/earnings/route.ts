@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
-
+export const revalidate = 0
 
 export async function GET(request: NextRequest) {
   try {
@@ -179,6 +179,12 @@ export async function GET(request: NextRequest) {
       },
       monthly,
       transactions,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     })
   } catch (error) {
     console.error('Error fetching earnings:', error)

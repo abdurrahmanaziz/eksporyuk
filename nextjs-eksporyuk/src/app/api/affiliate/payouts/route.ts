@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
-
+export const revalidate = 0
 
 // Minimum payout amount (will be overridden by settings)
 const MIN_PAYOUT = 50000
@@ -127,6 +127,12 @@ export async function GET(request: NextRequest) {
       },
       payouts,
       bankAccount,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     })
   } catch (error) {
     console.error('[GET PAYOUTS ERROR]', error)

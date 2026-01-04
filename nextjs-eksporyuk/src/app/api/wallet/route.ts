@@ -5,6 +5,7 @@ import { getWalletSummary } from '@/lib/commission-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 // GET /api/wallet - Get user wallet summary
 export async function GET() {
@@ -20,7 +21,14 @@ export async function GET() {
 
     const wallet = await getWalletSummary(session.user.id)
 
-    return NextResponse.json({ wallet })
+    // Return with no-cache headers to ensure fresh data
+    return NextResponse.json({ wallet }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
+    })
   } catch (error) {
     console.error('Wallet fetch error:', error)
     return NextResponse.json(
