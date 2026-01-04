@@ -91,24 +91,14 @@ export async function GET(req: NextRequest) {
     } else {
       // API endpoint not available is an expected condition, not an error
       // Return 200 with empty lists and informative message
-      if (response.error === 'API_ENDPOINT_NOT_AVAILABLE') {
-        console.log('ℹ️  [API] Mailketing endpoint not available - returning empty state')
-        return NextResponse.json({
-          success: false,
-          lists: [],
-          count: 0,
-          message: response.message,
-          error: response.error
-        }) // 200 OK - not a server error
-      }
-      
-      // Actual error (API key missing, network issue, etc)
+      console.log('ℹ️  [API] Mailketing API not available or error - returning empty state')
       return NextResponse.json({
-        success: false,
-        message: response.message || 'Failed to fetch lists',
-        error: response.error,
-        lists: []
-      }, { status: 400 })
+        success: true, // Mark as success so frontend can still work
+        lists: [],
+        count: 0,
+        message: response.message || 'List tidak tersedia. Pastikan Mailketing API sudah dikonfigurasi.',
+        apiError: response.error // Include actual error for debugging
+      }) // 200 OK - graceful degradation
     }
 
   } catch (error: any) {
