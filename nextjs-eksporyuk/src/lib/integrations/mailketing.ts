@@ -1,7 +1,15 @@
 /**
  * Mailketing Email Service Integration
  * Documentation: https://api.mailketing.co.id/docs
+ * 
+ * Features:
+ * - Automatic retry with exponential backoff
+ * - Credits monitoring and alerts
+ * - Webhook support for delivery tracking
+ * - Development mode fallback
  */
+
+import { retryWithBackoff, isRetryableError } from '@/lib/email-retry-service'
 
 interface MailketingEmailPayload {
   to: string | string[]
@@ -97,8 +105,38 @@ export class MailketingService {
    * Send single email
    * API: POST https://api.mailketing.co.id/api/v1/send
    * Format: application/x-www-form-urlencoded with api_token
+   * 
+   * Features:
+   * - Automatic retry on network/temporary errors
+   * - Graceful fallback on invalid API key
+   * - Development mode simulation
    */
   async sendEmail(payload: MailketingEmailPayload): Promise<MailketingResponse> {
+    // Wrap the actual send in retry logic
+    return retryWithBackoff(
+      async () => await this._sendEmailInternal(payload),
+      {
+        maxRetries: 3,
+        initialDelay: 2000,
+        maxDelay: 30000,
+        backoffMultiplier: 2
+      },
+      `Email to ${Array.isArray(payload.to) ? payload.to[0] : payload.to}`
+    ).catch(error => {
+      // If all retries fail, return graceful error response
+      console.error('❌ [MAILKETING] All retries exhausted:', error.message)
+      return {
+        success: false,
+        message: 'Failed to send email after multiple attempts',
+        error: error.message
+      }
+    })
+  }
+
+  /**
+   * Internal send method (called by retry wrapper)
+   */
+  private async _sendEmailInternal(payload: MailketingEmailPayload): Promise<MailketingResponse> {
     try {
       // Load config from database if not already loaded
       await this.loadConfig()

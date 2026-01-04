@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { getRoleTheme } from '@/lib/role-themes'
@@ -52,6 +52,7 @@ interface CurrentMembership {
 export default function UpgradePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
   const [plans, setPlans] = useState<MembershipPlan[]>([])
   const [currentMembership, setCurrentMembership] = useState<CurrentMembership | null>(null)
   const [loading, setLoading] = useState(true)
@@ -112,9 +113,13 @@ export default function UpgradePage() {
       return
     }
 
+    // Detect current path to use correct confirm route
+    const basePath = pathname || '/dashboard/upgrade'
+    const confirmPath = `${basePath}/confirm`
+
     // If user has active membership, go to upgrade confirmation with prorata calculation
     if (currentMembership) {
-      router.push(`/dashboard/upgrade/confirm?package=${plan.id}`)
+      router.push(`${confirmPath}?package=${plan.id}`)
     } else {
       // New purchase - direct to checkout
       router.push(`/checkout/${plan.slug}`)

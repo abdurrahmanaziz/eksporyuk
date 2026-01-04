@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -49,6 +50,7 @@ const getGradientClass = (index: number, isPopular: boolean) => {
 }
 
 export default function PricingPage() {
+  const pathname = usePathname()
   const [packages, setPackages] = useState<MembershipPackage[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPackage, setSelectedPackage] = useState<string>('')
@@ -134,7 +136,10 @@ export default function PricingPage() {
   const getCheckoutUrl = (pkg: MembershipPackage) => {
     // Check if user has current membership - redirect to upgrade confirm
     if (currentMembership && currentMembership.membershipId !== pkg.id) {
-      return `/dashboard/upgrade/confirm?package=${pkg.id}`
+      // Detect if we're on /member/* path or /dashboard/* path
+      const isOnMemberPath = pathname?.startsWith('/member')
+      const basePath = isOnMemberPath ? '/member/upgrade' : '/dashboard/upgrade'
+      return `${basePath}/confirm?package=${pkg.id}`
     }
     // Always use slug for checkout URL - realtime from database
     return `/checkout/${pkg.slug}`
