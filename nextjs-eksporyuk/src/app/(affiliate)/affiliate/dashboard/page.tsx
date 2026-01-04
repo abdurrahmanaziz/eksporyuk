@@ -83,11 +83,11 @@ export default function DashboardPage() {
 
   // Use React Query for cached data fetching with realtime updates
   const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useQuery({
-    queryKey: ['affiliate', 'dashboard-stats'],
+    queryKey: ['affiliate', 'dashboard-stats', 'v2'], // v2 to force cache invalidation
     queryFn: async () => {
       const [statsRes, dashboardRes] = await Promise.all([
-        fetch('/api/affiliate/stats'),
-        fetch('/api/dashboard/stats')
+        fetch('/api/affiliate/stats', { cache: 'no-store' }),
+        fetch('/api/dashboard/stats', { cache: 'no-store' })
       ])
       
       const stats = await statsRes.json()
