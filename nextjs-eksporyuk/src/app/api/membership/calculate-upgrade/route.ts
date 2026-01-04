@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
         name: currentPackage.name,
         price: currentPrice,
         duration: currentPackage.duration,
-        endDate: currentMembership.endDate.toISOString(),
+        endDate: new Date(currentMembership.endDate).toISOString(),
         remainingDays
       },
       targetPackage: {
@@ -155,9 +155,9 @@ export async function POST(request: NextRequest) {
         price: targetPrice,
         duration: targetPackage.duration
       },
-      upgradePrice,
-      discount,
-      remainingValue,
+      upgradePrice: Number(upgradePrice),
+      discount: Number(discount),
+      remainingValue: Number(remainingValue),
       remainingDays,
       message: isLifetimeUpgrade 
         ? 'Upgrade ke Lifetime selalu harga penuh, sisa masa aktif tidak dihitung'
