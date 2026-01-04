@@ -40,6 +40,9 @@ export async function POST(request: NextRequest) {
           gte: new Date()
         }
       },
+      include: {
+        membership: true
+      },
       orderBy: {
         endDate: 'desc'
       }
@@ -74,14 +77,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Get current package details
-    const currentPackage = await prisma.membership.findUnique({
-      where: { id: currentMembership.membershipId }
-    })
-
-    if (!currentPackage) {
-      return NextResponse.json({ error: 'Current package not found' }, { status: 404 })
-    }
+    // Get current package details from included membership
+    const currentPackage = currentMembership.membership
 
     // Check if already same package
     if (currentPackage.id === targetPackage.id) {

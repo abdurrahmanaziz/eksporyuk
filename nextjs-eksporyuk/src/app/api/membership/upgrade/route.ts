@@ -44,16 +44,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if current is LIFETIME
-    if (currentMembership?.membership.durationType === 'LIFETIME') {
+    if (currentMembership?.membership.duration === 'LIFETIME') {
       return NextResponse.json({ 
         error: 'Paket Lifetime tidak dapat diupgrade' 
       }, { status: 400 })
     }
 
+    // Helper to get days from duration enum
+    function getDurationDays(duration: string): number {
+      switch (duration) {
+        case 'ONE_MONTH': return 30
+        case 'THREE_MONTHS': return 90
+        case 'SIX_MONTHS': return 180
+        case 'TWELVE_MONTHS': return 365
+        case 'LIFETIME': return 0
+        default: return 0
+      }
+    }
+
     // Calculate upgrade price
     let upgradePrice = Number(targetPackage.price)
     let discount = 0
-    let isLifetimeUpgrade = targetPackage.durationType === 'LIFETIME'
+    let isLifetimeUpgrade = targetPackage.duration === 'LIFETIME'
 
     if (currentMembership && !isLifetimeUpgrade) {
       const now = new Date()
@@ -61,11 +73,7 @@ export async function POST(request: NextRequest) {
       const remainingDays = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 
       const currentPackage = currentMembership.membership
-      const currentTotalDays = currentPackage.durationType === 'YEAR' 
-        ? currentPackage.duration * 365
-        : currentPackage.durationType === 'MONTH'
-          ? currentPackage.duration * 30
-          : currentPackage.duration
+      const currentTotalDays = getDurationDays(currentPackage.duration)
 
       const currentPrice = Number(currentMembership.price || currentPackage.price)
       const remainingValue = (currentPrice / currentTotalDays) * remainingDays
