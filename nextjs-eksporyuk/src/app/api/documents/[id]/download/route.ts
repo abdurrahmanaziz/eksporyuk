@@ -51,22 +51,24 @@ export async function GET(
     // Check access based on membership level
     if (document.minimumLevel !== 'LIFETIME') {
       const userMembership = await prisma.userMembership.findFirst({
-        where: { userId: session.user.id, isActive: true },
-        select: {
-          membership: {
-            select: { name: true }
-          }
-        }
+        where: { userId: session.user.id, isActive: true }
       })
 
       let userLevel = MEMBERSHIP_LEVELS.FREE
 
-      if (userMembership?.membership) {
-        const membershipName = userMembership.membership.name.toUpperCase()
-        if (membershipName.includes('LIFETIME')) userLevel = MEMBERSHIP_LEVELS.LIFETIME
-        else if (membershipName.includes('PLATINUM')) userLevel = MEMBERSHIP_LEVELS.PLATINUM
-        else if (membershipName.includes('GOLD')) userLevel = MEMBERSHIP_LEVELS.GOLD
-        else if (membershipName.includes('SILVER')) userLevel = MEMBERSHIP_LEVELS.SILVER
+      if (userMembership) {
+        const membership = await prisma.membership.findUnique({
+          where: { id: userMembership.membershipId },
+          select: { name: true }
+        })
+
+        if (membership) {
+          const membershipName = membership.name.toUpperCase()
+          if (membershipName.includes('LIFETIME')) userLevel = MEMBERSHIP_LEVELS.LIFETIME
+          else if (membershipName.includes('PLATINUM')) userLevel = MEMBERSHIP_LEVELS.PLATINUM
+          else if (membershipName.includes('GOLD')) userLevel = MEMBERSHIP_LEVELS.GOLD
+          else if (membershipName.includes('SILVER')) userLevel = MEMBERSHIP_LEVELS.SILVER
+        }
       }
 
       const requiredLevel = MEMBERSHIP_LEVELS[document.minimumLevel as keyof typeof MEMBERSHIP_LEVELS] || 0

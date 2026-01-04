@@ -35,18 +35,23 @@ export async function GET(request: NextRequest) {
         status: 'ACTIVE',
         isActive: true,
       },
-      include: {
-        membership: true,
-      },
       orderBy: {
         startDate: 'desc',
       },
     })
 
+    // Query membership separately if exists
+    let membership = null
+    if (userMembership) {
+      membership = await prisma.membership.findUnique({
+        where: { id: userMembership.membershipId }
+      })
+    }
+
     // Determine user's effective level
     let userLevel = 'FREE'
-    if (userMembership?.membership) {
-      const duration = userMembership.membership.duration
+    if (membership) {
+      const duration = membership.duration
       if (duration === 'LIFETIME') userLevel = 'LIFETIME'
       else if (duration === 'TWELVE_MONTHS') userLevel = 'PLATINUM'
       else if (duration === 'SIX_MONTHS') userLevel = 'GOLD'
@@ -120,10 +125,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       documents: documentsWithStatus,
       userLevel,
-      membership: userMembership
+      membership: userMembership && membership
         ? {
-            name: userMembership.membership.name,
-            duration: userMembership.membership.duration,
+            name: membership.name,
+            duration: membership.duration,
             endDate: userMembership.endDate,
           }
         : null,

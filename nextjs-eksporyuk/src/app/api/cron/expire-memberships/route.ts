@@ -65,8 +65,28 @@ export async function GET(request: NextRequest) {
             name: true,
             email: true
           }
-        },
-        membership: {
+        }
+      }
+    })
+
+    console.log(`[CRON] Found ${expiredMemberships.length} expired memberships to process`)
+
+    // 3. Process each expired membership
+    const results = {
+      total: expiredMemberships.length,
+      success: 0,
+      failed: 0,
+      errors: [] as string[],
+      details: [] as any[]
+    }
+
+    for (const userMembership of expiredMemberships) {
+      try {
+        const userId = userMembership.user.id
+
+        // Query membership details separately
+        const membership = await prisma.membership.findUnique({
+          where: { id: userMembership.membershipId },
           select: {
             id: true,
             name: true,
@@ -94,25 +114,14 @@ export async function GET(request: NextRequest) {
               }
             }
           }
+        })
+
+        if (!membership) {
+          console.warn(`[CRON] Membership ${userMembership.membershipId} not found, skipping`)
+          continue
         }
-      }
-    })
 
-    console.log(`[CRON] Found ${expiredMemberships.length} expired memberships to process`)
-
-    // 3. Process each expired membership
-    const results = {
-      total: expiredMemberships.length,
-      success: 0,
-      failed: 0,
-      errors: [] as string[],
-      details: [] as any[]
-    }
-
-    for (const userMembership of expiredMemberships) {
-      try {
-        const userId = userMembership.user.id
-        const membershipId = userMembership.membership.id
+        const membershipId = membership.id
 
         // 3a. Update UserMembership status
         await prisma.userMembership.update({
@@ -128,7 +137,7 @@ export async function GET(request: NextRequest) {
 
         // 3b. Remove from groups (only if they joined via this membership)
         const groupsRemoved = []
-        for (const mg of userMembership.membership.membershipGroups) {
+        for (const mg of membership.membershipGroups) {
           try {
             await prisma.groupMember.deleteMany({
               where: {
@@ -145,7 +154,7 @@ export async function GET(request: NextRequest) {
 
         // 3c. Remove from courses (only if enrolled via this membership)
         const coursesRemoved = []
-        for (const mc of userMembership.membership.membershipCourses) {
+        for (const mc of membership.membershipCourses) {
           try {
             await prisma.courseEnrollment.deleteMany({
               where: {
@@ -161,7 +170,7 @@ export async function GET(request: NextRequest) {
 
         // 3d. Mark products as expired (don't delete, just mark)
         const productsMarked = []
-        for (const mp of userMembership.membership.membershipProducts) {
+        for (const mp of membership.membershipProducts) {
           try {
             // Note: UserProduct doesn't have status field in current schema
             // So we just log it, can extend schema later if needed
@@ -173,13 +182,13 @@ export async function GET(request: NextRequest) {
 
         // 3e. Send expiry notification email
         try {
-          const renewalUrl = userMembership.membership.checkoutSlug
-            ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/${userMembership.membership.checkoutSlug}`
+          const renewalUrl = membership.checkoutSlug
+            ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/${membership.checkoutSlug}`
             : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/pricing`
 
           const emailData = emailTemplates.membershipExpired({
             userName: userMembership.user.name || 'Member',
-            membershipName: userMembership.membership.name,
+            membershipName: membership.name,
             expiredDate: userMembership.endDate.toLocaleDateString('id-ID', {
               day: 'numeric',
               month: 'long',
@@ -207,7 +216,7 @@ export async function GET(request: NextRequest) {
           userId: userId,
           userEmail: userMembership.user.email,
           membershipId: membershipId,
-          membershipName: userMembership.membership.name,
+          membershipName: membership.name,
           expiredDate: userMembership.endDate.toISOString(),
           groupsRemoved: groupsRemoved.length,
           coursesRemoved: coursesRemoved.length,
@@ -224,7 +233,7 @@ export async function GET(request: NextRequest) {
         results.details.push({
           userId: userMembership.user.id,
           userEmail: userMembership.user.email,
-          membershipId: userMembership.membership.id,
+          membershipId: userMembership.membershipId,
           error: errorMsg,
           status: 'failed'
         })

@@ -188,11 +188,16 @@ export async function GET(request: NextRequest) {
         userId,
         status: 'ACTIVE'
       },
-      include: {
-        membership: true
-      },
       orderBy: { endDate: 'desc' }
     })
+
+    // Query membership separately if exists
+    let membership = null
+    if (userMembership) {
+      membership = await prisma.membership.findUnique({
+        where: { id: userMembership.membershipId }
+      })
+    }
 
     // Get certificates count
     const certificatesCount = await prisma.certificate.count({
@@ -256,8 +261,8 @@ export async function GET(request: NextRequest) {
         certificates: certificatesCount,
         daysRemaining
       },
-      membership: userMembership ? {
-        name: userMembership.membership.name,
+      membership: userMembership && membership ? {
+        name: membership.name,
         expiresAt: userMembership.endDate?.toISOString() || null,
         isExpired: userMembership.status !== 'ACTIVE'
       } : null,

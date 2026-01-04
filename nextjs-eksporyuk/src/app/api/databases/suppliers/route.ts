@@ -74,9 +74,6 @@ export async function GET(request: NextRequest) {
           userId: session.user.id,
           status: 'ACTIVE',
           isActive: true
-        },
-        include: {
-          membership: true
         }
       });
 
@@ -91,12 +88,18 @@ export async function GET(request: NextRequest) {
       });
 
       // Determine quota based on membership
-      if (userMembership?.membership) {
-        const duration = userMembership.membership.duration;
-        if (duration === 'LIFETIME' || duration === 'TWELVE_MONTHS') quota = 999999; // Unlimited
-        else if (duration === 'SIX_MONTHS') quota = 100;
-        else if (duration === 'THREE_MONTHS') quota = 50;
-        else if (duration === 'ONE_MONTH') quota = 20;
+      if (userMembership) {
+        const membership = await prisma.membership.findUnique({
+          where: { id: userMembership.membershipId }
+        });
+        
+        if (membership) {
+          const duration = membership.duration;
+          if (duration === 'LIFETIME' || duration === 'TWELVE_MONTHS') quota = 999999; // Unlimited
+          else if (duration === 'SIX_MONTHS') quota = 100;
+          else if (duration === 'THREE_MONTHS') quota = 50;
+          else if (duration === 'ONE_MONTH') quota = 20;
+        }
       }
     }
 

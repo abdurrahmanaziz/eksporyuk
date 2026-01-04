@@ -49,13 +49,15 @@ export async function POST(request: NextRequest) {
     // If payment successful, activate membership
     if (status.toLowerCase() === 'success') {
       const userMembership = await prisma.userMembership.findFirst({
-        where: { transactionId: transaction.id },
-        include: {
-          membership: true
-        }
+        where: { transactionId: transaction.id }
       })
       
       if (userMembership) {
+        // Query membership separately
+        const membership = await prisma.membership.findUnique({
+          where: { id: userMembership.membershipId }
+        })
+
         await prisma.userMembership.update({
           where: { id: userMembership.id },
           data: {
@@ -65,18 +67,19 @@ export async function POST(request: NextRequest) {
         })
 
         // Send welcome email for membership activation
-        try {
-          await mailketing.sendEmail({
-            to: transaction.user.email,
-            subject: `Selamat! Membership ${userMembership.membership.name} Anda Aktif`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-                  <h1 style="margin: 0; font-size: 28px;">Membership Aktif!</h1>
-                </div>
-                <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-                  <p style="font-size: 16px;">Halo <strong>${transaction.user.name}</strong>,</p>
-                  <p style="font-size: 16px;">Selamat! Membership <strong>${userMembership.membership.name}</strong> Anda telah aktif.</p>
+        if (membership) {
+          try {
+            await mailketing.sendEmail({
+              to: transaction.user.email,
+              subject: `Selamat! Membership ${membership.name} Anda Aktif`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="margin: 0; font-size: 28px;">Membership Aktif!</h1>
+                  </div>
+                  <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+                    <p style="font-size: 16px;">Halo <strong>${transaction.user.name}</strong>,</p>
+                    <p style="font-size: 16px;">Selamat! Membership <strong>${membership.name}</strong> Anda telah aktif.</p>
                   <p style="font-size: 16px;">Anda sekarang memiliki akses ke semua fitur membership.</p>
                   <div style="text-align: center; margin: 30px 0;">
                     <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}/dashboard" 
@@ -90,9 +93,10 @@ export async function POST(request: NextRequest) {
             `,
             tags: ['membership', 'activation']
           })
-          console.log('[Payments] Welcome email sent for membership:', userMembership.membership.name)
-        } catch (emailError) {
-          console.error('[Payments] Error sending welcome email:', emailError)
+            console.log('[Payments] Welcome email sent for membership:', membership.name)
+          } catch (emailError) {
+            console.error('[Payments] Error sending welcome email:', emailError)
+          }
         }
       }
     }
