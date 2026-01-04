@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, RefreshCw, Calendar, Copy, Check, Package, BookOpen, Crown, Settings, ChevronDown, Users } from 'lucide-react'
+import { Plus, RefreshCw, Calendar, Copy, Check, Package, BookOpen, Crown, Settings, ChevronDown, Users, ExternalLink } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
