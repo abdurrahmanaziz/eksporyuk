@@ -3,6 +3,11 @@ import crypto from 'crypto'
 import { renderBrandedTemplateBySlug, type TemplateData } from './branded-template-engine'
 import { mailketing } from './integrations/mailketing'
 
+// Generate random ID
+function generateId(): string {
+  return crypto.randomBytes(16).toString('hex')
+}
+
 // Generate verification token
 export function generateVerificationToken(): string {
   return crypto.randomBytes(32).toString('hex')
@@ -19,9 +24,10 @@ export async function createVerificationToken(userId: string, email: string) {
     where: { identifier: userId }
   })
 
-  // Create new token
+  // Create new token with generated id
   await prisma.emailVerificationToken.create({
     data: {
+      id: generateId(), // IMPORTANT: Schema requires explicit id
       identifier: userId,
       token,
       expires,
