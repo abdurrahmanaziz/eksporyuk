@@ -65,6 +65,7 @@ import {
   Sun,
   Moon,
   Globe,
+  ShoppingCart,
 } from 'lucide-react'
 
 type NavItem = {
@@ -298,6 +299,7 @@ const navigationByRole = {
         { name: 'Short Link', href: '/affiliate/short-links', icon: Zap },
         { name: 'Kupon', href: '/affiliate/coupons', icon: Ticket },
         { name: 'Statistik', href: '/affiliate/statistics', icon: BarChart3 },
+        { name: 'Transaksi', href: '/affiliate/transactions', icon: ShoppingCart },
         { name: 'Konversi', href: '/affiliate/conversions', icon: Target },
         { name: 'Materi', href: '/affiliate/materials', icon: FileText },
       ]
@@ -664,6 +666,7 @@ export default function DashboardSidebar() {
             { name: 'Short Link', href: '/affiliate/short-links', icon: Zap },
             { name: 'Kupon', href: '/affiliate/coupons', icon: Ticket },
             { name: 'Statistik', href: '/affiliate/statistics', icon: BarChart3 },
+            { name: 'Transaksi', href: '/affiliate/transactions', icon: ShoppingCart },
             { name: 'Konversi', href: '/affiliate/conversions', icon: Target },
             { name: 'Materi', href: '/affiliate/materials', icon: FileText },
           ]
