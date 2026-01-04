@@ -169,7 +169,7 @@ export default function UpgradePage() {
       const response = await fetch('/api/membership/calculate-upgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetMembershipId: plan.id })
+        body: JSON.stringify({ targetPackageId: plan.id })
       })
 
       if (response.ok) {
@@ -196,7 +196,7 @@ export default function UpgradePage() {
       const response = await fetch('/api/membership/upgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetMembershipId: selectedPlan.id })
+        body: JSON.stringify({ targetPackageId: selectedPlan.id })
       })
 
       if (response.ok) {
