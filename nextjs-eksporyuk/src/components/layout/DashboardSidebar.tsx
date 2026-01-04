@@ -336,11 +336,13 @@ const navigationByRole = {
         { name: 'Kursus Saya', href: '/member/learn', icon: BookOpen },
         { name: 'Jelajah Kursus', href: '/member/courses', icon: GraduationCap },
         { name: 'Sertifikat', href: '/member/certificates', icon: Award },
+        { name: 'Progress Kelas', href: '/member/progress', icon: BarChart3 },
       ]
     },
     {
       title: 'KOMUNITAS',
       items: [
+        { name: 'Grup Saya', href: '/member/my-groups', icon: UsersRound },
         { name: 'Feed', href: '/member/community/feed', icon: MessageSquare },
         { name: 'Grup', href: '/member/community/groups', icon: UsersRound },
         { name: 'Acara', href: '/member/community/events', icon: Calendar },

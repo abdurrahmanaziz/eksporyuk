@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { amount, notes, pin } = body
+    const { amount, notes, pin, bankName, accountName, accountNumber } = body
 
     // Get withdrawal settings
     const settings = await prisma.settings.findFirst()
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
     // Calculate available balance
     const allConversions = await prisma.affiliateConversion.findMany({
       where: {
-        affiliateProfileId: affiliateProfile.id,
+        affiliateId: affiliateProfile.id,
       },
       select: {
         commissionAmount: true,
@@ -293,9 +293,9 @@ export async function POST(request: NextRequest) {
         walletId: wallet.id,
         amount,
         status: 'PENDING',
-        bankName: latestPayout?.bankName || null,
-        accountName: latestPayout?.accountName || null,
-        accountNumber: latestPayout?.accountNumber || null,
+        bankName: bankName || latestPayout?.bankName,
+        accountName: accountName || latestPayout?.accountName,
+        accountNumber: accountNumber || latestPayout?.accountNumber,
         notes,
         metadata: {
           adminFee,
