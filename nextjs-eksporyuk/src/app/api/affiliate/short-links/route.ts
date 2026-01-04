@@ -34,16 +34,36 @@ export async function GET(req: NextRequest) {
       )
     }
     
+    // Get short links
     const shortLinks = await prisma.affiliateShortLink.findMany({
       where: { affiliateId: affiliate.id },
-      include: {
-        domain: true,
-        affiliateLink: true
-      },
       orderBy: { createdAt: 'desc' }
     })
     
-    return NextResponse.json({ shortLinks })
+    // Get domains and affiliate links separately (no relation in schema)
+    const domainIds = [...new Set(shortLinks.map(s => s.domainId).filter(Boolean))]
+    const affiliateLinkIds = [...new Set(shortLinks.map(s => s.affiliateLinkId).filter(Boolean))] as string[]
+    
+    const [domains, affiliateLinks] = await Promise.all([
+      domainIds.length > 0 ? prisma.shortLinkDomain.findMany({
+        where: { id: { in: domainIds } }
+      }) : [],
+      affiliateLinkIds.length > 0 ? prisma.affiliateLink.findMany({
+        where: { id: { in: affiliateLinkIds } }
+      }) : []
+    ])
+    
+    const domainMap = new Map(domains.map(d => [d.id, d]))
+    const affiliateLinkMap = new Map(affiliateLinks.map(a => [a.id, a]))
+    
+    // Enrich short links with domain and affiliateLink data
+    const enrichedShortLinks = shortLinks.map(sl => ({
+      ...sl,
+      domain: sl.domainId ? domainMap.get(sl.domainId) || null : null,
+      affiliateLink: sl.affiliateLinkId ? affiliateLinkMap.get(sl.affiliateLinkId) || null : null
+    }))
+    
+    return NextResponse.json({ shortLinks: enrichedShortLinks })
   } catch (error) {
     console.error('Error fetching short links:', error)
     return NextResponse.json(
@@ -175,12 +195,13 @@ export async function POST(req: NextRequest) {
         affiliateLinkId,
         couponCode,
         expiresAt: expiresAt ? new Date(expiresAt) : null
-      },
-      include: {
-        domain: true,
-        affiliateLink: true
       }
     })
+    
+    // Get domain and affiliate link for response (no relation in schema)
+    const affiliateLinkData = affiliateLinkId 
+      ? await prisma.affiliateLink.findUnique({ where: { id: affiliateLinkId } })
+      : null
     
     // Update domain stats
     await prisma.shortLinkDomain.update({
@@ -190,7 +211,14 @@ export async function POST(req: NextRequest) {
       }
     })
     
-    return NextResponse.json({ shortLink }, { status: 201 })
+    // Return enriched short link
+    return NextResponse.json({ 
+      shortLink: {
+        ...shortLink,
+        domain,
+        affiliateLink: affiliateLinkData
+      }
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating short link:', error)
     return NextResponse.json(
