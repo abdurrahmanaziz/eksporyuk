@@ -14,6 +14,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user data for realtime username
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { username: true }
+    })
+
     // Get or create affiliate profile
     let affiliateProfile = await prisma.affiliateProfile.findUnique({
       where: { userId: session.user.id },
@@ -28,6 +34,8 @@ export async function GET() {
           conversionRate: 0,
           pendingEarnings: 0,
           availableBalance: 0,
+          affiliateCode: null,
+          shortLink: null,
         },
         { status: 200 }
       )
@@ -76,6 +84,10 @@ export async function GET() {
       ? (totalConversions / totalClicks) * 100
       : 0
 
+    // Generate realtime shortLink based on user's current username or shortLinkUsername
+    const displayUsername = user?.username || affiliateProfile.shortLinkUsername || affiliateProfile.affiliateCode
+    const shortLink = `https://eksporyuk.app/${displayUsername}`
+
     return NextResponse.json({
       totalEarnings,
       totalClicks,
@@ -83,6 +95,8 @@ export async function GET() {
       conversionRate,
       pendingEarnings,
       availableBalance: Number(wallet?.balance || 0),
+      affiliateCode: affiliateProfile.affiliateCode,
+      shortLink,
     })
   } catch (error) {
     console.error('Error fetching affiliate stats:', error)

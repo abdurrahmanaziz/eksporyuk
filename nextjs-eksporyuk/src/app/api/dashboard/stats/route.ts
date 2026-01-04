@@ -238,6 +238,12 @@ export async function GET(request: NextRequest) {
 
     // Affiliate stats
     if (user.role === 'AFFILIATE' || ['ADMIN', 'FOUNDER', 'CO_FOUNDER'].includes(user.role)) {
+      // Get user data for realtime username
+      const userData = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { username: true }
+      })
+
       const affiliateProfile = await prisma.affiliateProfile.findUnique({
         where: { userId: user.id },
       })
@@ -265,11 +271,17 @@ export async function GET(request: NextRequest) {
           _sum: { commissionAmount: true },
         })
 
+        // Generate realtime shortLink based on user's current username
+        const displayUsername = userData?.username || affiliateProfile.shortLinkUsername || affiliateProfile.affiliateCode
+        const shortLink = `https://eksporyuk.app/${displayUsername}`
+
         stats.affiliate = {
           ...affiliateProfile,
           recentClicks,
           recentConversions,
           recentEarnings: recentEarnings._sum.commissionAmount || 0,
+          affiliateCode: affiliateProfile.affiliateCode,
+          shortLink,
         }
       }
     }
