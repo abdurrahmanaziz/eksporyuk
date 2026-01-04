@@ -1266,7 +1266,7 @@ model EmailTemplate {
 model EmailVerificationToken {
   id         String   @id
   identifier String
-  token      String
+  token      String   @unique
   expires    DateTime
   type       String?  @default("EMAIL_VERIFY")
   metadata   String?
