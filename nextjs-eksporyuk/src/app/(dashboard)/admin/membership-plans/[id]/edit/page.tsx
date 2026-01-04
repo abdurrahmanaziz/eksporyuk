@@ -57,7 +57,7 @@ const MEMBERSHIP_FEATURE_OPTIONS = [
   { key: 'document_generator', name: 'Generator Dokumen', description: 'Generate dokumen dengan auto-fill', category: 'Dokumen', icon: FileText },
   
   // Marketing & Affiliate
-  { key: 'affiliate_access', name: 'Akses Affiliate', description: 'Jadi affiliate & dapat komisi', category: 'Marketing', icon: Megaphone },
+  { key: 'affiliate_access', name: 'Akses Affiliate', description: 'Gabung Rich Affiliate & dapat komisi', category: 'Marketing', icon: Megaphone },
   { key: 'marketing_kit', name: 'Kit Marketing', description: 'Akses banner, copy, assets', category: 'Marketing', icon: Megaphone },
   
   // Event

@@ -159,7 +159,7 @@ export default function AffiliateActivation() {
           <div className=\"space-y-4 mb-6\">
             <div className=\"flex items-center gap-3\">
               <Users className=\"w-5 h-5 text-blue-600\" />
-              <span className=\"text-sm\">Semua role dapat menjadi affiliate</span>
+              <span className="text-sm">Semua role dapat gabung Rich Affiliate</span>
             </div>
             <div className=\"flex items-center gap-3\">
               <TrendingUp className=\"w-5 h-5 text-green-600\" />

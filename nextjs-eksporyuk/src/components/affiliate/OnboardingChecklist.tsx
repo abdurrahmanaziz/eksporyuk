@@ -123,7 +123,7 @@ export default function OnboardingChecklist({
     {
       id: 'training',
       title: 'Selesaikan Training',
-      description: 'Pelajari cara menjadi affiliate sukses',
+      description: 'Pelajari cara menjadi Rich Affiliate sukses',
       icon: <GraduationCap className="w-5 h-5" />,
       href: '/affiliate/training',
       isCompleted: data.trainingCompleted,

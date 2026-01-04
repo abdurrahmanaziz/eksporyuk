@@ -158,8 +158,8 @@ export async function POST(request: NextRequest) {
       await notificationService.send({
         userId: session.user.id,
         type: 'AFFILIATE' as any,
-        title: '🎉 Selamat! Anda Sudah Menjadi Affiliate',
-        message: `Aplikasi Anda langsung disetujui. Kode affiliate: ${affiliateCode}. Silakan mulai promosikan produk!`,
+        title: '🎉 Selamat! Anda Sudah Gabung Rich Affiliate',
+        message: `Akun Rich Affiliate Anda aktif! Kode: ${affiliateCode}. Mulai promosi & raih komisi!`,
         link: `${process.env.NEXT_PUBLIC_APP_URL}/affiliate/welcome`,
         channels: ['pusher', 'onesignal', 'email', 'whatsapp'],
         metadata: { affiliateCode, tier: 1, commissionRate: 10 }
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
       if (whatsapp && starsenderService.isConfigured()) {
         await starsenderService.sendWhatsApp({
           to: whatsapp,
-          message: `🎉 *Selamat ${user.name}!*\n\nAnda sekarang resmi menjadi Affiliate EksporYuk!\n\n📌 *Kode Affiliate:* ${affiliateCode}\n💰 *Komisi:* 10%\n⭐ *Tier:* 1\n\nMulai promosikan produk dan dapatkan komisi! 🚀\n\nLogin: ${process.env.NEXT_PUBLIC_APP_URL}/affiliate/dashboard`
+          message: `🎉 *Selamat ${user.name}!*\n\nAnda sekarang Rich Affiliate Partner!\n\n📌 *Kode:* ${affiliateCode}\n💰 *Komisi:* 10%\n⭐ *Level:* 1\n\nMulai promosi & raih passive income! 🚀\n\nLogin: ${process.env.NEXT_PUBLIC_APP_URL}/affiliate/dashboard`
         })
       }
 
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
           userId: admin.id,
           type: 'AFFILIATE' as any,
           title: 'Aplikasi Affiliate Baru',
-          message: `${user.name} mengajukan aplikasi untuk menjadi affiliate`,
+          message: `${user.name} mengajukan aplikasi untuk gabung Rich Affiliate`,
           link: `${process.env.NEXT_PUBLIC_APP_URL}/admin/affiliates`,
           channels: ['pusher', 'onesignal', 'email'],
           metadata: {
@@ -223,8 +223,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: autoApprove 
-        ? 'Selamat! Anda sudah menjadi affiliate' 
-        : 'Aplikasi affiliate berhasil diajukan',
+        ? 'Selamat! Anda sudah gabung Rich Affiliate' 
+        : 'Aplikasi Rich Affiliate berhasil diajukan',
       affiliate: {
         id: affiliateProfile.id,
         affiliateCode: affiliateProfile.affiliateCode,

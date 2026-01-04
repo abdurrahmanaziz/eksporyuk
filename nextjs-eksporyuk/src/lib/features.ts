@@ -149,7 +149,7 @@ export const AVAILABLE_FEATURES = {
   ANALYTICS_ACCESS: 'analytics_access',        // Akses analitik & laporan
   
   // ========== MARKETING & AFFILIATE ==========
-  AFFILIATE_ACCESS: 'affiliate_access',        // Jadi affiliate & dapat komisi
+  AFFILIATE_ACCESS: 'affiliate_access',        // Gabung Rich Affiliate & dapat komisi
   MARKETING_KIT: 'marketing_kit',              // Akses marketing materials
   PRODUCT_LISTING: 'product_listing',          // Listing produk di marketplace
   COUPON_CREATION: 'coupon_creation',          // Buat kupon diskon
@@ -310,7 +310,7 @@ export const FEATURE_DEFINITIONS = [
   {
     key: AVAILABLE_FEATURES.AFFILIATE_ACCESS,
     name: 'Akses Affiliate',
-    description: 'Jadi affiliate, dapat komisi & short link',
+    description: 'Gabung Rich Affiliate, dapat komisi & short link',
     category: 'Marketing',
     defaultValue: { commissionRate: 30, canCreateShortLinks: true, maxLinks: 50 }
   },

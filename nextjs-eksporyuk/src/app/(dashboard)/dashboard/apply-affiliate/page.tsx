@@ -203,7 +203,7 @@ export default function ApplyAffiliatePage() {
                   <div>
                     <h3 className="font-semibold text-green-800">Aplikasi Disetujui!</h3>
                     <p className="text-green-700">
-                      Selamat! Anda sudah menjadi affiliate. Kode: <span className="font-mono font-bold">{affiliateData.affiliateCode}</span>
+                      Selamat! Anda sudah gabung Rich Affiliate. Kode: <span className="font-mono font-bold">{affiliateData.affiliateCode}</span>
                     </p>
                     <button
                       onClick={() => router.push('/affiliate/dashboard')}
@@ -221,7 +221,7 @@ export default function ApplyAffiliatePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Benefits Section */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Keuntungan Menjadi Affiliate</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Keuntungan Gabung Rich Affiliate</h2>
             
             <div className="space-y-4">
               <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-gray-200">
@@ -361,7 +361,7 @@ export default function ApplyAffiliatePage() {
                   <textarea
                     value={formData.motivation}
                     onChange={(e) => setFormData({ ...formData, motivation: e.target.value })}
-                    placeholder="Ceritakan mengapa Anda ingin menjadi affiliate..."
+                    placeholder="Ceritakan mengapa Anda ingin gabung Rich Affiliate..."
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />

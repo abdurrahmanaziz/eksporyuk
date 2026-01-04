@@ -238,7 +238,7 @@ export default function AffiliateSettingsPage() {
                 </Label>
                 <p className="text-sm text-gray-600 mt-1">
                   {settings.affiliateAutoApprove
-                    ? 'Pendaftar otomatis menjadi affiliate'
+                    ? 'Pendaftar otomatis gabung Rich Affiliate'
                     : 'Admin harus menyetujui setiap pendaftar'}
                 </p>
               </div>

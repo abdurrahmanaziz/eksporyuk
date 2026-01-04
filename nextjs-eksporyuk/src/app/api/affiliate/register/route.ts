@@ -214,8 +214,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: autoApprove 
-        ? 'Pendaftaran berhasil! Anda langsung menjadi affiliate.' 
-        : 'Pendaftaran berhasil! Aplikasi affiliate Anda sedang direview.',
+        ? 'Pendaftaran berhasil! Anda langsung gabung Rich Affiliate.' 
+        : 'Pendaftaran berhasil! Aplikasi Rich Affiliate Anda sedang direview.',
       user: {
         id: result.user.id,
         name: result.user.name,

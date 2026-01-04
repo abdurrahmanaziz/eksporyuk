@@ -195,7 +195,7 @@ const STEP_INFO: Record<RequirementKey, {
     href: '/affiliate/training',
     action: 'Mulai Training',
     icon: GraduationCap,
-    description: 'Pelajari cara menjadi affiliate sukses',
+    description: 'Pelajari cara menjadi Rich Affiliate sukses',
   },
   firstLinkCreated: {
     label: 'Buat Link Pertama',
@@ -383,7 +383,7 @@ export default function FeatureLock({
                 <div>
                   <h4 className="font-medium text-blue-900 text-sm">Mengapa perlu verifikasi?</h4>
                   <p className="text-xs text-blue-700 mt-1">
-                    Proses onboarding ini memastikan Anda siap untuk menjadi affiliate yang sukses. 
+                    Proses onboarding ini memastikan Anda siap untuk menjadi Rich Affiliate yang sukses. 
                     Training akan membantu Anda memahami cara kerja sistem dan strategi promosi terbaik.
                   </p>
                 </div>

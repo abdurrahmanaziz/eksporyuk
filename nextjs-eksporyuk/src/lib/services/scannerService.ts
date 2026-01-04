@@ -548,7 +548,7 @@ async function scanFrontend(): Promise<ScanCheckResult[]> {
     { name: 'Dashboard Selector', url: '/dashboard-selector', category: 'Feature' },
     
     // === PUBLIC REGISTRATION ===
-    { name: 'Daftar Affiliate', url: '/daftar-affiliate', category: 'Public' },
+    { name: 'Gabung Rich Affiliate', url: '/daftar-affiliate', category: 'Public' },
     { name: 'Daftar Supplier', url: '/daftar-supplier', category: 'Public' },
     { name: 'Register Supplier', url: '/register-supplier', category: 'Public' },
     { name: 'Beli Paket', url: '/beli-paket', category: 'Public' },

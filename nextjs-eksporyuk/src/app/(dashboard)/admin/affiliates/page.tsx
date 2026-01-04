@@ -651,7 +651,7 @@ export default function AffiliatesManagementPage() {
       {/* Affiliates Table - Compact Design */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Daftar Affiliate</CardTitle>
+          <CardTitle>Daftar Rich Affiliate</CardTitle>
           {affiliates.length > 0 && (
             <span className="text-sm text-gray-500">
               {selectedIds.length > 0 ? `${selectedIds.length} dari ${affiliates.length} dipilih` : `${affiliates.length} affiliate`}

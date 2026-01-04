@@ -687,7 +687,7 @@ export default function DashboardSidebar() {
           ? [{ name: '⏳ Menunggu Approval', href: '/dashboard/affiliate-status', icon: Clock }]
           : hasAffiliateProfile && affiliateStatus === 'REJECTED'
           ? [{ name: '❌ Aplikasi Ditolak', href: '/dashboard/affiliate-status', icon: XCircle }]
-          : [{ name: 'Jadi Affiliate', href: '/dashboard/apply-affiliate', icon: Share2 }]
+          : [{ name: 'Gabung Rich Affiliate', href: '/dashboard/apply-affiliate', icon: Share2 }]
       }
       baseNavigation = [...baseNavigation, affiliateStatusMenu]
     }

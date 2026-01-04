@@ -211,7 +211,7 @@ export default function AffiliateWelcomePage() {
         {/* Benefits */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
-            🎁 Keuntungan Menjadi Affiliate
+            🎁 Keuntungan Gabung Rich Affiliate
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {benefits.map((benefit, index) => {

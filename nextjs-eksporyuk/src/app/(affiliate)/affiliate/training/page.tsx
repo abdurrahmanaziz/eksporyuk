@@ -261,7 +261,7 @@ export default function AffiliateTrainingPage() {
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-medium transition-colors"
               style={{ backgroundColor: theme.primary }}
             >
-              Daftar Jadi Affiliate
+              Gabung Rich Affiliate
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -282,7 +282,7 @@ export default function AffiliateTrainingPage() {
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">Panduan Affiliate</h1>
-          <p className="text-gray-600">Pelajari strategi dan tips sukses menjadi affiliate</p>
+          <p className="text-gray-600">Pelajari strategi dan tips sukses gabung Rich Affiliate</p>
         </div>
         <Link
           href="/learn/training-affiliate"

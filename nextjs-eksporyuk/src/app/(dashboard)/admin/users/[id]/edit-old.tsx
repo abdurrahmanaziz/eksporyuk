@@ -526,7 +526,7 @@ export default function AdminUserEditPage() {
                 </div>
                 {formData.affiliateMenuEnabled && !user.affiliateProfile && (
                   <p className="mt-3 text-xs text-orange-700 bg-orange-200 p-2 rounded-xl">
-                    💡 User perlu apply jadi affiliate sebelum bisa menggunakan fitur affiliate.
+                    💡 User perlu apply gabung Rich Affiliate sebelum bisa menggunakan fitur affiliate.
                   </p>
                 )}
               </div>

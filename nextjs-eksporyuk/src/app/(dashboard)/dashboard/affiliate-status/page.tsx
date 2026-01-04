@@ -110,7 +110,7 @@ export default function AffiliateStatusPage() {
               href="/daftar-affiliate"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition font-medium"
             >
-              Daftar Affiliate
+              Gabung Rich Affiliate
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
