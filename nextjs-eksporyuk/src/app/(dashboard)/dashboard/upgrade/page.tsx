@@ -114,29 +114,39 @@ export default function UpgradePage() {
       const response = await fetch('/api/memberships/user')
       if (response.ok) {
         const data = await response.json()
-        if (data.hasMembership) {
-          setCurrentMembership({
+        console.log('📦 Membership data:', data)
+        if (data.hasMembership && data.membership) {
+          const membershipData = {
             id: data.membership.id,
             endDate: data.membership.endDate,
-            daysRemaining: data.membership.daysRemaining,
-            isLifetime: data.membership.isLifetime,
+            daysRemaining: data.membership.daysRemaining || 0,
+            isLifetime: data.membership.isLifetime || false,
             plan: {
               id: data.membership.plan.id,
               name: data.membership.plan.name,
               duration: data.membership.plan.duration,
               price: parseFloat(data.membership.plan.price)
             }
-          })
+          }
+          console.log('✅ Setting current membership:', membershipData)
+          setCurrentMembership(membershipData)
+        } else {
+          console.log('ℹ️ No active membership found')
         }
+      } else {
+        console.error('❌ API response not OK:', response.status)
       }
     } catch (error) {
-      console.error('Error fetching current membership:', error)
+      console.error('❌ Error fetching current membership:', error)
     } finally {
       setLoading(false)
     }
   }
 
   const handleShowCalculation = async (plan: MembershipPlan) => {
+    console.log('🔍 handleShowCalculation called for plan:', plan.name)
+    console.log('📊 Current membership state:', currentMembership)
+    
     if (!session?.user?.id) {
       router.push('/login?callbackUrl=/dashboard/upgrade')
       return
@@ -144,10 +154,13 @@ export default function UpgradePage() {
 
     // If no current membership, direct to checkout
     if (!currentMembership) {
+      console.log('⚠️ No current membership, redirecting to checkout')
       router.push(`/checkout/${plan.slug}`)
       return
     }
 
+    console.log('✅ Has membership, showing calculation modal')
+    
     // Calculate upgrade price
     setCalculatingFor(plan.id)
     setSelectedPlan(plan)
