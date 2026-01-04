@@ -25,15 +25,24 @@ export async function GET() {
         withdrawalAdminFee: true,
         withdrawalPinRequired: true,
         withdrawalPinLength: true,
+        xenditEnabled: true,
       },
     })
 
+    // Check if Xendit is properly configured
+    const xenditEnabled = !!(
+      process.env.XENDIT_SECRET_KEY && 
+      process.env.XENDIT_WEBHOOK_TOKEN &&
+      settings?.xenditEnabled !== false
+    )
+
     return NextResponse.json({
-      settings: settings || {
-        withdrawalMinAmount: 50000,
-        withdrawalAdminFee: 5000,
-        withdrawalPinRequired: true,
-        withdrawalPinLength: 6,
+      settings: {
+        withdrawalMinAmount: settings?.withdrawalMinAmount || 50000,
+        withdrawalAdminFee: settings?.withdrawalAdminFee || 5000,
+        withdrawalPinRequired: settings?.withdrawalPinRequired ?? true,
+        withdrawalPinLength: settings?.withdrawalPinLength || 6,
+        xenditEnabled,
       },
     }, {
       headers: {

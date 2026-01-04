@@ -26,6 +26,15 @@ type WalletData = {
   transactions: Transaction[]
 }
 
+type PendingWithdrawal = {
+  amount: number
+  accountName: string
+  accountNumber: string
+  bankName: string
+  notes: string
+  withdrawalType: 'manual' | 'instant'
+}
+
 export default function UserWalletPage() {
   const { data: session, status } = useSession()
   const [wallet, setWallet] = useState<WalletData | null>(null)
@@ -39,7 +48,7 @@ export default function UserWalletPage() {
     accountNumber: '',
     bankName: '',
     notes: '',
-    withdrawalType: 'instant'
+    withdrawalType: 'manual' as 'manual' | 'instant'
   })
   
   // PIN states
@@ -48,8 +57,9 @@ export default function UserWalletPage() {
   const [showSetPINModal, setShowSetPINModal] = useState(false)
   const [showVerifyPINModal, setShowVerifyPINModal] = useState(false)
   const [showForgotPINModal, setShowForgotPINModal] = useState(false)
-  const [pendingWithdrawal, setPendingWithdrawal] = useState<any>(null)
+  const [pendingWithdrawal, setPendingWithdrawal] = useState<PendingWithdrawal | null>(null)
   const [withdrawalSettings, setWithdrawalSettings] = useState<any>(null)
+  const [xenditEnabled, setXenditEnabled] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -80,6 +90,7 @@ export default function UserWalletPage() {
       if (data.settings) {
         setWithdrawalSettings(data.settings)
         setPinRequired(data.settings.withdrawalPinRequired ?? true)
+        setXenditEnabled(data.settings.xenditEnabled ?? false)
       }
     } catch (error) {
       console.error('Error fetching withdrawal settings:', error)
@@ -204,7 +215,7 @@ export default function UserWalletPage() {
           accountNumber: '', 
           bankName: '', 
           notes: '',
-          withdrawalType: 'instant'
+          withdrawalType: 'manual'
         })
         setPendingWithdrawal(null)
         fetchWallet()
@@ -568,6 +579,73 @@ export default function UserWalletPage() {
                   Biaya admin: Rp {(withdrawalSettings?.withdrawalAdminFee || 5000).toLocaleString('id-ID')} • 
                   Maksimal: Rp {wallet?.balance.toLocaleString('id-ID') || '0'}
                 </p>
+              </div>
+
+              {/* Withdrawal Type */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Metode Penarikan <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div 
+                    className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                      withdrawForm.withdrawalType === 'manual' 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setWithdrawForm({ ...withdrawForm, withdrawalType: 'manual' })}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-4 h-4 rounded-full border-2 ${
+                        withdrawForm.withdrawalType === 'manual' 
+                          ? 'border-blue-500 bg-blue-500' 
+                          : 'border-gray-300'
+                      }`}>
+                        {withdrawForm.withdrawalType === 'manual' && (
+                          <div className="w-2 h-2 bg-white rounded-full m-0.5"></div>
+                        )}
+                      </div>
+                      <span className="font-medium">Manual</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Diproses admin 1-3 hari kerja
+                    </p>
+                  </div>
+                  
+                  <div 
+                    className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                      !xenditEnabled 
+                        ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-50'
+                        : withdrawForm.withdrawalType === 'instant' 
+                          ? 'border-green-500 bg-green-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => xenditEnabled && setWithdrawForm({ ...withdrawForm, withdrawalType: 'instant' })}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-4 h-4 rounded-full border-2 ${
+                        !xenditEnabled
+                          ? 'border-gray-300'
+                          : withdrawForm.withdrawalType === 'instant' 
+                            ? 'border-green-500 bg-green-500' 
+                            : 'border-gray-300'
+                      }`}>
+                        {withdrawForm.withdrawalType === 'instant' && xenditEnabled && (
+                          <div className="w-2 h-2 bg-white rounded-full m-0.5"></div>
+                        )}
+                      </div>
+                      <span className={`font-medium ${xenditEnabled ? 'text-green-600' : 'text-gray-400'}`}>
+                        Instant {!xenditEnabled && '(Belum Tersedia)'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {xenditEnabled 
+                        ? 'Otomatis via Xendit' 
+                        : 'Memerlukan konfigurasi Xendit'
+                      }
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Bank Name */}

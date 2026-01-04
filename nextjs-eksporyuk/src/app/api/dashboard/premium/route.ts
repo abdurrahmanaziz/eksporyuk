@@ -199,6 +199,45 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Get user's joined groups
+    const userGroups = await prisma.groupMember.findMany({
+      where: {
+        userId
+      },
+      include: {
+        group: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            avatar: true,
+            type: true,
+            isActive: true
+          }
+        }
+      },
+      orderBy: { joinedAt: 'desc' }
+    })
+
+    // Get member count for each group
+    const myGroups = await Promise.all(
+      userGroups.filter(ug => ug.group.isActive).map(async (ug) => {
+        const memberCount = await prisma.groupMember.count({
+          where: { groupId: ug.group.id }
+        })
+        
+        return {
+          id: ug.group.id,
+          name: ug.group.name,
+          description: ug.group.description,
+          image: ug.group.avatar,
+          type: ug.group.type,
+          memberCount,
+          joinedAt: ug.joinedAt.toISOString()
+        }
+      })
+    )
+
     // Get certificates count
     const certificatesCount = await prisma.certificate.count({
       where: { userId }
@@ -238,6 +277,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       courses,
       groups,
+      myGroups,
       events: events.map(e => ({
         id: e.id,
         title: e.title,
