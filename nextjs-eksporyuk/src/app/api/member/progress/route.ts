@@ -94,9 +94,6 @@ export async function GET(request: NextRequest) {
     // Filter out null entries
     const validCourses = courses.filter(course => course !== null)
 
-    // Filter out null entries
-    const validCourses = courses.filter(course => course !== null)
-
     // Calculate overall statistics
     const stats = {
       totalCourses: validCourses.length,
