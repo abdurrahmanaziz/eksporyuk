@@ -100,15 +100,16 @@ export default function DashboardPage() {
         recentEarnings: dashboard.affiliate?.recentEarnings || 0,
         tier: dashboard.affiliate?.tier || 1,
         commissionRate: Number(dashboard.affiliate?.commissionRate) || 10,
-        affiliateCode: dashboard.affiliate?.affiliateCode || '',
-        shortLink: dashboard.affiliate?.shortLink || '',
+        affiliateCode: stats.affiliateCode || dashboard.affiliate?.affiliateCode || '',
+        shortLink: stats.shortLink || dashboard.affiliate?.shortLink || '',
         walletBalance: dashboard.affiliate?.walletBalance || stats.availableBalance || 0,
       }
     },
     enabled: status === 'authenticated',
-    staleTime: 15 * 1000,
-    refetchInterval: 30000, // Realtime: refresh every 30 seconds
+    staleTime: 0, // Always fresh for realtime link updates
+    refetchInterval: 15000, // Refetch every 15 seconds for realtime
     refetchOnWindowFocus: true,
+    refetchOnMount: true,
   })
 
   const { data: challengesData } = useQuery({
