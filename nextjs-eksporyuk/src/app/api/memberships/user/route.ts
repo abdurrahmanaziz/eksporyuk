@@ -32,47 +32,7 @@ export async function GET(request: NextRequest) {
         }
       },
       include: {
-        membership: {
-          include: {
-            membershipGroups: {
-              include: {
-                group: {
-                  select: {
-                    id: true,
-                    name: true,
-                    description: true
-                  }
-                }
-              }
-            },
-            membershipCourses: {
-              include: {
-                course: {
-                  select: {
-                    id: true,
-                    title: true,
-                    slug: true,
-                    description: true,
-                    thumbnail: true
-                  }
-                }
-              }
-            },
-            membershipProducts: {
-              include: {
-                product: {
-                  select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    description: true,
-                    thumbnail: true
-                  }
-                }
-              }
-            }
-          }
-        },
+        membership: true,
         transaction: {
           select: {
             id: true,
@@ -131,12 +91,7 @@ export async function GET(request: NextRequest) {
           duration: (userMembership as any).membership.duration,
           price: (userMembership as any).membership.price,
           originalPrice: (userMembership as any).membership.originalPrice,
-          features,
-          
-          // Access to groups, courses, products
-          groups: (userMembership as any).membership.membershipGroups.map((mg: any) => mg.group),
-          courses: (userMembership as any).membership.membershipCourses.map((mc: any) => mc.course),
-          products: (userMembership as any).membership.membershipProducts.map((mp: any) => mp.product)
+          features
         },
         
         transaction: (userMembership as any).transaction,
@@ -152,8 +107,10 @@ export async function GET(request: NextRequest) {
     
   } catch (error: any) {
     console.error('Error fetching user membership:', error)
+    console.error('Error stack:', error.stack)
+    console.error('Error details:', JSON.stringify(error, null, 2))
     return NextResponse.json(
-      { error: 'Failed to fetch membership', details: error.message },
+      { error: 'Failed to fetch membership', details: error.message, stack: error.stack },
       { status: 500 }
     )
   }
