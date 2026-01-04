@@ -42,32 +42,26 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Get wallet
+    // Get wallet - SOURCE OF TRUTH for balance
     const wallet = await prisma.wallet.findUnique({
       where: { userId: session.user.id },
     })
 
-    // Get all conversions for balance calculation
-    const allConversions = await prisma.affiliateConversion.findMany({
+    // Get total earnings from AffiliateConversion for display
+    const totalConversions = await prisma.affiliateConversion.aggregate({
       where: {
         affiliateId: affiliateProfile.id,
       },
-      select: {
+      _sum: {
         commissionAmount: true,
-        paidOut: true,
       },
     })
 
-    const totalEarnings = allConversions.reduce(
-      (sum, c) => sum + Number(c.commissionAmount),
-      0
-    )
+    const totalEarnings = Number(totalConversions._sum.commissionAmount || 0)
 
-    const paidOutTotal = allConversions
-      .filter(c => c.paidOut)
-      .reduce((sum, c) => sum + Number(c.commissionAmount), 0)
-
-    const available = totalEarnings - paidOutTotal
+    // Available balance from Wallet (source of truth)
+    // Wallet.balance is the actual available balance
+    const walletBalance = Number(wallet?.balance || 0)
 
     // Get pending payouts
     const pendingPayouts = await prisma.payout.findMany({
@@ -123,9 +117,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       balance: {
-        available: available - pending,
+        // Available = wallet balance minus any pending payout requests
+        available: walletBalance - pending,
         pending,
         totalEarnings,
+        // Also include raw wallet balance for transparency
+        walletBalance,
         minPayout: MIN_PAYOUT,
       },
       payouts,

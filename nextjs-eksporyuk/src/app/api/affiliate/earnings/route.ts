@@ -64,7 +64,12 @@ export async function GET(request: NextRequest) {
       whereClause.createdAt = { gte: startDate }
     }
 
-    // Get all conversions for summary
+    // Get wallet for balance (source of truth)
+    const wallet = await prisma.wallet.findUnique({
+      where: { userId: session.user.id },
+    })
+
+    // Get all conversions for summary statistics
     const allConversions = await prisma.affiliateConversion.findMany({
       where: {
         affiliateId: affiliateProfile.id,
@@ -88,8 +93,9 @@ export async function GET(request: NextRequest) {
       .filter(c => !c.paidOut)
       .reduce((sum, c) => sum + Number(c.commissionAmount), 0)
 
-    // Available = pending (bisa ditarik jika sudah memenuhi minimum)
-    const available = pending
+    // Available = wallet balance (source of truth)
+    // This is the actual amount that can be withdrawn
+    const available = Number(wallet?.balance || 0)
 
     // Get filtered transactions
     const transactions = await prisma.affiliateConversion.findMany({
