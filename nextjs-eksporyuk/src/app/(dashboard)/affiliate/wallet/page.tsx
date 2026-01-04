@@ -109,7 +109,7 @@ export default function UserWalletPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-orange-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Memuat saldo...</p>
         </div>
       </div>
@@ -217,22 +217,22 @@ export default function UserWalletPage() {
     <ResponsivePageWrapper>
     <div className="space-y-6">
       {/* Header Card */}
-      <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
         
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-8">
             <div>
-              <p className="text-orange-100 text-sm font-medium mb-1">Saldo Wallet</p>
-              <h1 className="text-5xl font-bold mb-2">
+              <p className="text-blue-100 text-sm font-medium mb-1">Saldo Wallet</p>
+              <h1 className="text-5xl font-bold mb-2 text-white">
                 Rp {wallet?.balance.toLocaleString('id-ID') || '0'}
               </h1>
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
                   {getRoleName(session?.user?.role || '')}
                 </span>
-                <span className="text-orange-100 text-sm">{session?.user?.name}</span>
+                <span className="text-blue-100 text-sm">{session?.user?.name}</span>
               </div>
             </div>
             <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
@@ -246,9 +246,9 @@ export default function UserWalletPage() {
                 <div className="w-8 h-8 bg-green-400/30 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 text-green-100" />
                 </div>
-                <span className="text-xs text-orange-100 font-medium">Total Penghasilan</span>
+                <span className="text-xs text-blue-100 font-medium">Total Penghasilan</span>
               </div>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-white">
                 Rp {wallet?.totalEarnings.toLocaleString('id-ID') || '0'}
               </p>
             </div>
@@ -258,9 +258,9 @@ export default function UserWalletPage() {
                 <div className="w-8 h-8 bg-red-400/30 rounded-lg flex items-center justify-center">
                   <TrendingDown className="w-4 h-4 text-red-100" />
                 </div>
-                <span className="text-xs text-orange-100 font-medium">Total Penarikan</span>
+                <span className="text-xs text-blue-100 font-medium">Total Penarikan</span>
               </div>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-white">
                 Rp {wallet?.totalPayouts.toLocaleString('id-ID') || '0'}
               </p>
             </div>
@@ -271,11 +271,11 @@ export default function UserWalletPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <button 
-          className="bg-white p-6 rounded-xl shadow-sm border-2 border-orange-100 hover:border-orange-300 hover:shadow-md transition-all group"
+          className="bg-white p-6 rounded-xl shadow-sm border-2 border-blue-100 hover:border-blue-300 hover:shadow-md transition-all group"
           onClick={() => setShowWithdrawModal(true)}
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
               <ArrowUpRight className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
@@ -335,7 +335,7 @@ export default function UserWalletPage() {
 
       {/* Transactions List */}
       <div className="bg-white rounded-xl shadow-sm border-2 border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-orange-50 to-white border-b-2 border-orange-100">
+        <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-white border-b-2 border-blue-100">
           <h2 className="text-lg font-bold text-gray-900">Riwayat Transaksi</h2>
           <p className="text-sm text-gray-600 mt-1">
             {wallet?.transactions?.length || 0} transaksi ditemukan
@@ -355,7 +355,7 @@ export default function UserWalletPage() {
             wallet.transactions.map((tx) => (
               <div
                 key={tx.id}
-                className="p-6 hover:bg-orange-50/50 transition-colors cursor-pointer"
+                className="p-6 hover:bg-blue-50/50 transition-colors cursor-pointer"
                 onClick={() => setSelectedTransaction(tx)}
               >
                 <div className="flex items-start justify-between">
@@ -413,11 +413,11 @@ export default function UserWalletPage() {
       {selectedTransaction && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-xl font-bold">Detail Transaksi</h3>
-                  <p className="text-orange-100 text-sm mt-1">ID: {selectedTransaction.id.slice(0, 8)}...</p>
+                  <p className="text-blue-100 text-sm mt-1">ID: {selectedTransaction.id.slice(0, 8)}...</p>
                 </div>
                 <button
                   onClick={() => setSelectedTransaction(null)}
@@ -490,7 +490,7 @@ export default function UserWalletPage() {
             <div className="px-6 pb-6">
               <button
                 onClick={() => setSelectedTransaction(null)}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm hover:shadow-md"
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md"
               >
                 Tutup
               </button>
@@ -503,11 +503,11 @@ export default function UserWalletPage() {
       {showWithdrawModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-xl font-bold">Ajukan Penarikan</h3>
-                  <p className="text-orange-100 text-sm mt-1">Cairkan saldo ke rekening bank Anda</p>
+                  <p className="text-blue-100 text-sm mt-1">Cairkan saldo ke rekening bank Anda</p>
                 </div>
                 <button
                   onClick={() => setShowWithdrawModal(false)}
@@ -520,9 +520,9 @@ export default function UserWalletPage() {
 
             <form onSubmit={handleWithdraw} className="p-6 space-y-4">
               {/* Available Balance */}
-              <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4">
-                <p className="text-sm text-orange-600 font-medium mb-1">Saldo Tersedia</p>
-                <p className="text-3xl font-bold text-orange-600">
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <p className="text-sm text-blue-600 font-medium mb-1">Saldo Tersedia</p>
+                <p className="text-3xl font-bold text-blue-600">
                   Rp {wallet?.balance.toLocaleString('id-ID') || '0'}
                 </p>
               </div>
@@ -540,7 +540,7 @@ export default function UserWalletPage() {
                   max={wallet?.balance || 0}
                   step="1000"
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                   placeholder={`Minimal Rp ${(withdrawalSettings?.withdrawalMinAmount || 50000).toLocaleString('id-ID')}`}
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -559,7 +559,7 @@ export default function UserWalletPage() {
                   value={withdrawForm.bankName}
                   onChange={(e) => setWithdrawForm({ ...withdrawForm, bankName: e.target.value })}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                 >
                   <option value="">Pilih Bank</option>
                   <option value="BCA">BCA</option>
@@ -592,7 +592,7 @@ export default function UserWalletPage() {
                   value={withdrawForm.accountName}
                   onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                   placeholder="Sesuai dengan rekening bank"
                 />
               </div>
@@ -607,7 +607,7 @@ export default function UserWalletPage() {
                   value={withdrawForm.accountNumber}
                   onChange={(e) => setWithdrawForm({ ...withdrawForm, accountNumber: e.target.value.replace(/\D/g, '') })}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                   placeholder="Nomor rekening bank"
                 />
               </div>
@@ -621,7 +621,7 @@ export default function UserWalletPage() {
                   value={withdrawForm.notes}
                   onChange={(e) => setWithdrawForm({ ...withdrawForm, notes: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
                   placeholder="Catatan tambahan untuk admin (opsional)"
                 />
               </div>
@@ -638,7 +638,7 @@ export default function UserWalletPage() {
                 <button
                   type="submit"
                   disabled={withdrawing}
-                  className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm hover:shadow-md disabled:opacity-50"
+                  className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md disabled:opacity-50"
                 >
                   {withdrawing ? 'Mengirim...' : 'Ajukan Penarikan'}
                 </button>
