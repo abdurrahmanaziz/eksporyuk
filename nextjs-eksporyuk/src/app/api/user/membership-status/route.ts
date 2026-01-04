@@ -25,22 +25,30 @@ export async function GET() {
         isActive: true,
         status: 'ACTIVE'
       },
-      include: {
-        membership: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            duration: true
-          }
-        }
-      },
       orderBy: {
         endDate: 'desc'
       }
     })
 
     if (!userMembership) {
+      return NextResponse.json({
+        hasMembership: false,
+        membership: null
+      })
+    }
+
+    // Fetch membership details separately
+    const membershipPlan = await prisma.membership.findUnique({
+      where: { id: userMembership.membershipId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        duration: true
+      }
+    })
+
+    if (!membershipPlan) {
       return NextResponse.json({
         hasMembership: false,
         membership: null
@@ -54,15 +62,15 @@ export async function GET() {
 
     const isExpired = diffMs <= 0
     const isExpiringSoon = daysRemaining <= 7 && daysRemaining > 0
-    const isLifetime = userMembership.membership.duration === 'LIFETIME'
+    const isLifetime = membershipPlan.duration === 'LIFETIME'
 
     return NextResponse.json({
       hasMembership: true,
       membership: {
         id: userMembership.id,
         membershipId: userMembership.membershipId,
-        name: userMembership.membership.name,
-        slug: userMembership.membership.slug,
+        name: membershipPlan.name,
+        slug: membershipPlan.slug,
         startDate: userMembership.startDate.toISOString(),
         endDate: userMembership.endDate.toISOString(),
         daysRemaining: Math.max(0, daysRemaining),
