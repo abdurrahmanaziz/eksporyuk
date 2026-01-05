@@ -930,15 +930,16 @@ export default function AdminSalesPage() {
                         )}
                       </Button>
                     </TableHead>
-                    <TableHead className="w-[130px]">Invoice</TableHead>
-                    <TableHead className="w-[200px]">Tipe Produk</TableHead>
-                    <TableHead className="w-[180px]">Pembeli</TableHead>
-                    <TableHead className="w-[140px]">Affiliate</TableHead>
-                    <TableHead className="w-[110px]">Jumlah</TableHead>
-                    <TableHead className="w-[110px]">Komisi</TableHead>
-                    <TableHead className="w-[90px]">Follow Up</TableHead>
-                    <TableHead className="w-[90px]">Status</TableHead>
-                    <TableHead className="w-[90px]">Aksi</TableHead>
+                    <TableHead className="w-[80px]">Invoice</TableHead>
+                    <TableHead className="w-[150px]">Membership</TableHead>
+                    <TableHead className="w-[100px]">Kupon</TableHead>
+                    <TableHead className="w-[120px]">Pembeli</TableHead>
+                    <TableHead className="w-[120px]">Affiliate</TableHead>
+                    <TableHead className="w-[100px]">Jumlah</TableHead>
+                    <TableHead className="w-[100px]">Komisi</TableHead>
+                    <TableHead className="w-[80px]">Follow Up</TableHead>
+                    <TableHead className="w-[80px]">Status</TableHead>
+                    <TableHead className="w-[80px]">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -979,44 +980,38 @@ export default function AdminSalesPage() {
                         </TableCell>
 
                         {/* Tipe Produk */}
+                        {/* Membership */}
                         <TableCell>
-                          <div className="space-y-1.5">
-                            {/* Product Badge & Name */}
-                            <div className="space-y-1">
-                              <Badge 
-                                variant="outline" 
-                                className={
-                                  tx.type === 'MEMBERSHIP' ? 'bg-purple-50 text-purple-700 border-purple-300 font-semibold text-xs' :
-                                  tx.type === 'COURSE' ? 'bg-blue-50 text-blue-700 border-blue-300 text-xs' :
-                                  tx.type === 'EVENT' ? 'bg-orange-50 text-orange-700 border-orange-300 text-xs' :
-                                  'bg-green-50 text-green-700 border-green-300 text-xs'
-                                }
-                              >
-                                {tx.type === 'MEMBERSHIP' ? 'Membership' :
-                                 tx.type === 'EVENT' ? 'Event' :
-                                 tx.type === 'PRODUCT' ? 'Produk Digital' :
-                                 tx.type === 'COURSE' ? 'Kursus' : tx.type}
+                          <div className="text-sm font-medium">
+                            {productName}
+                          </div>
+                          {paymentUrl && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2 text-xs bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100 mt-1"
+                              onClick={() => window.open(paymentUrl, '_blank')}
+                              title="Buka Link Pembayaran"
+                            >
+                              <CreditCard className="w-3 h-3 mr-1" />
+                              Bayar
+                            </Button>
+                          )}
+                        </TableCell>
+
+                        {/* Kupon */}
+                        <TableCell>
+                          <div className="text-sm">
+                            {tx.coupon?.code ? (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                                {tx.coupon.code}
                               </Badge>
-                              
-                              {/* Product Name - Nama/Judul dari Membership/Produk */}
-                              <div className="text-sm font-medium text-gray-900">{productName}</div>
-                              
-                              {/* Payment Button if pending */}
-                              {paymentUrl && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-7 px-2 text-xs bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100 mt-1"
-                                  onClick={() => window.open(paymentUrl, '_blank')}
-                                  title="Buka Link Pembayaran"
-                                >
-                                  <CreditCard className="w-3 h-3 mr-1" />
-                                  Bayar
-                                </Button>
-                              )}
-                            </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </div>
                         </TableCell>
+
 
                         {/* Pembeli */}
                         <TableCell>
