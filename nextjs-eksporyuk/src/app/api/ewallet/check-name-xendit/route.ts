@@ -106,9 +106,3 @@ export async function POST(request: NextRequest) {
     }, { status: 500 })
   }
 }
-      accountName: 'User Account',
-      source: 'fallback',
-      message: 'Using fallback validation (service temporarily unavailable)'
-    })
-  }
-}

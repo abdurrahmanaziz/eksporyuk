@@ -930,10 +930,9 @@ export default function AdminSalesPage() {
                         )}
                       </Button>
                     </TableHead>
-                    <TableHead className="w-[80px]">Invoice</TableHead>
-                    <TableHead className="w-[150px]">Membership</TableHead>
-                    <TableHead className="w-[100px]">Kupon</TableHead>
-                    <TableHead className="w-[120px]">Pembeli</TableHead>
+                    <TableHead className="w-[130px]">Invoice</TableHead>
+                    <TableHead className="w-[250px]">Tipe Produk</TableHead>
+                    <TableHead className="w-[180px]">Pembeli</TableHead>
                     <TableHead className="w-[120px]">Affiliate</TableHead>
                     <TableHead className="w-[100px]">Jumlah</TableHead>
                     <TableHead className="w-[100px]">Komisi</TableHead>
@@ -980,35 +979,50 @@ export default function AdminSalesPage() {
                         </TableCell>
 
                         {/* Tipe Produk */}
-                        {/* Membership */}
+                        {/* Tipe Produk */}
                         <TableCell>
-                          <div className="text-sm font-medium">
-                            {productName}
-                          </div>
-                          {paymentUrl && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 px-2 text-xs bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100 mt-1"
-                              onClick={() => window.open(paymentUrl, '_blank')}
-                              title="Buka Link Pembayaran"
+                          <div className="space-y-1.5">
+                            {/* Badge Type */}
+                            <Badge 
+                              variant="outline" 
+                              className={
+                                tx.type === 'MEMBERSHIP' ? 'bg-purple-50 text-purple-700 border-purple-300 font-semibold text-xs' :
+                                tx.type === 'COURSE' ? 'bg-blue-50 text-blue-700 border-blue-300 text-xs' :
+                                tx.type === 'EVENT' ? 'bg-orange-50 text-orange-700 border-orange-300 text-xs' :
+                                'bg-green-50 text-green-700 border-green-300 text-xs'
+                              }
                             >
-                              <CreditCard className="w-3 h-3 mr-1" />
-                              Bayar
-                            </Button>
-                          )}
-                        </TableCell>
-
-                        {/* Kupon */}
-                        <TableCell>
-                          <div className="text-sm">
-                            {tx.coupon?.code ? (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-                                {tx.coupon.code}
-                              </Badge>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
+                              {tx.type === 'MEMBERSHIP' ? 'Membership' :
+                               tx.type === 'EVENT' ? 'Event' :
+                               tx.type === 'PRODUCT' ? 'Produk Digital' :
+                               tx.type === 'COURSE' ? 'Kursus' : tx.type}
+                            </Badge>
+                            
+                            {/* Product Name */}
+                            <div className="text-sm font-medium text-gray-900">{productName}</div>
+                            
+                            {/* Bayar Button + Kupon */}
+                            <div className="flex items-center gap-2 mt-2">
+                              {paymentUrl && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 px-2 text-xs bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
+                                  onClick={() => window.open(paymentUrl, '_blank')}
+                                  title="Buka Link Pembayaran"
+                                >
+                                  <CreditCard className="w-3 h-3 mr-1" />
+                                  Bayar
+                                </Button>
+                              )}
+                              
+                              {/* Kupon Badge */}
+                              {tx.coupon?.code && (
+                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 text-xs">
+                                  {tx.coupon.code}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
 
