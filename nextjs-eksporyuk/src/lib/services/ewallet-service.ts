@@ -213,6 +213,7 @@ export class EWalletService {
 
   /**
    * Normalize Indonesian phone number
+   * Keep original format for e-wallet (08xxx), don't force 62xxx conversion
    */
   private normalizePhoneNumber(phone: string): string {
     // Remove all non-digits first
@@ -223,23 +224,20 @@ export class EWalletService {
       return normalized
     }
     
-    // Convert 0xxx to 62xxx
-    if (normalized.startsWith('0')) {
-      normalized = '62' + normalized.substring(1)
-    }
-    // Add 62 if missing and doesn't start with 62
-    else if (!normalized.startsWith('62')) {
-      normalized = '62' + normalized
+    // For Indonesian mobile numbers starting with 0, keep original format
+    // E-wallets work with 08xxx format, not 62xxx
+    if (normalized.startsWith('0') && normalized.length >= 11 && normalized.charAt(1) === '8') {
+      return normalized  // Keep 08118748177 as is
     }
     
-    // Validate Indonesian mobile number pattern (62-8xx-xxxx-xxxx)
+    // If starts with +62, convert to 08xxx format
     if (normalized.startsWith('62') && normalized.length >= 12 && normalized.charAt(2) === '8') {
-      return normalized
+      return '0' + normalized.substring(2)  // 628118748177 → 08118748177
     }
     
-    // If it's just 8xxx format, add 62
+    // If it's just 8xxx format, add 0
     if (normalized.startsWith('8') && normalized.length >= 10) {
-      return '62' + normalized
+      return '0' + normalized  // 8118748177 → 08118748177
     }
     
     return normalized
@@ -267,50 +265,88 @@ export class EWalletService {
     // Comprehensive mock data - covers common patterns and test numbers
     const mockAccounts: Record<string, Record<string, string>> = {
       'OVO': {
+        '08123456789': 'John Doe',
+        '08987654321': 'Jane Smith', 
+        '08111222333': 'Ahmad Rizki',
+        '08118748177': 'Abdurrahman Aziz',  // Original format
+        '081187481771': 'Abdurrahman Aziz',
+        '081187481772': 'Rahman Aziz',
+        '08112345678': 'Test User OVO',
+        '08551234567': 'Demo Account',
+        '08811223344': 'Sample User',
+        // Keep 62xxx for backward compatibility
         '628123456789': 'John Doe',
         '628987654321': 'Jane Smith', 
         '628111222333': 'Ahmad Rizki',
         '628118748177': 'Abdurrahman Aziz',
         '6281187481771': 'Abdurrahman Aziz',
-        '6281187481772': 'Rahman Aziz',
-        '628112345678': 'Test User OVO',
-        '628551234567': 'Demo Account',
-        '628811223344': 'Sample User'
+        '6281187481772': 'Rahman Aziz'
       },
       'GoPay': {
+        '08123456789': 'Budi Santoso',
+        '08987654321': 'Siti Nurhaliza',
+        '08111222333': 'Andi Wijaya', 
+        '08118748177': 'Rahman Abdul',  // Original format
+        '081187481771': 'Rahman Abdul',
+        '081187481772': 'Abdul Rahman',
+        '08112345678': 'Test User GoPay',
+        '08551234567': 'Demo GoPay',
+        '08811223344': 'Sample GoPay',
+        // Keep 62xxx for backward compatibility
         '628123456789': 'Budi Santoso',
         '628987654321': 'Siti Nurhaliza',
         '628111222333': 'Andi Wijaya', 
         '628118748177': 'Rahman Abdul',
         '6281187481771': 'Rahman Abdul',
-        '6281187481772': 'Abdul Rahman',
-        '628112345678': 'Test User GoPay',
-        '628551234567': 'Demo GoPay',
-        '628811223344': 'Sample GoPay'
+        '6281187481772': 'Abdul Rahman'
       },
       'DANA': {
+        '08123456789': 'Charlie Brown',
+        '08987654321': 'Diana Prince',
+        '08111222333': 'Erik Johnson',
+        '08118748177': 'Aziz Rahman',  // Original format - ini yang dicari!
+        '081187481771': 'Aziz Rahman',
+        '081187481772': 'Rahman Aziz',
+        '08112345678': 'Test User DANA',
+        '08551234567': 'Demo DANA',
+        '08811223344': 'Sample DANA',
+        // Keep 62xxx for backward compatibility
         '628123456789': 'Charlie Brown',
         '628987654321': 'Diana Prince',
         '628111222333': 'Erik Johnson',
         '628118748177': 'Aziz Rahman',
         '6281187481771': 'Aziz Rahman',
-        '6281187481772': 'Rahman Aziz',
-        '628112345678': 'Test User DANA',
-        '628551234567': 'Demo DANA',
-        '628811223344': 'Sample DANA'
+        '6281187481772': 'Rahman Aziz'
       },
       'LinkAja': {
+        '08123456789': 'Frank Castle',
+        '08987654321': 'Grace Kelly',
+        '08111222333': 'Henry Ford',
+        '08118748177': 'Rahman Aziz',  // Original format
+        '081187481771': 'Rahman Aziz', 
+        '081187481772': 'Aziz Rahman',
+        '08112345678': 'Test User LinkAja',
+        '08551234567': 'Demo LinkAja',
+        '08811223344': 'Sample LinkAja',
+        // Keep 62xxx for backward compatibility
         '628123456789': 'Frank Castle',
         '628987654321': 'Grace Kelly',
         '628111222333': 'Henry Ford',
         '628118748177': 'Rahman Aziz',
         '6281187481771': 'Rahman Aziz', 
-        '6281187481772': 'Aziz Rahman',
-        '628112345678': 'Test User LinkAja',
-        '628551234567': 'Demo LinkAja',
-        '628811223344': 'Sample LinkAja'
+        '6281187481772': 'Aziz Rahman'
       },
       'ShopeePay': {
+        '08123456789': 'Ivan Petrov',
+        '08987654321': 'Julia Roberts',
+        '08111222333': 'Kevin Hart',
+        '08118748177': 'Abdur Rahman',  // Original format
+        '081187481771': 'Abdur Rahman',
+        '081187481772': 'Rahman Abdul',
+        '08112345678': 'Test User ShopeePay',
+        '08551234567': 'Demo ShopeePay',
+        '08811223344': 'Sample ShopeePay',
+        // Keep 62xxx for backward compatibility
         '628123456789': 'Ivan Petrov',
         '628987654321': 'Julia Roberts',
         '628111222333': 'Kevin Hart',
