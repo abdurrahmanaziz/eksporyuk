@@ -140,12 +140,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Xendit payout
+    console.log('[XENDIT PAYOUT] Initializing Xendit service with user:', {
+      userId: session.user.id,
+      userEmail: session.user.email,
+      amount: netAmount,
+      bankName: bankName
+    })
     const xenditPayout = new XenditPayout()
     
     // For banks, convert bank name to bank code
     const bankCode = getBankCode(bankName)
+    console.log('[XENDIT PAYOUT] Bank code mapping:', { bankName, bankCode })
     
     try {
+      console.log('[XENDIT PAYOUT] Creating payout request with:', {
+        referenceId: `bank_${session.user.id}_${Date.now()}`,
+        channelCode: bankCode,
+        amount: netAmount,
+        accountHolderName: accountName,
+        accountNumber: accountNumber,
+        userSession: {
+          id: session.user.id,
+          name: session.user.name || 'Unknown'
+        }
+      })
+      
       const payout = await xenditPayout.createPayout({
         referenceId: `bank_${session.user.id}_${Date.now()}`,
         channelCode: bankCode,
@@ -155,11 +174,18 @@ export async function POST(request: NextRequest) {
         },
         amount: netAmount,
         currency: 'IDR',
-        description: `Bank transfer payout - ${session.user.name}`,
+        description: `Bank transfer payout - ${session.user?.name || session.user?.email || 'User'}`,
         metadata: {
           userId: session.user.id,
           type: 'bank_transfer'
         }
+      })
+      
+      console.log('[XENDIT PAYOUT] Payout created successfully:', {
+        id: payout.id,
+        referenceId: payout.referenceId,
+        status: payout.status,
+        amount: netAmount
       })
 
       // Create payout record with Xendit ID
@@ -256,7 +282,14 @@ export async function POST(request: NextRequest) {
       throw xenditError // Re-throw to be caught by outer try-catch
     }
   } catch (error) {
-    console.error('[BANK TRANSFER WITHDRAWAL ERROR]', error)
+    console.error('[BANK TRANSFER WITHDRAWAL ERROR] Full error details:', {
+      message: error?.message,
+      code: error?.code,
+      status: error?.status,
+      response: error?.response,
+      stack: error?.stack,
+      type: error?.constructor?.name
+    })
     
     // Handle Xendit specific errors
     if (error.message?.includes('DUPLICATE_REFERENCE_ID')) {
@@ -280,8 +313,16 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Return more specific error information for debugging
+    const errorMessage = error?.message || 'Gagal memproses bank transfer otomatis'
+    console.error('[BANK TRANSFER WITHDRAWAL ERROR] Returning error response:', errorMessage)
+    
     return NextResponse.json(
-      { error: 'Gagal memproses bank transfer otomatis' },
+      { 
+        error: 'Gagal memproses bank transfer otomatis',
+        details: errorMessage,
+        code: error?.code || 'UNKNOWN_ERROR'
+      },
       { status: 500 }
     )
   }

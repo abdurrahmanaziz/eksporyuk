@@ -1,68 +1,77 @@
 import { prisma } from './prisma'
 
 /**
+ * Extract numeric part from any invoice format
+ * Handles: INV-0001, INV19300, 1M617767967563, etc.
+ */
+function extractInvoiceNumber(invoiceStr: string): number {
+  if (!invoiceStr) return 0;
+  
+  // Try INV-XXXX format first
+  let match = invoiceStr.match(/INV-(\d+)/);
+  if (match && match[1]) {
+    return parseInt(match[1], 10);
+  }
+  
+  // Try INVXXXXX format
+  match = invoiceStr.match(/INV(\d+)/);
+  if (match && match[1]) {
+    return parseInt(match[1], 10);
+  }
+  
+  // Try pulling just the numbers
+  const numbers = invoiceStr.replace(/\D/g, '');
+  if (numbers) {
+    return parseInt(numbers, 10);
+  }
+  
+  return 0;
+}
+
+/**
  * Generate unique invoice number with sequential format
- * Format: INV-XXXX (with dash and leading zeros)
- * Example: INV-0001, INV-0002, INV-0003...
+ * Format: INV-XXXXX (with dash, continue from highest existing number)
+ * Example: INV-00001, INV-00002, INV-12906, INV-12907...
  * 
  * Uses database to track highest number to ensure proper sequencing
  */
 export async function generateInvoiceNumber(): Promise<string> {
   try {
-    // Get the last 1000 transactions to find max number across both formats
-    const recentTransactions = await prisma.transaction.findMany({
+    // Get ALL transactions with invoiceNumber to find absolute max
+    const allTransactions = await prisma.transaction.findMany({
       where: { 
         invoiceNumber: { not: null }
       },
       select: { invoiceNumber: true },
       orderBy: { createdAt: 'desc' },
-      take: 1000
+      take: 5000  // Get more to be safe
     })
 
     let maxNumber = 0;
 
-    // Parse both old format (INV19300) and new format (INV-0001)
-    for (const tx of recentTransactions) {
+    // Parse all invoice formats to find highest numeric value
+    for (const tx of allTransactions) {
       if (!tx.invoiceNumber) continue;
       
-      // Try new format first: INV-XXXX
-      let match = tx.invoiceNumber.match(/^INV-(\d+)$/);
-      if (match && match[1]) {
-        const num = parseInt(match[1], 10);
-        if (num > maxNumber) maxNumber = num;
-        continue;
-      }
-      
-      // Try old Sejoli format: INVXXXXX
-      match = tx.invoiceNumber.match(/^INV(\d+)$/);
-      if (match && match[1]) {
-        const numStr = match[1];
-        // If it's a large number from Sejoli (5+ digits), use it as base
-        if (numStr.length >= 5) {
-          const num = parseInt(numStr, 10);
-          if (num > maxNumber) maxNumber = num;
-        }
+      const num = extractInvoiceNumber(tx.invoiceNumber);
+      if (num > maxNumber) {
+        maxNumber = num;
       }
     }
 
-    // Next invoice number
-    // If we have no previous numbers, start from 1
-    // If we had old format (high numbers), continue from there
-    // Otherwise continue sequential
-    const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1;
+    // Next invoice number is always max + 1
+    const nextNumber = maxNumber + 1;
 
-    // Format with leading zeros (4 digits minimum for new format)
-    if (maxNumber > 9999) {
-      // If we inherited high Sejoli numbers, don't pad (continue in 5+ digit format)
-      return `INV-${nextNumber}`;
+    // Format: INV-XXXXX (5 digits minimum to accommodate high numbers)
+    if (nextNumber <= 9999) {
+      return `INV-${String(nextNumber).padStart(5, '0')}`;
     } else {
-      // New system: use 4-digit format with leading zeros
-      return `INV-${String(nextNumber).padStart(4, '0')}`;
+      return `INV-${nextNumber}`;
     }
   } catch (error) {
     console.error('Error generating invoice number:', error);
-    // Fallback: use timestamp-based ID
-    return `INV-${Date.now().toString().slice(-6)}`;
+    // Fallback
+    return `INV-${Date.now().toString().slice(-5)}`;
   }
 }
 
@@ -94,4 +103,38 @@ export async function getNextInvoiceNumber(maxRetries: number = 5): Promise<stri
   
   // Ultimate fallback if all retries fail
   return `INV${Date.now().toString().slice(-8)}`
+}
+
+/**
+ * Format invoice number for display
+ * Ensures consistent format: INV-XXXXX
+ * Handles both new format (INV-12906) and old formats (INV19300, 1M617767967563, etc.)
+ */
+export function formatInvoiceForDisplay(invoiceNumber: string | null | undefined, fallbackId?: string): string {
+  if (!invoiceNumber) {
+    // Fallback: use transaction ID if no invoice number
+    if (fallbackId) {
+      return `INV-${fallbackId.slice(0, 5).toUpperCase()}`;
+    }
+    return 'INV-????';
+  }
+
+  // If already in correct format INV-XXXXX, return as-is
+  if (invoiceNumber.match(/^INV-\d+$/)) {
+    return invoiceNumber;
+  }
+
+  // Extract number and reformat
+  const num = extractInvoiceNumber(invoiceNumber);
+  if (num > 0) {
+    // Format with leading zeros if 4 digits or less
+    if (num <= 9999) {
+      return `INV-${String(num).padStart(5, '0')}`;
+    } else {
+      return `INV-${num}`;
+    }
+  }
+
+  // Ultimate fallback
+  return invoiceNumber;
 }

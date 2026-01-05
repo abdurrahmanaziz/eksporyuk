@@ -30,7 +30,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`[E-Wallet Check] ${provider} - ${phoneNumber} - User: ${session.user.email}`)
+    // Validate provider is in allowed list
+    const allowedProviders = ['OVO', 'GoPay', 'DANA', 'LinkAja', 'ShopeePay']
+    if (!allowedProviders.includes(provider)) {
+      return NextResponse.json(
+        { error: `Provider tidak didukung. Gunakan: ${allowedProviders.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    console.log(`[E-Wallet Check] ${provider} - ${phoneNumber} - User: ${session.user.id}/${session.user.email}`)
 
     // Normalize phone number for consistency
     const normalizedPhone = phoneNumber.startsWith('0') ? phoneNumber : `0${phoneNumber.replace(/^\+?62/, '')}`

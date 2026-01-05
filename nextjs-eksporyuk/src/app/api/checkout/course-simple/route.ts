@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { xenditService } from '@/lib/xendit'
+import { generateInvoiceNumber } from '@/lib/invoice-generator'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -217,9 +218,11 @@ export async function POST(request: NextRequest) {
       })
 
       // Create free transaction record
+      const invoiceNumberFree = await generateInvoiceNumber()
       await prisma.transaction.create({
         data: {
           externalId: `COURSE-FREE-${Date.now()}`,
+          invoiceNumber: invoiceNumberFree,
           userId: session.user.id,
           type: 'COURSE',
           courseId: course.id,
