@@ -127,7 +127,7 @@ export async function GET(req: NextRequest) {
       slug: g.slug || g.id,
       name: g.name,
       description: g.description || '',
-      thumbnail: g.avatar || null,
+      image: g.avatar || null,
       memberCount: userGroupMemberCounts[i] || 0,
       isUserMember: true
     }))
@@ -138,7 +138,7 @@ export async function GET(req: NextRequest) {
       slug: g.slug || g.id,
       name: g.name,
       description: g.description || '',
-      thumbnail: g.avatar || null,
+      image: g.avatar || null,
       memberCount: newGroupMemberCounts[i] || 0,
       isUserMember: false
     }))

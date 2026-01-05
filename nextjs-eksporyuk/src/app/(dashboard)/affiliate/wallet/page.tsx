@@ -85,12 +85,16 @@ export default function UserWalletPage() {
 
   const fetchWithdrawalSettings = async () => {
     try {
-      const response = await fetch('/api/settings/withdrawal')
+      const response = await fetch('/api/settings/withdrawal?t=' + Date.now(), {
+        cache: 'no-store'
+      })
       const data = await response.json()
+      console.log('Withdrawal settings response:', data)
       if (data.settings) {
         setWithdrawalSettings(data.settings)
         setPinRequired(data.settings.withdrawalPinRequired ?? true)
         setXenditEnabled(data.settings.xenditEnabled ?? false)
+        console.log('Xendit enabled set to:', data.settings.xenditEnabled)
       }
     } catch (error) {
       console.error('Error fetching withdrawal settings:', error)
