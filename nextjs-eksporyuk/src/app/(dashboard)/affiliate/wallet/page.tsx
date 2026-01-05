@@ -60,11 +60,52 @@ export default function UserWalletPage() {
   const [pendingWithdrawal, setPendingWithdrawal] = useState<PendingWithdrawal | null>(null)
   const [withdrawalSettings, setWithdrawalSettings] = useState<any>(null)
   const [xenditEnabled, setXenditEnabled] = useState(false)
+  const [isCheckingName, setIsCheckingName] = useState(false)
+  const [nameCheckResult, setNameCheckResult] = useState<string | null>(null)
 
   // Helper function to check if selected option is e-wallet
   const isEWallet = (bankName: string) => {
     const ewallets = ['OVO', 'GoPay', 'DANA', 'LinkAja', 'ShopeePay']
     return ewallets.includes(bankName)
+  }
+
+  // Function to check e-wallet account name
+  const checkEWalletName = async (phoneNumber: string, ewalletType: string) => {
+    if (!phoneNumber || phoneNumber.length < 10) return
+    
+    setIsCheckingName(true)
+    setNameCheckResult(null)
+    
+    try {
+      const response = await fetch('/api/ewallet/check-name', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: `+62${phoneNumber}`,
+          ewalletType
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success && data.accountName) {
+        setNameCheckResult(data.accountName)
+        // Auto-fill the name if found
+        setWithdrawForm(prev => ({
+          ...prev,
+          accountName: data.accountName
+        }))
+      } else {
+        setNameCheckResult('Nama tidak ditemukan')
+      }
+    } catch (error) {
+      console.error('Error checking e-wallet name:', error)
+      setNameCheckResult('Gagal mengecek nama')
+    } finally {
+      setIsCheckingName(false)
+    }
   }
 
   useEffect(() => {
