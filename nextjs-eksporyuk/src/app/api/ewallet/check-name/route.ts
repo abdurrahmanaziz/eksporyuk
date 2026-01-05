@@ -16,10 +16,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { phoneNumber, ewalletType } = await request.json()
+    const { phoneNumber, provider } = await request.json()
 
-    if (!phoneNumber || !ewalletType) {
-      return NextResponse.json({ error: 'Phone number and e-wallet type required' }, { status: 400 })
+    if (!phoneNumber || !provider) {
+      return NextResponse.json({ error: 'Phone number and provider required' }, { status: 400 })
     }
 
     // Simulate name checking for different e-wallets
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       'ShopeePay': checkShopeePayName
     }
 
-    const checkFunction = nameChecks[ewalletType as keyof typeof nameChecks]
+    const checkFunction = nameChecks[provider as keyof typeof nameChecks]
     
     if (!checkFunction) {
       return NextResponse.json({ error: 'Unsupported e-wallet type' }, { status: 400 })

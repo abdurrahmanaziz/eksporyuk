@@ -83,8 +83,8 @@ export default function UserWalletPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phoneNumber: `+62${phoneNumber}`,
-          ewalletType
+          phoneNumber: phoneNumber,
+          provider: ewalletType
         })
       })
       
@@ -790,11 +790,6 @@ export default function UserWalletPage() {
                 </label>
                 <div className="space-y-3">
                   <div className="relative">
-                    {isEWallet(withdrawForm.bankName) && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm z-10">
-                        +62
-                      </div>
-                    )}
                     <input
                       type="text"
                       value={withdrawForm.accountNumber}
@@ -819,12 +814,10 @@ export default function UserWalletPage() {
                         setWithdrawForm({ ...withdrawForm, accountNumber: value })
                       }}
                       required
-                      className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-mono text-lg ${
-                        isEWallet(withdrawForm.bankName) ? 'pl-16' : ''
-                      }`}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-mono text-lg"
                       placeholder={
                         isEWallet(withdrawForm.bankName) 
-                          ? '8123456789' 
+                          ? 'Contoh: 08123456789 atau 8123456789' 
                           : 'Nomor rekening bank'
                       }
                     />
