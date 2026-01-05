@@ -5,7 +5,7 @@
 
 const baseURLs = {
   local: 'http://localhost:3000',
-  production: 'https://app.eksporyuk.com'
+  production: 'https://eksporyuk.com'
 }
 
 async function testEWalletCheck(baseURL, environment) {

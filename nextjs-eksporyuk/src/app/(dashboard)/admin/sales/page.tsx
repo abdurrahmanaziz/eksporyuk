@@ -448,7 +448,7 @@ export default function AdminSalesPage() {
       // No membership, use default message
       const productName = tx.product?.name || tx.course?.title || 'produk';
       const defaultMsg = tx.status === 'PENDING' 
-        ? `Halo ${tx.customerName || tx.user.name}!\n\nKami dari EksporYuk ingin mengingatkan bahwa pesanan Anda untuk *${productName}* belum diselesaikan.\n\n*Detail Pesanan:*\n- Invoice: ${tx.invoiceNumber || tx.id.slice(0, 8).toUpperCase()}\n- Total: Rp ${Number(tx.amount).toLocaleString('id-ID')}\n\n${tx.paymentUrl ? `*Link Pembayaran:*\n${tx.paymentUrl}\n\n` : ''}Jika ada kendala saat pembayaran, silakan hubungi kami. Kami siap membantu!`
+        ? `Halo ${tx.customerName || tx.user.name}!\n\nKami dari EksporYuk ingin mengingatkan bahwa pesanan Anda untuk *${productName}* belum diselesaikan.\n\n*Detail Pesanan:*\n- Invoice: ${tx.invoiceNumber || `INV${tx.id.slice(0, 5).toUpperCase()}`}\n- Total: Rp ${Number(tx.amount).toLocaleString('id-ID')}\n\n${tx.paymentUrl ? `*Link Pembayaran:*\n${tx.paymentUrl}\n\n` : ''}Jika ada kendala saat pembayaran, silakan hubungi kami. Kami siap membantu!`
         : `Halo ${tx.customerName || tx.user.name}!\n\nTerima kasih sudah membeli *${productName}* di EksporYuk!\n\nPembayaran Anda sudah kami terima. Jika ada pertanyaan, silakan hubungi kami.\n\nSemoga sukses!`;
       setProcessedMessage(defaultMsg);
     }
@@ -1357,7 +1357,7 @@ export default function AdminSalesPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Invoice Number:</span>
                       <span className="font-mono font-bold text-orange-600">
-                        {selectedTransaction.invoiceNumber || `INV${selectedTransaction.id.slice(0, 8).toUpperCase()}`}
+                        {selectedTransaction.invoiceNumber || `INV${selectedTransaction.id.slice(0, 5).toUpperCase()}`}
                       </span>
                     </div>
                     <div className="flex justify-between">
