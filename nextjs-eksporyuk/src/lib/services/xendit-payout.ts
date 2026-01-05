@@ -88,17 +88,34 @@ export class XenditPayoutService {
     phoneNumber: string
   ): Promise<{ success: boolean; accountName?: string; error?: string }> {
     try {
-      if (!this.secretKey) {
-        throw new Error('Xendit not configured')
+      if (!this.secretKey || this.secretKey.length < 10) {
+        return {
+          success: false,
+          error: 'Xendit not configured properly'
+        }
       }
 
       // Map provider to Xendit channel code
       const channelCode = this.mapProviderToChannelCode(provider)
       if (!channelCode) {
-        throw new Error(`Provider ${provider} not supported`)
+        return {
+          success: false,
+          error: `Provider ${provider} not supported`
+        }
       }
 
-      // Xendit account validation endpoint
+      // Validate phone number format
+      if (!phoneNumber || phoneNumber.length < 10) {
+        return {
+          success: false,
+          error: 'Invalid phone number format'
+        }
+      }
+
+      // Xendit account validation endpoint with timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
       const response = await fetch(`${this.baseURL}/v1/account_validation`, {
         method: 'POST',
         headers: {
@@ -111,8 +128,11 @@ export class XenditPayoutService {
           account_holder: {
             phone_number: phoneNumber
           }
-        })
+        }),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
@@ -125,7 +145,10 @@ export class XenditPayoutService {
           }
         }
         
-        throw new Error(`API Error: ${response.status}`)
+        return {
+          success: false,
+          error: `API Error: ${response.status}`
+        }
       }
 
       const data: XenditAccountValidationResponse = await response.json()
@@ -144,9 +167,18 @@ export class XenditPayoutService {
 
     } catch (error: any) {
       console.error('[Xendit Account Validation] Exception:', error)
+      
+      // Handle specific errors gracefully
+      if (error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'Request timeout - please try again'
+        }
+      }
+      
       return {
         success: false,
-        error: error.message || 'Validation failed'
+        error: error.message || 'Validation service temporarily unavailable'
       }
     }
   }
@@ -286,8 +318,14 @@ export class XenditPayoutService {
 let xenditPayoutService: XenditPayoutService | null = null
 
 export function getXenditPayoutService(): XenditPayoutService {
-  if (!xenditPayoutService) {
-    xenditPayoutService = new XenditPayoutService()
+  try {
+    if (!xenditPayoutService) {
+      xenditPayoutService = new XenditPayoutService()
+    }
+    return xenditPayoutService
+  } catch (error) {
+    console.error('[Xendit Payout Service] Failed to create instance:', error)
+    // Return a safe fallback instance
+    return new XenditPayoutService()
   }
-  return xenditPayoutService
 }
