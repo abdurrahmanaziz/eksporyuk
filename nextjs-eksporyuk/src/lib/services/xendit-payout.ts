@@ -73,6 +73,13 @@ export class XenditPayoutService {
   }
 
   /**
+   * Check if Xendit service is properly configured
+   */
+  isConfigured(): boolean {
+    return !!(this.secretKey && this.secretKey.length > 10)
+  }
+
+  /**
    * Get authorization header for Xendit API
    */
   private getAuthHeader(): string {
@@ -88,7 +95,7 @@ export class XenditPayoutService {
     phoneNumber: string
   ): Promise<{ success: boolean; accountName?: string; error?: string }> {
     try {
-      if (!this.secretKey || this.secretKey.length < 10) {
+      if (!this.isConfigured()) {
         return {
           success: false,
           error: 'Xendit not configured properly'
@@ -104,13 +111,18 @@ export class XenditPayoutService {
         }
       }
 
+      // Normalize phone number for Xendit API
+      const normalizedPhone = this.normalizePhoneNumber(phoneNumber)
+      
       // Validate phone number format
-      if (!phoneNumber || phoneNumber.length < 10) {
+      if (!normalizedPhone || normalizedPhone.length < 12) {
         return {
           success: false,
           error: 'Invalid phone number format'
         }
       }
+
+      console.log(`[Xendit Account Validation] ${provider} - ${normalizedPhone}`)
 
       // Xendit account validation endpoint with timeout
       const controller = new AbortController()
@@ -126,7 +138,7 @@ export class XenditPayoutService {
           channel_category: 'EWALLET',
           channel_code: channelCode,
           account_holder: {
-            phone_number: phoneNumber
+            phone_number: normalizedPhone
           }
         }),
         signal: controller.signal
@@ -145,6 +157,13 @@ export class XenditPayoutService {
           }
         }
         
+        if (response.status === 401) {
+          return {
+            success: false,
+            error: 'Xendit authentication failed'
+          }
+        }
+        
         return {
           success: false,
           error: `API Error: ${response.status}`
@@ -160,6 +179,7 @@ export class XenditPayoutService {
         }
       }
 
+      console.log(`[Xendit Account Validation] Success: ${data.account_holder_name}`)
       return {
         success: true,
         accountName: data.account_holder_name
@@ -300,10 +320,20 @@ export class XenditPayoutService {
   }
 
   /**
-   * Check if Xendit is configured and available
+   * Normalize phone number for Xendit API
    */
-  isConfigured(): boolean {
-    return !!this.secretKey && this.secretKey.length > 10
+  private normalizePhoneNumber(phoneNumber: string): string {
+    // Remove all non-numeric characters
+    const cleaned = phoneNumber.replace(/\D/g, '')
+    
+    // Handle Indonesian phone numbers
+    if (cleaned.startsWith('62')) {
+      return `+${cleaned}`
+    } else if (cleaned.startsWith('0')) {
+      return `+62${cleaned.substring(1)}`
+    } else {
+      return `+62${cleaned}`
+    }
   }
 
   /**

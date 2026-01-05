@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 /**
  * POST /api/ewallet/check-name-xendit
- * Check e-wallet account name using Xendit API with fallback to mock
+ * Check e-wallet account name using Xendit API with enhanced error handling
  */
 export async function POST(request: NextRequest) {
   try {
@@ -30,15 +30,48 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`[Xendit E-Wallet Check] ${provider} - ${phoneNumber}`)
+    console.log(`[E-Wallet Check] ${provider} - ${phoneNumber} - User: ${session.user.email}`)
 
-    // Always try fallback mock service first for safety
+    // Normalize phone number for consistency
+    const normalizedPhone = phoneNumber.startsWith('0') ? phoneNumber : `0${phoneNumber.replace(/^\+?62/, '')}`
+    
+    console.log(`[E-Wallet Check] Normalized phone: ${normalizedPhone}`)
+
+    // Try Xendit first if configured
     try {
-      console.log('[Xendit E-Wallet Check] Using fallback mock service')
+      const xenditService = getXenditPayoutService()
+      
+      if (xenditService && xenditService.isConfigured()) {
+        console.log('[E-Wallet Check] Attempting Xendit API validation...')
+        
+        const result = await xenditService.validateAccount(provider, normalizedPhone)
+        
+        if (result.success && result.accountName) {
+          console.log(`[E-Wallet Check] Xendit success: ${result.accountName}`)
+          return NextResponse.json({
+            success: true,
+            accountName: result.accountName,
+            source: 'xendit',
+            message: 'Account verified via Xendit API'
+          })
+        } else {
+          console.log(`[E-Wallet Check] Xendit failed: ${result.error}`)
+        }
+      } else {
+        console.log('[E-Wallet Check] Xendit service not configured')
+      }
+    } catch (xenditError) {
+      console.error('[E-Wallet Check] Xendit error:', xenditError)
+    }
+
+    // Fallback to mock service for development/testing
+    try {
+      console.log('[E-Wallet Check] Falling back to mock service...')
       const ewalletService = new EWalletService()
-      const fallbackResult = await ewalletService.getAccountName(provider, phoneNumber, session.user.id)
+      const fallbackResult = await ewalletService.getAccountName(provider, normalizedPhone, session.user.id)
       
       if (fallbackResult.success && fallbackResult.accountName) {
+        console.log(`[E-Wallet Check] Mock service success: ${fallbackResult.accountName}`)
         return NextResponse.json({
           success: true,
           accountName: fallbackResult.accountName,
@@ -46,49 +79,33 @@ export async function POST(request: NextRequest) {
           message: fallbackResult.message || 'Account found (development mode)',
           cached: fallbackResult.cached
         })
+      } else {
+        console.log(`[E-Wallet Check] Mock service failed: ${fallbackResult.message}`)
       }
     } catch (mockError) {
-      console.error('[Xendit E-Wallet Check] Mock service error:', mockError)
+      console.error('[E-Wallet Check] Mock service error:', mockError)
     }
 
-    // Try Xendit only if mock fails and if configured
-    try {
-      const xenditService = getXenditPayoutService()
-      
-      if (xenditService && xenditService.isConfigured()) {
-        console.log('[Xendit E-Wallet Check] Trying Xendit API as backup')
-        
-        const result = await xenditService.validateAccount(provider, phoneNumber)
-        
-        if (result.success && result.accountName) {
-          return NextResponse.json({
-            success: true,
-            accountName: result.accountName,
-            source: 'xendit',
-            message: 'Account verified via Xendit'
-          })
-        } else {
-          console.log('[Xendit E-Wallet Check] Xendit failed:', result.error)
-        }
-      } else {
-        console.log('[Xendit E-Wallet Check] Xendit not configured')
-      }
-    } catch (xenditError) {
-      console.error('[Xendit E-Wallet Check] Xendit error:', xenditError)
-    }
-
-    // Both services failed
+    // If both services fail, return detailed error
+    console.log('[E-Wallet Check] All validation methods failed')
     return NextResponse.json({
       success: false,
-      error: 'Account not found or verification failed'
-    }, { status: 404 })
+      error: 'Account validation failed',
+      message: 'Unable to verify account name. Please check your phone number and try again.',
+      details: 'Both Xendit API and fallback service unavailable'
+    }, { status: 422 })
 
   } catch (error: any) {
-    console.error('[Xendit E-Wallet Check] Critical error:', error)
+    console.error('[E-Wallet Check] Critical error:', error)
     
-    // Emergency fallback - return mock success to prevent UI breaking
     return NextResponse.json({
-      success: true,
+      success: false,
+      error: 'Internal server error',
+      message: 'Service temporarily unavailable. Please try again later.',
+      details: error.message || 'Unknown error occurred'
+    }, { status: 500 })
+  }
+}
       accountName: 'User Account',
       source: 'fallback',
       message: 'Using fallback validation (service temporarily unavailable)'
