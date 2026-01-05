@@ -237,21 +237,44 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Map bank names to Xendit bank codes
+// Map bank/e-wallet names to Xendit bank codes
 function getBankCode(bankName: string): string {
-  const bankCodes = {
+  const bankCodes: Record<string, string> = {
+    // E-Wallets
+    'OVO': 'OVO',
+    'GOPAY': 'GOPAY',
+    'DANA': 'DANA',
+    'LINKAJA': 'LINKAJA',
+    'SHOPEEPAY': 'SHOPEEPAY',
+    
+    // Major Banks
     'BCA': 'BCA',
     'BNI': 'BNI',
     'BRI': 'BRI', 
     'MANDIRI': 'MANDIRI',
     'PERMATA': 'PERMATA',
     'CIMB': 'CIMB',
+    'CIMB NIAGA': 'CIMB',
     'DANAMON': 'DANAMON',
     'BSI': 'BSI',
+    'BTN': 'BTN',
     'BTPN': 'BTPN',
     'MAYBANK': 'MAYBANK',
+    'OCBC NISP': 'OCBC',
+    'PANIN': 'PANIN',
+    'BUKOPIN': 'BUKOPIN',
+    'MEGA': 'MEGA',
+    
+    // Digital Banks
+    'JENIUS': 'BTPN',
+    'LINE BANK': 'LINE_BANK',
+    'SEABANK': 'SEABANK',
+    'JAGO': 'JAGO',
+    'NEO COMMERCE': 'NEO_COMMERCE',
+    'BLU BCA': 'BCA',
+    'BLU BY BCA DIGITAL': 'BCA',
   }
   
-  const upperBankName = bankName.toUpperCase()
-  return bankCodes[upperBankName] || bankName
+  const upperBankName = bankName.toUpperCase().trim()
+  return bankCodes[upperBankName] || bankName.toUpperCase()
 }

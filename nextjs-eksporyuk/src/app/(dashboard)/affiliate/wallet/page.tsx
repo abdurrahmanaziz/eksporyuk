@@ -648,10 +648,10 @@ export default function UserWalletPage() {
                 </div>
               </div>
 
-              {/* Bank Name */}
+              {/* Bank/E-Wallet Selection */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nama Bank <span className="text-red-500">*</span>
+                  Bank/E-Wallet <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={withdrawForm.bankName}
@@ -659,31 +659,56 @@ export default function UserWalletPage() {
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                 >
-                  <option value="">Pilih Bank</option>
-                  <option value="BCA">BCA</option>
-                  <option value="Mandiri">Mandiri</option>
-                  <option value="BNI">BNI</option>
-                  <option value="BRI">BRI</option>
-                  <option value="CIMB Niaga">CIMB Niaga</option>
-                  <option value="Permata">Permata</option>
-                  <option value="Danamon">Danamon</option>
-                  <option value="BSI">BSI (Bank Syariah Indonesia)</option>
-                  <option value="BTN">BTN</option>
-                  <option value="Maybank">Maybank</option>
-                  <option value="OCBC NISP">OCBC NISP</option>
-                  <option value="Panin">Panin</option>
-                  <option value="Jenius">Jenius</option>
-                  <option value="LINE Bank">LINE Bank</option>
-                  <option value="SeaBank">SeaBank</option>
-                  <option value="Jago">Bank Jago</option>
-                  <option value="Neo Commerce">Neo Commerce</option>
+                  <option value="">Pilih Bank/E-Wallet</option>
+                  
+                  {/* E-Wallets */}
+                  <optgroup label="E-Wallet">
+                    <option value="OVO">OVO</option>
+                    <option value="GoPay">GoPay</option>
+                    <option value="DANA">DANA</option>
+                    <option value="LinkAja">LinkAja</option>
+                    <option value="ShopeePay">ShopeePay</option>
+                  </optgroup>
+                  
+                  {/* Major Banks */}
+                  <optgroup label="Bank Utama">
+                    <option value="BCA">BCA</option>
+                    <option value="Mandiri">Mandiri</option>
+                    <option value="BNI">BNI</option>
+                    <option value="BRI">BRI</option>
+                    <option value="CIMB Niaga">CIMB Niaga</option>
+                    <option value="Permata">Permata</option>
+                    <option value="Danamon">Danamon</option>
+                    <option value="BSI">BSI (Bank Syariah Indonesia)</option>
+                  </optgroup>
+                  
+                  {/* Digital Banks */}
+                  <optgroup label="Bank Digital">
+                    <option value="Jenius">Jenius</option>
+                    <option value="LINE Bank">LINE Bank</option>
+                    <option value="SeaBank">SeaBank</option>
+                    <option value="Jago">Bank Jago</option>
+                    <option value="Neo Commerce">Neo Commerce</option>
+                    <option value="Blu BCA">Blu by BCA Digital</option>
+                  </optgroup>
+                  
+                  {/* Other Banks */}
+                  <optgroup label="Bank Lainnya">
+                    <option value="BTN">BTN</option>
+                    <option value="Maybank">Maybank</option>
+                    <option value="OCBC NISP">OCBC NISP</option>
+                    <option value="Panin">Panin</option>
+                    <option value="BTPN">BTPN</option>
+                    <option value="Bukopin">Bukopin</option>
+                    <option value="Mega">Bank Mega</option>
+                  </optgroup>
                 </select>
               </div>
 
               {/* Account Name */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nama Pemilik Rekening <span className="text-red-500">*</span>
+                  Nama Pemilik Akun <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -691,14 +716,14 @@ export default function UserWalletPage() {
                   onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                  placeholder="Sesuai dengan rekening bank"
+                  placeholder="Sesuai dengan nama akun bank/e-wallet"
                 />
               </div>
 
               {/* Account Number */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nomor Rekening <span className="text-red-500">*</span>
+                  Nomor Rekening/HP <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -706,7 +731,7 @@ export default function UserWalletPage() {
                   onChange={(e) => setWithdrawForm({ ...withdrawForm, accountNumber: e.target.value.replace(/\D/g, '') })}
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                  placeholder="Nomor rekening bank"
+                  placeholder="Nomor rekening bank atau nomor HP e-wallet"
                 />
               </div>
 
