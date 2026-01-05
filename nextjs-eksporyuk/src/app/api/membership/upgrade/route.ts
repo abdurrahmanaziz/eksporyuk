@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import prisma from '@/lib/prisma'
+import { generateInvoiceNumber } from '@/lib/invoice-generator'
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create transaction for upgrade
+    const invoiceNumber = await generateInvoiceNumber()
     const transactionId = `UPG-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
     
     const transaction = await prisma.transaction.create({
@@ -98,6 +100,7 @@ export async function POST(request: NextRequest) {
         amount: Math.round(upgradePrice),
         status: 'PENDING',
         paymentMethod: 'PENDING',
+        invoiceNumber: invoiceNumber,
         metadata: {
           isUpgrade: true,
           previousMembershipId: currentMembership?.membershipId,

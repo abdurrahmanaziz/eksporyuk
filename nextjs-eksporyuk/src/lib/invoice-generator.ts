@@ -1,57 +1,68 @@
 import { prisma } from './prisma'
 
 /**
- * Generate unique invoice number continuing from Sejoli format
- * Format: INV followed by incrementing number (no padding)
- * Example: INV19300, INV19301, INV19302...
+ * Generate unique invoice number with sequential format
+ * Format: INV-XXXX (with dash and leading zeros)
+ * Example: INV-0001, INV-0002, INV-0003...
  * 
- * This continues from the highest Sejoli invoice number in the database.
+ * Uses database to track highest number to ensure proper sequencing
  */
 export async function generateInvoiceNumber(): Promise<string> {
   try {
-    // OPTIMIZED: Get only the latest invoice with DESC ordering (much faster)
-    const latestTransaction = await prisma.transaction.findFirst({
-      where: { 
-        invoiceNumber: { startsWith: 'INV' }
-      },
-      select: { invoiceNumber: true },
-      orderBy: { createdAt: 'desc' },
-      take: 100 // Get last 100 to scan for highest number
-    })
-    
-    // If no invoices yet, start from a safe number
-    if (!latestTransaction) {
-      return `INV${Date.now().toString().slice(-5)}` // 5 digits from timestamp
-    }
-    
-    // Get the last 100 transactions to find max number
+    // Get the last 1000 transactions to find max number across both formats
     const recentTransactions = await prisma.transaction.findMany({
       where: { 
-        invoiceNumber: { startsWith: 'INV' }
+        invoiceNumber: { not: null }
       },
       select: { invoiceNumber: true },
       orderBy: { createdAt: 'desc' },
-      take: 100
+      take: 1000
     })
-    
-    let maxNumber = 0
+
+    let maxNumber = 0;
+
+    // Parse both old format (INV19300) and new format (INV-0001)
     for (const tx of recentTransactions) {
-      const match = tx.invoiceNumber?.match(/^INV(\d+)$/)
-      if (match) {
-        const num = parseInt(match[1])
-        if (num > maxNumber) maxNumber = num
+      if (!tx.invoiceNumber) continue;
+      
+      // Try new format first: INV-XXXX
+      let match = tx.invoiceNumber.match(/^INV-(\d+)$/);
+      if (match && match[1]) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNumber) maxNumber = num;
+        continue;
+      }
+      
+      // Try old Sejoli format: INVXXXXX
+      match = tx.invoiceNumber.match(/^INV(\d+)$/);
+      if (match && match[1]) {
+        const numStr = match[1];
+        // If it's a large number from Sejoli (5+ digits), use it as base
+        if (numStr.length >= 5) {
+          const num = parseInt(numStr, 10);
+          if (num > maxNumber) maxNumber = num;
+        }
       }
     }
-    
-    // Next invoice number = max + 1
-    const nextNumber = maxNumber + 1
-    
-    // Format: INV followed by number (no leading zeros to match Sejoli format)
-    return `INV${nextNumber}`
+
+    // Next invoice number
+    // If we have no previous numbers, start from 1
+    // If we had old format (high numbers), continue from there
+    // Otherwise continue sequential
+    const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1;
+
+    // Format with leading zeros (4 digits minimum for new format)
+    if (maxNumber > 9999) {
+      // If we inherited high Sejoli numbers, don't pad (continue in 5+ digit format)
+      return `INV-${nextNumber}`;
+    } else {
+      // New system: use 4-digit format with leading zeros
+      return `INV-${String(nextNumber).padStart(4, '0')}`;
+    }
   } catch (error) {
-    console.error('Error generating invoice number:', error)
-    // Fallback: use timestamp-based ID with random suffix to avoid collisions
-    return `INV${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 100)}`
+    console.error('Error generating invoice number:', error);
+    // Fallback: use timestamp-based ID
+    return `INV-${Date.now().toString().slice(-6)}`;
   }
 }
 

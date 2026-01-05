@@ -261,7 +261,7 @@ export default function AdminSalesPage() {
   const convertToCSV = (data: Transaction[]) => {
     const headers = ['Invoice', 'Tanggal', 'Customer', 'Email', 'Phone', 'Tipe', 'Item', 'Amount', 'Status', 'Payment', 'Kupon', 'Affiliate', 'Komisi'];
     const rows = data.map(tx => [
-      tx.invoiceNumber ? tx.invoiceNumber.slice(-8).toUpperCase() : `INV${tx.id.slice(0, 5).toUpperCase()}`,
+      tx.invoiceNumber || `INV-${tx.id.slice(0, 5).toUpperCase()}`,
       new Date(tx.createdAt).toLocaleString('id-ID'),
       tx.customerName || tx.user.name,
       tx.customerEmail || tx.user.email,
@@ -448,7 +448,7 @@ export default function AdminSalesPage() {
       // No membership, use default message
       const productName = tx.product?.name || tx.course?.title || 'produk';
       const defaultMsg = tx.status === 'PENDING' 
-        ? `Halo ${tx.customerName || tx.user.name}!\n\nKami dari EksporYuk ingin mengingatkan bahwa pesanan Anda untuk *${productName}* belum diselesaikan.\n\n*Detail Pesanan:*\n- Invoice: ${tx.invoiceNumber ? tx.invoiceNumber.slice(-8).toUpperCase() : `INV${tx.id.slice(0, 5).toUpperCase()}`}\n- Total: Rp ${Number(tx.amount).toLocaleString('id-ID')}\n\n${tx.paymentUrl ? `*Link Pembayaran:*\n${tx.paymentUrl}\n\n` : ''}Jika ada kendala saat pembayaran, silakan hubungi kami. Kami siap membantu!`
+        ? `Halo ${tx.customerName || tx.user.name}!\n\nKami dari EksporYuk ingin mengingatkan bahwa pesanan Anda untuk *${productName}* belum diselesaikan.\n\n*Detail Pesanan:*\n- Invoice: ${tx.invoiceNumber || `INV-${tx.id.slice(0, 5).toUpperCase()}`}\n- Total: Rp ${Number(tx.amount).toLocaleString('id-ID')}\n\n${tx.paymentUrl ? `*Link Pembayaran:*\n${tx.paymentUrl}\n\n` : ''}Jika ada kendala saat pembayaran, silakan hubungi kami. Kami siap membantu!`
         : `Halo ${tx.customerName || tx.user.name}!\n\nTerima kasih sudah membeli *${productName}* di EksporYuk!\n\nPembayaran Anda sudah kami terima. Jika ada pertanyaan, silakan hubungi kami.\n\nSemoga sukses!`;
       setProcessedMessage(defaultMsg);
     }
@@ -992,7 +992,7 @@ export default function AdminSalesPage() {
                         {/* Invoice */}
                         <TableCell>
                           <div className="font-mono font-bold text-orange-600 text-sm">
-                            {tx.invoiceNumber ? tx.invoiceNumber.slice(-8).toUpperCase() : `INV${tx.id.slice(0, 5).toUpperCase()}`}
+                            {tx.invoiceNumber || `INV-${tx.id.slice(0, 5).toUpperCase()}`}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
                             {new Date(tx.createdAt).toLocaleDateString('id-ID', { 
@@ -1382,7 +1382,7 @@ export default function AdminSalesPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Invoice Number:</span>
                       <span className="font-mono font-bold text-orange-600">
-                        {selectedTransaction.invoiceNumber ? selectedTransaction.invoiceNumber.slice(-8).toUpperCase() : `INV${selectedTransaction.id.slice(0, 5).toUpperCase()}`}
+                        {selectedTransaction.invoiceNumber || `INV-${selectedTransaction.id.slice(0, 5).toUpperCase()}`}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -1600,7 +1600,7 @@ export default function AdminSalesPage() {
                           className="w-full gap-2 border-orange-300 text-orange-700 hover:bg-orange-50 shadow-sm hover:shadow-md transition-all"
                           onClick={() => {
                             const affiliate = selectedTransaction.affiliateConversion!.affiliate.user;
-                            const message = `Halo ${affiliate.name}! 🎉\n\nSelamat! Ada komisi baru untuk Anda:\n\n💰 Komisi: Rp ${Number(selectedTransaction.affiliateConversion!.commissionAmount).toLocaleString('id-ID')}\n📦 Produk: ${getProductName(selectedTransaction)}\n🧾 Invoice: ${selectedTransaction.invoiceNumber ? selectedTransaction.invoiceNumber.slice(-8).toUpperCase() : `INV${selectedTransaction.id.slice(0, 5).toUpperCase()}`}\n\nTerima kasih atas kontribusi Anda! 🙌`;
+                            const message = `Halo ${affiliate.name}! 🎉\n\nSelamat! Ada komisi baru untuk Anda:\n\n💰 Komisi: Rp ${Number(selectedTransaction.affiliateConversion!.commissionAmount).toLocaleString('id-ID')}\n📦 Produk: ${getProductName(selectedTransaction)}\n🧾 Invoice: ${selectedTransaction.invoiceNumber || `INV-${selectedTransaction.id.slice(0, 5).toUpperCase()}`}\n\nTerima kasih atas kontribusi Anda! 🙌`;
                             
                             const phone = affiliate.whatsapp!.replace(/\D/g, '');
                             const waNumber = phone.startsWith('62') ? phone : `62${phone.replace(/^0/, '')}`;
@@ -1667,7 +1667,7 @@ export default function AdminSalesPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-500">Invoice</p>
-                    <p className="font-mono text-sm font-medium text-gray-900">{followUpTx.invoiceNumber ? followUpTx.invoiceNumber.slice(-8).toUpperCase() : `INV${followUpTx.id.slice(0, 5).toUpperCase()}`}</p>
+                    <p className="font-mono text-sm font-medium text-gray-900">{followUpTx.invoiceNumber || `INV-${followUpTx.id.slice(0, 5).toUpperCase()}`}</p>
                   </div>
                 </div>
               )}
