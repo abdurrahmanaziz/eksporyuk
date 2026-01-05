@@ -61,6 +61,12 @@ export default function UserWalletPage() {
   const [withdrawalSettings, setWithdrawalSettings] = useState<any>(null)
   const [xenditEnabled, setXenditEnabled] = useState(false)
 
+  // Helper function to check if selected option is e-wallet
+  const isEWallet = (bankName: string) => {
+    const ewallets = ['OVO', 'GoPay', 'DANA', 'LinkAja', 'ShopeePay']
+    return ewallets.includes(bankName)
+  }
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       redirect('/login')
@@ -713,7 +719,7 @@ export default function UserWalletPage() {
               {/* Account Name */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nama Pemilik Akun <span className="text-red-500">*</span>
+                  {isEWallet(withdrawForm.bankName) ? 'Nama Pemilik E-Wallet' : 'Nama Pemilik Rekening'} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -721,23 +727,52 @@ export default function UserWalletPage() {
                   onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                  placeholder="Sesuai dengan nama akun bank/e-wallet"
+                  placeholder={isEWallet(withdrawForm.bankName) ? 'Nama sesuai akun e-wallet' : 'Nama sesuai rekening bank'}
                 />
               </div>
 
-              {/* Account Number */}
+              {/* Account Number/Phone */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nomor Rekening/HP <span className="text-red-500">*</span>
+                  {isEWallet(withdrawForm.bankName) ? 'Nomor HP E-Wallet' : 'Nomor Rekening'} <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={withdrawForm.accountNumber}
-                  onChange={(e) => setWithdrawForm({ ...withdrawForm, accountNumber: e.target.value.replace(/\D/g, '') })}
-                  required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                  placeholder="Nomor rekening bank atau nomor HP e-wallet"
-                />
+                <div className="relative">
+                  {isEWallet(withdrawForm.bankName) && (
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                      +62
+                    </div>
+                  )}
+                  <input
+                    type="text"
+                    value={withdrawForm.accountNumber}
+                    onChange={(e) => {
+                      let value = e.target.value.replace(/\D/g, '')
+                      // For e-wallet, ensure it starts with 8 (Indonesian mobile format)
+                      if (isEWallet(withdrawForm.bankName) && value && !value.startsWith('8')) {
+                        if (value.startsWith('62')) {
+                          value = value.substring(2)
+                        } else if (value.startsWith('0')) {
+                          value = '8' + value.substring(1)
+                        }
+                      }
+                      setWithdrawForm({ ...withdrawForm, accountNumber: value })
+                    }}
+                    required
+                    className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all ${
+                      isEWallet(withdrawForm.bankName) ? 'pl-12' : ''
+                    }`}
+                    placeholder={
+                      isEWallet(withdrawForm.bankName) 
+                        ? '8123456789 (tanpa +62 atau 0)' 
+                        : 'Nomor rekening bank'
+                    }
+                  />
+                </div>
+                {isEWallet(withdrawForm.bankName) && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    💡 Masukkan nomor HP yang terdaftar di {withdrawForm.bankName}
+                  </p>
+                )}
               </div>
 
               {/* Notes */}
