@@ -62,6 +62,8 @@ export default function UserWalletPage() {
   const [xenditEnabled, setXenditEnabled] = useState(false)
   const [isCheckingName, setIsCheckingName] = useState(false)
   const [nameCheckResult, setNameCheckResult] = useState<string | null>(null)
+  const [savedAccounts, setSavedAccounts] = useState<any[]>([])
+  const [showSavedAccounts, setShowSavedAccounts] = useState(false)
 
   // Helper function to check if selected option is e-wallet
   const isEWallet = (bankName: string) => {
@@ -70,7 +72,7 @@ export default function UserWalletPage() {
   }
 
   // Function to check e-wallet account name
-  const checkEWalletName = async (phoneNumber: string, ewalletType: string) => {
+  const checkEWalletName = async (phoneNumber: string, ewalletType: string, forceRefresh: boolean = false) => {
     if (!phoneNumber || phoneNumber.length < 10) return
     
     setIsCheckingName(true)
@@ -84,27 +86,48 @@ export default function UserWalletPage() {
         },
         body: JSON.stringify({
           phoneNumber: phoneNumber,
-          provider: ewalletType
+          provider: ewalletType,
+          useCache: !forceRefresh
         })
       })
       
       const data = await response.json()
       
       if (data.success && data.accountName) {
-        setNameCheckResult(data.accountName)
+        const cacheInfo = data.cached ? ' (cached)' : ' (live)'
+        setNameCheckResult(data.accountName + cacheInfo)
         // Auto-fill the name if found
         setWithdrawForm(prev => ({
           ...prev,
           accountName: data.accountName
         }))
+        
+        // Show success message
+        toast.success(`Account found: ${data.accountName}${cacheInfo}`)
       } else {
         setNameCheckResult('Nama tidak ditemukan')
+        toast.error(data.message || 'Account not found')
       }
     } catch (error) {
       console.error('Error checking e-wallet name:', error)
       setNameCheckResult('Gagal mengecek nama')
+      toast.error('Failed to check account name')
     } finally {
       setIsCheckingName(false)
+    }
+  }
+
+  // Function to load saved e-wallet accounts
+  const loadSavedAccounts = async () => {
+    try {
+      const response = await fetch('/api/ewallet/accounts')
+      const data = await response.json()
+      
+      if (data.success) {
+        setSavedAccounts(data.accounts || [])
+      }
+    } catch (error) {
+      console.error('Error loading saved accounts:', error)
     }
   }
 
@@ -118,6 +141,7 @@ export default function UserWalletPage() {
     fetchWallet()
     checkPINStatus()
     fetchWithdrawalSettings()
+    loadSavedAccounts()
   }, [])
 
   const checkPINStatus = async () => {
@@ -825,17 +849,92 @@ export default function UserWalletPage() {
                   
                   {/* Manual Check Button for E-Wallet */}
                   {isEWallet(withdrawForm.bankName) && withdrawForm.accountNumber.length >= 10 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const apiFormat = withdrawForm.accountNumber.startsWith('0') ? 
-                          '8' + withdrawForm.accountNumber.substring(1) : withdrawForm.accountNumber;
-                        checkEWalletName(apiFormat, withdrawForm.bankName);
-                      }}
-                      className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
-                    >
-                      🔍 Cek Nama Pemilik Akun
-                    </button>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const apiFormat = withdrawForm.accountNumber.startsWith('0') ? 
+                              '8' + withdrawForm.accountNumber.substring(1) : withdrawForm.accountNumber;
+                            checkEWalletName(apiFormat, withdrawForm.bankName, false);
+                          }}
+                          className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                          disabled={isCheckingName}
+                        >
+                          {isCheckingName ? '🔄 Mengecek...' : '🔍 Cek Nama Akun'}
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const apiFormat = withdrawForm.accountNumber.startsWith('0') ? 
+                              '8' + withdrawForm.accountNumber.substring(1) : withdrawForm.accountNumber;
+                            checkEWalletName(apiFormat, withdrawForm.bankName, true);
+                          }}
+                          className="bg-gray-500 text-white py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                          disabled={isCheckingName}
+                          title="Force refresh - bypass cache"
+                        >
+                          🔄
+                        </button>
+                      </div>
+
+                      {/* Saved Accounts Dropdown */}
+                      {savedAccounts.length > 0 && (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowSavedAccounts(!showSavedAccounts)}
+                            className="w-full text-left bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+                          >
+                            📱 {savedAccounts.length} akun tersimpan - klik untuk pilih
+                          </button>
+                          
+                          {showSavedAccounts && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+                              {savedAccounts
+                                .filter(acc => acc.provider === withdrawForm.bankName)
+                                .map(account => (
+                                <button
+                                  key={account.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setWithdrawForm(prev => ({
+                                      ...prev,
+                                      accountNumber: account.phoneNumber.startsWith('62') ? 
+                                        '0' + account.phoneNumber.substring(2) : account.phoneNumber,
+                                      accountName: account.accountName
+                                    }));
+                                    setNameCheckResult(account.accountName + ' (saved)');
+                                    setShowSavedAccounts(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                                >
+                                  <div className="font-medium">{account.accountName}</div>
+                                  <div className="text-gray-500">{account.phoneNumber}</div>
+                                </button>
+                              ))}
+                              {savedAccounts.filter(acc => acc.provider === withdrawForm.bankName).length === 0 && (
+                                <div className="px-3 py-2 text-sm text-gray-500">
+                                  Belum ada akun {withdrawForm.bankName} tersimpan
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Name Check Result */}
+                      {nameCheckResult && (
+                        <div className={`p-2 rounded-lg text-sm ${
+                          nameCheckResult.includes('tidak ditemukan') || nameCheckResult.includes('Gagal') 
+                            ? 'bg-red-50 text-red-600 border border-red-200'
+                            : 'bg-green-50 text-green-600 border border-green-200'
+                        }`}>
+                          ✓ {nameCheckResult}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
                 

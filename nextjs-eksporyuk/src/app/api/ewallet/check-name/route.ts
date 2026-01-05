@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
+import { ewalletService } from '@/lib/services/ewallet-service'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * POST /api/ewallet/check-name
- * Check account name for e-wallet phone number
+ * Check account name for e-wallet phone number with caching and real API integration
  */
 export async function POST(request: NextRequest) {
   try {
@@ -16,136 +17,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { phoneNumber, provider } = await request.json()
+    const { phoneNumber, provider, useCache = true } = await request.json()
 
     if (!phoneNumber || !provider) {
-      return NextResponse.json({ error: 'Phone number and provider required' }, { status: 400 })
+      return NextResponse.json({ 
+        error: 'Phone number and provider required',
+        success: false 
+      }, { status: 400 })
     }
 
-    // Simulate name checking for different e-wallets
-    // In real implementation, you would call the respective e-wallet APIs
-    const nameChecks = {
-      'OVO': checkOVOName,
-      'GoPay': checkGopayName, 
-      'DANA': checkDanaName,
-      'LinkAja': checkLinkAjaName,
-      'ShopeePay': checkShopeePayName
+    // Validate provider
+    const validProviders = ['OVO', 'GoPay', 'DANA', 'LinkAja', 'ShopeePay']
+    if (!validProviders.includes(provider)) {
+      return NextResponse.json({ 
+        error: 'Invalid e-wallet provider',
+        success: false 
+      }, { status: 400 })
     }
 
-    const checkFunction = nameChecks[provider as keyof typeof nameChecks]
-    
-    if (!checkFunction) {
-      return NextResponse.json({ error: 'Unsupported e-wallet type' }, { status: 400 })
-    }
+    // Check account using service
+    const result = await ewalletService.checkAccountName(
+      phoneNumber, 
+      provider, 
+      session.user.id,
+      useCache
+    )
 
-    const result = await checkFunction(phoneNumber)
-
-    return NextResponse.json(result)
+    return NextResponse.json({
+      success: result.success,
+      accountName: result.accountName,
+      message: result.message,
+      cached: result.cached || false,
+      provider,
+      phoneNumber
+    })
 
   } catch (error) {
     console.error('[EWALLET NAME CHECK ERROR]', error)
     return NextResponse.json(
-      { error: 'Failed to check e-wallet name' },
+      { 
+        error: 'Failed to check e-wallet name',
+        success: false 
+      },
       { status: 500 }
     )
-  }
-}
-
-// Mock functions for different e-wallet name checking
-// In production, these would call actual e-wallet APIs
-
-async function checkOVOName(phoneNumber: string) {
-  // Simulate OVO API call
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  // Mock response based on phone number pattern
-  const mockNames = {
-    '+628123456789': 'John Doe',
-    '+628987654321': 'Jane Smith',
-    '+628111222333': 'Ahmad Rizki'
-  }
-  
-  const accountName = mockNames[phoneNumber as keyof typeof mockNames]
-  
-  return {
-    success: !!accountName,
-    accountName: accountName || null,
-    message: accountName ? 'Account found' : 'Account not found'
-  }
-}
-
-async function checkGopayName(phoneNumber: string) {
-  // Simulate GoPay API call
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
-  const mockNames = {
-    '+628123456789': 'Budi Santoso',
-    '+628987654321': 'Siti Nurhaliza', 
-    '+628111222333': 'Andi Wijaya'
-  }
-  
-  const accountName = mockNames[phoneNumber as keyof typeof mockNames]
-  
-  return {
-    success: !!accountName,
-    accountName: accountName || null,
-    message: accountName ? 'Account found' : 'Account not found'
-  }
-}
-
-async function checkDanaName(phoneNumber: string) {
-  // Simulate DANA API call
-  await new Promise(resolve => setTimeout(resolve, 1200))
-  
-  const mockNames = {
-    '+628123456789': 'Rini Kusuma',
-    '+628987654321': 'Dedi Pratama',
-    '+628111222333': 'Maya Sari'
-  }
-  
-  const accountName = mockNames[phoneNumber as keyof typeof mockNames]
-  
-  return {
-    success: !!accountName,
-    accountName: accountName || null,
-    message: accountName ? 'Account found' : 'Account not found'
-  }
-}
-
-async function checkLinkAjaName(phoneNumber: string) {
-  // Simulate LinkAja API call
-  await new Promise(resolve => setTimeout(resolve, 900))
-  
-  const mockNames = {
-    '+628123456789': 'Fajar Nugroho',
-    '+628987654321': 'Dewi Lestari',
-    '+628111222333': 'Rizal Ramli'
-  }
-  
-  const accountName = mockNames[phoneNumber as keyof typeof mockNames]
-  
-  return {
-    success: !!accountName,
-    accountName: accountName || null,
-    message: accountName ? 'Account found' : 'Account not found'
-  }
-}
-
-async function checkShopeePayName(phoneNumber: string) {
-  // Simulate ShopeePay API call
-  await new Promise(resolve => setTimeout(resolve, 1100))
-  
-  const mockNames = {
-    '+628123456789': 'Linda Sari',
-    '+628987654321': 'Hendra Gunawan',
-    '+628111222333': 'Tina Marlina'
-  }
-  
-  const accountName = mockNames[phoneNumber as keyof typeof mockNames]
-  
-  return {
-    success: !!accountName,
-    accountName: accountName || null,
-    message: accountName ? 'Account found' : 'Account not found'
   }
 }

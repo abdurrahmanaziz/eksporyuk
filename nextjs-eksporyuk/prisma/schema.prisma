@@ -3009,6 +3009,7 @@ model User {
   UserProduct                     UserProduct[]
   userRoles                       UserRole[]
   wallet                          Wallet?
+  ewalletAccounts                 EWalletAccount[]
 
   @@index([city])
   @@index([district])
@@ -3124,6 +3125,25 @@ model Wallet {
   updatedAt      DateTime @updatedAt
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+}
+
+model EWalletAccount {
+  id          String   @id @default(cuid())
+  userId      String?  // Optional - for caching user's verified accounts
+  provider    String   // OVO, GoPay, DANA, LinkAja, ShopeePay
+  phoneNumber String
+  accountName String
+  isVerified  Boolean  @default(false)
+  lastChecked DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, phoneNumber])
+  @@index([phoneNumber])
+  @@index([provider])
   @@index([userId])
 }
 
