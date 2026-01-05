@@ -32,6 +32,7 @@ interface MyGroup {
   type: string
   memberCount: number
   joinedAt: string
+  slug?: string
   role?: string
 }
 
@@ -278,7 +279,7 @@ export default function MyGroupsPage() {
                     </span>
                   </div>
                   
-                  <Link href={`/member/groups/${group.id}`}>
+                  <Link href={group.slug ? `/community/groups/${group.slug}` : `/community/groups`}>
                     <Button variant="outline" size="sm" className="text-blue-600 border-blue-600 hover:bg-blue-50">
                       <Eye className="w-4 h-4 mr-1" />
                       Lihat

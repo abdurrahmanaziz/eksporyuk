@@ -532,7 +532,7 @@ export default function PremiumDashboardNew() {
                               <p className="text-xs text-gray-500">{group.memberCount} member</p>
                             </div>
                           </div>
-                          <Link href={`/member/groups/${group.id}`}>
+                          <Link href={group.slug ? `/community/groups/${group.slug}` : `/community/groups`}>
                             <Button variant="outline" size="sm" className="text-xs px-3 py-1 h-7 border-gray-200 hover:bg-gray-50">
                               Lihat
                             </Button>

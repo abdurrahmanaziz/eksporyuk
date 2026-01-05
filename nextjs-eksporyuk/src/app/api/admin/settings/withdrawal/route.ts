@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
         withdrawalAdminFee: true,
         withdrawalPinRequired: true,
         withdrawalPinLength: true,
+        xenditEnabled: true,
       },
     })
 
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
         withdrawalAdminFee: 5000,
         withdrawalPinRequired: true,
         withdrawalPinLength: 6,
+        xenditEnabled: true,
       },
     })
   } catch (error) {
@@ -63,6 +65,7 @@ export async function POST(request: NextRequest) {
       withdrawalAdminFee,
       withdrawalPinRequired,
       withdrawalPinLength,
+      xenditEnabled,
     } = body
 
     // Validation
@@ -98,6 +101,7 @@ export async function POST(request: NextRequest) {
           withdrawalAdminFee,
           withdrawalPinRequired,
           withdrawalPinLength,
+          xenditEnabled,
         },
       })
     } else {
@@ -107,6 +111,7 @@ export async function POST(request: NextRequest) {
           withdrawalAdminFee,
           withdrawalPinRequired,
           withdrawalPinLength,
+          xenditEnabled,
         },
       })
     }

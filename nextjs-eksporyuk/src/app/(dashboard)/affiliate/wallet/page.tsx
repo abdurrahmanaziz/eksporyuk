@@ -532,31 +532,32 @@ export default function UserWalletPage() {
 
       {/* Withdrawal Modal */}
       {showWithdrawModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto my-8 overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 sm:p-6 text-white flex-shrink-0">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-xl font-bold">Ajukan Penarikan</h3>
+                  <h3 className="text-lg sm:text-xl font-bold">Ajukan Penarikan</h3>
                   <p className="text-blue-100 text-sm mt-1">Cairkan saldo ke rekening bank Anda</p>
                 </div>
                 <button
                   onClick={() => setShowWithdrawModal(false)}
-                  className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all"
+                  className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all flex-shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            <form onSubmit={handleWithdraw} className="p-6 space-y-4">
-              {/* Available Balance */}
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                <p className="text-sm text-blue-600 font-medium mb-1">Saldo Tersedia</p>
-                <p className="text-3xl font-bold text-blue-600">
-                  Rp {wallet?.balance.toLocaleString('id-ID') || '0'}
-                </p>
-              </div>
+            <div className="flex-1 overflow-y-auto">
+              <form onSubmit={handleWithdraw} className="p-4 sm:p-6 space-y-4">
+                {/* Available Balance */}
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                  <p className="text-sm text-blue-600 font-medium mb-1">Saldo Tersedia</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-blue-600">
+                    Rp {wallet?.balance.toLocaleString('id-ID') || '0'}
+                  </p>
+                </div>
 
               {/* Amount */}
               <div>
@@ -820,13 +821,12 @@ export default function UserWalletPage() {
                   ⚠️ <strong>Penting:</strong> Pastikan data rekening bank Anda benar. 
                   Proses penarikan akan diverifikasi oleh admin dan membutuhkan waktu 1-3 hari kerja.
                 </p>
-              </div>
-            </form>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-      )}
-
-      {/* PIN Modals */}
+      )}      {/* PIN Modals */}
       <SetPINModal
         open={showSetPINModal}
         onClose={() => setShowSetPINModal(false)}

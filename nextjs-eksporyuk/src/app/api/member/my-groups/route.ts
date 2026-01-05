@@ -50,7 +50,8 @@ export async function GET() {
         type: true,
         isActive: true,
         createdAt: true,
-        ownerId: true
+        ownerId: true,
+        slug: true
       }
     })
 
@@ -77,6 +78,7 @@ export async function GET() {
             image: group.avatar,
             type: group.type,
             memberCount,
+            slug: group.slug,
             role: gm.role,
             joinedAt: gm.joinedAt.toISOString(),
             isOwner: group.ownerId === userId,

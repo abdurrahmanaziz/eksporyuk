@@ -220,7 +220,8 @@ export async function GET(request: NextRequest) {
         description: true,
         avatar: true,
         type: true,
-        isActive: true
+        isActive: true,
+        slug: true
       }
     })
 
@@ -243,6 +244,7 @@ export async function GET(request: NextRequest) {
             image: group.avatar,
             type: group.type,
             memberCount,
+            slug: group.slug,
             joinedAt: ug.joinedAt.toISOString()
           }
         })

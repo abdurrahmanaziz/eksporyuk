@@ -17,6 +17,7 @@ interface WithdrawalSettings {
   withdrawalAdminFee: number
   withdrawalPinRequired: boolean
   withdrawalPinLength: number
+  xenditEnabled: boolean
 }
 
 export default function AdminWithdrawalSettingsPage() {
@@ -28,6 +29,7 @@ export default function AdminWithdrawalSettingsPage() {
     withdrawalAdminFee: 5000,
     withdrawalPinRequired: true,
     withdrawalPinLength: 6,
+    xenditEnabled: true,
   })
 
   const [loading, setLoading] = useState(true)
@@ -307,6 +309,70 @@ export default function AdminWithdrawalSettingsPage() {
                   <p className="text-sm text-amber-800">
                     Menonaktifkan PIN akan mengurangi keamanan sistem penarikan. 
                     Sangat disarankan untuk tetap aktif.
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Xendit Integration */}
+        <Card>
+          <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Settings className="h-5 w-5 text-green-600" />
+              Integrasi Xendit
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              {/* Xendit Enable Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900 mb-1">
+                    Aktifkan Penarikan Instant
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Memungkinkan affiliate untuk penarikan instant via Xendit (5-10 menit)
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.xenditEnabled}
+                  onCheckedChange={(checked) => 
+                    setSettings({ ...settings, xenditEnabled: checked })
+                  }
+                />
+              </div>
+
+              {/* Xendit Status Info */}
+              <div className={`p-4 rounded-lg border-2 ${
+                settings.xenditEnabled 
+                  ? 'bg-green-50 border-green-200' 
+                  : 'bg-gray-50 border-gray-200'
+              }`}>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      settings.xenditEnabled ? 'bg-green-500' : 'bg-gray-400'
+                    }`}></div>
+                    <span className="font-medium text-sm">
+                      Status: {settings.xenditEnabled ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    {settings.xenditEnabled 
+                      ? '✅ Affiliate dapat memilih penarikan instant dengan biaya admin sama' 
+                      : '⚠️ Hanya penarikan manual tersedia (1-3 hari kerja)'
+                    }
+                  </p>
+                </div>
+              </div>
+
+              {!settings.xenditEnabled && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <p className="text-sm text-amber-800">
+                    💡 <strong>Info:</strong> Untuk mengaktifkan fitur instant withdrawal, 
+                    pastikan environment variables Xendit sudah dikonfigurasi di server.
                   </p>
                 </div>
               )}
