@@ -757,20 +757,31 @@ export default function UserWalletPage() {
                 </select>
               </div>
 
-              {/* Account Name */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {isEWallet(withdrawForm.bankName) ? 'Nama Pemilik E-Wallet' : 'Nama Pemilik Rekening'} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={withdrawForm.accountName}
-                  onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                  placeholder={isEWallet(withdrawForm.bankName) ? 'Nama sesuai akun e-wallet' : 'Nama sesuai rekening bank'}
-                />
-              </div>
+              {/* Account Name - Hidden for E-wallet */}
+              {!isEWallet(withdrawForm.bankName) && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Nama Pemilik Rekening <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={withdrawForm.accountName}
+                    onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                    placeholder="Nama sesuai rekening bank"
+                  />
+                </div>
+              )}
+              
+              {/* E-wallet name auto-lookup info */}
+              {isEWallet(withdrawForm.bankName) && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-700">
+                    💡 <strong>Nama pemilik akan otomatis terdeteksi</strong> setelah Anda memasukkan nomor HP yang valid
+                  </p>
+                </div>
+              )}
 
               {/* Account Number/Phone */}
               <div>
@@ -791,22 +802,22 @@ export default function UserWalletPage() {
                       
                       // For e-wallet, auto-convert phone number format
                       if (isEWallet(withdrawForm.bankName)) {
+                        console.log('Input phone number:', value) // Debug log
+                        
                         // Remove country code if present
                         if (value.startsWith('62')) {
                           value = value.substring(2)
                         }
                         
-                        // Convert 0 prefix to 8 (e.g., 08123456789 → 8123456789)
+                        // Convert 0 prefix to 8 (e.g., 08123456789 → 88123456789)
                         if (value.startsWith('0')) {
                           value = '8' + value.substring(1)
+                          console.log('Converted 0 to 8:', value) // Debug log
                         }
                         
-                        // Ensure it starts with 8 for Indonesian mobile
-                        if (value && value.length > 0 && !value.startsWith('8')) {
-                          // For single digits that aren't 8, assume user wants to type 8xxx
-                          if (value.length === 1 && ['1','2','3','4','5','6','7','9'].includes(value)) {
-                            value = '8' + value
-                          }
+                        // Trigger auto name lookup for valid phone numbers
+                        if (value.length >= 10 && value.startsWith('8')) {
+                          checkEWalletName(value, withdrawForm.bankName)
                         }
                       }
                       
@@ -825,7 +836,7 @@ export default function UserWalletPage() {
                 </div>
                 {isEWallet(withdrawForm.bankName) && (
                   <p className="text-xs text-gray-500 mt-1">
-                    💡 Ketik 0 di awal akan otomatis berubah jadi 8. Contoh: 08123 → 88123
+                    💡 <strong>Ketik 0 di awal akan otomatis berubah jadi 8.</strong> Contoh: 08118748177 → 88118748177
                   </p>
                 )}
               </div>
