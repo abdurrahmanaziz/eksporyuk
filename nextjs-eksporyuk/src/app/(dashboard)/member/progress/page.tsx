@@ -371,7 +371,7 @@ export default function ProgressPage() {
                     )}
                   </div>
                   
-                  <Link href={`/member/learn/${course.slug}`}>
+                  <Link href={`/learn/${course.slug}`}>
                     <Button variant="outline" size="sm" className="text-blue-600 border-blue-600 hover:bg-blue-50">
                       {course.status === 'NOT_STARTED' ? 'Mulai' : 'Lanjutkan'}
                       <ArrowRight className="w-4 h-4 ml-1" />

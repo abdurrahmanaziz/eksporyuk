@@ -25,16 +25,22 @@ export async function GET() {
         withdrawalAdminFee: true,
         withdrawalPinRequired: true,
         withdrawalPinLength: true,
-        xenditEnabled: true,
+        paymentEnableXendit: true,
       },
     })
 
     // Check if Xendit is properly configured
-    const xenditEnabled = !!(
-      process.env.XENDIT_SECRET_KEY && 
-      process.env.XENDIT_WEBHOOK_TOKEN &&
-      settings?.xenditEnabled !== false
-    )
+    const hasXenditSecretKey = !!process.env.XENDIT_SECRET_KEY
+    const hasXenditWebhookToken = !!process.env.XENDIT_WEBHOOK_TOKEN
+    const isXenditEnabledInDB = settings?.paymentEnableXendit !== false
+    
+    console.log('Xendit Configuration Check:')
+    console.log('- XENDIT_SECRET_KEY:', hasXenditSecretKey ? 'Present' : 'Missing')
+    console.log('- XENDIT_WEBHOOK_TOKEN:', hasXenditWebhookToken ? 'Present' : 'Missing')
+    console.log('- paymentEnableXendit in DB:', isXenditEnabledInDB)
+    
+    const xenditEnabled = hasXenditSecretKey && hasXenditWebhookToken && isXenditEnabledInDB
+    console.log('- Final xenditEnabled:', xenditEnabled)
 
     return NextResponse.json({
       settings: {

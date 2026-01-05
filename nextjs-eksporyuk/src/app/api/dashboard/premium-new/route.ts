@@ -261,7 +261,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       courses: coursesWithProgress,
-      groups: groupsData,
+      myGroups: komunitas,
+      groups: publicGroupsDiscovery,
       komunitas: komunitas,
       publicGroups: publicGroupsDiscovery,
       products: productsData,
@@ -279,6 +280,7 @@ export async function GET(req: NextRequest) {
     console.error('Error fetching premium dashboard:', error)
     return NextResponse.json({
       courses: [],
+      myGroups: [],
       groups: [],
       komunitas: [],
       publicGroups: [],
