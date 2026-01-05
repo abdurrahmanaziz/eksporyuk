@@ -809,15 +809,15 @@ export default function UserWalletPage() {
                           value = value.substring(2)
                         }
                         
-                        // Convert 0 prefix to 8 (e.g., 08123456789 → 88123456789)
-                        if (value.startsWith('0')) {
-                          value = '8' + value.substring(1)
-                          console.log('Converted 0 to 8:', value) // Debug log
-                        }
+                        // Keep user input as is - don't force conversion
+                        // But for API calls, we'll convert to 8xxx format internally
                         
                         // Trigger auto name lookup for valid phone numbers
-                        if (value.length >= 10 && value.startsWith('8')) {
-                          checkEWalletName(value, withdrawForm.bankName)
+                        if (value.length >= 10 && (value.startsWith('8') || value.startsWith('0'))) {
+                          // For API, use 8xxx format
+                          const apiFormat = value.startsWith('0') ? 
+                            '8' + value.substring(1) : value;
+                          checkEWalletName(apiFormat, withdrawForm.bankName)
                         }
                       }
                       
@@ -829,14 +829,14 @@ export default function UserWalletPage() {
                     }`}
                     placeholder={
                       isEWallet(withdrawForm.bankName) 
-                        ? '8123456789 (ketik 0 akan otomatis jadi 8)' 
+                        ? '08123456789 atau 8123456789' 
                         : 'Nomor rekening bank'
                     }
                   />
                 </div>
                 {isEWallet(withdrawForm.bankName) && (
                   <p className="text-xs text-gray-500 mt-1">
-                    💡 <strong>Ketik 0 di awal akan otomatis berubah jadi 8.</strong> Contoh: 08118748177 → 88118748177
+                    💡 <strong>Format fleksibel:</strong> Bisa pakai 08xxx atau 8xxx. Contoh: 08123456789 atau 8123456789
                   </p>
                 )}
               </div>
