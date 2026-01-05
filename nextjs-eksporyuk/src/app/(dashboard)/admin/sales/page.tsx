@@ -261,7 +261,7 @@ export default function AdminSalesPage() {
   const convertToCSV = (data: Transaction[]) => {
     const headers = ['Invoice', 'Tanggal', 'Customer', 'Email', 'Phone', 'Tipe', 'Item', 'Amount', 'Status', 'Payment', 'Kupon', 'Affiliate', 'Komisi'];
     const rows = data.map(tx => [
-      tx.invoiceNumber || tx.id.slice(0, 8).toUpperCase(),
+      tx.invoiceNumber ? tx.invoiceNumber.slice(-8).toUpperCase() : `INV${tx.id.slice(0, 5).toUpperCase()}`,
       new Date(tx.createdAt).toLocaleString('id-ID'),
       tx.customerName || tx.user.name,
       tx.customerEmail || tx.user.email,
@@ -448,7 +448,7 @@ export default function AdminSalesPage() {
       // No membership, use default message
       const productName = tx.product?.name || tx.course?.title || 'produk';
       const defaultMsg = tx.status === 'PENDING' 
-        ? `Halo ${tx.customerName || tx.user.name}!\n\nKami dari EksporYuk ingin mengingatkan bahwa pesanan Anda untuk *${productName}* belum diselesaikan.\n\n*Detail Pesanan:*\n- Invoice: ${tx.invoiceNumber || `INV${tx.id.slice(0, 5).toUpperCase()}`}\n- Total: Rp ${Number(tx.amount).toLocaleString('id-ID')}\n\n${tx.paymentUrl ? `*Link Pembayaran:*\n${tx.paymentUrl}\n\n` : ''}Jika ada kendala saat pembayaran, silakan hubungi kami. Kami siap membantu!`
+        ? `Halo ${tx.customerName || tx.user.name}!\n\nKami dari EksporYuk ingin mengingatkan bahwa pesanan Anda untuk *${productName}* belum diselesaikan.\n\n*Detail Pesanan:*\n- Invoice: ${tx.invoiceNumber ? tx.invoiceNumber.slice(-8).toUpperCase() : `INV${tx.id.slice(0, 5).toUpperCase()}`}\n- Total: Rp ${Number(tx.amount).toLocaleString('id-ID')}\n\n${tx.paymentUrl ? `*Link Pembayaran:*\n${tx.paymentUrl}\n\n` : ''}Jika ada kendala saat pembayaran, silakan hubungi kami. Kami siap membantu!`
         : `Halo ${tx.customerName || tx.user.name}!\n\nTerima kasih sudah membeli *${productName}* di EksporYuk!\n\nPembayaran Anda sudah kami terima. Jika ada pertanyaan, silakan hubungi kami.\n\nSemoga sukses!`;
       setProcessedMessage(defaultMsg);
     }
@@ -474,43 +474,68 @@ export default function AdminSalesPage() {
     toast.success('Pesan disalin ke clipboard');
   };
 
+  const cleanupProductName = (name: string): string => {
+    if (!name) return '';
+    
+    // Remove "Membership: " prefix first
+    let cleaned = name.replace(/^Membership:\s*/i, '').trim();
+    
+    // Remove "Pembelian " prefix (Indonesian for "Purchase")
+    cleaned = cleaned.replace(/^Pembelian\s+/i, '').trim();
+    
+    // Take only the FIRST part before " - " to avoid duplicates
+    // e.g., "Paket 6 Bulan - Paket 6 Bulan" becomes "Paket 6 Bulan"
+    if (cleaned.includes(' - ')) {
+      cleaned = cleaned.split(' - ')[0].trim();
+    }
+    
+    return cleaned;
+  };
+
   const getProductName = (tx: Transaction) => {
+    let productName = '';
+    
     // Check description first (from Sejoli import) - shows actual paket name like "Kelas Eksporyuk 12 Bulan"
     if (tx.description) {
-      return tx.description;
+      productName = tx.description;
     }
     // Check metadata.productName (from Sejoli import)
-    if (tx.metadata?.productName) {
-      return tx.metadata.productName;
+    else if (tx.metadata?.productName) {
+      productName = tx.metadata.productName;
     }
     // Check membership relation
-    if (tx.membership?.membership?.name) {
-      return tx.membership.membership.name;
+    else if (tx.membership?.membership?.name) {
+      productName = tx.membership.membership.name;
     }
     // Check metadata for membership name
-    if (tx.type === 'MEMBERSHIP' && tx.metadata?.membershipName) {
-      return tx.metadata.membershipName;
+    else if (tx.type === 'MEMBERSHIP' && tx.metadata?.membershipName) {
+      productName = tx.metadata.membershipName;
     }
     // Then product
-    if (tx.product?.name) {
-      return tx.product.name;
+    else if (tx.product?.name) {
+      productName = tx.product.name;
     }
     // Then course
-    if (tx.course?.title) {
-      return tx.course.title;
+    else if (tx.course?.title) {
+      productName = tx.course.title;
     }
     // Then event
-    if (tx.event?.title) {
-      return tx.event.title;
+    else if (tx.event?.title) {
+      productName = tx.event.title;
     }
     // Fallback based on type
-    const typeLabels: Record<string, string> = {
-      'MEMBERSHIP': 'Membership',
-      'EVENT': 'Event',
-      'PRODUCT': 'Produk Digital',
-      'COURSE': 'Kursus Online',
-    };
-    return typeLabels[tx.type] || tx.type || '-';
+    else {
+      const typeLabels: Record<string, string> = {
+        'MEMBERSHIP': 'Membership',
+        'EVENT': 'Event',
+        'PRODUCT': 'Produk Digital',
+        'COURSE': 'Kursus Online',
+      };
+      productName = typeLabels[tx.type] || tx.type || '-';
+    }
+    
+    // Cleanup the name (remove duplicates and prefixes)
+    return cleanupProductName(productName);
   };
 
   // Get specific product type for filtering (maps MEMBERSHIP to MEMBERSHIP_SIX_MONTHS, MEMBERSHIP_TWELVE_MONTHS, MEMBERSHIP_LIFETIME)
@@ -967,7 +992,7 @@ export default function AdminSalesPage() {
                         {/* Invoice */}
                         <TableCell>
                           <div className="font-mono font-bold text-orange-600 text-sm">
-                            {tx.invoiceNumber || `INV${tx.id.slice(0, 5).toUpperCase()}`}
+                            {tx.invoiceNumber ? tx.invoiceNumber.slice(-8).toUpperCase() : `INV${tx.id.slice(0, 5).toUpperCase()}`}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
                             {new Date(tx.createdAt).toLocaleDateString('id-ID', { 
@@ -1357,7 +1382,7 @@ export default function AdminSalesPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Invoice Number:</span>
                       <span className="font-mono font-bold text-orange-600">
-                        {selectedTransaction.invoiceNumber || `INV${selectedTransaction.id.slice(0, 5).toUpperCase()}`}
+                        {selectedTransaction.invoiceNumber ? selectedTransaction.invoiceNumber.slice(-8).toUpperCase() : `INV${selectedTransaction.id.slice(0, 5).toUpperCase()}`}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -1575,7 +1600,7 @@ export default function AdminSalesPage() {
                           className="w-full gap-2 border-orange-300 text-orange-700 hover:bg-orange-50 shadow-sm hover:shadow-md transition-all"
                           onClick={() => {
                             const affiliate = selectedTransaction.affiliateConversion!.affiliate.user;
-                            const message = `Halo ${affiliate.name}! 🎉\n\nSelamat! Ada komisi baru untuk Anda:\n\n💰 Komisi: Rp ${Number(selectedTransaction.affiliateConversion!.commissionAmount).toLocaleString('id-ID')}\n📦 Produk: ${getProductName(selectedTransaction)}\n🧾 Invoice: ${selectedTransaction.invoiceNumber || selectedTransaction.id.slice(0, 8).toUpperCase()}\n\nTerima kasih atas kontribusi Anda! 🙌`;
+                            const message = `Halo ${affiliate.name}! 🎉\n\nSelamat! Ada komisi baru untuk Anda:\n\n💰 Komisi: Rp ${Number(selectedTransaction.affiliateConversion!.commissionAmount).toLocaleString('id-ID')}\n📦 Produk: ${getProductName(selectedTransaction)}\n🧾 Invoice: ${selectedTransaction.invoiceNumber ? selectedTransaction.invoiceNumber.slice(-8).toUpperCase() : `INV${selectedTransaction.id.slice(0, 5).toUpperCase()}`}\n\nTerima kasih atas kontribusi Anda! 🙌`;
                             
                             const phone = affiliate.whatsapp!.replace(/\D/g, '');
                             const waNumber = phone.startsWith('62') ? phone : `62${phone.replace(/^0/, '')}`;
@@ -1642,7 +1667,7 @@ export default function AdminSalesPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-500">Invoice</p>
-                    <p className="font-mono text-sm font-medium text-gray-900">{followUpTx.invoiceNumber || followUpTx.id.slice(0, 8).toUpperCase()}</p>
+                    <p className="font-mono text-sm font-medium text-gray-900">{followUpTx.invoiceNumber ? followUpTx.invoiceNumber.slice(-8).toUpperCase() : `INV${followUpTx.id.slice(0, 5).toUpperCase()}`}</p>
                   </div>
                 </div>
               )}

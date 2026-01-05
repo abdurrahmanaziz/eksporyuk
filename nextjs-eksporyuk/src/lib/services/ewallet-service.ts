@@ -262,6 +262,21 @@ export class EWalletService {
       }
     }
 
+    // Normalize phone number for consistent lookup
+    let normalizedPhone = phoneNumber.replace(/\D/g, '') // Remove all non-digits
+    
+    // Try different phone number formats for mock lookup with more variations
+    const phoneFormats = [
+      normalizedPhone,  // As-is: 081234567890
+      normalizedPhone.startsWith('62') ? '0' + normalizedPhone.substring(2) : null,  // 628123456789 → 08123456789
+      normalizedPhone.startsWith('8') ? '0' + normalizedPhone : null,  // 8123456789 → 08123456789
+      normalizedPhone.startsWith('0') ? '62' + normalizedPhone.substring(1) : null,  // 08123456789 → 628123456789
+      normalizedPhone.startsWith('+62') ? normalizedPhone.substring(3) : null,  // +628123456789 → 8123456789
+      normalizedPhone.startsWith('+62') ? '0' + normalizedPhone.substring(3) : null,  // +628123456789 → 08123456789
+    ].filter(Boolean) as string[] // Remove null values
+
+    console.log(`[Mock E-Wallet] Testing phone formats for ${provider} (input: ${phoneNumber}):`, phoneFormats)
+
     // Comprehensive mock data - covers common patterns and test numbers
     const mockAccounts: Record<string, Record<string, string>> = {
       'OVO': {
@@ -359,23 +374,38 @@ export class EWalletService {
       }
     }
 
-    const accountName = mockAccounts[provider]?.[phoneNumber]
+    // Try to find account with any of the phone formats
+    let accountName: string | null = null
+    let matchedFormat: string | null = null
 
-    if (accountName) {
-      // Cache mock data
-      await this.cacheAccountInfo(provider, phoneNumber, accountName, userId)
+    for (const format of phoneFormats) {
+      const foundName = mockAccounts[provider]?.[format]
+      if (foundName) {
+        accountName = foundName
+        matchedFormat = format
+        console.log(`[Mock E-Wallet] Found match for ${provider} with format: ${format} → ${foundName}`)
+        break
+      }
+    }
+
+    if (accountName && matchedFormat) {
+      // Cache mock data using the matched format for consistency
+      await this.cacheAccountInfo(provider, matchedFormat, accountName, userId)
       
       return {
         success: true,
         accountName,
-        message: 'Account found (mock data)'
+        message: `Account found (mock data) - matched format: ${matchedFormat}`
       }
     }
+
+    console.log(`[Mock E-Wallet] No account found for ${provider} with any format:`, phoneFormats)
+    console.log(`[Mock E-Wallet] Available ${provider} accounts:`, Object.keys(mockAccounts[provider] || {}))
 
     return {
       success: false,
       accountName: null,
-      message: `Account not found for ${provider} ${phoneNumber}`
+      message: `Account not found for ${provider} (tried formats: ${phoneFormats.join(', ')})`
     }
   }
 

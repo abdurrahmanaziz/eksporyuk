@@ -118,13 +118,24 @@ export default function UserWalletPage() {
           toast.success(`✅ Akun ditemukan: ${data.accountName} (Development Mode)`)
         }
       } else {
-        // Check if it's a server error vs account not found
-        if (!response.ok) {
+        // Handle different types of response errors more gracefully
+        if (response.status >= 500) {
+          // Only show "server error" for actual server errors (5xx)
           setNameCheckResult('Error server - coba lagi')
           toast.error('Server error. Silakan coba lagi.')
+        } else if (response.status === 422) {
+          // Handle validation errors (expected when account not found)
+          const errorMsg = data.message || `Akun ${ewalletType} tidak ditemukan`
+          setNameCheckResult(errorMsg)
+          toast.warning(errorMsg)
+        } else if (response.status === 401) {
+          // Handle auth errors
+          setNameCheckResult('Session expired')
+          toast.error('Session expired. Please login again.')
         } else {
+          // Handle other client errors
           setNameCheckResult(`Akun ${ewalletType} tidak ditemukan`)
-          toast.warning(`Akun ${ewalletType} dengan nomor ${cleanPhone} tidak ditemukan. Pastikan nomor benar dan aktif.`)
+          toast.warning(data.message || `Akun ${ewalletType} dengan nomor ${cleanPhone} tidak ditemukan. Pastikan nomor benar dan aktif.`)
         }
       }
     } catch (error) {

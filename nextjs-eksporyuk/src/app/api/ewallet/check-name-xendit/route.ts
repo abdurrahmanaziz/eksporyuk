@@ -38,16 +38,22 @@ export async function POST(request: NextRequest) {
     console.log(`[E-Wallet Check] Normalized phone: ${normalizedPhone}`)
 
     // Try Xendit first if configured
+    let xenditAttempted = false
+    let xenditSuccess = false
+    let xenditError = null
+
     try {
       const xenditService = getXenditPayoutService()
       
       if (xenditService && xenditService.isConfigured()) {
         console.log('[E-Wallet Check] Attempting Xendit API validation...')
+        xenditAttempted = true
         
         const result = await xenditService.validateAccount(provider, normalizedPhone)
         
         if (result.success && result.accountName) {
           console.log(`[E-Wallet Check] Xendit success: ${result.accountName}`)
+          xenditSuccess = true
           return NextResponse.json({
             success: true,
             accountName: result.accountName,
@@ -56,12 +62,19 @@ export async function POST(request: NextRequest) {
           })
         } else {
           console.log(`[E-Wallet Check] Xendit failed: ${result.error}`)
+          xenditError = result.error
+          
+          // If Xendit fails with "account not found", we can still try mock
+          if (result.error?.includes('not found') || result.error?.includes('invalid')) {
+            console.log('[E-Wallet Check] Account not found in Xendit, trying fallback...')
+          }
         }
       } else {
         console.log('[E-Wallet Check] Xendit service not configured')
       }
-    } catch (xenditError) {
-      console.error('[E-Wallet Check] Xendit error:', xenditError)
+    } catch (error) {
+      console.error('[E-Wallet Check] Xendit service error:', error)
+      xenditError = error.message
     }
 
     // Fallback to mock service for development/testing
@@ -86,13 +99,38 @@ export async function POST(request: NextRequest) {
       console.error('[E-Wallet Check] Mock service error:', mockError)
     }
 
-    // If both services fail, return detailed error
+    // If both services fail, return user-friendly response instead of server error
     console.log('[E-Wallet Check] All validation methods failed')
+    
+    // Provide helpful response based on what was attempted
+    let message = 'Unable to verify account name. Please check your phone number and try again.'
+    let details = []
+    
+    if (xenditAttempted) {
+      if (xenditError?.includes('not found') || xenditError?.includes('invalid')) {
+        message = `${provider} account with number ${normalizedPhone} not found. Please check the phone number.`
+      } else if (xenditError?.includes('401') || xenditError?.includes('authentication')) {
+        details.push('Xendit API authentication issue')
+      } else {
+        details.push(`Xendit error: ${xenditError}`)
+      }
+    } else {
+      details.push('Xendit service not configured')
+    }
+    
+    details.push('Fallback service also unavailable')
+    
+    // Return 422 for validation issues, but make it clear this is expected behavior
     return NextResponse.json({
       success: false,
       error: 'Account validation failed',
-      message: 'Unable to verify account name. Please check your phone number and try again.',
-      details: 'Both Xendit API and fallback service unavailable'
+      message,
+      details: details.join(', '),
+      attempted: {
+        xendit: xenditAttempted,
+        xenditSuccess,
+        fallback: true
+      }
     }, { status: 422 })
 
   } catch (error: any) {
