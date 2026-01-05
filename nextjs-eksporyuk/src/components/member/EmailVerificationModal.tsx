@@ -30,21 +30,24 @@ export default function EmailVerificationModal({ onComplete }: EmailVerification
   const [currentEmail, setCurrentEmail] = useState<string>('')
   const [emailMismatch, setEmailMismatch] = useState(false)
 
+  // Check if email is Gmail (no verification needed for Gmail users)
+  const isGmailUser = session?.user?.email?.endsWith('@gmail.com') || false
+
   useEffect(() => {
-    // Hanya tampilkan jika user sudah login, bukan admin, dan email belum verified
+    // Hanya tampilkan jika user sudah login, bukan admin, email belum verified, dan BUKAN Gmail user
     if (status === 'authenticated' && session?.user) {
       const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN'
       
-      if (!isAdmin && !session.user.emailVerified) {
+      if (!isAdmin && !session.user.emailVerified && !isGmailUser) {
         // Fetch current email from database
         fetchCurrentEmail()
         setIsOpen(true)
-      } else if (session.user.emailVerified) {
-        // Close modal if email is now verified
+      } else if (session.user.emailVerified || isGmailUser) {
+        // Close modal if email is now verified OR if Gmail user
         setIsOpen(false)
       }
     }
-  }, [session, status])
+  }, [session, status, isGmailUser])
 
   // Auto-check verification status every 10 seconds when modal is open
   useEffect(() => {

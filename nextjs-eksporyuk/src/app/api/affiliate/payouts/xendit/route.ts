@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { Xendit } from '@/lib/xendit'
+import { XenditPayout } from '@/lib/services/xendit-bank-payout'
 import bcrypt from 'bcryptjs'
 
 // Force this route to be dynamic
@@ -143,82 +143,115 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create Xendit disbursement
-    const xendit = new Xendit({
-      secretKey: process.env.XENDIT_SECRET_KEY!,
-    })
-
-    const disbursement = await xendit.Disbursement.create({
-      external_id: `withdrawal_${session.user.id}_${Date.now()}`,
-      bank_code: getBankCode(bankName),
-      account_holder_name: accountName,
-      account_number: accountNumber,
-      description: `Penarikan komisi affiliate - ${session.user.name}`,
-      amount: netAmount,
-      email_to: [session.user.email],
-      email_cc: [],
-      email_bcc: [],
-    })
-
-    // Create payout record with Xendit ID
-    const payout = await prisma.payout.create({
-      data: {
-        walletId: wallet.id,
-        amount,
-        status: 'PROCESSING',
-        bankName,
-        accountName,
-        accountNumber,
-        notes: 'Penarikan otomatis via Xendit',
-        metadata: {
-          adminFee,
-          netAmount,
-          requestedAmount: amount,
-          xenditId: disbursement.id,
-          xenditExternalId: disbursement.external_id,
+    // Create Xendit payout
+    const xenditPayout = new XenditPayout()
+    
+    // For banks, convert bank name to bank code
+    const bankCode = getBankCode(bankName)
+    
+    try {
+      const payout = await xenditPayout.createPayout({
+        referenceId: `bank_${session.user.id}_${Date.now()}`,
+        channelCode: bankCode,
+        channelProperties: {
+          accountHolderName: accountName,
+          accountNumber: accountNumber,
         },
-      },
-    })
-
-    // Create wallet transaction
-    await prisma.walletTransaction.create({
-      data: {
-        walletId: wallet.id,
-        amount: -amount,
-        type: 'PAYOUT_PROCESSING',
-        description: `Penarikan dana otomatis sebesar Rp ${amount.toLocaleString()} (Biaya admin: Rp ${adminFee.toLocaleString()}, Nett: Rp ${netAmount.toLocaleString()})`,
-        reference: payout.id,
-        metadata: {
-          adminFee,
-          netAmount,
-          xenditId: disbursement.id,
-        },
-      },
-    })
-
-    return NextResponse.json({
-      success: true,
-      payout,
-      disbursement: {
-        id: disbursement.id,
-        external_id: disbursement.external_id,
-        status: disbursement.status,
         amount: netAmount,
-      },
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
+        currency: 'IDR',
+        description: `Bank transfer payout - ${session.user.name}`,
+        metadata: {
+          userId: session.user.id,
+          type: 'bank_transfer'
+        }
+      })
+
+      // Create payout record with Xendit ID
+      const payoutRecord = await prisma.payout.create({
+        data: {
+          walletId: wallet.id,
+          amount,
+          status: 'PROCESSING',
+          bankName,
+          accountName,
+          accountNumber,
+          notes: 'Bank transfer otomatis via Xendit',
+          metadata: {
+            adminFee,
+            netAmount,
+            requestedAmount: amount,
+            xenditId: payout.id,
+            xenditReferenceId: payout.referenceId,
+          },
+        },
+      })
+
+      // Create wallet transaction
+      await prisma.walletTransaction.create({
+        data: {
+          walletId: wallet.id,
+          amount: -amount,
+          type: 'PAYOUT_PROCESSING',
+          description: `Bank transfer sebesar Rp ${amount.toLocaleString()} (Biaya admin: Rp ${adminFee.toLocaleString()}, Nett: Rp ${netAmount.toLocaleString()})`,
+          reference: payoutRecord.id,
+          metadata: {
+            adminFee,
+            netAmount,
+            xenditId: payout.id,
+          },
+        },
+      })
+
+      return NextResponse.json({
+        success: true,
+        payout: payoutRecord,
+        xenditPayout: {
+          id: payout.id,
+          referenceId: payout.referenceId,
+          status: payout.status,
+          amount: netAmount,
+        },
+      }, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      })
+    } catch (xenditError) {
+      console.error('[XENDIT BANK TRANSFER ERROR]', xenditError)
+      
+      // Handle specific Xendit errors
+      if (xenditError.message?.includes('DUPLICATE_REFERENCE_ID')) {
+        return NextResponse.json(
+          { error: 'Permintaan bank transfer sedang diproses, mohon tunggu' },
+          { status: 400 }
+        )
       }
-    })
+      
+      if (xenditError.message?.includes('INSUFFICIENT_BALANCE')) {
+        return NextResponse.json(
+          { error: 'Saldo platform tidak mencukupi, hubungi admin' },
+          { status: 400 }
+        )
+      }
+      
+      if (xenditError.message?.includes('INVALID_ACCOUNT')) {
+        return NextResponse.json(
+          { error: 'Nomor rekening tidak valid atau bank tidak mendukung transfer otomatis' },
+          { status: 400 }
+        )
+      }
+      
+      throw xenditError // Re-throw to be caught by outer try-catch
+    }
   } catch (error) {
-    console.error('[XENDIT WITHDRAWAL ERROR]', error)
+    console.error('[BANK TRANSFER WITHDRAWAL ERROR]', error)
     
     // Handle Xendit specific errors
-    if (error.message?.includes('DUPLICATE_EXTERNAL_ID')) {
+    if (error.message?.includes('DUPLICATE_REFERENCE_ID')) {
       return NextResponse.json(
-        { error: 'Permintaan penarikan sedang diproses, mohon tunggu' },
+        { error: 'Permintaan bank transfer sedang diproses, mohon tunggu' },
         { status: 400 }
       )
     }
@@ -230,51 +263,51 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    if (error.message?.includes('INVALID_ACCOUNT')) {
+      return NextResponse.json(
+        { error: 'Nomor rekening tidak valid atau bank tidak mendukung transfer otomatis' },
+        { status: 400 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: 'Gagal memproses penarikan otomatis' },
+      { error: 'Gagal memproses bank transfer otomatis' },
       { status: 500 }
     )
   }
 }
 
-// Map bank/e-wallet names to Xendit bank codes
+// Map bank names to Xendit bank channel codes (Payout API v2)
 function getBankCode(bankName: string): string {
   const bankCodes: Record<string, string> = {
-    // E-Wallets
-    'OVO': 'OVO',
-    'GOPAY': 'GOPAY',
-    'DANA': 'DANA',
-    'LINKAJA': 'LINKAJA',
-    'SHOPEEPAY': 'SHOPEEPAY',
-    
     // Major Banks
-    'BCA': 'BCA',
-    'BNI': 'BNI',
-    'BRI': 'BRI', 
-    'MANDIRI': 'MANDIRI',
-    'PERMATA': 'PERMATA',
-    'CIMB': 'CIMB',
-    'CIMB NIAGA': 'CIMB',
-    'DANAMON': 'DANAMON',
-    'BSI': 'BSI',
-    'BTN': 'BTN',
-    'BTPN': 'BTPN',
-    'MAYBANK': 'MAYBANK',
-    'OCBC NISP': 'OCBC',
-    'PANIN': 'PANIN',
-    'BUKOPIN': 'BUKOPIN',
-    'MEGA': 'MEGA',
+    'BCA': 'ID_BCA',
+    'BNI': 'ID_BNI',
+    'BRI': 'ID_BRI', 
+    'MANDIRI': 'ID_MANDIRI',
+    'PERMATA': 'ID_PERMATA',
+    'CIMB': 'ID_CIMB',
+    'CIMB NIAGA': 'ID_CIMB',
+    'DANAMON': 'ID_DANAMON',
+    'BSI': 'ID_BSI',
+    'BTN': 'ID_BTN',
+    'BTPN': 'ID_BTPN',
+    'MAYBANK': 'ID_MAYBANK',
+    'OCBC NISP': 'ID_OCBC_NISP',
+    'PANIN': 'ID_PANIN',
+    'BUKOPIN': 'ID_BUKOPIN',
+    'MEGA': 'ID_MEGA',
     
     // Digital Banks
-    'JENIUS': 'BTPN',
-    'LINE BANK': 'LINE_BANK',
-    'SEABANK': 'SEABANK',
-    'JAGO': 'JAGO',
-    'NEO COMMERCE': 'NEO_COMMERCE',
-    'BLU BCA': 'BCA',
-    'BLU BY BCA DIGITAL': 'BCA',
+    'JENIUS': 'ID_BTPN',
+    'LINE BANK': 'ID_LINEBANK',
+    'SEABANK': 'ID_SEABANK',
+    'JAGO': 'ID_JAGO',
+    'NEO COMMERCE': 'ID_NEO',
+    'BLU BCA': 'ID_BCA',
+    'BLU BY BCA DIGITAL': 'ID_BCA',
   }
   
   const upperBankName = bankName.toUpperCase().trim()
-  return bankCodes[upperBankName] || bankName.toUpperCase()
+  return bankCodes[upperBankName] || 'ID_BCA' // Default to BCA if not found
 }
