@@ -26,7 +26,7 @@ export async function POST(
 
     console.log('[Payment Approve] Processing approval for:', transactionId)
 
-    // Find transaction
+    // Find transaction with commission details
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
       select: {
@@ -41,7 +41,8 @@ export async function POST(
         productId: true,
         courseId: true,
         couponId: true,
-        affiliateId: true
+        affiliateId: true,
+        metadata: true
       }
     })
 
@@ -141,10 +142,62 @@ export async function POST(
     // Process commission if there's an affiliate
     if (transaction.affiliateId) {
       try {
-        // Import commission helper
-        const { processTransactionCommission } = await import('@/lib/commission-helper')
-        await processTransactionCommission(transaction.id)
-        console.log('[Payment Approve] Commission processed successfully')
+        // Get commission configuration from membership or product
+        let affiliateCommissionRate = 30 // Default
+        let commissionType: 'PERCENTAGE' | 'FLAT' = 'PERCENTAGE'
+        
+        // Get commission settings from membership or product based on transaction type
+        if (transaction.type === 'MEMBERSHIP' && transaction.membershipId) {
+          const membership = await prisma.membership.findUnique({
+            where: { id: transaction.membershipId },
+            select: { affiliateCommissionRate: true, commissionType: true }
+          })
+          if (membership) {
+            affiliateCommissionRate = Number(membership.affiliateCommissionRate || 30)
+            commissionType = (membership.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
+          }
+        } else if (transaction.type === 'PRODUCT' && transaction.productId) {
+          const product = await prisma.product.findUnique({
+            where: { id: transaction.productId },
+            select: { affiliateCommissionRate: true, commissionType: true }
+          })
+          if (product) {
+            affiliateCommissionRate = Number(product.affiliateCommissionRate || 30)
+            commissionType = (product.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
+          }
+        }
+        
+        // Get admin/founder/cofounder IDs
+        const adminUser = await prisma.user.findFirst({
+          where: { role: 'ADMIN' },
+          select: { id: true }
+        })
+        const founderUser = await prisma.user.findFirst({
+          where: { isFounder: true },
+          select: { id: true }
+        })
+        const cofounderUser = await prisma.user.findFirst({
+          where: { isCoFounder: true },
+          select: { id: true }
+        })
+        
+        if (adminUser && founderUser && cofounderUser) {
+          // Import commission helper
+          const { processTransactionCommission } = await import('@/lib/commission-helper')
+          await processTransactionCommission(
+            transaction.id,
+            transaction.affiliateId,
+            adminUser.id,
+            founderUser.id,
+            cofounderUser.id,
+            Number(transaction.amount),
+            affiliateCommissionRate,
+            commissionType
+          )
+          console.log('[Payment Approve] Commission processed successfully')
+        } else {
+          console.warn('[Payment Approve] Could not find system users for commission processing')
+        }
       } catch (commissionError) {
         console.error('[Payment Approve] Failed to process commission:', commissionError)
       }
