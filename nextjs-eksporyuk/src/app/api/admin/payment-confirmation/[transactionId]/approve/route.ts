@@ -132,6 +132,67 @@ export async function POST(
               }
             })
             console.log('[Payment Approve] Created new membership')
+
+            // 🔥 AUTO-JOIN GROUPS AND ENROLL COURSES
+            try {
+              // Get membership groups
+              const membershipGroups = await prisma.membershipGroup.findMany({
+                where: { membershipId: transaction.membershipId },
+                select: { groupId: true }
+              })
+
+              // Auto-join groups
+              for (const mg of membershipGroups) {
+                await prisma.groupMember.create({
+                  data: {
+                    groupId: mg.groupId,
+                    userId: transaction.userId,
+                    role: 'MEMBER'
+                  }
+                }).catch(() => {}) // Ignore if already member
+              }
+
+              // Get membership courses  
+              const membershipCourses = await prisma.membershipCourse.findMany({
+                where: { membershipId: transaction.membershipId },
+                select: { courseId: true }
+              })
+
+              // Auto-enroll courses
+              for (const mc of membershipCourses) {
+                await prisma.courseEnrollment.create({
+                  data: {
+                    id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+                    userId: transaction.userId,
+                    courseId: mc.courseId,
+                    updatedAt: new Date()
+                  }
+                }).catch(() => {}) // Ignore if already enrolled
+              }
+
+              // Get membership products
+              const membershipProducts = await prisma.membershipProduct.findMany({
+                where: { membershipId: transaction.membershipId },
+                select: { productId: true }
+              })
+
+              // Auto-grant products
+              for (const mp of membershipProducts) {
+                await prisma.userProduct.create({
+                  data: {
+                    userId: transaction.userId,
+                    productId: mp.productId,
+                    transactionId: transaction.id,
+                    purchaseDate: new Date(),
+                    price: 0 // Free as part of membership
+                  }
+                }).catch(() => {}) // Ignore if already owned
+              }
+
+              console.log(`[Payment Approve] Auto-assigned: ${membershipGroups.length} groups, ${membershipCourses.length} courses, ${membershipProducts.length} products`)
+            } catch (activationError) {
+              console.error('[Payment Approve] Failed to auto-assign groups/courses:', activationError)
+            }
           }
         }
       } catch (membershipError) {

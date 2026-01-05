@@ -267,6 +267,7 @@ export async function POST(request: NextRequest) {
     // Only add foreign keys if they have values
     if (coupon?.id) transactionData.couponId = coupon.id
     if (affiliateId) transactionData.affiliateId = affiliateId
+    if (planId) transactionData.membershipId = planId  // 🔥 FIX: Set membershipId field
 
     const transaction = await prisma.transaction.create({
       data: transactionData

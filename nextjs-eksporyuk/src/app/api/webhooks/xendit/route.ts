@@ -233,9 +233,10 @@ async function handleInvoicePaid(data: any) {
     }
 
     // Handle membership creation/activation
-    if (transaction.type === 'MEMBERSHIP' && transaction.metadata) {
+    if (transaction.type === 'MEMBERSHIP') {
+      // Try membershipId from transaction field first, then fallback to metadata
       const metadata = transaction.metadata as any
-      const membershipId = metadata.membershipId
+      const membershipId = transaction.membershipId || metadata?.membershipId
 
       if (membershipId) {
         // Check if UserMembership already exists
@@ -1032,9 +1033,10 @@ async function handleVAPaymentComplete(data: any) {
     console.log('[Xendit Webhook] ✅ Transaction updated to SUCCESS:', transaction.id)
 
     // Process membership activation (same logic as handleInvoicePaid)
-    if (transaction.type === 'MEMBERSHIP' && transaction.metadata) {
+    if (transaction.type === 'MEMBERSHIP') {
+      // Try membershipId from transaction field first, then fallback to metadata
       const metadata = transaction.metadata as any
-      const membershipId = metadata.membershipId
+      const membershipId = transaction.membershipId || metadata?.membershipId
 
       if (membershipId) {
         const existingUserMembership = await prisma.userMembership.findFirst({
