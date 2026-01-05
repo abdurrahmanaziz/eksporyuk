@@ -92,18 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Affiliate profile not found' }, { status: 404 })
     }
 
-    // Calculate available balance
-    const allConversions = await prisma.affiliateConversion.findMany({
-      where: { affiliateId: affiliateProfile.id },
-      select: { commissionAmount: true, paidOut: true },
-    })
-
-    const totalEarnings = allConversions.reduce((sum, c) => sum + Number(c.commissionAmount), 0)
-    const paidOutTotal = allConversions
-      .filter(c => c.paidOut)
-      .reduce((sum, c) => sum + Number(c.commissionAmount), 0)
-
-    // Get or create wallet
+    // Calculate available balance from wallet
     let wallet = await prisma.wallet.findUnique({
       where: { userId: session.user.id },
     })
@@ -124,11 +113,18 @@ export async function POST(request: NextRequest) {
     })
 
     const pending = pendingPayouts.reduce((sum, p) => sum + Number(p.amount), 0)
-    const available = totalEarnings - paidOutTotal - pending
+    const available = Number(wallet.balance) - pending
+
+    console.log('[BANK TRANSFER] Balance check:', {
+      walletBalance: Number(wallet.balance),
+      pendingAmount: pending,
+      availableAmount: available,
+      requestedAmount: amount
+    })
 
     if (amount > available) {
       return NextResponse.json(
-        { error: 'Saldo tidak mencukupi' },
+        { error: `Saldo tidak mencukupi. Available: Rp ${available.toLocaleString()}, Requested: Rp ${amount.toLocaleString()}` },
         { status: 400 }
       )
     }
@@ -186,7 +182,7 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // Create wallet transaction
+      // Create wallet transaction (deduct from balance)
       await prisma.walletTransaction.create({
         data: {
           walletId: wallet.id,
@@ -200,6 +196,20 @@ export async function POST(request: NextRequest) {
             xenditId: payout.id,
           },
         },
+      })
+
+      // Update wallet balance (deduct the amount)
+      await prisma.wallet.update({
+        where: { id: wallet.id },
+        data: {
+          balance: { decrement: amount }
+        }
+      })
+
+      console.log('[BANK TRANSFER] Wallet updated:', {
+        previousBalance: Number(wallet.balance),
+        newBalance: Number(wallet.balance) - amount,
+        deductedAmount: amount
       })
 
       return NextResponse.json({
