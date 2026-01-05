@@ -294,7 +294,7 @@ export async function POST(request: NextRequest) {
         reminders,
         affiliateEnabled: affiliateEnabled ?? true,
         commissionType: commissionType || 'PERCENTAGE',
-        affiliateCommissionRate: affiliateCommissionRate || 30,
+        affiliateCommissionRate: affiliateCommissionRate || 0,
       },
     })
 

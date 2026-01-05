@@ -57,7 +57,7 @@ export async function calculateRevenueSplit(
   let affiliateAmount = 0
   if (affiliateId) {
     let commissionType = 'PERCENTAGE'
-    let commissionRate = 30
+    let commissionRate = 0
     
     // Get commission settings from membership, product, event, course, or supplier package
     if (type === 'MEMBERSHIP' && options.membershipId) {
@@ -67,7 +67,7 @@ export async function calculateRevenueSplit(
       })
       if (membership) {
         commissionType = membership.commissionType || 'PERCENTAGE'
-        commissionRate = Number(membership.affiliateCommissionRate) || 30
+        commissionRate = Number(membership.affiliateCommissionRate) || 0
       }
     } else if (type === 'PRODUCT' && options.productId) {
       const product = await prisma.product.findUnique({
@@ -76,7 +76,7 @@ export async function calculateRevenueSplit(
       })
       if (product) {
         commissionType = product.commissionType || 'PERCENTAGE'
-        commissionRate = Number(product.affiliateCommissionRate) || 30
+        commissionRate = Number(product.affiliateCommissionRate) || 0
       }
     } else if (type === 'EVENT' && options.eventId) {
       const event = await prisma.event.findUnique({
@@ -85,7 +85,7 @@ export async function calculateRevenueSplit(
       })
       if (event) {
         commissionType = event.commissionType || 'PERCENTAGE'
-        commissionRate = Number(event.commissionRate) || 30
+        commissionRate = Number(event.commissionRate) || 0
       }
     } else if (type === 'COURSE' && options.courseId) {
       const course = await prisma.course.findUnique({
@@ -94,7 +94,7 @@ export async function calculateRevenueSplit(
       })
       if (course) {
         commissionType = course.commissionType || 'PERCENTAGE'
-        commissionRate = Number(course.affiliateCommissionRate) || 30
+        commissionRate = Number(course.affiliateCommissionRate) || 0
       }
     } else if (type === 'SUPPLIER' && options.supplierPackageId) {
       const supplierPackage = await prisma.supplierPackage.findUnique({
@@ -103,7 +103,7 @@ export async function calculateRevenueSplit(
       })
       if (supplierPackage) {
         commissionType = supplierPackage.commissionType || 'PERCENTAGE'
-        commissionRate = Number(supplierPackage.affiliateCommissionRate) || 30
+        commissionRate = Number(supplierPackage.affiliateCommissionRate) || 0
       }
     }
     

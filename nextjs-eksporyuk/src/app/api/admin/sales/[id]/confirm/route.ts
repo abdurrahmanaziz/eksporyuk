@@ -197,7 +197,7 @@ export async function POST(
     if (admin && founder && coFounder) {
       // Get affiliate info and commission settings
       let affiliateId: string | null = null
-      let affiliateCommissionRate = 30
+      let affiliateCommissionRate = 0
       let commissionType: 'PERCENTAGE' | 'FLAT' = 'PERCENTAGE'
       
       // Check for affiliate from transaction metadata or affiliateConversion

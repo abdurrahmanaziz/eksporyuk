@@ -129,7 +129,7 @@ export async function POST(request: Request) {
         isActive: isActive !== undefined ? isActive : true,
         displayOrder: displayOrder || 0,
         commissionType: commissionType || 'PERCENTAGE',
-        affiliateCommissionRate: affiliateCommissionRate || 30,
+        affiliateCommissionRate: affiliateCommissionRate || 0,
         updatedAt: new Date(),
       },
     })

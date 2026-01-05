@@ -143,7 +143,7 @@ export async function POST(
     if (transaction.affiliateId) {
       try {
         // Get commission configuration from membership or product
-        let affiliateCommissionRate = 30 // Default
+        let affiliateCommissionRate = 0
         let commissionType: 'PERCENTAGE' | 'FLAT' = 'PERCENTAGE'
         
         // Get commission settings from membership or product based on transaction type
@@ -153,7 +153,7 @@ export async function POST(
             select: { affiliateCommissionRate: true, commissionType: true }
           })
           if (membership) {
-            affiliateCommissionRate = Number(membership.affiliateCommissionRate || 30)
+            affiliateCommissionRate = Number(membership.affiliateCommissionRate || 0)
             commissionType = (membership.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
           }
         } else if (transaction.type === 'PRODUCT' && transaction.productId) {
@@ -162,7 +162,7 @@ export async function POST(
             select: { affiliateCommissionRate: true, commissionType: true }
           })
           if (product) {
-            affiliateCommissionRate = Number(product.affiliateCommissionRate || 30)
+            affiliateCommissionRate = Number(product.affiliateCommissionRate || 0)
             commissionType = (product.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
           }
         }

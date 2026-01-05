@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
         mailketingListName,
         mentorCommissionPercent: settings.defaultMentorCommission, // Use default from settings
         commissionType: affiliateCommissionType || commissionType || 'PERCENTAGE',
-        affiliateCommissionRate: affiliateCommissionRate || 30,
+        affiliateCommissionRate: affiliateCommissionRate || 0,
         affiliateEnabled: affiliateEnabled ?? true,
         approvedBy: session.user.id,
         approvedAt: new Date(),

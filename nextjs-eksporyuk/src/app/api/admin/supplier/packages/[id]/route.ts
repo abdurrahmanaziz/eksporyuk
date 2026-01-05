@@ -130,7 +130,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
         ...(displayOrder !== undefined && { displayOrder }),
         ...(commissionType && { commissionType }),
         ...(affiliateCommissionRate !== undefined && { 
-          affiliateCommissionRate: parseFloat(affiliateCommissionRate) || 30 
+          affiliateCommissionRate: parseFloat(affiliateCommissionRate) || 0 
         }),
       },
     })

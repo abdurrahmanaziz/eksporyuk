@@ -218,7 +218,7 @@ export async function POST(request: Request) {
         isFeatured: isFeatured || false,
         affiliateEnabled: affiliateEnabled !== undefined ? affiliateEnabled : true,
         commissionType: commissionType || 'PERCENTAGE',
-        affiliateCommissionRate: affiliateCommissionRate || 30,
+        affiliateCommissionRate: affiliateCommissionRate || 0,
         soldCount: 0,
         viewCount: 0,
         clickCount: 0,

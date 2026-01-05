@@ -90,21 +90,21 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Get affiliate commission rate and type from membership or product
-    let affiliateCommissionRate = 30 // Default
+    let affiliateCommissionRate = 0
     let commissionType: 'PERCENTAGE' | 'FLAT' = 'PERCENTAGE' // Default
     if (type === 'MEMBERSHIP' && membershipId) {
       const membership = await prisma.membership.findUnique({
         where: { id: membershipId },
         select: { affiliateCommissionRate: true, commissionType: true }
       })
-      affiliateCommissionRate = Number(membership?.affiliateCommissionRate || 30)
+      affiliateCommissionRate = Number(membership?.affiliateCommissionRate || 0)
       commissionType = (membership?.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
     } else if (type === 'PRODUCT' && productId) {
       const product = await prisma.product.findUnique({
         where: { id: productId },
         select: { affiliateCommissionRate: true, commissionType: true }
       })
-      affiliateCommissionRate = Number(product?.affiliateCommissionRate || 30)
+      affiliateCommissionRate = Number(product?.affiliateCommissionRate || 0)
       commissionType = (product?.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
     }
 

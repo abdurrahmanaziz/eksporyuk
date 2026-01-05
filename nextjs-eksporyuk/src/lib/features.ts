@@ -312,7 +312,7 @@ export const FEATURE_DEFINITIONS = [
     name: 'Akses Affiliate',
     description: 'Gabung Rich Affiliate, dapat komisi & short link',
     category: 'Marketing',
-    defaultValue: { commissionRate: 30, canCreateShortLinks: true, maxLinks: 50 }
+    defaultValue: { commissionRate: 0, canCreateShortLinks: true, maxLinks: 50 }
   },
   {
     key: AVAILABLE_FEATURES.MARKETING_KIT,

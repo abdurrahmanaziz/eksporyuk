@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       salesPageUrl: membership.salesPageUrl,
       isActive: membership.isActive,
       commissionType: membership.commissionType || 'PERCENTAGE',
-      affiliateCommissionRate: Number(membership.affiliateCommissionRate) || 30,
+      affiliateCommissionRate: Number(membership.affiliateCommissionRate) || 0,
       affiliateEnabled: membership.affiliateEnabled ?? true,
       formLogo: membership.formLogo,
       formBanner: membership.formBanner,
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
         alternativeUrl: alternativeUrl || null,
         isActive: true,
         commissionType: commissionType || 'PERCENTAGE',
-        affiliateCommissionRate: affiliateCommissionRate || 30,
+        affiliateCommissionRate: affiliateCommissionRate || 0,
       },
     })
 

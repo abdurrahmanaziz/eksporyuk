@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       where: { id: newMembershipId },
       select: { affiliateCommissionRate: true, commissionType: true }
     })
-    const affiliateCommissionRate = Number(newMembership?.affiliateCommissionRate || 30)
+    const affiliateCommissionRate = Number(newMembership?.affiliateCommissionRate || 0)
     const commissionType = (newMembership?.commissionType as 'PERCENTAGE' | 'FLAT') || 'PERCENTAGE'
 
     // 4. Calculate and distribute commission
