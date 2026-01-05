@@ -25,12 +25,18 @@ export async function GET(request: NextRequest) {
         withdrawalAdminFee: true,
         withdrawalPinRequired: true,
         withdrawalPinLength: true,
-        xenditEnabled: true,
+        paymentEnableXendit: true,
       },
     })
 
     return NextResponse.json({
-      settings: settings || {
+      settings: settings ? {
+        withdrawalMinAmount: settings.withdrawalMinAmount,
+        withdrawalAdminFee: settings.withdrawalAdminFee,
+        withdrawalPinRequired: settings.withdrawalPinRequired,
+        withdrawalPinLength: settings.withdrawalPinLength,
+        xenditEnabled: settings.paymentEnableXendit,
+      } : {
         withdrawalMinAmount: 50000,
         withdrawalAdminFee: 5000,
         withdrawalPinRequired: true,
@@ -101,7 +107,7 @@ export async function POST(request: NextRequest) {
           withdrawalAdminFee,
           withdrawalPinRequired,
           withdrawalPinLength,
-          xenditEnabled,
+          paymentEnableXendit: xenditEnabled,
         },
       })
     } else {
@@ -111,7 +117,7 @@ export async function POST(request: NextRequest) {
           withdrawalAdminFee,
           withdrawalPinRequired,
           withdrawalPinLength,
-          xenditEnabled,
+          paymentEnableXendit: xenditEnabled,
         },
       })
     }
