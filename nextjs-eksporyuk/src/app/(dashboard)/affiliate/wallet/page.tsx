@@ -85,31 +85,38 @@ export default function UserWalletPage() {
     setNameCheckResult(null)
     
     try {
-      const response = await fetch('/api/ewallet/check-name', {
+      // Try Xendit API first, then fallback to mock
+      const response = await fetch('/api/ewallet/check-name-xendit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phoneNumber: cleanPhone,
           provider: ewalletType,
-          useCache: !forceRefresh
+          phoneNumber: cleanPhone
         })
       })
       
       const data = await response.json()
+      console.log('E-wallet check response:', data)
       
       if (response.ok && data.success && data.accountName) {
-        const cacheInfo = data.cached ? ' (cached)' : ' (live)'
-        setNameCheckResult(data.accountName + cacheInfo)
+        const sourceInfo = data.source === 'xendit' ? ' (Xendit)' : ' (Dev Mode)'
+        const cacheInfo = data.cached ? ' (cached)' : ''
+        setNameCheckResult(data.accountName + sourceInfo + cacheInfo)
+        
         // Auto-fill the name if found
         setWithdrawForm(prev => ({
           ...prev,
           accountName: data.accountName
         }))
         
-        // Show success message
-        toast.success(`✅ Akun ditemukan: ${data.accountName}${cacheInfo}`)
+        // Show success message with source info
+        if (data.source === 'xendit') {
+          toast.success(`✅ Akun terverifikasi via Xendit: ${data.accountName}`)
+        } else {
+          toast.success(`✅ Akun ditemukan: ${data.accountName} (Development Mode)`)
+        }
       } else {
         // Check if it's a server error vs account not found
         if (!response.ok) {
@@ -309,18 +316,47 @@ export default function UserWalletPage() {
         withdrawalType: withdrawForm.withdrawalType
       }
 
-      // Choose endpoint based on withdrawal type
-      const endpoint = withdrawalData.withdrawalType === 'instant' 
-        ? '/api/affiliate/payouts/xendit' 
-        : '/api/affiliate/payouts'
+      // Choose endpoint based on withdrawal type and bank
+      let endpoint: string
+      let isEWalletWithdrawal = isEWallet(withdrawalData.bankName)
+      
+      if (withdrawalData.withdrawalType === 'instant') {
+        if (isEWalletWithdrawal) {
+          // Use new Xendit e-wallet endpoint
+          endpoint = '/api/wallet/withdraw-ewallet'
+        } else {
+          // Use existing Xendit bank endpoint
+          endpoint = '/api/affiliate/payouts/xendit'
+        }
+      } else {
+        // Manual processing
+        endpoint = '/api/affiliate/payouts'
+      }
+
+      // Prepare request payload based on endpoint
+      let requestPayload: any
+      
+      if (isEWalletWithdrawal && withdrawalData.withdrawalType === 'instant') {
+        // New e-wallet Xendit endpoint format
+        requestPayload = {
+          provider: withdrawalData.bankName,
+          phoneNumber: withdrawalData.accountNumber,
+          accountName: withdrawalData.accountName,
+          amount: withdrawalData.amount,
+          pin: pin
+        }
+      } else {
+        // Existing format for bank transfers and manual processing
+        requestPayload = {
+          ...withdrawalData,
+          pin: pin
+        }
+      }
 
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...withdrawalData,
-          pin: pin
-        })
+        body: JSON.stringify(requestPayload)
       })
 
       const data = await response.json()
