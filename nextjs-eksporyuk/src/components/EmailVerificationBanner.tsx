@@ -12,9 +12,13 @@ export default function EmailVerificationBanner() {
   const [resending, setResending] = useState(false)
   const [justResent, setJustResent] = useState(false)
 
+  // Check if email is Gmail (no verification needed)
+  const isGmailUser = session?.user?.email?.endsWith('@gmail.com') || false
+
   if (status === 'loading') return null
   if (!session?.user) return null
   if (session.user.emailVerified) return null
+  if (isGmailUser) return null // Skip for Gmail users
 
   const handleResend = async () => {
     setResending(true)
