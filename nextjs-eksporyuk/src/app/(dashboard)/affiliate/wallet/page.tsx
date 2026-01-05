@@ -750,43 +750,7 @@ export default function UserWalletPage() {
                 />
               </div>
 
-              {/* Withdrawal Type Selection */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
-                <h4 className="font-semibold text-gray-800 mb-3">Pilih Jenis Penarikan</h4>
-                <div className="space-y-3">
-                  <label className="flex items-center p-3 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 cursor-pointer transition-all">
-                    <input
-                      type="radio"
-                      value="instant"
-                      checked={withdrawForm.withdrawalType === 'instant'}
-                      onChange={(e) => setWithdrawForm({ ...withdrawForm, withdrawalType: e.target.value })}
-                      className="mr-3 text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <span className="font-medium text-gray-800">🚀 Penarikan Otomatis (Instant)</span>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Dana akan dikirim langsung ke rekening dalam 5-10 menit. Biaya admin Rp 5.000
-                      </p>
-                    </div>
-                  </label>
-                  
-                  <label className="flex items-center p-3 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 cursor-pointer transition-all">
-                    <input
-                      type="radio"
-                      value="manual"
-                      checked={withdrawForm.withdrawalType === 'manual'}
-                      onChange={(e) => setWithdrawForm({ ...withdrawForm, withdrawalType: e.target.value })}
-                      className="mr-3 text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <span className="font-medium text-gray-800">⏳ Penarikan Manual (1-3 hari)</span>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Akan diproses oleh admin dalam 1-3 hari kerja. Tanpa biaya admin
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              </div>
+
 
               {/* Submit Buttons */}
               <div className="flex gap-3 pt-4">
