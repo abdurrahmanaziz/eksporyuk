@@ -215,17 +215,31 @@ export class EWalletService {
    * Normalize Indonesian phone number
    */
   private normalizePhoneNumber(phone: string): string {
-    // Remove all non-digits
+    // Remove all non-digits first
     let normalized = phone.replace(/\D/g, '')
     
-    // Convert 0 to 62
+    // Handle empty or too short numbers
+    if (!normalized || normalized.length < 10) {
+      return normalized
+    }
+    
+    // Convert 0xxx to 62xxx
     if (normalized.startsWith('0')) {
       normalized = '62' + normalized.substring(1)
     }
-    
-    // Add 62 if missing
-    if (!normalized.startsWith('62')) {
+    // Add 62 if missing and doesn't start with 62
+    else if (!normalized.startsWith('62')) {
       normalized = '62' + normalized
+    }
+    
+    // Validate Indonesian mobile number pattern (62-8xx-xxxx-xxxx)
+    if (normalized.startsWith('62') && normalized.length >= 12 && normalized.charAt(2) === '8') {
+      return normalized
+    }
+    
+    // If it's just 8xxx format, add 62
+    if (normalized.startsWith('8') && normalized.length >= 10) {
+      return '62' + normalized
     }
     
     return normalized
@@ -250,37 +264,62 @@ export class EWalletService {
       }
     }
 
-    // Mock data based on provider and phone pattern
+    // Comprehensive mock data - covers common patterns and test numbers
     const mockAccounts: Record<string, Record<string, string>> = {
       'OVO': {
         '628123456789': 'John Doe',
-        '628987654321': 'Jane Smith',
+        '628987654321': 'Jane Smith', 
         '628111222333': 'Ahmad Rizki',
-        '628118748177': 'Abdurrahman Aziz'
+        '628118748177': 'Abdurrahman Aziz',
+        '6281187481771': 'Abdurrahman Aziz',
+        '6281187481772': 'Rahman Aziz',
+        '628112345678': 'Test User OVO',
+        '628551234567': 'Demo Account',
+        '628811223344': 'Sample User'
       },
       'GoPay': {
         '628123456789': 'Budi Santoso',
         '628987654321': 'Siti Nurhaliza',
-        '628111222333': 'Andi Wijaya',
-        '628118748177': 'Rahman Abdul'
+        '628111222333': 'Andi Wijaya', 
+        '628118748177': 'Rahman Abdul',
+        '6281187481771': 'Rahman Abdul',
+        '6281187481772': 'Abdul Rahman',
+        '628112345678': 'Test User GoPay',
+        '628551234567': 'Demo GoPay',
+        '628811223344': 'Sample GoPay'
       },
       'DANA': {
         '628123456789': 'Charlie Brown',
         '628987654321': 'Diana Prince',
         '628111222333': 'Erik Johnson',
-        '628118748177': 'Aziz Rahman'
+        '628118748177': 'Aziz Rahman',
+        '6281187481771': 'Aziz Rahman',
+        '6281187481772': 'Rahman Aziz',
+        '628112345678': 'Test User DANA',
+        '628551234567': 'Demo DANA',
+        '628811223344': 'Sample DANA'
       },
       'LinkAja': {
         '628123456789': 'Frank Castle',
         '628987654321': 'Grace Kelly',
         '628111222333': 'Henry Ford',
-        '628118748177': 'Rahman Aziz'
+        '628118748177': 'Rahman Aziz',
+        '6281187481771': 'Rahman Aziz', 
+        '6281187481772': 'Aziz Rahman',
+        '628112345678': 'Test User LinkAja',
+        '628551234567': 'Demo LinkAja',
+        '628811223344': 'Sample LinkAja'
       },
       'ShopeePay': {
         '628123456789': 'Ivan Petrov',
         '628987654321': 'Julia Roberts',
         '628111222333': 'Kevin Hart',
-        '628118748177': 'Abdur Rahman'
+        '628118748177': 'Abdur Rahman',
+        '6281187481771': 'Abdur Rahman',
+        '6281187481772': 'Rahman Abdul',
+        '628112345678': 'Test User ShopeePay',
+        '628551234567': 'Demo ShopeePay',
+        '628811223344': 'Sample ShopeePay'
       }
     }
 
@@ -300,7 +339,7 @@ export class EWalletService {
     return {
       success: false,
       accountName: null,
-      message: 'Account not found'
+      message: `Account not found for ${provider} ${phoneNumber}`
     }
   }
 

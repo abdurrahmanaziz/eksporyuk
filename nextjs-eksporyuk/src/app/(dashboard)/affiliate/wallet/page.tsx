@@ -73,7 +73,13 @@ export default function UserWalletPage() {
 
   // Function to check e-wallet account name
   const checkEWalletName = async (phoneNumber: string, ewalletType: string, forceRefresh: boolean = false) => {
-    if (!phoneNumber || phoneNumber.length < 10) return
+    // Clean and normalize phone number
+    const cleanPhone = phoneNumber.replace(/\D/g, '') // Remove all non-digits
+    
+    if (!cleanPhone || cleanPhone.length < 10) {
+      toast.error('Nomor HP tidak valid. Minimal 10 digit.')
+      return
+    }
     
     setIsCheckingName(true)
     setNameCheckResult(null)
@@ -85,7 +91,7 @@ export default function UserWalletPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phoneNumber: phoneNumber,
+          phoneNumber: cleanPhone,
           provider: ewalletType,
           useCache: !forceRefresh
         })
@@ -93,7 +99,7 @@ export default function UserWalletPage() {
       
       const data = await response.json()
       
-      if (data.success && data.accountName) {
+      if (response.ok && data.success && data.accountName) {
         const cacheInfo = data.cached ? ' (cached)' : ' (live)'
         setNameCheckResult(data.accountName + cacheInfo)
         // Auto-fill the name if found
@@ -103,15 +109,21 @@ export default function UserWalletPage() {
         }))
         
         // Show success message
-        toast.success(`Account found: ${data.accountName}${cacheInfo}`)
+        toast.success(`✅ Akun ditemukan: ${data.accountName}${cacheInfo}`)
       } else {
-        setNameCheckResult('Nama tidak ditemukan')
-        toast.error(data.message || 'Account not found')
+        // Check if it's a server error vs account not found
+        if (!response.ok) {
+          setNameCheckResult('Error server - coba lagi')
+          toast.error('Server error. Silakan coba lagi.')
+        } else {
+          setNameCheckResult(`Akun ${ewalletType} tidak ditemukan`)
+          toast.warning(`Akun ${ewalletType} dengan nomor ${cleanPhone} tidak ditemukan. Pastikan nomor benar dan aktif.`)
+        }
       }
     } catch (error) {
       console.error('Error checking e-wallet name:', error)
-      setNameCheckResult('Gagal mengecek nama')
-      toast.error('Failed to check account name')
+      setNameCheckResult('Koneksi bermasalah')
+      toast.error('Masalah koneksi. Periksa internet Anda.')
     } finally {
       setIsCheckingName(false)
     }
@@ -218,6 +230,44 @@ export default function UserWalletPage() {
     if (amount > (wallet?.balance || 0)) {
       toast.error('Saldo tidak mencukupi')
       return
+    }
+
+    // Validate account name input
+    if (!withdrawForm.accountName.trim()) {
+      toast.error('Nama pemilik akun harus diisi')
+      return
+    }
+
+    // For e-wallet, ensure account name is verified
+    if (isEWallet(withdrawForm.bankName)) {
+      // Check if phone number is filled
+      if (!withdrawForm.accountNumber.trim()) {
+        toast.error('Nomor HP e-wallet harus diisi')
+        return
+      }
+
+      // Check if name verification was done successfully
+      const isVerified = nameCheckResult && 
+                        !nameCheckResult.includes('tidak ditemukan') && 
+                        !nameCheckResult.includes('Gagal') && 
+                        !nameCheckResult.includes('Error') && 
+                        !nameCheckResult.includes('bermasalah') &&
+                        !nameCheckResult.includes('Koneksi')
+
+      if (!isVerified) {
+        toast.error(`Silakan verifikasi nama akun ${withdrawForm.bankName} terlebih dahulu dengan klik tombol "Cek Nama Akun"`)
+        return
+      }
+
+      // Ensure the verified name matches the input name
+      const verifiedName = nameCheckResult?.replace(/ \(cached\)| \(live\)| \(saved\)/g, '') || ''
+      if (verifiedName && withdrawForm.accountName !== verifiedName) {
+        toast.warning(`Nama yang diinput (${withdrawForm.accountName}) tidak sama dengan nama terverifikasi (${verifiedName}). Menggunakan nama terverifikasi.`)
+        setWithdrawForm(prev => ({
+          ...prev,
+          accountName: verifiedName
+        }))
+      }
     }
 
     // Check if PIN is required
@@ -926,12 +976,29 @@ export default function UserWalletPage() {
 
                       {/* Name Check Result */}
                       {nameCheckResult && (
-                        <div className={`p-2 rounded-lg text-sm ${
-                          nameCheckResult.includes('tidak ditemukan') || nameCheckResult.includes('Gagal') 
-                            ? 'bg-red-50 text-red-600 border border-red-200'
-                            : 'bg-green-50 text-green-600 border border-green-200'
+                        <div className={`p-3 rounded-lg text-sm border ${
+                          nameCheckResult.includes('tidak ditemukan') || nameCheckResult.includes('Gagal') || nameCheckResult.includes('Error') || nameCheckResult.includes('bermasalah') || nameCheckResult.includes('Koneksi')
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : nameCheckResult.includes('Akun') && nameCheckResult.includes('tidak ditemukan')
+                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                            : 'bg-green-50 text-green-700 border-green-200'
                         }`}>
-                          ✓ {nameCheckResult}
+                          {nameCheckResult.includes('tidak ditemukan') || nameCheckResult.includes('Gagal') || nameCheckResult.includes('Error') || nameCheckResult.includes('bermasalah') || nameCheckResult.includes('Koneksi') ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-red-500">❌</span>
+                              <span>{nameCheckResult}</span>
+                            </div>
+                          ) : nameCheckResult.includes('Akun') && nameCheckResult.includes('tidak ditemukan') ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-yellow-500">⚠️</span>
+                              <span>{nameCheckResult}</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="text-green-500">✅</span>
+                              <span className="font-medium">{nameCheckResult}</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

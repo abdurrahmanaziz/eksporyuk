@@ -440,6 +440,49 @@ export const authOptions: NextAuthOptions = {
         token.preferredDashboard = (user as any).preferredDashboard || null
       }
       
+      // For all providers, always fetch fresh user data from database to ensure session stays current
+      if (token.email && (!user || account?.provider !== 'google')) {
+        console.log(`[AUTH ${timestamp}] JWT - Fetching fresh user data from database`)
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: token.email },
+            select: {
+              id: true,
+              email: true,
+              name: true, // CRITICAL: Get fresh name from database
+              username: true,
+              role: true,
+              avatar: true,
+              whatsapp: true,
+              emailVerified: true,
+              memberCode: true,
+              affiliateMenuEnabled: true,
+              preferredDashboard: true,
+            }
+          })
+          
+          if (dbUser) {
+            // Update token with fresh database data
+            token.id = dbUser.id
+            token.name = dbUser.name // CRITICAL: Update name from database
+            token.role = dbUser.role
+            token.username = dbUser.username || dbUser.email?.split('@')[0]
+            token.whatsapp = dbUser.whatsapp
+            token.emailVerified = dbUser.emailVerified
+            token.memberCode = dbUser.memberCode
+            token.affiliateMenuEnabled = dbUser.affiliateMenuEnabled || false
+            token.preferredDashboard = dbUser.preferredDashboard || null
+            
+            console.log(`[AUTH ${timestamp}] JWT - Updated token with fresh database data:`, {
+              name: dbUser.name,
+              role: dbUser.role
+            })
+          }
+        } catch (error) {
+          console.error(`[AUTH ${timestamp}] JWT - Error fetching fresh user data:`, error)
+        }
+      }
+      
       // For Google OAuth, always fetch fresh user data from database
       if (account?.provider === 'google' && token.email) {
         console.log(`[AUTH ${timestamp}] JWT - Google OAuth, fetching user from database`)
@@ -526,6 +569,7 @@ export const authOptions: NextAuthOptions = {
             })
             
             token.id = dbUser.id
+            token.name = dbUser.name // CRITICAL: Update token.name from database
             token.role = dbUser.role
             token.allRoles = allRoles // NEW: Include all roles in token
             token.username = dbUser.username || dbUser.email?.split('@')[0]
