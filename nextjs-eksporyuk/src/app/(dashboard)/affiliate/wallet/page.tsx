@@ -788,30 +788,44 @@ export default function UserWalletPage() {
                     value={withdrawForm.accountNumber}
                     onChange={(e) => {
                       let value = e.target.value.replace(/\D/g, '')
-                      // For e-wallet, ensure it starts with 8 (Indonesian mobile format)
-                      if (isEWallet(withdrawForm.bankName) && value && !value.startsWith('8')) {
+                      
+                      // For e-wallet, auto-convert phone number format
+                      if (isEWallet(withdrawForm.bankName)) {
+                        // Remove country code if present
                         if (value.startsWith('62')) {
                           value = value.substring(2)
-                        } else if (value.startsWith('0')) {
+                        }
+                        
+                        // Convert 0 prefix to 8 (e.g., 08123456789 → 8123456789)
+                        if (value.startsWith('0')) {
                           value = '8' + value.substring(1)
                         }
+                        
+                        // Ensure it starts with 8 for Indonesian mobile
+                        if (value && value.length > 0 && !value.startsWith('8')) {
+                          // For single digits that aren't 8, assume user wants to type 8xxx
+                          if (value.length === 1 && ['1','2','3','4','5','6','7','9'].includes(value)) {
+                            value = '8' + value
+                          }
+                        }
                       }
+                      
                       setWithdrawForm({ ...withdrawForm, accountNumber: value })
                     }}
                     required
-                    className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all ${
+                    className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-mono text-lg ${
                       isEWallet(withdrawForm.bankName) ? 'pl-12' : ''
                     }`}
                     placeholder={
                       isEWallet(withdrawForm.bankName) 
-                        ? '8123456789 (tanpa +62 atau 0)' 
+                        ? '8123456789 (ketik 0 akan otomatis jadi 8)' 
                         : 'Nomor rekening bank'
                     }
                   />
                 </div>
                 {isEWallet(withdrawForm.bankName) && (
                   <p className="text-xs text-gray-500 mt-1">
-                    💡 Masukkan nomor HP yang terdaftar di {withdrawForm.bankName}
+                    💡 Ketik 0 di awal akan otomatis berubah jadi 8. Contoh: 08123 → 88123
                   </p>
                 )}
               </div>
