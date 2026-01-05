@@ -46,7 +46,7 @@ export default function MigrationPage() {
   const faqs = [
     {
       question: "Apakah data saya aman setelah migrasi?",
-      answer: "Ya, 100% aman! Semua data membership, transaksi, saldo wallet, dan riwayat komisi Anda sudah otomatis ter-migrasi ke platform baru. Kami menggunakan sistem enkripsi dan backup yang aman."
+      answer: "Ya, 100% aman! Semua data membership dan transaksi Anda sudah otomatis ter-migrasi ke platform baru. Kami menggunakan sistem enkripsi dan backup yang aman."
     },
     {
       question: "Password saya tidak berfungsi, bagaimana?",
@@ -61,46 +61,38 @@ export default function MigrationPage() {
       answer: "Semua saldo Anda tetap aman dan sudah ter-migrasi. Anda bisa langsung cek di menu 'Wallet' setelah login. Tidak ada pengurangan atau perubahan nilai."
     },
     {
-      question: "Apakah link affiliate saya masih berfungsi?",
-      answer: "Ya, semua link affiliate lama Anda masih aktif dan akan otomatis redirect ke sistem baru. Namun kami sarankan untuk update link dengan yang baru dari dashboard untuk performa yang lebih baik."
-    },
-    {
-      question: "Berapa lama proses migrasi ini berlangsung?",
-      answer: "Migrasi data sudah selesai! Anda bisa langsung login dan menggunakan platform baru sekarang. Tidak ada downtime atau masa transisi."
-    },
-    {
       question: "Apakah ada fitur yang berubah atau hilang?",
       answer: "Semua fitur utama tetap ada bahkan ditingkatkan! Beberapa menu mungkin berpindah lokasi, tapi semua fungsi masih bisa diakses. Lihat panduan di halaman ini untuk navigasi baru."
     },
     {
       question: "Bagaimana jika saya mengalami masalah saat login?",
-      answer: "Hubungi tim support kami via WhatsApp (+62 812-3456-7890) atau email (support@eksporyuk.com). Kami siap membantu Anda 24/7."
+      answer: `Hubungi tim support kami via WhatsApp (${csWhatsapp ? csWhatsapp : '+62 857-1912-5758'}) atau email (support@eksporyuk.com). Kami siap membantu Anda 24/7.`
     }
   ]
 
   const newFeatures = [
     {
       icon: <Zap className="w-8 h-8" />,
-      title: "Dashboard Analytics",
-      description: "Pantau performa affiliate, komisi, dan engagement dalam satu dashboard yang powerful",
-      color: "from-yellow-500 to-orange-500"
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Affiliate Tools",
-      description: "Template promo, short links, dan tracking yang lebih canggih untuk boost konversi",
+      title: "Komunitas Interaktif",
+      description: "Bergabunglah dalam diskusi, ajukan pertanyaan, dan berkolaborasi dengan sesama anggota.",
       color: "from-blue-500 to-indigo-500"
     },
     {
-      icon: <TrendingUp className="w-8 h-8" />,
-      title: "Auto Commission",
-      description: "Sistem komisi otomatis langsung masuk wallet tanpa perlu approval manual",
+      icon: <Users className="w-8 h-8" />,
+      title: "Materi Eksklusif",
+      description: "Akses kursus, webinar, dan konten premium yang dirancang untuk kesuksesan ekspor Anda.",
       color: "from-green-500 to-emerald-500"
     },
     {
+      icon: <TrendingUp className="w-8 h-8" />,
+      title: "Event & Networking",
+      description: "Ikuti acara online dan offline untuk memperluas jaringan dan pengetahuan Anda.",
+      color: "from-yellow-500 to-orange-500"
+    },
+    {
       icon: <Shield className="w-8 h-8" />,
-      title: "Security Enhanced",
-      description: "Keamanan berlapis dengan enkripsi data dan two-factor authentication",
+      title: "Keamanan Terjamin",
+      description: "Keamanan berlapis dengan enkripsi data untuk melindungi akun dan privasi Anda.",
       color: "from-purple-500 to-pink-500"
     }
   ]
@@ -299,9 +291,9 @@ export default function MigrationPage() {
                     <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                       <p className="text-sm font-semibold text-gray-700 mb-2">Yang bisa Anda lakukan:</p>
                       <ul className="space-y-1 text-sm text-gray-600">
-                        <li>✓ Cek status membership dan saldo wallet</li>
+                        <li>✓ Cek status membership</li>
                         <li>✓ Akses materi dan kursus yang Anda ikuti</li>
-                        <li>✓ Kelola affiliate link dan komisi</li>
+                        <li>✓ Bergabung di grup diskusi komunitas</li>
                         <li>✓ Eksplorasi fitur-fitur baru yang lebih powerful</li>
                       </ul>
                     </div>
@@ -334,10 +326,6 @@ export default function MigrationPage() {
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                       <p>Masa aktif membership Anda <strong>tidak berubah</strong></p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <p>Link affiliate lama masih <strong>berfungsi normal</strong></p>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />

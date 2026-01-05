@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
 
     // Verify webhook signature if token is set
     if (webhookToken) {
-      const signature = request.headers.get('x-callback-token')
+      const signature = request.headers.get('x-callback-token') || 
+                       request.headers.get('X-CALLBACK-TOKEN')
       
       if (!signature || signature !== webhookToken) {
         console.error('[XENDIT WEBHOOK] Invalid signature')

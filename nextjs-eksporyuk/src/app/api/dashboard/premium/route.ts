@@ -204,39 +204,49 @@ export async function GET(request: NextRequest) {
       where: {
         userId
       },
-      include: {
-        group: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            avatar: true,
-            type: true,
-            isActive: true
-          }
-        }
-      },
       orderBy: { joinedAt: 'desc' }
+    })
+
+    // Get group details
+    const groupIds = userGroups.map(ug => ug.groupId)
+    const groupDetails = await prisma.group.findMany({
+      where: {
+        id: { in: groupIds },
+        isActive: true
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        avatar: true,
+        type: true,
+        isActive: true
+      }
     })
 
     // Get member count for each group
     const myGroups = await Promise.all(
-      userGroups.filter(ug => ug.group.isActive).map(async (ug) => {
-        const memberCount = await prisma.groupMember.count({
-          where: { groupId: ug.group.id }
+      userGroups
+        .filter(ug => groupDetails.some(g => g.id === ug.groupId))
+        .map(async (ug) => {
+          const group = groupDetails.find(g => g.id === ug.groupId)
+          if (!group) return null
+
+          const memberCount = await prisma.groupMember.count({
+            where: { groupId: ug.groupId }
+          })
+          
+          return {
+            id: group.id,
+            name: group.name,
+            description: group.description,
+            image: group.avatar,
+            type: group.type,
+            memberCount,
+            joinedAt: ug.joinedAt.toISOString()
+          }
         })
-        
-        return {
-          id: ug.group.id,
-          name: ug.group.name,
-          description: ug.group.description,
-          image: ug.group.avatar,
-          type: ug.group.type,
-          memberCount,
-          joinedAt: ug.joinedAt.toISOString()
-        }
-      })
-    )
+    ).then(groups => groups.filter(g => g !== null))
 
     // Get certificates count
     const certificatesCount = await prisma.certificate.count({
