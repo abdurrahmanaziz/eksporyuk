@@ -788,55 +788,67 @@ export default function UserWalletPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   {isEWallet(withdrawForm.bankName) ? 'Nomor HP E-Wallet' : 'Nomor Rekening'} <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  {isEWallet(withdrawForm.bankName) && (
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
-                      +62
-                    </div>
-                  )}
-                  <input
-                    type="text"
-                    value={withdrawForm.accountNumber}
-                    onChange={(e) => {
-                      let value = e.target.value.replace(/\D/g, '')
-                      
-                      // For e-wallet, auto-convert phone number format
-                      if (isEWallet(withdrawForm.bankName)) {
-                        console.log('Input phone number:', value) // Debug log
+                <div className="space-y-3">
+                  <div className="relative">
+                    {isEWallet(withdrawForm.bankName) && (
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm z-10">
+                        +62
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      value={withdrawForm.accountNumber}
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/\D/g, '')
                         
-                        // Remove country code if present
-                        if (value.startsWith('62')) {
-                          value = value.substring(2)
+                        // For e-wallet, handle phone number format
+                        if (isEWallet(withdrawForm.bankName)) {
+                          console.log('Input phone number:', value) // Debug log
+                          
+                          // Remove country code if present
+                          if (value.startsWith('62')) {
+                            value = value.substring(2)
+                          }
+                          
+                          // Clear existing name when number changes
+                          if (withdrawForm.accountName) {
+                            setWithdrawForm(prev => ({ ...prev, accountName: '' }));
+                          }
                         }
                         
-                        // Keep user input as is - don't force conversion
-                        // But for API calls, we'll convert to 8xxx format internally
-                        
-                        // Trigger auto name lookup for valid phone numbers
-                        if (value.length >= 10 && (value.startsWith('8') || value.startsWith('0'))) {
-                          // For API, use 8xxx format
-                          const apiFormat = value.startsWith('0') ? 
-                            '8' + value.substring(1) : value;
-                          checkEWalletName(apiFormat, withdrawForm.bankName)
-                        }
+                        setWithdrawForm({ ...withdrawForm, accountNumber: value })
+                      }}
+                      required
+                      className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-mono text-lg ${
+                        isEWallet(withdrawForm.bankName) ? 'pl-16' : ''
+                      }`}
+                      placeholder={
+                        isEWallet(withdrawForm.bankName) 
+                          ? '8123456789' 
+                          : 'Nomor rekening bank'
                       }
-                      
-                      setWithdrawForm({ ...withdrawForm, accountNumber: value })
-                    }}
-                    required
-                    className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-mono text-lg ${
-                      isEWallet(withdrawForm.bankName) ? 'pl-12' : ''
-                    }`}
-                    placeholder={
-                      isEWallet(withdrawForm.bankName) 
-                        ? '08123456789 atau 8123456789' 
-                        : 'Nomor rekening bank'
-                    }
-                  />
+                    />
+                  </div>
+                  
+                  {/* Manual Check Button for E-Wallet */}
+                  {isEWallet(withdrawForm.bankName) && withdrawForm.accountNumber.length >= 10 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const apiFormat = withdrawForm.accountNumber.startsWith('0') ? 
+                          '8' + withdrawForm.accountNumber.substring(1) : withdrawForm.accountNumber;
+                        checkEWalletName(apiFormat, withdrawForm.bankName);
+                      }}
+                      className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                    >
+                      🔍 Cek Nama Pemilik Akun
+                    </button>
+                  )}
                 </div>
+                
                 {isEWallet(withdrawForm.bankName) && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    💡 <strong>Format fleksibel:</strong> Bisa pakai 08xxx atau 8xxx. Contoh: 08123456789 atau 8123456789
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 <strong>Format fleksibel:</strong> Bisa pakai 08xxx atau 8xxx. Klik tombol "Cek Nama" untuk memastikan akun valid.
                   </p>
                 )}
               </div>

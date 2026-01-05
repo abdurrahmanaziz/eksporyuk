@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const minPayout = Number(settings?.withdrawalMinAmount || 50000)
     const adminFee = Number(settings?.withdrawalAdminFee || 5000)
     const pinRequired = settings?.withdrawalPinRequired ?? true
-    const xenditEnabled = settings?.xenditEnabled ?? false
+    const xenditEnabled = settings?.paymentEnableXendit ?? false
 
     if (!xenditEnabled) {
       return NextResponse.json(
