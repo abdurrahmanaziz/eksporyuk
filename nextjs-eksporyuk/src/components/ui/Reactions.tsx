@@ -157,12 +157,12 @@ export const ReactionSummary: React.FC<ReactionSummaryProps> = ({
   onViewReactions,
   className = '',
 }) => {
-  const totalReactions = Object.values(reactionsCount).reduce((sum, count) => sum + count, 0);
+  const totalReactions = Object.values(reactionsCount || {}).reduce((sum, count) => sum + count, 0);
   
   if (totalReactions === 0) return null;
 
   // Get top 3 reaction types by count
-  const sortedReactions = Object.entries(reactionsCount)
+  const sortedReactions = Object.entries(reactionsCount || {})
     .filter(([_, count]) => count > 0)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
@@ -223,7 +223,7 @@ export const ReactionModal: React.FC<ReactionModalProps> = ({
     ? reactions 
     : reactions.filter(r => r.type === selectedType);
 
-  const totalCount = Object.values(reactionsCount).reduce((sum, count) => sum + count, 0);
+  const totalCount = Object.values(reactionsCount || {}).reduce((sum, count) => sum + count, 0);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>

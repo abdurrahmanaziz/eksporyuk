@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { redirect } from 'next/navigation'
-import { Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Eye, X, Download, Shield } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Eye, X, Download, Shield, Loader2 } from 'lucide-react'
 import SetPINModal from '@/components/modals/SetPINModal'
 import VerifyPINModal from '@/components/modals/VerifyPINModal'
 import ForgotPINModal from '@/components/modals/ForgotPINModal'
@@ -64,11 +64,75 @@ export default function UserWalletPage() {
   const [nameCheckResult, setNameCheckResult] = useState<string | null>(null)
   const [savedAccounts, setSavedAccounts] = useState<any[]>([])
   const [showSavedAccounts, setShowSavedAccounts] = useState(false)
+  
+  // Bank account validation state
+  const [bankValidation, setBankValidation] = useState({
+    isValidating: false,
+    isValid: false,
+    accountHolderName: '',
+    validationId: ''
+  })
 
   // Helper function to check if selected option is e-wallet
   const isEWallet = (bankName: string) => {
     const ewallets = ['OVO', 'GoPay', 'DANA', 'LinkAja', 'ShopeePay']
     return ewallets.includes(bankName)
+  }
+
+  // Function to validate bank account and fetch account holder name
+  const validateBankAccount = async () => {
+    if (!withdrawForm.bankName || !withdrawForm.accountNumber) {
+      toast.error('Pilih bank dan masukkan nomor rekening terlebih dahulu')
+      return
+    }
+
+    setBankValidation({ ...bankValidation, isValidating: true })
+
+    try {
+      const response = await fetch('/api/affiliate/validate-bank-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bankName: withdrawForm.bankName,
+          accountNumber: withdrawForm.accountNumber
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setBankValidation({
+          isValidating: false,
+          isValid: true,
+          accountHolderName: data.accountHolderName,
+          validationId: data.validationId
+        })
+
+        // Auto-fill account name
+        setWithdrawForm({
+          ...withdrawForm,
+          accountName: data.accountHolderName
+        })
+
+        toast.success(`✅ Rekening tervalidasi: ${data.accountHolderName}`)
+      } else {
+        setBankValidation({
+          isValidating: false,
+          isValid: false,
+          accountHolderName: '',
+          validationId: ''
+        })
+        toast.error(data.error || 'Gagal validasi rekening')
+      }
+    } catch (error) {
+      setBankValidation({
+        isValidating: false,
+        isValid: false,
+        accountHolderName: '',
+        validationId: ''
+      })
+      toast.error('Terjadi kesalahan saat validasi')
+    }
   }
 
   // Function to check e-wallet account name
@@ -260,6 +324,14 @@ export default function UserWalletPage() {
       } else {
         // For banks, manual entry is required
         toast.error('Nama pemilik akun harus diisi')
+        return
+      }
+    }
+
+    // For bank instant withdrawal, ensure account is validated
+    if (withdrawForm.withdrawalType === 'instant' && !isEWallet(withdrawForm.bankName)) {
+      if (!bankValidation.isValid) {
+        toast.error('Harap validasi rekening bank terlebih dahulu dengan klik tombol "Cek Rekening"')
         return
       }
     }
@@ -899,9 +971,17 @@ export default function UserWalletPage() {
                     value={withdrawForm.accountName}
                     onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                    placeholder="Nama sesuai rekening bank"
+                    disabled={bankValidation.isValid}
+                    className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all ${
+                      bankValidation.isValid ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
+                    placeholder={bankValidation.isValid ? "Terisi otomatis dari validasi" : "Akan terisi otomatis setelah validasi"}
                   />
+                  {bankValidation.isValid && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      ✅ Nama diambil dari sistem bank, tidak bisa diubah
+                    </p>
+                  )}
                 </div>
               )}
               
@@ -920,15 +1000,68 @@ export default function UserWalletPage() {
                   {isEWallet(withdrawForm.bankName) ? 'Nomor HP E-Wallet' : 'Nomor Rekening'} <span className="text-red-500">*</span>
                 </label>
                 <div className="space-y-3">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={withdrawForm.accountNumber}
-                      onChange={(e) => {
-                        let value = e.target.value.replace(/\D/g, '')
-                        
-                        // For e-wallet, handle phone number format
-                        if (isEWallet(withdrawForm.bankName)) {
+                  {/* Input with validation button for BANK */}
+                  {!isEWallet(withdrawForm.bankName) ? (
+                    <>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={withdrawForm.accountNumber}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '')
+                            setWithdrawForm({ ...withdrawForm, accountNumber: value })
+                            
+                            // Reset validation saat nomor berubah
+                            setBankValidation({
+                              isValidating: false,
+                              isValid: false,
+                              accountHolderName: '',
+                              validationId: ''
+                            })
+                          }}
+                          required
+                          className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-mono text-lg"
+                          placeholder="Nomor rekening bank"
+                        />
+                        <button
+                          type="button"
+                          onClick={validateBankAccount}
+                          disabled={!withdrawForm.bankName || !withdrawForm.accountNumber || bankValidation.isValidating}
+                          className="px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium whitespace-nowrap"
+                        >
+                          {bankValidation.isValidating ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                              Validasi...
+                            </>
+                          ) : (
+                            'Cek Rekening'
+                          )}
+                        </button>
+                      </div>
+                      
+                      {/* Validation Result for BANK */}
+                      {bankValidation.isValid && bankValidation.accountHolderName && (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <p className="text-sm text-green-800">
+                            ✅ <strong>Rekening Valid</strong>
+                          </p>
+                          <p className="text-sm text-green-700 font-medium mt-1">
+                            Nama Pemilik: {bankValidation.accountHolderName}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    // Original input for E-WALLET
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={withdrawForm.accountNumber}
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/\D/g, '')
+                          
+                          // For e-wallet, handle phone number format
                           console.log('Input phone number:', value) // Debug log
                           
                           // Remove country code if present
@@ -938,21 +1071,17 @@ export default function UserWalletPage() {
                           
                           // Clear existing name when number changes
                           if (withdrawForm.accountName) {
-                            setWithdrawForm(prev => ({ ...prev, accountName: '' }));
+                            setWithdrawForm(prev => ({ ...prev, accountName: '' }))
                           }
-                        }
-                        
-                        setWithdrawForm({ ...withdrawForm, accountNumber: value })
-                      }}
-                      required
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-mono text-lg"
-                      placeholder={
-                        isEWallet(withdrawForm.bankName) 
-                          ? 'Contoh: 08123456789 atau 8123456789' 
-                          : 'Nomor rekening bank'
-                      }
-                    />
-                  </div>
+                          
+                          setWithdrawForm({ ...withdrawForm, accountNumber: value })
+                        }}
+                        required
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-mono text-lg"
+                        placeholder="Contoh: 08123456789 atau 8123456789"
+                      />
+                    </div>
+                  )}
                   
                   {/* Manual Check Button for E-Wallet */}
                   {isEWallet(withdrawForm.bankName) && withdrawForm.accountNumber.length >= 10 && (
