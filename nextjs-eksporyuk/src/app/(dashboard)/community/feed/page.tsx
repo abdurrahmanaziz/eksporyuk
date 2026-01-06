@@ -62,6 +62,7 @@ import SidebarBanner from '@/components/banners/SidebarBanner'
 import UserHoverCard from '@/components/community/UserHoverCard'
 import CommentSection from '@/components/ui/CommentSection'
 import { ImageVideoLightbox } from '@/components/ui/ImageVideoLightbox'
+import { PostDetailModal } from '@/components/ui/PostDetailModal'
 import { getBackgroundById } from '@/lib/post-backgrounds'
 
 interface Post {
@@ -162,11 +163,9 @@ export default function CommunityFeedPage() {
   const [postComments, setPostComments] = useState<Record<string, any[]>>({})
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
 
-  // Lightbox states
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [lightboxIndex, setLightboxIndex] = useState(0)
-  const [lightboxItems, setLightboxItems] = useState<Array<{ url: string; type: 'image' | 'video' }>>([])
-  const [lightboxPostId, setLightboxPostId] = useState<string>('')
+  // Post detail modal states
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   useEffect(() => {
     if (session) {
       fetchPosts()
@@ -439,19 +438,8 @@ export default function CommunityFeedPage() {
   const handleOpenLightbox = (post: Post, startIndex: number = 0) => {
     if (!post.images || post.images.length === 0) return
     
-    // Build items array with images and videos
-    const items: Array<{ url: string; type: 'image' | 'video' }> = []
-    
-    if (post.images && post.images.length > 0) {
-      post.images.forEach(img => {
-        items.push({ url: img, type: 'image' })
-      })
-    }
-    
-    setLightboxItems(items)
-    setLightboxIndex(Math.min(startIndex, items.length - 1))
-    setLightboxPostId(post.id)
-    setLightboxOpen(true)
+    setSelectedPost(post)
+    setSelectedImageIndex(startIndex)
   }
 
   const handleUpdatePost = async (postData: any) => {
@@ -1236,13 +1224,15 @@ export default function CommunityFeedPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Image/Video Lightbox */}
-      <ImageVideoLightbox
-        items={lightboxItems}
-        initialIndex={lightboxIndex}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-      />
+      {/* Post Detail Modal */}
+      {selectedPost && (
+        <PostDetailModal
+          post={selectedPost}
+          isOpen={!!selectedPost}
+          onClose={() => setSelectedPost(null)}
+          initialImageIndex={selectedImageIndex}
+        />
+      )}
     </ResponsivePageWrapper>
   )
 }
