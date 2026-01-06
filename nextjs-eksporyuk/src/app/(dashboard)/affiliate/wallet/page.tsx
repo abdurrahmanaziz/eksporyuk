@@ -961,9 +961,8 @@ export default function UserWalletPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            const apiFormat = withdrawForm.accountNumber.startsWith('0') ? 
-                              '8' + withdrawForm.accountNumber.substring(1) : withdrawForm.accountNumber;
-                            checkEWalletName(apiFormat, withdrawForm.bankName, false);
+                            // Send phone number as-is, let backend handle normalization
+                            checkEWalletName(withdrawForm.accountNumber, withdrawForm.bankName, false);
                           }}
                           className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
                           disabled={isCheckingName}
@@ -974,9 +973,8 @@ export default function UserWalletPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            const apiFormat = withdrawForm.accountNumber.startsWith('0') ? 
-                              '8' + withdrawForm.accountNumber.substring(1) : withdrawForm.accountNumber;
-                            checkEWalletName(apiFormat, withdrawForm.bankName, true);
+                            // Send phone number as-is, let backend handle normalization
+                            checkEWalletName(withdrawForm.accountNumber, withdrawForm.bankName, true);
                           }}
                           className="bg-gray-500 text-white py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors text-sm"
                           disabled={isCheckingName}

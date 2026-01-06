@@ -48,10 +48,27 @@ export async function POST(request: NextRequest) {
 
     console.log(`[E-Wallet Check] ${provider} - ${phoneNumber} - User: ${session.user.id}/${session.user.email}`)
 
-    // Normalize phone number for consistency
-    const normalizedPhone = phoneNumber.startsWith('0') ? phoneNumber : `0${phoneNumber.replace(/^\+?62/, '')}`
+    // Clean phone number - remove all non-digits
+    const cleanedPhone = phoneNumber.replace(/\D/g, '')
     
-    console.log(`[E-Wallet Check] Normalized phone: ${normalizedPhone}`)
+    // Normalize to Indonesian format (08xxx)
+    let normalizedPhone = cleanedPhone
+    if (cleanedPhone.startsWith('62') && cleanedPhone.length >= 12) {
+      // Convert 628xxx to 08xxx
+      normalizedPhone = '0' + cleanedPhone.substring(2)
+    } else if (cleanedPhone.startsWith('8') && cleanedPhone.length >= 10) {
+      // Convert 8xxx to 08xxx
+      normalizedPhone = '0' + cleanedPhone
+    } else if (!cleanedPhone.startsWith('0')) {
+      // Add 0 prefix if missing
+      normalizedPhone = '0' + cleanedPhone
+    }
+    
+    console.log(`[E-Wallet Check] Phone normalization:`, {
+      original: phoneNumber,
+      cleaned: cleanedPhone,
+      normalized: normalizedPhone
+    })
 
     // NOTE: Xendit does NOT provide a public account validation API endpoint
     // The /v1/account_validation endpoint does not exist in official Xendit API

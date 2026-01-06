@@ -344,38 +344,65 @@ async function handleInvoicePaid(data: any) {
                 break
             }
 
-            // Create or update UserMembership
-            // Use upsert to handle case where user already has this membership type
-            const userMembership = await prisma.userMembership.upsert({
+            // Check if UserMembership already exists for THIS transaction
+            const existingForThisTxn = await prisma.userMembership.findFirst({
               where: {
-                userId_membershipId: {
-                  userId: transaction.userId,
-                  membershipId: membershipId,
-                }
-              },
-              update: {
-                status: 'ACTIVE',
-                isActive: true,
-                activatedAt: now,
-                startDate: now,
-                endDate,
-                price: transaction.amount,
-                transactionId: transaction.id,
-              },
-              create: {
-                id: `um_${transaction.id}`,
                 userId: transaction.userId,
-                membershipId: membershipId,
-                status: 'ACTIVE',
-                isActive: true,
-                activatedAt: now,
-                startDate: now,
-                endDate,
-                price: transaction.amount,
                 transactionId: transaction.id,
               },
             })
-            console.log(`[Xendit Webhook] ✅ UserMembership created/updated: ${userMembership.id}`)
+
+            if (!existingForThisTxn) {
+              // Deactivate old memberships of the same type
+              const existingForThisMembership = await prisma.userMembership.findFirst({
+                where: {
+                  userId: transaction.userId,
+                  membershipId: membershipId,
+                },
+              })
+
+              if (existingForThisMembership) {
+                await prisma.userMembership.update({
+                  where: { id: existingForThisMembership.id },
+                  data: {
+                    isActive: false,
+                    status: 'EXPIRED',
+                  },
+                })
+              }
+
+              // Also deactivate ALL other active memberships
+              await prisma.userMembership.updateMany({
+                where: {
+                  userId: transaction.userId,
+                  membershipId: { not: membershipId },
+                  isActive: true,
+                },
+                data: {
+                  isActive: false,
+                  status: 'EXPIRED',
+                },
+              })
+
+              // Create new UserMembership for this transaction
+              await prisma.userMembership.create({
+                data: {
+                  id: `um_${transaction.id}`,
+                  userId: transaction.userId,
+                  membershipId: membershipId,
+                  status: 'ACTIVE',
+                  isActive: true,
+                  activatedAt: now,
+                  startDate: now,
+                  endDate,
+                  price: transaction.amount,
+                  transactionId: transaction.id,
+                },
+              })
+              console.log(`[Xendit Webhook] ✅ UserMembership created: ${transaction.userId}`)
+            } else {
+              console.log(`[Xendit Webhook] ℹ️  UserMembership already exists for this transaction`)
+            }
 
             // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
             if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
@@ -1136,37 +1163,65 @@ async function handleVAPaymentComplete(data: any) {
                 break
             }
 
-            // Create or update UserMembership
-            // Use upsert to handle case where user already has this membership type
-            await prisma.userMembership.upsert({
+            // Check if UserMembership already exists for THIS transaction
+            const existingForThisTxn = await prisma.userMembership.findFirst({
               where: {
-                userId_membershipId: {
-                  userId: transaction.userId,
-                  membershipId: membershipId,
-                }
-              },
-              update: {
-                status: 'ACTIVE',
-                isActive: true,
-                activatedAt: now,
-                startDate: now,
-                endDate,
-                price: transaction.amount,
-                transactionId: transaction.id,
-              },
-              create: {
-                id: `um_${transaction.id}`,
                 userId: transaction.userId,
-                membershipId: membershipId,
-                status: 'ACTIVE',
-                isActive: true,
-                activatedAt: now,
-                startDate: now,
-                endDate,
-                price: transaction.amount,
                 transactionId: transaction.id,
               },
             })
+
+            if (!existingForThisTxn) {
+              // Deactivate old memberships of the same type
+              const existingForThisMembership = await prisma.userMembership.findFirst({
+                where: {
+                  userId: transaction.userId,
+                  membershipId: membershipId,
+                },
+              })
+
+              if (existingForThisMembership) {
+                await prisma.userMembership.update({
+                  where: { id: existingForThisMembership.id },
+                  data: {
+                    isActive: false,
+                    status: 'EXPIRED',
+                  },
+                })
+              }
+
+              // Also deactivate ALL other active memberships
+              await prisma.userMembership.updateMany({
+                where: {
+                  userId: transaction.userId,
+                  membershipId: { not: membershipId },
+                  isActive: true,
+                },
+                data: {
+                  isActive: false,
+                  status: 'EXPIRED',
+                },
+              })
+
+              // Create new UserMembership for this transaction
+              await prisma.userMembership.create({
+                data: {
+                  id: `um_${transaction.id}`,
+                  userId: transaction.userId,
+                  membershipId: membershipId,
+                  status: 'ACTIVE',
+                  isActive: true,
+                  activatedAt: now,
+                  startDate: now,
+                  endDate,
+                  price: transaction.amount,
+                  transactionId: transaction.id,
+                },
+              })
+              console.log(`[Xendit Webhook] ✅ UserMembership created (VA): ${transaction.userId}`)
+            } else {
+              console.log(`[Xendit Webhook] ℹ️  UserMembership already exists for this transaction (VA)`)
+            }
 
             // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
             if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
