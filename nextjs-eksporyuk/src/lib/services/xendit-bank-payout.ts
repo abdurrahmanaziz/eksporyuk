@@ -82,6 +82,7 @@ export class XenditPayout {
         headers: {
           'Authorization': this.getAuthHeader(),
           'Content-Type': 'application/json',
+          'Idempotency-Key': request.referenceId, // Required by Xendit Payout API v2
         },
         body: JSON.stringify(request)
       })
