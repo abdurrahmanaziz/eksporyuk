@@ -281,15 +281,25 @@ export async function POST(request: NextRequest) {
       
       throw xenditError // Re-throw to be caught by outer try-catch
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('[BANK TRANSFER WITHDRAWAL ERROR] Full error details:', {
       message: error?.message,
       code: error?.code,
       status: error?.status,
       response: error?.response,
-      stack: error?.stack,
-      type: error?.constructor?.name
+      stack: error?.stack?.split('\n').slice(0, 3).join('\n'), // First 3 lines only
+      type: error?.constructor?.name,
+      name: error?.name
     })
+    
+    // Log error in a way that helps debugging
+    if (error instanceof Error) {
+      console.error('[BANK TRANSFER ERROR] Error object:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.split('\n').slice(0, 5)
+      })
+    }
     
     // Handle Xendit specific errors
     if (error.message?.includes('DUPLICATE_REFERENCE_ID')) {
@@ -313,15 +323,28 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    if (error.message?.includes('Xendit not configured')) {
+      return NextResponse.json(
+        { error: 'Xendit belum dikonfigurasi. Hubungi administrator.' },
+        { status: 503 }
+      )
+    }
+    
     // Return more specific error information for debugging
     const errorMessage = error?.message || 'Gagal memproses bank transfer otomatis'
-    console.error('[BANK TRANSFER WITHDRAWAL ERROR] Returning error response:', errorMessage)
+    const errorCode = error?.code || error?.name || 'UNKNOWN_ERROR'
+    
+    console.error('[BANK TRANSFER WITHDRAWAL ERROR] Returning error response:', {
+      message: errorMessage,
+      code: errorCode
+    })
     
     return NextResponse.json(
       { 
         error: 'Gagal memproses bank transfer otomatis',
         details: errorMessage,
-        code: error?.code || 'UNKNOWN_ERROR'
+        code: errorCode,
+        hint: 'Periksa log server untuk detail lengkap'
       },
       { status: 500 }
     )

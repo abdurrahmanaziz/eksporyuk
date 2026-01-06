@@ -1190,18 +1190,18 @@ model CourseSettings {
 }
 
 model DocumentDownloadLog {
-  id              String              @id
+  id              String             @id
   userId          String
   documentId      String
   membershipLevel String
-  downloadedAt    DateTime            @default(now())
+  downloadedAt    DateTime           @default(now())
   ipAddress       String?
   userAgent       String?
-  status          DownloadStatus      @default(SUCCESS)
-  adminVerified   Boolean             @default(false)
+  status          DownloadStatus     @default(SUCCESS)
+  adminVerified   Boolean            @default(false)
   notes           String?
-  user            User                @relation("DocumentDownloader", fields: [userId], references: [id], onDelete: Cascade)
-  document        MembershipDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user            User               @relation("DocumentDownloader", fields: [userId], references: [id], onDelete: Cascade)
+  document        MembershipDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([documentId])
@@ -1311,12 +1311,12 @@ model EventGroup {
 }
 
 model EventMembership {
-  id           String      @id
+  id           String     @id
   productId    String
   membershipId String
-  createdAt    DateTime    @default(now())
-  product      Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  membership   Membership  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@index([membershipId])
@@ -1527,28 +1527,28 @@ model GeneratedDocument {
 }
 
 model Group {
-  id              String          @id
+  id              String       @id
   name            String
   description     String
   avatar          String?
   coverImage      String?
-  type            GroupType       @default(PUBLIC)
+  type            GroupType    @default(PUBLIC)
   ownerId         String
   bannedWords     Json?
-  requireApproval Boolean         @default(false)
-  isActive        Boolean         @default(true)
+  requireApproval Boolean      @default(false)
+  isActive        Boolean      @default(true)
   postingSettings Json?
-  allowRichText   Boolean         @default(true)
-  allowMedia      Boolean         @default(true)
-  allowPolls      Boolean         @default(true)
-  allowEvents     Boolean         @default(true)
-  allowScheduling Boolean         @default(true)
-  allowReactions  Boolean         @default(true)
-  allowMentions   Boolean         @default(true)
-  moderatesPosts  Boolean         @default(false)
-  createdAt       DateTime        @default(now())
+  allowRichText   Boolean      @default(true)
+  allowMedia      Boolean      @default(true)
+  allowPolls      Boolean      @default(true)
+  allowEvents     Boolean      @default(true)
+  allowScheduling Boolean      @default(true)
+  allowReactions  Boolean      @default(true)
+  allowMentions   Boolean      @default(true)
+  moderatesPosts  Boolean      @default(false)
+  createdAt       DateTime     @default(now())
   updatedAt       DateTime
-  slug            String?         @unique
+  slug            String?      @unique
   Product         Product[]
   eventGroups     EventGroup[]
 }
@@ -2087,8 +2087,8 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
   used      Boolean   @default(false)
   usedAt    DateTime?
-  ipAddress String?   // IP address for audit trail
-  userAgent String?   // User agent for security tracking
+  ipAddress String? // IP address for audit trail
+  userAgent String? // User agent for security tracking
 
   @@index([email])
   @@index([expiresAt])
@@ -2108,19 +2108,19 @@ model Payout {
   paidAt        DateTime?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime
-  
+
   // Xendit Payout Integration (new fields - optional to maintain backward compatibility)
-  xenditPayoutId     String?   // Xendit payout ID from API response
-  channelCode        String?   // ID_DANA, ID_OVO, ID_GOPAY, etc.
-  channelCategory    String?   // EWALLET or BANK
-  phoneNumber        String?   // For e-wallet withdrawals
-  referenceId        String?   // Our internal reference ID
-  failureReason      String?   // Xendit failure reason if payout fails
-  xenditStatus       String?   // ACCEPTED, SUCCEEDED, FAILED, REVERSED, etc.
-  estimatedArrival   DateTime? // Xendit estimated arrival time
-  adminFee           Decimal?  // Admin fee charged for this payout
-  netAmount          Decimal?  // Amount after admin fee
-  metadata           Json?     // Additional metadata from Xendit
+  xenditPayoutId   String? // Xendit payout ID from API response
+  channelCode      String? // ID_DANA, ID_OVO, ID_GOPAY, etc.
+  channelCategory  String? // EWALLET or BANK
+  phoneNumber      String? // For e-wallet withdrawals
+  referenceId      String? // Our internal reference ID
+  failureReason    String? // Xendit failure reason if payout fails
+  xenditStatus     String? // ACCEPTED, SUCCEEDED, FAILED, REVERSED, etc.
+  estimatedArrival DateTime? // Xendit estimated arrival time
+  adminFee         Decimal? // Admin fee charged for this payout
+  netAmount        Decimal? // Amount after admin fee
+  metadata         Json? // Additional metadata from Xendit
 
   @@index([status])
   @@index([walletId])
@@ -2244,7 +2244,7 @@ model PostReaction {
 }
 
 model Product {
-  id                      String          @id
+  id                      String            @id
   creatorId               String
   name                    String
   slug                    String?
@@ -2260,42 +2260,42 @@ model Product {
   reminders               Json?
   category                String?
   tags                    Json?
-  productType             ProductType     @default(DIGITAL)
-  productStatus           ProductStatus   @default(DRAFT)
-  accessLevel             AccessLevel     @default(PUBLIC)
+  productType             ProductType       @default(DIGITAL)
+  productStatus           ProductStatus     @default(DRAFT)
+  accessLevel             AccessLevel       @default(PUBLIC)
   eventDate               DateTime?
   eventEndDate            DateTime?
   eventDuration           Int?
   eventUrl                String?
   meetingId               String?
   meetingPassword         String?
-  eventVisibility         EventVisibility @default(PUBLIC)
+  eventVisibility         EventVisibility   @default(PUBLIC)
   eventPassword           String?
   maxParticipants         Int?
-  reminderSent7Days       Boolean         @default(false)
-  reminderSent3Days       Boolean         @default(false)
-  reminderSent1Day        Boolean         @default(false)
-  reminderSent1Hour       Boolean         @default(false)
-  reminderSent15Min       Boolean         @default(false)
-  enableUpsale            Boolean         @default(true)
+  reminderSent7Days       Boolean           @default(false)
+  reminderSent3Days       Boolean           @default(false)
+  reminderSent1Day        Boolean           @default(false)
+  reminderSent1Hour       Boolean           @default(false)
+  reminderSent15Min       Boolean           @default(false)
+  enableUpsale            Boolean           @default(true)
   upsaleTargetMemberships String?
-  upsaleDiscount          Int             @default(0)
+  upsaleDiscount          Int               @default(0)
   upsaleMessage           String?
-  commissionType          CommissionType  @default(PERCENTAGE)
-  affiliateCommissionRate Decimal         @default(30)
-  affiliateEnabled        Boolean         @default(true)
-  mentorCommission        Decimal         @default(30)
+  commissionType          CommissionType    @default(PERCENTAGE)
+  affiliateCommissionRate Decimal           @default(30)
+  affiliateEnabled        Boolean           @default(true)
+  mentorCommission        Decimal           @default(30)
   groupId                 String?
-  isActive                Boolean         @default(true)
-  isFeatured              Boolean         @default(false)
+  isActive                Boolean           @default(true)
+  isFeatured              Boolean           @default(false)
   stock                   Int?
-  soldCount               Int             @default(0)
+  soldCount               Int               @default(0)
   formLogo                String?
   formBanner              String?
   formDescription         String?
   mailketingListId        String?
   mailketingListName      String?
-  autoAddToList           Boolean         @default(true)
+  autoAddToList           Boolean           @default(true)
   seoMetaTitle            String?
   seoMetaDescription      String?
   seoKeywords             String?
@@ -2305,13 +2305,13 @@ model Product {
   bonuses                 Json?
   downloadableFiles       Json?
   trackingPixels          Json?
-  viewCount               Int             @default(0)
-  clickCount              Int             @default(0)
-  createdAt               DateTime        @default(now())
+  viewCount               Int               @default(0)
+  clickCount              Int               @default(0)
+  createdAt               DateTime          @default(now())
   updatedAt               DateTime
   affiliateLinks          AffiliateLink[]
-  User                    User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  Group                   Group?          @relation(fields: [groupId], references: [id])
+  User                    User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  Group                   Group?            @relation(fields: [groupId], references: [id])
   UserProduct             UserProduct[]
   eventMemberships        EventMembership[]
   eventGroups             EventGroup[]
@@ -2942,7 +2942,7 @@ model Transaction {
   createdAt               DateTime          @default(now())
   updatedAt               DateTime          @updatedAt
   invoiceNumber           String?
-  
+
   @@index([userId])
   @@index([status])
   @@index([invoiceNumber])
@@ -3145,16 +3145,16 @@ model Wallet {
 
 model EWalletAccount {
   id          String   @id @default(cuid())
-  userId      String?  // Optional - for caching user's verified accounts
-  provider    String   // OVO, GoPay, DANA, LinkAja, ShopeePay
+  userId      String? // Optional - for caching user's verified accounts
+  provider    String // OVO, GoPay, DANA, LinkAja, ShopeePay
   phoneNumber String
   accountName String
   isVerified  Boolean  @default(false)
   lastChecked DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, phoneNumber])
   @@index([phoneNumber])
@@ -3519,13 +3519,13 @@ enum NotificationType {
 }
 
 enum PayoutStatus {
-  PENDING    // Initial state, waiting for approval or processing
-  APPROVED   // Approved by admin, ready to process
-  REJECTED   // Rejected by admin
-  PAID       // Successfully paid (final state)
+  PENDING // Initial state, waiting for approval or processing
+  APPROVED // Approved by admin, ready to process
+  REJECTED // Rejected by admin
+  PAID // Successfully paid (final state)
   PROCESSING // Being processed by Xendit
-  FAILED     // Failed (Xendit failure or other error)
-  REVERSED   // Reversed by payment provider
+  FAILED // Failed (Xendit failure or other error)
+  REVERSED // Reversed by payment provider
 }
 
 enum PostType {
@@ -3731,16 +3731,16 @@ enum ErrorLevel {
 // Role to Mailketing List mapping
 // Allows admin to assign which Mailketing list each role should be added to
 model RoleMailketingList {
-  id                String   @id @default(cuid())
-  role              Role     // User role (ADMIN, MENTOR, AFFILIATE, MEMBER_PREMIUM, MEMBER_FREE)
-  mailketingListId  String   // Mailketing list ID from Mailketing dashboard
-  mailketingListName String  // Mailketing list name for display
-  isActive          Boolean  @default(true)
-  autoAddOnRegister Boolean  @default(true) // Auto add user to list when they register/upgrade
-  autoAddOnUpgrade  Boolean  @default(true) // Auto add when user upgrades to this role
-  description       String?  // Admin notes
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  role               Role // User role (ADMIN, MENTOR, AFFILIATE, MEMBER_PREMIUM, MEMBER_FREE)
+  mailketingListId   String // Mailketing list ID from Mailketing dashboard
+  mailketingListName String // Mailketing list name for display
+  isActive           Boolean  @default(true)
+  autoAddOnRegister  Boolean  @default(true) // Auto add user to list when they register/upgrade
+  autoAddOnUpgrade   Boolean  @default(true) // Auto add when user upgrades to this role
+  description        String? // Admin notes
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@unique([role, mailketingListId]) // One role can have multiple lists, but no duplicates
   @@index([role])
