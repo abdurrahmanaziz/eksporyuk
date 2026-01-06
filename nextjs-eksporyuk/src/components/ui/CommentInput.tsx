@@ -71,6 +71,7 @@ export default function CommentInput({
   const [documents, setDocuments] = useState<MediaFile[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [uploadingMedia, setUploadingMedia] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
   
   // Mention autocomplete
   const [mentionSearch, setMentionSearch] = useState('')
@@ -225,14 +226,40 @@ export default function CommentInput({
           return
         }
 
-        // For now, store as URL (in production, upload to storage service)
+        // Create progress tracking for this file
+        const fileId = `img-${Date.now()}-${Math.random()}`
+        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
+
+        // Simulate upload progress
+        let progress = 0
+        const progressInterval = setInterval(() => {
+          progress += Math.random() * 40
+          if (progress > 90) progress = 90
+          setUploadProgress(prev => ({ ...prev, [fileId]: progress }))
+        }, 100)
+
+        // Store as URL (in production, upload to storage service)
         const url = URL.createObjectURL(file)
+        
+        // Simulate completion
+        await new Promise(resolve => setTimeout(resolve, 500))
+        clearInterval(progressInterval)
+        setUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
+        
         setImages(prev => [...prev, {
           url,
           type: 'image',
           name: file.name,
           size: file.size
         }])
+
+        // Clear progress after short delay
+        await new Promise(resolve => setTimeout(resolve, 200))
+        setUploadProgress(prev => {
+          const newProgress = { ...prev }
+          delete newProgress[fileId]
+          return newProgress
+        })
       }
       
       if (files.length > 0) {
@@ -256,13 +283,39 @@ export default function CommentInput({
           return
         }
 
+        // Create progress tracking for this file
+        const fileId = `vid-${Date.now()}-${Math.random()}`
+        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
+
+        // Simulate upload progress (videos take longer)
+        let progress = 0
+        const progressInterval = setInterval(() => {
+          progress += Math.random() * 30
+          if (progress > 90) progress = 90
+          setUploadProgress(prev => ({ ...prev, [fileId]: progress }))
+        }, 150)
+
         const url = URL.createObjectURL(file)
+        
+        // Simulate completion
+        await new Promise(resolve => setTimeout(resolve, 800))
+        clearInterval(progressInterval)
+        setUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
+        
         setVideos(prev => [...prev, {
           url,
           type: 'video',
           name: file.name,
           size: file.size
         }])
+
+        // Clear progress after short delay
+        await new Promise(resolve => setTimeout(resolve, 200))
+        setUploadProgress(prev => {
+          const newProgress = { ...prev }
+          delete newProgress[fileId]
+          return newProgress
+        })
       }
 
       if (files.length > 0) {
@@ -446,6 +499,35 @@ export default function CommentInput({
               </div>
             )}
           </div>
+
+          {/* Upload Progress */}
+          {uploadingMedia && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">Mengunggah file...</p>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 space-y-2">
+                {Object.entries(uploadProgress).length > 0 ? (
+                  Object.entries(uploadProgress).map(([fileId, progress]) => (
+                    <div key={fileId}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-gray-600 dark:text-gray-400">Upload</span>
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{Math.round(progress)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                        <div 
+                          className="bg-blue-500 h-full transition-all duration-300 ease-out" 
+                          style={{ width: `${Math.round(progress)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Media Previews */}
           {(images.length > 0 || videos.length > 0 || documents.length > 0) && (
