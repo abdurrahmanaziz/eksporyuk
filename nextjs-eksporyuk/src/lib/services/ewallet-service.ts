@@ -419,6 +419,18 @@ export class EWalletService {
   }
 
   /**
+   * Public method to get account name - wrapper for checkAccountName
+   * Used by API routes for account verification
+   */
+  async getAccountName(
+    provider: string,
+    phoneNumber: string,
+    userId?: string
+  ): Promise<EWalletAccountInfo> {
+    return this.checkAccountName(phoneNumber, provider, userId, true)
+  }
+
+  /**
    * Get user's saved e-wallet accounts
    */
   async getUserEWalletAccounts(userId: string) {
