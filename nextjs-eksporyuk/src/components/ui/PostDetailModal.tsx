@@ -104,9 +104,9 @@ export function PostDetailModal({
       {/* Main container - Responsive layout */}
       <div className="w-full max-w-7xl max-h-[95vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col lg:flex-row my-auto">
         
-        {/* Left: Media Section - Hide on mobile */}
+        {/* Left: Media Section - Desktop only */}
         {hasMedia && (
-          <div className="hidden lg:flex flex-1 bg-black dark:bg-gray-950 flex-col items-center justify-center relative min-h-96">
+          <div className="hidden lg:flex flex-1 bg-black dark:bg-gray-950 flex-col items-center justify-center relative min-h-[500px]">
             {currentMedia?.type === 'image' ? (
               <Image
                 src={currentMedia.url}
@@ -115,14 +115,14 @@ export function PostDetailModal({
                 className="object-contain"
                 priority
               />
-            ) : (
+            ) : currentMedia?.type === 'video' ? (
               <video
                 src={currentMedia?.url}
                 controls
                 autoPlay
                 className="max-h-full max-w-full"
               />
-            )}
+            ) : null}}
 
             {/* Media navigation */}
             {mediaItems.length > 1 && (
@@ -251,13 +251,13 @@ export function PostDetailModal({
                     height={400}
                     className="w-full rounded-lg object-cover max-h-96"
                   />
-                ) : (
+                ) : currentMedia?.type === 'video' ? (
                   <video
                     src={currentMedia?.url}
                     controls
                     className="w-full rounded-lg max-h-96"
                   />
-                )}
+                ) : null}}
                 
                 {mediaItems.length > 1 && (
                   <div className="flex items-center justify-between mt-2 gap-1">

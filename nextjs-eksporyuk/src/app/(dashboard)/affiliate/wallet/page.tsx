@@ -960,40 +960,6 @@ export default function UserWalletPage() {
                 </select>
               </div>
 
-              {/* Account Name - Hidden for E-wallet */}
-              {!isEWallet(withdrawForm.bankName) && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nama Pemilik Rekening <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={withdrawForm.accountName}
-                    onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
-                    required
-                    disabled={bankValidation.isValid}
-                    className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all ${
-                      bankValidation.isValid ? 'bg-gray-100 cursor-not-allowed' : ''
-                    }`}
-                    placeholder={bankValidation.isValid ? "Terisi otomatis dari validasi" : "Akan terisi otomatis setelah validasi"}
-                  />
-                  {bankValidation.isValid && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      ✅ Nama diambil dari sistem bank, tidak bisa diubah
-                    </p>
-                  )}
-                </div>
-              )}
-              
-              {/* E-wallet name auto-lookup info */}
-              {isEWallet(withdrawForm.bankName) && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm text-blue-700">
-                    💡 <strong>Nama pemilik akan otomatis terdeteksi</strong> setelah Anda memasukkan nomor HP yang valid
-                  </p>
-                </div>
-              )}
-
               {/* Account Number/Phone */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
