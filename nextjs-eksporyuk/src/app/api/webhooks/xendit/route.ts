@@ -1136,8 +1136,26 @@ async function handleVAPaymentComplete(data: any) {
                 break
             }
 
-            await prisma.userMembership.create({
-              data: {
+            // Create or update UserMembership
+            // Use upsert to handle case where user already has this membership type
+            await prisma.userMembership.upsert({
+              where: {
+                userId_membershipId: {
+                  userId: transaction.userId,
+                  membershipId: membershipId,
+                }
+              },
+              update: {
+                status: 'ACTIVE',
+                isActive: true,
+                activatedAt: now,
+                startDate: now,
+                endDate,
+                price: transaction.amount,
+                transactionId: transaction.id,
+              },
+              create: {
+                id: `um_${transaction.id}`,
                 userId: transaction.userId,
                 membershipId: membershipId,
                 status: 'ACTIVE',
