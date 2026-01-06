@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { validatePostFiles } from '@/lib/file-upload'
+import { validatePostFiles, UPLOAD_CONFIG } from '@/lib/file-upload'
 import { randomBytes } from 'crypto'
 
 const createId = () => randomBytes(16).toString('hex')
@@ -261,42 +261,49 @@ export async function POST(request: NextRequest) {
     }
     
     // Validate files if provided
-    if (images?.length > 0 || videos?.length > 0 || documents?.length > 0) {
-      const fileValidation = validatePostFiles(
-        images?.map(i => new File([], i)) as any,
-        videos?.map(v => new File([], v)) as any,
-        documents?.map(d => new File([], d)) as any
-      )
-      
-      if (!fileValidation.valid) {
-        return NextResponse.json({ error: fileValidation.error }, { status: 400 })
-      }
-    }
+    // Note: images, videos, documents are URLs (strings) sent from frontend
+    // They were already validated during upload on the client side
+    // We only check count limits here
     
     // Validate images
     if (images && Array.isArray(images)) {
-      if (images.length > 5) {
-        return NextResponse.json({ error: 'Maksimal 5 gambar saja' }, { status: 400 })
+      if (images.length > UPLOAD_CONFIG.post.maxImages) {
+        return NextResponse.json({ error: `Maksimal ${UPLOAD_CONFIG.post.maxImages} gambar saja` }, { status: 400 })
       }
       
+      // Validate that all items are strings (URLs)
       for (const img of images) {
-        if (typeof img === 'string' && img.length > 5_000_000) {
-          return NextResponse.json({ error: 'Ukuran gambar terlalu besar (max 5MB per gambar)' }, { status: 400 })
+        if (typeof img !== 'string' || img.trim().length === 0) {
+          return NextResponse.json({ error: 'Format gambar tidak valid' }, { status: 400 })
         }
       }
     }
     
     // Validate videos
     if (videos && Array.isArray(videos)) {
-      if (videos.length > 2) {
-        return NextResponse.json({ error: 'Maksimal 2 video saja' }, { status: 400 })
+      if (videos.length > UPLOAD_CONFIG.post.maxVideos) {
+        return NextResponse.json({ error: `Maksimal ${UPLOAD_CONFIG.post.maxVideos} video saja` }, { status: 400 })
+      }
+      
+      // Validate that all items are strings (URLs)
+      for (const vid of videos) {
+        if (typeof vid !== 'string' || vid.trim().length === 0) {
+          return NextResponse.json({ error: 'Format video tidak valid' }, { status: 400 })
+        }
       }
     }
 
     // Validate documents
     if (documents && Array.isArray(documents)) {
-      if (documents.length > 2) {
-        return NextResponse.json({ error: 'Maksimal 2 dokumen saja' }, { status: 400 })
+      if (documents.length > UPLOAD_CONFIG.post.maxDocuments) {
+        return NextResponse.json({ error: `Maksimal ${UPLOAD_CONFIG.post.maxDocuments} dokumen saja` }, { status: 400 })
+      }
+      
+      // Validate that all items are strings (URLs)
+      for (const doc of documents) {
+        if (typeof doc !== 'string' || doc.trim().length === 0) {
+          return NextResponse.json({ error: 'Format dokumen tidak valid' }, { status: 400 })
+        }
       }
     }
     
