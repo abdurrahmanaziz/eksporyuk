@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
           accountHolderName: accountName,
           accountNumber: accountNumber,
         },
-        amount: netAmount,
+        amount: Number(netAmount), // Convert Decimal to number
         currency: 'IDR',
         description: `Bank transfer payout - ${session.user?.name || session.user?.email || 'User'}`,
         metadata: {
