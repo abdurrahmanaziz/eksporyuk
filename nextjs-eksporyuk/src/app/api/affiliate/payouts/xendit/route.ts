@@ -139,103 +139,123 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create Xendit payout
-    console.log('[XENDIT PAYOUT] Initializing Xendit service with user:', {
+    // CRITICAL: Create DB record FIRST before sending money to Xendit!
+    // This ensures we have a record even if Xendit succeeds but subsequent DB operations fail
+    const referenceId = `bank_${session.user.id}_${Date.now()}`
+    const bankCode = getBankCode(bankName)
+    
+    console.log('[BANK TRANSFER] Creating payout record BEFORE Xendit call:', {
       userId: session.user.id,
-      userEmail: session.user.email,
-      amount: netAmount,
-      bankName: bankName
+      amount,
+      netAmount,
+      bankCode,
+      referenceId
     })
+
+    // Step 1: Create payout record with PENDING status
+    const payoutRecord = await prisma.payout.create({
+      data: {
+        walletId: wallet.id,
+        amount,
+        status: 'PENDING',
+        bankName,
+        accountName,
+        accountNumber,
+        notes: 'Bank transfer otomatis via Xendit - Pending',
+        metadata: {
+          adminFee,
+          netAmount,
+          requestedAmount: amount,
+          referenceId,
+          bankCode,
+        },
+      },
+    })
+
+    // Step 2: Deduct wallet balance
+    await prisma.wallet.update({
+      where: { id: wallet.id },
+      data: {
+        balance: { decrement: amount }
+      }
+    })
+
+    // Step 3: Create wallet transaction
+    await prisma.walletTransaction.create({
+      data: {
+        walletId: wallet.id,
+        amount: -amount,
+        type: 'PAYOUT_PROCESSING',
+        description: `Bank transfer sebesar Rp ${amount.toLocaleString()} (Biaya admin: Rp ${adminFee.toLocaleString()}, Nett: Rp ${netAmount.toLocaleString()})`,
+        reference: payoutRecord.id,
+        metadata: {
+          adminFee,
+          netAmount,
+          referenceId,
+        },
+      },
+    })
+
+    console.log('[BANK TRANSFER] DB records created, now calling Xendit:', {
+      payoutId: payoutRecord.id,
+      previousBalance: Number(wallet.balance),
+      newBalance: Number(wallet.balance) - amount
+    })
+
+    // Step 4: NOW send to Xendit
     const xenditPayout = new XenditPayout()
     
-    // For banks, convert bank name to bank code
-    const bankCode = getBankCode(bankName)
-    console.log('[XENDIT PAYOUT] Bank code mapping:', { bankName, bankCode })
-    
     try {
-      console.log('[XENDIT PAYOUT] Creating payout request with:', {
-        referenceId: `bank_${session.user.id}_${Date.now()}`,
-        channelCode: bankCode,
-        amount: netAmount,
-        accountHolderName: accountName,
-        accountNumber: accountNumber,
-        userSession: {
-          id: session.user.id,
-          name: session.user.name || 'Unknown'
-        }
-      })
-      
       const payout = await xenditPayout.createPayout({
-        referenceId: `bank_${session.user.id}_${Date.now()}`,
+        referenceId,
         channelCode: bankCode,
         channelProperties: {
           accountHolderName: accountName,
           accountNumber: accountNumber,
         },
-        amount: Number(netAmount), // Convert Decimal to number
+        amount: Number(netAmount),
         currency: 'IDR',
         description: `Bank transfer payout - ${session.user?.name || session.user?.email || 'User'}`,
         metadata: {
           userId: session.user.id,
-          type: 'bank_transfer'
+          type: 'bank_transfer',
+          payoutRecordId: payoutRecord.id,
         }
       })
       
-      console.log('[XENDIT PAYOUT] Payout created successfully:', {
-        id: payout.id,
+      console.log('[XENDIT PAYOUT] Success:', {
+        xenditId: payout.id,
         referenceId: payout.referenceId,
-        status: payout.status,
-        amount: netAmount
+        status: payout.status
       })
 
-      // Create payout record with Xendit ID
-      const payoutRecord = await prisma.payout.create({
+      // Step 5: Update payout record with Xendit response
+      await prisma.payout.update({
+        where: { id: payoutRecord.id },
         data: {
-          walletId: wallet.id,
-          amount,
           status: 'PROCESSING',
-          bankName,
-          accountName,
-          accountNumber,
-          notes: 'Bank transfer otomatis via Xendit',
+          notes: 'Bank transfer otomatis via Xendit - Processing',
           metadata: {
-            adminFee,
-            netAmount,
-            requestedAmount: amount,
+            ...payoutRecord.metadata,
             xenditId: payout.id,
             xenditReferenceId: payout.referenceId,
+            xenditStatus: payout.status,
           },
         },
       })
 
-      // Create wallet transaction (deduct from balance)
-      await prisma.walletTransaction.create({
+      await prisma.payout.update({
+        where: { id: payoutRecord.id },
         data: {
-          walletId: wallet.id,
-          amount: -amount,
-          type: 'PAYOUT_PROCESSING',
-          description: `Bank transfer sebesar Rp ${amount.toLocaleString()} (Biaya admin: Rp ${adminFee.toLocaleString()}, Nett: Rp ${netAmount.toLocaleString()})`,
-          reference: payoutRecord.id,
+          status: 'PROCESSING',
+          notes: 'Bank transfer otomatis via Xendit - Processing',
           metadata: {
-            adminFee,
-            netAmount,
+            ...payoutRecord.metadata,
             xenditId: payout.id,
+            xenditReferenceId: payout.referenceId,
+            xenditStatus: payout.status,
           },
         },
-      })
-
-      // Update wallet balance (deduct the amount)
-      await prisma.wallet.update({
-        where: { id: wallet.id },
-        data: {
-          balance: { decrement: amount }
-        }
-      })
-
-      console.log('[BANK TRANSFER] Wallet updated:', {
-        previousBalance: Number(wallet.balance),
-        newBalance: Number(wallet.balance) - amount,
-        deductedAmount: amount
       })
 
       return NextResponse.json({
@@ -254,8 +274,45 @@ export async function POST(request: NextRequest) {
           'Expires': '0',
         }
       })
-    } catch (xenditError) {
+    } catch (xenditError: any) {
       console.error('[XENDIT BANK TRANSFER ERROR]', xenditError)
+      
+      // Update payout status to FAILED since Xendit call failed
+      await prisma.payout.update({
+        where: { id: payoutRecord.id },
+        data: {
+          status: 'FAILED',
+          notes: `Xendit error: ${xenditError.message || 'Unknown error'}`,
+          metadata: {
+            ...payoutRecord.metadata,
+            error: xenditError.message,
+            errorTime: new Date().toISOString(),
+          },
+        },
+      })
+      
+      // Refund wallet balance since payout failed
+      await prisma.wallet.update({
+        where: { id: wallet.id },
+        data: {
+          balance: { increment: amount }
+        }
+      })
+      
+      // Create refund transaction
+      await prisma.walletTransaction.create({
+        data: {
+          walletId: wallet.id,
+          amount: amount,
+          type: 'PAYOUT_FAILED_REFUND',
+          description: `Refund penarikan gagal: ${xenditError.message || 'Unknown error'}`,
+          reference: payoutRecord.id,
+          metadata: {
+            originalAmount: amount,
+            error: xenditError.message,
+          },
+        },
+      })
       
       // Handle specific Xendit errors
       if (xenditError.message?.includes('DUPLICATE_REFERENCE_ID')) {
