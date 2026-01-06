@@ -69,18 +69,20 @@ export async function POST(request: NextRequest) {
     let validationRecord
     
     try {
-      // Xendit Bank Account Data API
+      // Xendit Bank Account Validation API (v2)
+      // Documentation: https://developers.xendit.co/api-reference/disbursement/bank-account-validation
       const xenditPayload = {
-        bank_account_number: cleanAccountNumber,
+        account_number: cleanAccountNumber,
         bank_code: bankCode,
       }
       
-      console.log('[BANK VALIDATION] Calling Xendit API:', {
+      console.log('[BANK VALIDATION] Calling Xendit Validation API:', {
         bank_code: bankCode,
-        account_length: cleanAccountNumber.length
+        account_length: cleanAccountNumber.length,
+        endpoint: 'POST /validation/bank_account_validation'
       })
       
-      const response = await fetch('https://api.xendit.co/bank_account_data_requests', {
+      const response = await fetch('https://api.xendit.co/validation/bank_account_validation', {
         method: 'POST',
         headers: {
           'Authorization': `Basic ${auth}`,
@@ -158,9 +160,11 @@ export async function POST(request: NextRequest) {
 
       const data = errorData
       
+      // Xendit Bank Validation returns: bank_code, account_number, account_holder_name
       console.log('[BANK VALIDATION] Success:', {
         accountHolderName: data.account_holder_name,
         bankCode: data.bank_code,
+        accountNumber: data.account_number,
         userId: session.user.id
       })
 
