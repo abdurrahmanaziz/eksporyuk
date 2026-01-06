@@ -2108,9 +2108,24 @@ model Payout {
   paidAt        DateTime?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime
+  
+  // Xendit Payout Integration (new fields - optional to maintain backward compatibility)
+  xenditPayoutId     String?   // Xendit payout ID from API response
+  channelCode        String?   // ID_DANA, ID_OVO, ID_GOPAY, etc.
+  channelCategory    String?   // EWALLET or BANK
+  phoneNumber        String?   // For e-wallet withdrawals
+  referenceId        String?   // Our internal reference ID
+  failureReason      String?   // Xendit failure reason if payout fails
+  xenditStatus       String?   // ACCEPTED, SUCCEEDED, FAILED, REVERSED, etc.
+  estimatedArrival   DateTime? // Xendit estimated arrival time
+  adminFee           Decimal?  // Admin fee charged for this payout
+  netAmount          Decimal?  // Amount after admin fee
+  metadata           Json?     // Additional metadata from Xendit
 
   @@index([status])
   @@index([walletId])
+  @@index([xenditPayoutId])
+  @@index([referenceId])
 }
 
 model PendingRevenue {
@@ -3504,10 +3519,13 @@ enum NotificationType {
 }
 
 enum PayoutStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  PAID
+  PENDING    // Initial state, waiting for approval or processing
+  APPROVED   // Approved by admin, ready to process
+  REJECTED   // Rejected by admin
+  PAID       // Successfully paid (final state)
+  PROCESSING // Being processed by Xendit
+  FAILED     // Failed (Xendit failure or other error)
+  REVERSED   // Reversed by payment provider
 }
 
 enum PostType {

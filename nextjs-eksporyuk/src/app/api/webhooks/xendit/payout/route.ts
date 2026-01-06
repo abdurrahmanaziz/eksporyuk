@@ -42,20 +42,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find payout by Xendit ID
+    // Find payout by Xendit ID using dedicated field
     const payout = await prisma.payout.findFirst({
       where: {
-        metadata: {
-          path: ['xenditPayoutId'],
-          equals: xenditPayoutId
-        }
-      },
-      include: {
-        wallet: {
-          include: {
-            user: true
-          }
-        }
+        xenditPayoutId: xenditPayoutId
       }
     })
 
@@ -69,13 +59,13 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Xendit Payout Webhook] Processing status update for payout ${payout.id}: ${status}`)
 
-    // Map Xendit status to our status
-    let newStatus: string
+    // Map Xendit status to our PayoutStatus enum
+    let newStatus: 'PROCESSING' | 'PAID' | 'FAILED' | 'REVERSED'
     let description: string
 
     switch (status.toUpperCase()) {
       case 'SUCCEEDED':
-        newStatus = 'COMPLETED'
+        newStatus = 'PAID'
         description = `Withdrawal completed successfully to ${channel_code}`
         break
         
@@ -89,7 +79,13 @@ export async function POST(request: NextRequest) {
         description = `Withdrawal cancelled: ${failure_reason || 'Cancelled by system'}`
         break
         
+      case 'REVERSED':
+        newStatus = 'REVERSED'
+        description = `Withdrawal reversed: ${failure_reason || 'Reversed by payment provider'}`
+        break
+        
       case 'PENDING':
+      case 'ACCEPTED':
         newStatus = 'PROCESSING'
         description = 'Withdrawal is being processed'
         break
@@ -99,26 +95,23 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true }) // Don't process unknown statuses
     }
 
-    // Update payout status
+    // Update payout status with dedicated fields
     await prisma.$transaction(async (tx) => {
-      // Update payout record
+      // Update payout record with Xendit fields
       await tx.payout.update({
         where: { id: payout.id },
         data: {
-          status: newStatus as any,
-          metadata: {
-            ...payout.metadata,
-            xenditStatus: status,
-            xenditUpdated: updated,
-            failureReason: failure_reason,
-            webhookProcessedAt: new Date().toISOString()
-          }
+          status: newStatus,
+          xenditStatus: status,
+          failureReason: failure_reason || null,
+          paidAt: newStatus === 'PAID' ? new Date(updated) : null,
+          updatedAt: new Date(updated)
         }
       })
 
-      // If failed, refund the balance
-      if (newStatus === 'FAILED') {
-        console.log(`[Xendit Payout Webhook] Refunding failed withdrawal: ${payout.amount}`)
+      // If failed or reversed, refund the balance
+      if (newStatus === 'FAILED' || newStatus === 'REVERSED') {
+        console.log(`[Xendit Payout Webhook] Refunding ${newStatus.toLowerCase()} withdrawal: ${payout.amount}`)
         
         // Refund to wallet
         await tx.wallet.update({
@@ -134,13 +127,14 @@ export async function POST(request: NextRequest) {
             walletId: payout.walletId,
             amount: payout.amount,
             type: 'WITHDRAWAL_REFUND',
-            description: `Refund for failed withdrawal: ${description}`,
+            description: `Refund for ${newStatus.toLowerCase()} withdrawal: ${description}`,
             reference: payout.id,
             metadata: {
               originalPayoutId: payout.id,
               xenditPayoutId: xenditPayoutId,
               failureReason: failure_reason,
-              refundReason: 'Xendit payout failed'
+              refundReason: `Xendit payout ${newStatus.toLowerCase()}`,
+              refundedAt: new Date().toISOString()
             }
           }
         })

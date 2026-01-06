@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
           }
         })
 
-        // Create payout record
+        // Create payout record with Xendit integration fields
         const payout = await tx.payout.create({
           data: {
             walletId: wallet.id,
@@ -173,15 +173,21 @@ export async function POST(request: NextRequest) {
             accountName: accountName,
             accountNumber: phoneNumber,
             notes: `E-wallet withdrawal via ${provider}`,
+            // Xendit integration fields
+            xenditPayoutId: xenditPayout.id,
+            channelCode: xenditPayout.channel_code || provider,
+            channelCategory: 'EWALLET',
+            phoneNumber: phoneNumber,
+            referenceId: xenditPayout.reference_id,
+            xenditStatus: xenditPayout.status,
+            estimatedArrival: xenditPayout.estimated_arrival_time ? new Date(xenditPayout.estimated_arrival_time) : null,
+            adminFee: adminFee,
+            netAmount: netAmount,
             metadata: {
-              provider: provider,
-              phoneNumber: phoneNumber,
-              adminFee: adminFee,
-              netAmount: netAmount,
-              xenditPayoutId: xenditPayout.id,
-              xenditReferenceId: xenditPayout.reference_id,
-              xenditStatus: xenditPayout.status,
-              estimatedArrival: xenditPayout.estimated_arrival_time
+              userId: session.user.id,
+              userEmail: session.user.email,
+              userName: session.user.name,
+              originalAmount: amount
             }
           }
         })
@@ -201,7 +207,9 @@ export async function POST(request: NextRequest) {
               adminFee: adminFee,
               netAmount: netAmount,
               xenditPayoutId: xenditPayout.id,
-              xenditStatus: xenditPayout.status
+              referenceId: xenditPayout.reference_id,
+              xenditStatus: xenditPayout.status,
+              channelCode: xenditPayout.channel_code
             }
           }
         })

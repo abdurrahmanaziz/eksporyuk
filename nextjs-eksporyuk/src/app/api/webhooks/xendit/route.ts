@@ -344,9 +344,26 @@ async function handleInvoicePaid(data: any) {
                 break
             }
 
-            // Create UserMembership
-            await prisma.userMembership.create({
-              data: {
+            // Create or update UserMembership
+            // Use upsert to handle case where user already has this membership type
+            const userMembership = await prisma.userMembership.upsert({
+              where: {
+                userId_membershipId: {
+                  userId: transaction.userId,
+                  membershipId: membershipId,
+                }
+              },
+              update: {
+                status: 'ACTIVE',
+                isActive: true,
+                activatedAt: now,
+                startDate: now,
+                endDate,
+                price: transaction.amount,
+                transactionId: transaction.id,
+              },
+              create: {
+                id: `um_${transaction.id}`,
                 userId: transaction.userId,
                 membershipId: membershipId,
                 status: 'ACTIVE',
@@ -358,6 +375,7 @@ async function handleInvoicePaid(data: any) {
                 transactionId: transaction.id,
               },
             })
+            console.log(`[Xendit Webhook] ✅ UserMembership created/updated: ${userMembership.id}`)
 
             // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
             if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
