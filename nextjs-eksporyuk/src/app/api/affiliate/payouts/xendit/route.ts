@@ -165,6 +165,7 @@ export async function POST(request: NextRequest) {
         accountName,
         accountNumber,
         notes: 'Bank transfer otomatis via Xendit - Pending',
+        updatedAt: new Date(),
         metadata: {
           adminFee,
           netAmount,
