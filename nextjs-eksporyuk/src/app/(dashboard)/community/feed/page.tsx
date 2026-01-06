@@ -61,6 +61,7 @@ import FeedBanner from '@/components/banners/FeedBanner'
 import SidebarBanner from '@/components/banners/SidebarBanner'
 import UserHoverCard from '@/components/community/UserHoverCard'
 import CommentSection from '@/components/ui/CommentSection'
+import { ImageVideoLightbox } from '@/components/ui/ImageVideoLightbox'
 import { getBackgroundById } from '@/lib/post-backgrounds'
 
 interface Post {
@@ -161,6 +162,11 @@ export default function CommunityFeedPage() {
   const [postComments, setPostComments] = useState<Record<string, any[]>>({})
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
 
+  // Lightbox states
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [lightboxItems, setLightboxItems] = useState<Array<{ url: string; type: 'image' | 'video' }>>([])
+  const [lightboxPostId, setLightboxPostId] = useState<string>('')
   useEffect(() => {
     if (session) {
       fetchPosts()
@@ -430,6 +436,24 @@ export default function CommunityFeedPage() {
     setEditContent(post.content)
   }
 
+  const handleOpenLightbox = (post: Post, startIndex: number = 0) => {
+    if (!post.images || post.images.length === 0) return
+    
+    // Build items array with images and videos
+    const items: Array<{ url: string; type: 'image' | 'video' }> = []
+    
+    if (post.images && post.images.length > 0) {
+      post.images.forEach(img => {
+        items.push({ url: img, type: 'image' })
+      })
+    }
+    
+    setLightboxItems(items)
+    setLightboxIndex(Math.min(startIndex, items.length - 1))
+    setLightboxPostId(post.id)
+    setLightboxOpen(true)
+  }
+
   const handleUpdatePost = async (postData: any) => {
     if (!postData.text && (!postData.images || postData.images.length === 0)) {
       toast.error('Konten tidak boleh kosong')
@@ -463,10 +487,26 @@ export default function CommunityFeedPage() {
       })
 
       if (response.ok) {
+        const updatedData = await response.json()
+        const updatedPost = updatedData.post
+
+        // Update local posts array immediately (realtime)
+        setPosts(prevPosts =>
+          prevPosts.map(p =>
+            p.id === editingPost?.id
+              ? {
+                  ...p,
+                  content: updatedPost.content,
+                  images: updatedPost.images,
+                  updatedAt: updatedPost.updatedAt,
+                }
+              : p
+          )
+        )
+
         toast.success('Postingan berhasil diupdate')
         setEditingPost(null)
         setEditContent('')
-        fetchPosts()
         return true
       } else {
         toast.error('Gagal mengupdate postingan')
@@ -915,7 +955,11 @@ export default function CommunityFeedPage() {
                         {post.images && post.images.length > 0 && (
                           <div className={`grid gap-2 mb-4 rounded-lg overflow-hidden ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                             {post.images.slice(0, 4).map((image, idx) => (
-                              <div key={idx} className="relative h-64 group">
+                              <div 
+                                key={idx} 
+                                className="relative h-64 group cursor-pointer"
+                                onClick={() => handleOpenLightbox(post, idx)}
+                              >
                                 <Image
                                   src={image}
                                   alt={`Post image ${idx + 1}`}
@@ -1191,6 +1235,14 @@ export default function CommunityFeedPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image/Video Lightbox */}
+      <ImageVideoLightbox
+        items={lightboxItems}
+        initialIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
     </ResponsivePageWrapper>
   )
 }

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
-import { validateCommentFiles } from '@/lib/file-upload'
+import { validateCommentFiles, UPLOAD_CONFIG } from '@/lib/file-upload'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -155,19 +155,60 @@ export async function POST(
       )
     }
 
-    // Validate file uploads if provided
+    // Validate file uploads if provided - check URL strings, not File objects
     if (images.length > 0 || videos.length > 0 || documents.length > 0) {
-      const fileValidation = validateCommentFiles(
-        images.map(i => new File([], i)) as any,
-        videos.map(v => new File([], v)) as any,
-        documents.map(d => new File([], d)) as any
-      )
-      
-      if (!fileValidation.valid) {
+      // Check image count limit
+      if (images.length > UPLOAD_CONFIG.comment.maxImages) {
         return NextResponse.json(
-          { error: fileValidation.error },
+          { error: `Maksimal ${UPLOAD_CONFIG.comment.maxImages} gambar per komentar` },
           { status: 400 }
         )
+      }
+
+      // Check video count limit
+      if (videos.length > UPLOAD_CONFIG.comment.maxVideos) {
+        return NextResponse.json(
+          { error: `Maksimal ${UPLOAD_CONFIG.comment.maxVideos} video per komentar` },
+          { status: 400 }
+        )
+      }
+
+      // Check document count limit
+      if (documents.length > UPLOAD_CONFIG.comment.maxDocuments) {
+        return NextResponse.json(
+          { error: `Maksimal ${UPLOAD_CONFIG.comment.maxDocuments} dokumen per komentar` },
+          { status: 400 }
+        )
+      }
+
+      // Validate images are string URLs (not empty)
+      for (const img of images) {
+        if (typeof img !== 'string' || img.trim().length === 0) {
+          return NextResponse.json(
+            { error: 'Format gambar tidak valid' },
+            { status: 400 }
+          )
+        }
+      }
+
+      // Validate videos are string URLs (not empty)
+      for (const vid of videos) {
+        if (typeof vid !== 'string' || vid.trim().length === 0) {
+          return NextResponse.json(
+            { error: 'Format video tidak valid' },
+            { status: 400 }
+          )
+        }
+      }
+
+      // Validate documents are string URLs (not empty)
+      for (const doc of documents) {
+        if (typeof doc !== 'string' || doc.trim().length === 0) {
+          return NextResponse.json(
+            { error: 'Format dokumen tidak valid' },
+            { status: 400 }
+          )
+        }
       }
     }
 
