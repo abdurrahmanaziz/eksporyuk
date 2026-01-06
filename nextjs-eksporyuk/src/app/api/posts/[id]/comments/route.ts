@@ -8,6 +8,25 @@ import { validateCommentFiles, UPLOAD_CONFIG } from '@/lib/file-upload'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
+// Helper to transform comment and ensure media fields are proper arrays
+function transformComment(comment: any): any {
+  const transformed = {
+    ...comment,
+    images: Array.isArray(comment.images) ? comment.images : (comment.images ? [comment.images] : []),
+    videos: Array.isArray(comment.videos) ? comment.videos : (comment.videos ? [comment.videos] : []),
+    documents: Array.isArray(comment.documents) ? comment.documents : (comment.documents ? [comment.documents] : []),
+  }
+  
+  // Transform nested replies recursively
+  if (comment.other_PostComment && Array.isArray(comment.other_PostComment)) {
+    transformed.other_PostComment = comment.other_PostComment.map(transformComment)
+  }
+  if (comment.replies && Array.isArray(comment.replies)) {
+    transformed.replies = comment.replies.map(transformComment)
+  }
+  
+  return transformed
+}
 
 // GET /api/posts/[id]/comments - Get post comments
 export async function GET(
@@ -28,6 +47,7 @@ export async function GET(
     }
 
     // Nested reply include structure for up to 5 levels
+    // Include images, videos, documents fields
     const nestedReplyInclude = {
       User: {
         select: {
@@ -46,7 +66,7 @@ export async function GET(
       },
     }
 
-    // Build nested structure for 5 levels
+    // Build nested structure for 5 levels - each level includes media fields
     const level5 = { ...nestedReplyInclude }
     const level4 = { ...nestedReplyInclude, other_PostComment: { include: level5, orderBy: { createdAt: 'asc' as const } } }
     const level3 = { ...nestedReplyInclude, other_PostComment: { include: level4, orderBy: { createdAt: 'asc' as const } } }
@@ -54,6 +74,7 @@ export async function GET(
     const level1 = { ...nestedReplyInclude, other_PostComment: { include: level2, orderBy: { createdAt: 'asc' as const } } }
 
     // Get comments with proper relation names (5 levels of nested replies)
+    // Note: images, videos, documents are scalar fields (Json?) so they're included by default
     const comments = await prisma.postComment.findMany({
       where: {
         postId: id,
@@ -87,7 +108,10 @@ export async function GET(
       },
     })
 
-    return NextResponse.json({ comments })
+    // Transform to ensure images, videos, documents are arrays
+    const transformedComments = comments.map(comment => transformComment(comment))
+
+    return NextResponse.json({ comments: transformedComments })
   } catch (error) {
     console.error('Error fetching comments:', error)
     return NextResponse.json(

@@ -18,11 +18,15 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { toast } from 'sonner'
+import { CommentMedia } from './CommentDisplay'
 
 interface Comment {
   id: string
   content: string
   createdAt: string
+  images?: string[] | null
+  videos?: string[] | null
+  documents?: string[] | null
   user?: {
     id: string
     name: string
@@ -433,6 +437,15 @@ export default function CommentSection({ postId, comments: propComments, onRefre
             <p className="text-sm text-gray-800 dark:text-gray-200 mt-1 whitespace-pre-wrap break-words leading-relaxed">
               {renderContentWithMentions(comment.content)}
             </p>
+
+            {/* Comment media attachments */}
+            {(comment.images?.length || comment.videos?.length || comment.documents?.length) && (
+              <CommentMedia 
+                images={comment.images || undefined}
+                videos={comment.videos || undefined}
+                documents={comment.documents || undefined}
+              />
+            )}
 
             {/* Action buttons */}
             <div className="flex items-center gap-4 mt-2">
