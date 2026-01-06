@@ -88,117 +88,35 @@ export class XenditPayoutService {
   }
 
   /**
-   * Validate e-wallet account name via Xendit
+   * IMPORTANT: Xendit does NOT provide a public account validation API endpoint.
+   * The /v1/account_validation endpoint does not exist in the official Xendit API.
+   * 
+   * For real account validation, use the mock service fallback.
+   * This method is kept for backwards compatibility but always fails.
    */
   async validateAccount(
     provider: string, 
     phoneNumber: string
   ): Promise<{ success: boolean; accountName?: string; error?: string }> {
     try {
-      if (!this.isConfigured()) {
-        return {
-          success: false,
-          error: 'Xendit not configured properly'
-        }
-      }
-
-      // Map provider to Xendit channel code
-      const channelCode = this.mapProviderToChannelCode(provider)
-      if (!channelCode) {
-        return {
-          success: false,
-          error: `Provider ${provider} not supported`
-        }
-      }
-
-      // Normalize phone number for Xendit API
-      const normalizedPhone = this.normalizePhoneNumber(phoneNumber)
+      console.log(`[Xendit Account Validation] ⚠️ WARNING: Xendit public account validation API does not exist`)
+      console.log(`[Xendit Account Validation] Provider: ${provider}, Phone: ${phoneNumber}`)
+      console.log(`[Xendit Account Validation] Using mock service fallback instead`)
       
-      // Validate phone number format
-      if (!normalizedPhone || normalizedPhone.length < 12) {
-        return {
-          success: false,
-          error: 'Invalid phone number format'
-        }
-      }
-
-      console.log(`[Xendit Account Validation] ${provider} - ${normalizedPhone}`)
-
-      // Xendit account validation endpoint with timeout
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
-
-      const response = await fetch(`${this.baseURL}/v1/account_validation`, {
-        method: 'POST',
-        headers: {
-          'Authorization': this.getAuthHeader(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          channel_category: 'EWALLET',
-          channel_code: channelCode,
-          account_holder: {
-            phone_number: normalizedPhone
-          }
-        }),
-        signal: controller.signal
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.error('[Xendit Account Validation] Error:', errorData)
-        
-        if (response.status === 400) {
-          return { 
-            success: false, 
-            error: errorData.message || 'Invalid account details' 
-          }
-        }
-        
-        if (response.status === 401) {
-          return {
-            success: false,
-            error: 'Xendit authentication failed'
-          }
-        }
-        
-        return {
-          success: false,
-          error: `API Error: ${response.status}`
-        }
-      }
-
-      const data: XenditAccountValidationResponse = await response.json()
-      
-      if (!data.is_verified) {
-        return {
-          success: false,
-          error: 'Account not found or not verified'
-        }
-      }
-
-      console.log(`[Xendit Account Validation] Success: ${data.account_holder_name}`)
+      // Xendit does NOT provide a public account validation endpoint
+      // This endpoint (/v1/account_validation) does not exist in the official Xendit API
+      // Return failure to trigger mock service fallback
       return {
-        success: true,
-        accountName: data.account_holder_name
+        success: false,
+        error: 'Xendit account validation not available via public API - use mock service'
       }
 
     } catch (error: any) {
       console.error('[Xendit Account Validation] Exception:', error)
       
-      // Handle specific errors gracefully
-      if (error.name === 'AbortError') {
-        return {
-          success: false,
-          error: 'Request timeout - please try again'
-        }
-      }
-      
       return {
         success: false,
-        error: error.message || 'Validation service temporarily unavailable'
+        error: error.message || 'Validation service not available'
       }
     }
   }

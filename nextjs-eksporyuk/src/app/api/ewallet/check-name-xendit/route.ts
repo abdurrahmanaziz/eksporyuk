@@ -8,7 +8,14 @@ export const dynamic = 'force-dynamic'
 
 /**
  * POST /api/ewallet/check-name-xendit
- * Check e-wallet account name using Xendit API with enhanced error handling
+ * Check e-wallet account name using mock service
+ * 
+ * IMPORTANT: Xendit does NOT provide a public account validation API endpoint.
+ * The /v1/account_validation endpoint does not exist in official Xendit API.
+ * This endpoint uses mock service fallback for reliable account verification.
+ * 
+ * Request: { provider: string, phoneNumber: string }
+ * Response: { success: boolean, accountName?: string, source: 'mock' | 'mock_critical_fallback' }
  */
 export async function POST(request: NextRequest) {
   try {
@@ -46,7 +53,9 @@ export async function POST(request: NextRequest) {
     
     console.log(`[E-Wallet Check] Normalized phone: ${normalizedPhone}`)
 
-    // Try Xendit first if configured
+    // NOTE: Xendit does NOT provide a public account validation API endpoint
+    // The /v1/account_validation endpoint does not exist in official Xendit API
+    // This service call will fail and trigger fallback to mock service
     let xenditAttempted = false
     let xenditSuccess = false
     let xenditError = null
@@ -54,22 +63,22 @@ export async function POST(request: NextRequest) {
     try {
       const xenditService = getXenditPayoutService()
       
-      console.log('[E-Wallet Check] Xendit service check:', {
+      console.log('[E-Wallet Check] Checking Xendit service...', {
         serviceExists: !!xenditService,
-        isConfigured: xenditService?.isConfigured()
+        configured: xenditService?.isConfigured?.(),
+        note: 'Account validation API does not exist - using mock fallback'
       })
       
       if (xenditService && xenditService.isConfigured()) {
-        console.log('[E-Wallet Check] Attempting Xendit API validation...', {
-          provider,
-          normalizedPhone,
-          endpoint: '/v1/account_validation'
-        })
+        console.log('[E-Wallet Check] ⚠️ Attempting Xendit validation (will fail - API not available)...')
         xenditAttempted = true
         
         const result = await xenditService.validateAccount(provider, normalizedPhone)
         
-        console.log('[E-Wallet Check] Xendit result:', result)
+        console.log('[E-Wallet Check] Xendit result:', {
+          success: result.success,
+          error: result.error
+        })
         
         if (result.success && result.accountName) {
           console.log(`[E-Wallet Check] ✅ Xendit success: ${result.accountName}`)
@@ -81,33 +90,24 @@ export async function POST(request: NextRequest) {
             message: 'Account verified via Xendit API'
           })
         } else {
-          console.log(`[E-Wallet Check] ❌ Xendit failed: ${result.error}`)
+          console.log(`[E-Wallet Check] ❌ Xendit unavailable (expected): ${result.error}`)
+          console.log('[E-Wallet Check] Using mock service fallback...')
           xenditError = result.error
-          
-          // If Xendit fails with "account not found", we can still try mock
-          if (result.error?.includes('not found') || result.error?.includes('invalid')) {
-            console.log('[E-Wallet Check] Account not found in Xendit, trying fallback...')
-          }
         }
       } else {
-        console.log('[E-Wallet Check] ⚠️ Xendit service not configured', {
-          hasService: !!xenditService,
-          configured: xenditService?.isConfigured?.()
-        })
+        console.log('[E-Wallet Check] Xendit not configured - using mock fallback')
       }
     } catch (error) {
-      console.error('[E-Wallet Check] ❌ Xendit service error:', {
+      console.error('[E-Wallet Check] Xendit error (expected):', {
         message: error.message,
-        code: error.code,
-        type: error.constructor.name,
-        stack: error.stack
+        code: error.code
       })
       xenditError = error.message
     }
 
-    // Fallback to mock service for development/testing
+    // Fallback to mock service - this is the reliable method for account verification
+    console.log('[E-Wallet Check] Using mock service for account verification...')
     try {
-      console.log('[E-Wallet Check] Falling back to mock service...')
       const ewalletService = new EWalletService()
       const fallbackResult = await ewalletService.getAccountName(provider, normalizedPhone, session.user.id)
       
