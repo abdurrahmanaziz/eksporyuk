@@ -239,7 +239,11 @@ export async function POST(request: NextRequest) {
           status: 'PROCESSING',
           notes: 'Bank transfer otomatis via Xendit - Processing',
           metadata: {
-            ...payoutRecord.metadata,
+            adminFee,
+            netAmount,
+            requestedAmount: amount,
+            referenceId,
+            bankCode,
             xenditId: payout.id,
             xenditReferenceId: payout.referenceId,
             xenditStatus: payout.status,
@@ -247,28 +251,25 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      await prisma.payout.update({
-        where: { id: payoutRecord.id },
-        data: {
-          status: 'PROCESSING',
-          notes: 'Bank transfer otomatis via Xendit - Processing',
-          metadata: {
-            ...payoutRecord.metadata,
-            xenditId: payout.id,
-            xenditReferenceId: payout.referenceId,
-            xenditStatus: payout.status,
-          },
-        },
-      })
+      console.log('[BANK TRANSFER] Complete - DB updated with Xendit response')
 
       return NextResponse.json({
         success: true,
-        payout: payoutRecord,
-        xenditPayout: {
+        message: 'Penarikan sedang diproses',
+        payout: {
+          id: payoutRecord.id,
+          amount: Number(amount),
+          netAmount: Number(netAmount),
+          adminFee: Number(adminFee),
+          status: 'PROCESSING',
+          bankName,
+          accountName,
+          accountNumber,
+        },
+        xendit: {
           id: payout.id,
           referenceId: payout.referenceId,
           status: payout.status,
-          amount: netAmount,
         },
       }, {
         headers: {
