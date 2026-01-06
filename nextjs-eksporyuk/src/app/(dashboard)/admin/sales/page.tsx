@@ -702,65 +702,65 @@ export default function AdminSalesPage() {
 
   return (
     <ResponsivePageWrapper>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-8">
-        <div className="space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-8">
+        <div className="space-y-6 md:space-y-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <ShoppingBag className="w-8 h-8 text-blue-600" />
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2 md:gap-3">
+                <ShoppingBag className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                 Laporan Penjualan
               </h1>
-              <p className="text-gray-600 mt-1">Monitor semua transaksi produk, membership, dan course</p>
+              <p className="text-sm md:text-base text-gray-600 mt-1">Monitor semua transaksi produk, membership, dan course</p>
             </div>
-            <Button onClick={handleExport} disabled={exporting} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={handleExport} disabled={exporting} className="bg-green-600 hover:bg-green-700 h-10 md:h-auto">
               {exporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
               Export CSV
             </Button>
           </div>
 
-          {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Stats - Responsive Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-5 w-5" />
+              <CardTitle className="text-xs md:text-sm font-medium">Total Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 md:h-5 md:w-5" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Rp {stats.total.amount.toLocaleString('id-ID')}</div>
+              <div className="text-lg md:text-2xl font-bold">Rp {stats.total.amount.toLocaleString('id-ID')}</div>
               <p className="text-xs opacity-75">{stats.total.count} transaksi</p>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Success</CardTitle>
-              <CheckCircle className="h-5 w-5" />
+              <CardTitle className="text-xs md:text-sm font-medium">Success</CardTitle>
+              <CheckCircle className="h-4 w-4 md:h-5 md:w-5" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Rp {stats.success.amount.toLocaleString('id-ID')}</div>
+              <div className="text-lg md:text-2xl font-bold">Rp {stats.success.amount.toLocaleString('id-ID')}</div>
               <p className="text-xs opacity-75">{stats.success.count} berhasil</p>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Clock className="h-5 w-5" />
+              <CardTitle className="text-xs md:text-sm font-medium">Pending</CardTitle>
+              <Clock className="h-4 w-4 md:h-5 md:w-5" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Rp {stats.pending.amount.toLocaleString('id-ID')}</div>
+              <div className="text-lg md:text-2xl font-bold">Rp {stats.pending.amount.toLocaleString('id-ID')}</div>
               <p className="text-xs opacity-75">{stats.pending.count} pending</p>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Conversion</CardTitle>
-              <TrendingUp className="h-5 w-5" />
+              <CardTitle className="text-xs md:text-sm font-medium">Conversion</CardTitle>
+              <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-lg md:text-2xl font-bold">
                 {stats.total.count > 0 ? ((stats.success.count / stats.total.count) * 100).toFixed(1) : 0}%
               </div>
               <p className="text-xs opacity-75">Tingkat keberhasilan</p>
@@ -771,27 +771,29 @@ export default function AdminSalesPage() {
         {/* Filters */}
         <Card className="shadow-lg border-0">
           <CardHeader className="bg-gray-50">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
               <Filter className="w-5 h-5" />
               Filter & Pencarian
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <CardContent className="pt-4 md:pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4">
               <Input
                 placeholder="Cari nama atau email..."
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                className="text-sm"
               />
               <Input
                 placeholder="Cari invoice..."
                 value={filters.invoice}
                 onChange={(e) => setFilters({ ...filters, invoice: e.target.value })}
+                className="text-sm"
               />
               <select
                 value={filters.paymentMethod}
                 onChange={(e) => setFilters({ ...filters, paymentMethod: e.target.value })}
-                className="px-3 py-2 border rounded-md"
+                className="px-3 py-2 border rounded-md text-sm"
               >
                 <option value="ALL">Semua Metode Pembayaran</option>
                 <option value="VA">Virtual Account</option>
@@ -801,11 +803,11 @@ export default function AdminSalesPage() {
                 <option value="MANUAL">Manual Transfer</option>
               </select>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="px-3 py-2 border rounded-md"
+                className="px-2 md:px-3 py-2 border rounded-md text-xs md:text-sm"
               >
                 <option value="ALL">Semua Status</option>
                 <option value="PENDING">Pending</option>
@@ -816,42 +818,34 @@ export default function AdminSalesPage() {
               <select
                 value={filters.type}
                 onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                className="px-3 py-2 border rounded-md"
+                className="px-2 md:px-3 py-2 border rounded-md text-xs md:text-sm"
               >
-                <option value="ALL">Semua Tipe Produk</option>
-                <optgroup label="Membership">
-                  <option value="MEMBERSHIP">Semua Membership</option>
-                  <option value="MEMBERSHIP_SIX_MONTHS">Membership 6 Bulan</option>
-                  <option value="MEMBERSHIP_TWELVE_MONTHS">Membership 12 Bulan</option>
-                  <option value="MEMBERSHIP_LIFETIME">Membership Lifetime</option>
-                </optgroup>
-                <optgroup label="Produk Digital">
-                  <option value="PRODUCT">Semua Produk Digital</option>
-                </optgroup>
-                <optgroup label="Kursus">
-                  <option value="COURSE">Semua Kursus</option>
-                </optgroup>
-                <optgroup label="Lainnya">
-                  <option value="CREDIT_TOPUP">Top Up Kredit Affiliate</option>
-                  <option value="SUPPLIER_REGISTRATION">Pendaftaran Supplier</option>
-                  <option value="EVENT">Tiket Event</option>
-                </optgroup>
+                <option value="ALL">Semua Tipe</option>
+                <option value="MEMBERSHIP">Membership</option>
+                <option value="MEMBERSHIP_SIX_MONTHS">6 Bulan</option>
+                <option value="MEMBERSHIP_TWELVE_MONTHS">12 Bulan</option>
+                <option value="MEMBERSHIP_LIFETIME">Lifetime</option>
+                <option value="PRODUCT">Produk Digital</option>
+                <option value="COURSE">Kursus</option>
+                <option value="EVENT">Event</option>
               </select>
               <Input
                 type="date"
                 placeholder="Dari tanggal"
                 value={filters.dateFrom}
                 onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                className="text-xs md:text-sm"
               />
               <Input
                 type="date"
                 placeholder="Sampai tanggal"
                 value={filters.dateTo}
                 onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                className="text-xs md:text-sm"
               />
-              <Button onClick={applyFilters} className="bg-blue-600">
-                <Search className="w-4 h-4 mr-2" />
-                Cari
+              <Button onClick={applyFilters} className="bg-blue-600 col-span-2 md:col-span-1 h-10">
+                <Search className="w-4 h-4 mr-1 md:mr-2" />
+                <span className="text-xs md:text-sm">Cari</span>
               </Button>
             </div>
           </CardContent>
@@ -916,80 +910,83 @@ export default function AdminSalesPage() {
         {/* Table */}
         <Card className="shadow-lg border-0">
           <CardHeader className="bg-gray-50">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <CardTitle>Transaksi ({pagination.total})</CardTitle>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">Tampilkan:</span>
+              <div className="flex items-center gap-2 md:gap-4">
+                <span className="text-xs md:text-sm text-gray-600 whitespace-nowrap">Tampilkan:</span>
                 <select
                   value={pagination.limit}
                   onChange={(e) => handleLimitChange(Number(e.target.value))}
-                  className="px-3 py-1 border rounded-md text-sm"
+                  className="px-2 md:px-3 py-1 border rounded-md text-xs md:text-sm"
                 >
-                  <option value={50}>50 data</option>
-                  <option value={100}>100 data</option>
-                  <option value={200}>200 data</option>
-                  <option value={9999}>Semua data</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                  <option value={9999}>Semua</option>
                 </select>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 md:p-6 overflow-x-auto">
             {loading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleSelectAll}
-                        className="h-8 w-8 p-0"
-                      >
-                        {selectedIds.length === transactions.length && transactions.length > 0 ? (
-                          <CheckSquare className="w-5 h-5 text-blue-600" />
-                        ) : (
-                          <Square className="w-5 h-5" />
-                        )}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="w-[130px]">Invoice</TableHead>
-                    <TableHead className="w-[250px]">Tipe Produk</TableHead>
-                    <TableHead className="w-[180px]">Pembeli</TableHead>
-                    <TableHead className="w-[120px]">Affiliate</TableHead>
-                    <TableHead className="w-[100px]">Jumlah</TableHead>
-                    <TableHead className="w-[100px]">Komisi</TableHead>
-                    <TableHead className="w-[80px]">Follow Up</TableHead>
-                    <TableHead className="w-[80px]">Status</TableHead>
-                    <TableHead className="w-[80px]">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions.map((tx) => {
-                    const paymentUrl = getPaymentUrl(tx);
-                    const productName = getProductName(tx);
-                    const isSelected = selectedIds.includes(tx.id);
-                    
-                    return (
-                      <TableRow key={tx.id} className={isSelected ? 'bg-blue-50' : ''}>
-                        {/* Checkbox */}
-                        <TableCell>
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleSelectOne(tx.id)}
+                            onClick={handleSelectAll}
                             className="h-8 w-8 p-0"
                           >
-                            {isSelected ? (
+                            {selectedIds.length === transactions.length && transactions.length > 0 ? (
                               <CheckSquare className="w-5 h-5 text-blue-600" />
                             ) : (
                               <Square className="w-5 h-5" />
                             )}
                           </Button>
-                        </TableCell>
+                        </TableHead>
+                        <TableHead className="w-[130px]">Invoice</TableHead>
+                        <TableHead className="w-[250px]">Tipe Produk</TableHead>
+                        <TableHead className="w-[180px]">Pembeli</TableHead>
+                        <TableHead className="w-[120px]">Affiliate</TableHead>
+                        <TableHead className="w-[100px]">Jumlah</TableHead>
+                        <TableHead className="w-[100px]">Komisi</TableHead>
+                        <TableHead className="w-[80px]">Follow Up</TableHead>
+                        <TableHead className="w-[80px]">Status</TableHead>
+                        <TableHead className="w-[80px]">Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactions.map((tx) => {
+                        const paymentUrl = getPaymentUrl(tx);
+                        const productName = getProductName(tx);
+                        const isSelected = selectedIds.includes(tx.id);
+                        
+                        return (
+                          <TableRow key={tx.id} className={isSelected ? 'bg-blue-50' : ''}>
+                            {/* Checkbox */}
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleSelectOne(tx.id)}
+                                className="h-8 w-8 p-0"
+                              >
+                                {isSelected ? (
+                                  <CheckSquare className="w-5 h-5 text-blue-600" />
+                                ) : (
+                                  <Square className="w-5 h-5" />
+                                )}
+                              </Button>
+                            </TableCell>
                         {/* Invoice */}
                         <TableCell>
                           <div className="font-mono font-bold text-orange-600 text-sm">
@@ -1172,19 +1169,201 @@ export default function AdminSalesPage() {
                   })}
                 </TableBody>
               </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4">
+                  {transactions.map((tx) => {
+                    const paymentUrl = getPaymentUrl(tx);
+                    const productName = getProductName(tx);
+                    const isSelected = selectedIds.includes(tx.id);
+
+                    return (
+                      <div
+                        key={tx.id}
+                        className={`border rounded-lg p-4 space-y-3 transition-all ${
+                          isSelected
+                            ? 'bg-blue-50 border-blue-300 shadow-md'
+                            : 'bg-white border-gray-200 shadow-sm'
+                        }`}
+                      >
+                        {/* Header with Checkbox and Status */}
+                        <div className="flex items-start justify-between gap-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSelectOne(tx.id)}
+                            className="h-8 w-8 p-0 flex-shrink-0"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-5 h-5 text-blue-600" />
+                            ) : (
+                              <Square className="w-5 h-5" />
+                            )}
+                          </Button>
+                          <Badge
+                            className={`flex-shrink-0 ${
+                              tx.status === 'SUCCESS'
+                                ? 'bg-green-500'
+                                : tx.status === 'PENDING'
+                                ? 'bg-yellow-500'
+                                : 'bg-red-500'
+                            }`}
+                          >
+                            {tx.status}
+                          </Badge>
+                        </div>
+
+                        {/* Invoice and Date */}
+                        <div className="border-t border-gray-100 pt-3">
+                          <p className="text-xs text-gray-500">Invoice</p>
+                          <p className="font-mono font-bold text-orange-600 text-base">
+                            {formatInvoiceForDisplay(tx.invoiceNumber, tx.id)}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(tx.createdAt).toLocaleDateString('id-ID', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </p>
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="border-t border-gray-100 pt-3 space-y-2">
+                          <Badge
+                            variant="outline"
+                            className={
+                              tx.type === 'MEMBERSHIP'
+                                ? 'bg-purple-50 text-purple-700 border-purple-300 text-xs'
+                                : tx.type === 'COURSE'
+                                ? 'bg-blue-50 text-blue-700 border-blue-300 text-xs'
+                                : tx.type === 'EVENT'
+                                ? 'bg-orange-50 text-orange-700 border-orange-300 text-xs'
+                                : 'bg-green-50 text-green-700 border-green-300 text-xs'
+                            }
+                          >
+                            {tx.type === 'MEMBERSHIP'
+                              ? 'Membership'
+                              : tx.type === 'EVENT'
+                              ? 'Event'
+                              : tx.type === 'PRODUCT'
+                              ? 'Produk Digital'
+                              : tx.type === 'COURSE'
+                              ? 'Kursus'
+                              : tx.type}
+                          </Badge>
+                          <p className="font-medium text-gray-900 text-sm break-words">
+                            {productName}
+                          </p>
+                          {tx.coupon?.code && (
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 text-xs">
+                              {tx.coupon.code}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Customer & Affiliate */}
+                        <div className="border-t border-gray-100 pt-3 grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-xs text-gray-500">Pembeli</p>
+                            <p className="font-medium text-gray-900 truncate text-sm">
+                              {tx.customerName || tx.user?.name || '-'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Affiliate</p>
+                            <p className="font-medium text-gray-900 truncate text-sm">
+                              {tx.affiliateConversion?.affiliate?.user?.name ||
+                              tx.affiliateFromMetadata?.name ||
+                              tx.metadata?.affiliate_name ||
+                              '-'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Amount & Commission */}
+                        <div className="border-t border-gray-100 pt-3 grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-gray-500">Jumlah</p>
+                            <p className="font-bold text-green-600 text-base">
+                              Rp {Number(tx.amount).toLocaleString('id-ID')}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Komisi</p>
+                            {tx.affiliateConversion ? (
+                              <p className="font-bold text-orange-600 text-base">
+                                Rp {Number(tx.affiliateConversion.commissionAmount).toLocaleString('id-ID')}
+                              </p>
+                            ) : tx.status === 'PENDING' && (tx.affiliateFromMetadata?.name || tx.metadata?.affiliate_name) ? (
+                              <p className="text-xs text-gray-400 italic">Setelah bayar</p>
+                            ) : (
+                              <p className="text-gray-400 text-sm">-</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="border-t border-gray-100 pt-3 space-y-2">
+                          <div className="flex gap-2">
+                            {paymentUrl && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 h-9 text-xs bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
+                                onClick={() => window.open(paymentUrl, '_blank')}
+                              >
+                                <CreditCard className="w-3 h-3 mr-1" />
+                                Bayar
+                              </Button>
+                            )}
+                            {(tx.customerPhone || tx.user?.whatsapp || tx.user?.phone) && ['SUCCESS', 'PENDING'].includes(tx.status) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 h-9 text-xs text-green-600 border-green-300 hover:bg-green-50"
+                                onClick={() => handleFollowUp(tx)}
+                              >
+                                <WhatsAppIcon className="w-3 h-3 mr-1" />
+                                WA
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 h-9 text-xs"
+                              onClick={() => {
+                                setSelectedTransaction(tx);
+                                setDetailOpen(true);
+                              }}
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              Detail
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
 
+            {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="flex justify-between items-center mt-6 pt-6 border-t">
-                <div className="text-sm text-gray-600">
-                  Menampilkan {(pagination.page - 1) * pagination.limit + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} dari {pagination.total} data
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t">
+                <div className="text-xs md:text-sm text-gray-600 text-center md:text-left">
+                  Menampilkan {(pagination.page - 1) * pagination.limit + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} dari{' '}
+                  {pagination.total} data
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap justify-center">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setPagination({ ...pagination, page: 1 })}
                     disabled={pagination.page === 1}
+                    className="text-xs"
                   >
                     First
                   </Button>
@@ -1193,10 +1372,11 @@ export default function AdminSalesPage() {
                     size="sm"
                     onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
                     disabled={pagination.page === 1}
+                    className="text-xs"
                   >
                     Previous
                   </Button>
-                  <span className="px-4 py-2 text-sm">
+                  <span className="px-2 md:px-4 py-2 text-xs md:text-sm">
                     Halaman {pagination.page} dari {pagination.totalPages}
                   </span>
                   <Button
@@ -1204,6 +1384,7 @@ export default function AdminSalesPage() {
                     size="sm"
                     onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
                     disabled={pagination.page === pagination.totalPages}
+                    className="text-xs"
                   >
                     Next
                   </Button>
@@ -1212,6 +1393,7 @@ export default function AdminSalesPage() {
                     size="sm"
                     onClick={() => setPagination({ ...pagination, page: pagination.totalPages })}
                     disabled={pagination.page === pagination.totalPages}
+                    className="text-xs"
                   >
                     Last
                   </Button>
