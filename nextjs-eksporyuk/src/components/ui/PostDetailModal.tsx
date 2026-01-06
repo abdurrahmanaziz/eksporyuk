@@ -84,6 +84,9 @@ export function PostDetailModal({
 
   if (!isOpen) return null
 
+  // Safety check - don't render if post is missing
+  if (!post || !post.id) return null
+
   const currentMedia = hasMedia ? mediaItems[currentImageIndex] : null
   const reactionData = postReactions?.[post.id] || { counts: {}, currentReaction: null }
 
@@ -356,7 +359,7 @@ export function PostDetailModal({
           {/* Comments Section - menggunakan CommentSection dari sistem yang sudah berjalan */}
           <div className="border-t border-gray-200 dark:border-gray-800 flex-shrink-0 max-h-96 overflow-y-auto">
             <CommentSection 
-              postId={post.id}
+              postId={post?.id || ''}
               onCommentAdded={() => {}}
             />
           </div>

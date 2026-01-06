@@ -62,11 +62,16 @@ const MAX_DISPLAY_DEPTH = 5
 
 interface CommentSectionProps {
   postId: string
-  comments: Comment[]
-  onRefresh: () => void
+  comments?: Comment[]
+  onRefresh?: () => void
+  onCommentAdded?: () => void
 }
 
-export default function CommentSection({ postId, comments, onRefresh }: CommentSectionProps) {
+export default function CommentSection({ postId, comments: propComments, onRefresh, onCommentAdded }: CommentSectionProps) {
+  // Use internal state if comments not provided
+  const [internalComments, setInternalComments] = useState<Comment[]>([])
+  const [loading, setLoading] = useState(false)
+  const comments = propComments ?? internalComments
   const { data: session } = useSession()
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
@@ -77,6 +82,39 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({})
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const replyInputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch comments if not provided as prop
+  const fetchComments = async () => {
+    if (propComments) return // Skip if comments are provided
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments`)
+      if (response.ok) {
+        const data = await response.json()
+        setInternalComments(data.comments || [])
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!propComments && postId) {
+      fetchComments()
+    }
+  }, [postId, propComments])
+
+  // Handle refresh - either call parent's onRefresh or fetch internally
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh()
+    } else {
+      fetchComments()
+    }
+    onCommentAdded?.()
+  }
 
   // Get replies from comment (support both naming conventions)
   const getReplies = (comment: Comment): Comment[] => {
@@ -102,8 +140,8 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
           const userLiked = comment.CommentReaction.some(r => r.userId === session.user?.id)
           initialLiked[comment.id] = userLiked
           // Also set count from CommentReaction if reactionsCount is not available
-          if (!comment.reactionsCount) {
-            initialLikes[comment.id] = comment.CommentReaction.filter(r => r.type === 'LIKE').length
+          if (!comment.reactionsCount && comment.CommentReaction) {
+            initialLikes[comment.id] = (comment.CommentReaction || []).filter(r => r.type === 'LIKE').length
           }
         }
         
@@ -515,16 +553,23 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
   }
 
   // Get top-level comments only
-  const topLevelComments = comments.filter(c => !c.parentId)
+  const topLevelComments = (comments || []).filter(c => !c.parentId)
 
   return (
     <div className="space-y-4">
+      {/* Loading state */}
+      {loading && (
+        <div className="flex justify-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
+        </div>
+      )}
+
       {/* New Comment Input - Using enhanced CommentInput with media & mentions */}
       {session?.user && (
         <CommentInput 
           postId={postId}
           onCommentAdded={() => {
-            onRefresh()
+            handleRefresh()
             toast.success('Komentar berhasil ditambahkan')
           }}
         />
