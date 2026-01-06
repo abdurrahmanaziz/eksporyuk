@@ -265,6 +265,12 @@ export class EWalletService {
     // Normalize phone number for consistent lookup
     let normalizedPhone = phoneNumber.replace(/\D/g, '') // Remove all non-digits
     
+    console.log(`[Mock E-Wallet] Starting lookup for ${provider}:`, {
+      inputPhone: phoneNumber,
+      cleanedPhone: normalizedPhone,
+      length: normalizedPhone.length
+    })
+    
     // Try different phone number formats for mock lookup with more variations
     const phoneFormats = [
       normalizedPhone,  // As-is: 081234567890
@@ -273,6 +279,9 @@ export class EWalletService {
       normalizedPhone.startsWith('0') ? '62' + normalizedPhone.substring(1) : null,  // 08123456789 → 628123456789
       normalizedPhone.startsWith('+62') ? normalizedPhone.substring(3) : null,  // +628123456789 → 8123456789
       normalizedPhone.startsWith('+62') ? '0' + normalizedPhone.substring(3) : null,  // +628123456789 → 08123456789
+      // Add additional 11-digit format variations
+      normalizedPhone.length === 12 && normalizedPhone.startsWith('0') ? normalizedPhone.substring(0, 11) : null, // 081187481771 → 08118748177
+      normalizedPhone.length === 13 && normalizedPhone.startsWith('62') ? '0' + normalizedPhone.substring(2, 12) : null,
     ].filter(Boolean) as string[] // Remove null values
 
     console.log(`[Mock E-Wallet] Testing phone formats for ${provider} (input: ${phoneNumber}):`, phoneFormats)

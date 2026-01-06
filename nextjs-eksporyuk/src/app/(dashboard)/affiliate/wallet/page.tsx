@@ -252,8 +252,16 @@ export default function UserWalletPage() {
 
     // Validate account name input
     if (!withdrawForm.accountName.trim()) {
-      toast.error('Nama pemilik akun harus diisi')
-      return
+      // For e-wallets, account name should be auto-filled from verification
+      // If it's empty, it means verification wasn't done properly
+      if (isEWallet(withdrawForm.bankName)) {
+        toast.error('Nama pemilik akun harus diisi terlebih dahulu. Klik "Cek Nama Akun" untuk mendapatkannya secara otomatis.')
+        return
+      } else {
+        // For banks, manual entry is required
+        toast.error('Nama pemilik akun harus diisi')
+        return
+      }
     }
 
     // For e-wallet, ensure account name is verified
@@ -270,7 +278,8 @@ export default function UserWalletPage() {
                         !nameCheckResult.includes('Gagal') && 
                         !nameCheckResult.includes('Error') && 
                         !nameCheckResult.includes('bermasalah') &&
-                        !nameCheckResult.includes('Koneksi')
+                        !nameCheckResult.includes('Koneksi') &&
+                        !nameCheckResult.includes('Unable')
 
       if (!isVerified) {
         toast.error(`Silakan verifikasi nama akun ${withdrawForm.bankName} terlebih dahulu dengan klik tombol "Cek Nama Akun"`)
@@ -278,6 +287,7 @@ export default function UserWalletPage() {
       }
 
       // Ensure the verified name matches the input name
+
       const verifiedName = nameCheckResult?.replace(/ \(cached\)| \(live\)| \(saved\)/g, '') || ''
       if (verifiedName && withdrawForm.accountName !== verifiedName) {
         toast.warning(`Nama yang diinput (${withdrawForm.accountName}) tidak sama dengan nama terverifikasi (${verifiedName}). Menggunakan nama terverifikasi.`)
