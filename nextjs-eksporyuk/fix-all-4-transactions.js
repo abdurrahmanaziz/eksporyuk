@@ -30,7 +30,6 @@ async function fix() {
       continue
     }
 
-    // Get membership
     const mem = await prisma.membership.findUnique({
       where: { id: membershipId }
     })
@@ -40,7 +39,6 @@ async function fix() {
       continue
     }
 
-    // Calculate endDate
     const now = new Date()
     let endDate = new Date(now)
     
@@ -62,7 +60,6 @@ async function fix() {
         break
     }
 
-    // Check if UM already exists for this txn
     const existingForThisTxn = await prisma.userMembership.findFirst({
       where: {
         userId: txn.userId,
@@ -75,7 +72,7 @@ async function fix() {
       continue
     }
 
-    // Deactivate old memberships of SAME type
+    // DELETE old UM for same membership (not just deactivate)
     const existingForThisMem = await prisma.userMembership.findFirst({
       where: {
         userId: txn.userId,
@@ -84,17 +81,13 @@ async function fix() {
     })
 
     if (existingForThisMem) {
-      await prisma.userMembership.update({
+      await prisma.userMembership.delete({
         where: { id: existingForThisMem.id },
-        data: {
-          isActive: false,
-          status: 'EXPIRED',
-        },
       })
-      console.log(`  Deactivated old UM for same membership type`)
+      console.log(`  Deleted old UM for same membership type: ${existingForThisMem.id}`)
     }
 
-    // Deactivate ALL other active memberships
+    // Deactivate all other active memberships (different type)
     const deactivated = await prisma.userMembership.updateMany({
       where: {
         userId: txn.userId,
@@ -111,7 +104,7 @@ async function fix() {
       console.log(`  Deactivated ${deactivated.count} other memberships`)
     }
 
-    // Create new UM
+    // CREATE new UM for this transaction
     const um = await prisma.userMembership.create({
       data: {
         id: `um_${txn.id}`,
@@ -124,12 +117,12 @@ async function fix() {
         endDate,
         price: txn.amount,
         transactionId: txn.id,
+        updatedAt: now,
       },
     })
 
     console.log(`  ✅ Created UM: ${um.id}`)
 
-    // Upgrade role
     const user = await prisma.user.findUnique({ where: { id: txn.userId } })
     
     if (user.role === 'MEMBER_FREE' || user.role === 'CUSTOMER') {
@@ -140,7 +133,6 @@ async function fix() {
       console.log(`  ✅ Role upgraded to MEMBER_PREMIUM`)
     }
 
-    // Auto-join groups
     const membershipGroups = await prisma.membershipGroup.findMany({
       where: { membershipId: membershipId },
     })
@@ -159,7 +151,6 @@ async function fix() {
       console.log(`  ✅ Added to ${membershipGroups.length} groups`)
     }
 
-    // Auto-enroll courses
     const membershipCourses = await prisma.membershipCourse.findMany({
       where: { membershipId: membershipId },
     })
