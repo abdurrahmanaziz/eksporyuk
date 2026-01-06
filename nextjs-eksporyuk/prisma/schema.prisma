@@ -2209,6 +2209,8 @@ model PostComment {
   updatedAt         DateTime          @updatedAt
   contentFormatted  Json?
   images            Json?
+  videos            Json?
+  documents         Json?
   mentionedUsers    Json?
   reactionsCount    Json?
   CommentReaction   CommentReaction[]

@@ -77,14 +77,28 @@ export class XenditPayout {
         accountHolderName: request.channelProperties.accountHolderName
       })
 
+      // Convert camelCase to snake_case for Xendit API
+      const xenditRequest = {
+        reference_id: request.referenceId,
+        channel_code: request.channelCode,
+        channel_properties: {
+          account_holder_name: request.channelProperties.accountHolderName,
+          account_number: request.channelProperties.accountNumber,
+        },
+        amount: request.amount,
+        currency: request.currency,
+        description: request.description,
+        metadata: request.metadata,
+      }
+
       const response = await fetch(`${this.baseURL}/v2/payouts`, {
         method: 'POST',
         headers: {
           'Authorization': this.getAuthHeader(),
           'Content-Type': 'application/json',
-          'Idempotency-Key': request.referenceId, // Required by Xendit Payout API v2
+          'Idempotency-Key': request.referenceId,
         },
-        body: JSON.stringify(request)
+        body: JSON.stringify(xenditRequest)
       })
 
       if (!response.ok) {

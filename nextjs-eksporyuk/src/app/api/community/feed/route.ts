@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { validatePostFiles } from '@/lib/file-upload'
 import { randomBytes } from 'crypto'
 
 const createId = () => randomBytes(16).toString('hex')
@@ -238,6 +239,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/community/posts - Create global community post
+// Support: text, images, videos, documents (PDF, DOC, XLS, dll)
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -246,7 +248,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { content, groupId, images, videos, taggedUsers, contentFormatted, backgroundId, type = 'POST' } = await request.json()
+    const { content, groupId, images, videos, documents, taggedUsers, contentFormatted, backgroundId, type = 'POST' } = await request.json()
 
     // Validate content
     if (!content?.trim()) {
@@ -256,6 +258,19 @@ export async function POST(request: NextRequest) {
     // Validate content length (max 10000 chars)
     if (content.length > 10000) {
       return NextResponse.json({ error: 'Content terlalu panjang (max 10000 karakter)' }, { status: 400 })
+    }
+    
+    // Validate files if provided
+    if (images?.length > 0 || videos?.length > 0 || documents?.length > 0) {
+      const fileValidation = validatePostFiles(
+        images?.map(i => new File([], i)) as any,
+        videos?.map(v => new File([], v)) as any,
+        documents?.map(d => new File([], d)) as any
+      )
+      
+      if (!fileValidation.valid) {
+        return NextResponse.json({ error: fileValidation.error }, { status: 400 })
+      }
     }
     
     // Validate images
@@ -275,6 +290,13 @@ export async function POST(request: NextRequest) {
     if (videos && Array.isArray(videos)) {
       if (videos.length > 2) {
         return NextResponse.json({ error: 'Maksimal 2 video saja' }, { status: 400 })
+      }
+    }
+
+    // Validate documents
+    if (documents && Array.isArray(documents)) {
+      if (documents.length > 2) {
+        return NextResponse.json({ error: 'Maksimal 2 dokumen saja' }, { status: 400 })
       }
     }
     
@@ -336,6 +358,7 @@ export async function POST(request: NextRequest) {
           type,
           images: images || [],
           videos: videos || [],
+          documents: documents || [],
           taggedUsers: taggedUsers || [],
           ...(contentFormatted && { contentFormatted }),
           backgroundId: finalBackgroundId,

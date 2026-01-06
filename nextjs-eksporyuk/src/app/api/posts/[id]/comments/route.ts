@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
+import { validateCommentFiles } from '@/lib/file-upload'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -97,6 +98,7 @@ export async function GET(
 }
 
 // POST /api/posts/[id]/comments - Add comment to post
+// Support: text content, images, videos, documents, user mentions
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -109,47 +111,139 @@ export async function POST(
     }
 
     const { id } = await params
-    const body = await request.json()
-    const { content, parentId, mentions } = body
+    
+    // Parse FormData for file uploads
+    let content = ''
+    let parentId: string | null = null
+    let mentions: string[] = []
+    let images: string[] = []
+    let videos: string[] = []
+    let documents: string[] = []
+    let taggedAll = false
+    let taggedMembers = false
 
-    if (!content || content.trim() === '') {
+    const contentType = request.headers.get('content-type') || ''
+    
+    if (contentType.includes('application/json')) {
+      // Legacy JSON request (for comments without media)
+      const body = await request.json()
+      content = body.content || ''
+      parentId = body.parentId || null
+      mentions = body.mentions || []
+      images = body.images || []
+      videos = body.videos || []
+      documents = body.documents || []
+      taggedAll = body.taggedAll || false
+      taggedMembers = body.taggedMembers || false
+    } else if (contentType.includes('multipart/form-data')) {
+      // FormData request (for comments with media)
+      const formData = await request.formData()
+      content = formData.get('content') as string || ''
+      parentId = formData.get('parentId') as string || null
+      mentions = JSON.parse(formData.get('mentions') as string || '[]')
+      images = JSON.parse(formData.get('images') as string || '[]')
+      videos = JSON.parse(formData.get('videos') as string || '[]')
+      documents = JSON.parse(formData.get('documents') as string || '[]')
+      taggedAll = formData.get('taggedAll') === 'true'
+      taggedMembers = formData.get('taggedMembers') === 'true'
+    }
+
+    if (!content?.trim()) {
       return NextResponse.json(
-        { error: 'Content is required' },
+        { error: 'Konten komentar diperlukan' },
         { status: 400 }
       )
+    }
+
+    // Validate file uploads if provided
+    if (images.length > 0 || videos.length > 0 || documents.length > 0) {
+      const fileValidation = validateCommentFiles(
+        images.map(i => new File([], i)) as any,
+        videos.map(v => new File([], v)) as any,
+        documents.map(d => new File([], d)) as any
+      )
+      
+      if (!fileValidation.valid) {
+        return NextResponse.json(
+          { error: fileValidation.error },
+          { status: 400 }
+        )
+      }
     }
 
     // Check if post exists
     const post = await prisma.post.findUnique({
       where: { id },
+      select: { id: true, authorId: true, groupId: true }
     })
 
     if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Postingan tidak ditemukan' }, { status: 404 })
     }
 
     // If parentId is provided, verify it exists
     if (parentId) {
       const parentComment = await prisma.postComment.findUnique({
         where: { id: parentId },
+        select: { id: true }
       })
 
       if (!parentComment) {
         return NextResponse.json(
-          { error: 'Parent comment not found' },
+          { error: 'Komentar induk tidak ditemukan' },
           { status: 404 }
         )
       }
     }
 
-    // Create comment and increment count
+    // Build mentionedUsers array - combine regular mentions with @all/@member
+    let mentionedUserIds: string[] = []
+    
+    if (mentions.length > 0) {
+      const mentionedUsers = await prisma.user.findMany({
+        where: {
+          username: { in: mentions }
+        },
+        select: { id: true }
+      })
+      mentionedUserIds = mentionedUsers.map(u => u.id)
+    }
+
+    // Handle @all tag
+    if (taggedAll && post.groupId) {
+      const groupMembers = await prisma.groupMember.findMany({
+        where: { groupId: post.groupId },
+        select: { userId: true }
+      })
+      mentionedUserIds = [...new Set([...mentionedUserIds, ...groupMembers.map(m => m.userId)])]
+    }
+
+    // Handle @member tag (all members except bots/guests)
+    if (taggedMembers && post.groupId) {
+      const members = await prisma.groupMember.findMany({
+        where: {
+          groupId: post.groupId,
+          user: {
+            role: { in: ['MEMBER_PREMIUM', 'MEMBER_FREE', 'MENTOR', 'FOUNDER', 'CO_FOUNDER'] }
+          }
+        },
+        select: { userId: true }
+      })
+      mentionedUserIds = [...new Set([...mentionedUserIds, ...members.map(m => m.userId)])]
+    }
+
+    // Create comment with media attachments
     const [comment] = await prisma.$transaction([
       prisma.postComment.create({
         data: {
-          content,
+          content: content.trim(),
           postId: id,
           userId: session.user.id,
           updatedAt: new Date(),
+          images: images.length > 0 ? images : null,
+          videos: videos.length > 0 ? videos : null,
+          documents: documents.length > 0 ? documents : null,
+          mentionedUsers: mentionedUserIds.length > 0 ? mentionedUserIds : null,
           ...(parentId && { parentId }),
         },
         include: {
@@ -173,7 +267,7 @@ export async function POST(
       }),
     ])
 
-    // 🔔 NOTIFICATION TRIGGER: New comment on post
+    // 🔔 NOTIFICATION: New comment on post
     if (!parentId) {
       // Top-level comment → notify post author
       if (post.authorId !== session.user.id) {
@@ -208,39 +302,12 @@ export async function POST(
       }
     }
 
-    // 🔔 NOTIFICATION: Post author notification (main comment, not reply)
-    if (!parentId && post.authorId !== session.user.id) {
-      try {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-        fetch(`${appUrl}/api/notifications/comment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cookie': request.headers.get('cookie') || '' },
-          body: JSON.stringify({ 
-            postId: id, 
-            commentId: comment.id,
-            commentText: content
-          })
-        }).catch(err => console.error('Failed to send comment notification:', err))
-      } catch (err) {
-        console.error('Error triggering comment notification:', err)
-      }
-    }
-
-    // 🔔 NOTIFICATION: Parent comment author notification (reply)
-    if (mentions && mentions.length > 0) {
-      // Get user IDs from usernames
-      const mentionedUsers = await prisma.user.findMany({
-        where: {
-          username: { in: mentions }
-        },
-        select: { id: true, username: true, name: true }
-      })
-
-      // Create notification for each mentioned user (except the comment author)
-      for (const mentionedUser of mentionedUsers) {
-        if (mentionedUser.id !== session.user.id) {
+    // 🔔 NOTIFICATION: Send to all mentioned users
+    if (mentionedUserIds.length > 0) {
+      for (const mentionedUserId of mentionedUserIds) {
+        if (mentionedUserId !== session.user.id) {
           await notificationService.send({
-            userId: mentionedUser.id,
+            userId: mentionedUserId,
             type: 'MENTION',
             title: 'Disebutkan dalam Komentar',
             message: `${session.user.name} menyebut Anda dalam sebuah komentar`,
@@ -257,7 +324,7 @@ export async function POST(
   } catch (error) {
     console.error('Error creating comment:', error)
     return NextResponse.json(
-      { error: 'Failed to create comment' },
+      { error: 'Gagal membuat komentar' },
       { status: 500 }
     )
   }

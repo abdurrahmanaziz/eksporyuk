@@ -3,6 +3,11 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 
+/**
+ * GET /api/users/search?q=username&limit=10&groupId=xxx&excludeId=xxx
+ * Search untuk user mentions dengan optional group filter
+ * Enhanced untuk support @mention di comments dengan autocomplete
+ */
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
@@ -13,33 +18,66 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const query = searchParams.get('q') || ''
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const query = searchParams.get('q')?.trim() || ''
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50)
+    const groupId = searchParams.get('groupId')
+    const excludeId = searchParams.get('excludeId') || session.user.id
 
-    // Search users by name or email
+    // Validate query
+    if (query.length < 1) {
+      return NextResponse.json({ users: [] })
+    }
+
+    if (query.length > 50) {
+      return NextResponse.json({ error: 'Search query terlalu panjang' }, { status: 400 })
+    }
+
+    // Build where clause
+    const whereClause: any = {
+      AND: [
+        {
+          OR: [
+            { username: { contains: query, mode: 'insensitive' } },
+            { name: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } }
+          ]
+        },
+        { id: { not: excludeId } }
+      ]
+    }
+
+    // If groupId specified, only return group members
+    if (groupId) {
+      const groupMembers = await prisma.groupMember.findMany({
+        where: { groupId },
+        select: { userId: true }
+      })
+
+      const memberIds = groupMembers.map(m => m.userId)
+      
+      if (memberIds.length === 0) {
+        return NextResponse.json({ users: [] })
+      }
+
+      whereClause.id = { in: memberIds, not: excludeId }
+    }
+
+    // Search users
     const users = await prisma.user.findMany({
-      where: {
-        AND: [
-          {
-            OR: [
-              { name: { contains: query } },
-              { email: { contains: query } },
-            ]
-          },
-          // Don't include current user
-          { id: { not: session.user.id } }
-        ]
-      },
+      where: whereClause,
       select: {
         id: true,
         name: true,
+        username: true,
         email: true,
         avatar: true,
+        role: true
       },
       take: limit,
-      orderBy: {
-        name: 'asc'
-      }
+      orderBy: [
+        { name: 'asc' },
+        { username: 'asc' }
+      ]
     })
 
     return NextResponse.json({
