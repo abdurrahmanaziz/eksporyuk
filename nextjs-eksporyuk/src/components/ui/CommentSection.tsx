@@ -8,6 +8,7 @@ import { MessageCircle, MoreVertical, Trash2, Reply, Heart, ChevronDown, Chevron
 import { Avatar, AvatarImage, AvatarFallback } from './avatar'
 import { Button } from './button'
 import { Textarea } from './textarea'
+import CommentInput from './CommentInput'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -518,51 +519,15 @@ export default function CommentSection({ postId, comments, onRefresh }: CommentS
 
   return (
     <div className="space-y-4">
-      {/* New Comment Input - Threads/IG style */}
+      {/* New Comment Input - Using enhanced CommentInput with media & mentions */}
       {session?.user && (
-        <div className="flex gap-3 items-start">
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src={(session.user as any)?.avatar || undefined} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-              {session.user.name?.charAt(0)?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
-              <Textarea
-                ref={textareaRef}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Tulis komentar... (gunakan @username untuk mention)"
-                className="flex-1 bg-transparent border-0 resize-none min-h-[24px] max-h-[120px] text-sm focus:ring-0 focus-visible:ring-0 p-0 placeholder:text-gray-400"
-                rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmitComment()
-                  }
-                }}
-              />
-            </div>
-            <div className="flex justify-end mt-2">
-              <Button
-                onClick={handleSubmitComment}
-                disabled={!newComment.trim() || submitting}
-                size="sm"
-                className="rounded-full px-6 bg-blue-600 hover:bg-blue-700"
-              >
-                {submitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    Mengirim...
-                  </span>
-                ) : (
-                  'Kirim Komentar'
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <CommentInput 
+          postId={postId}
+          onCommentAdded={() => {
+            onRefresh()
+            toast.success('Komentar berhasil ditambahkan')
+          }}
+        />
       )}
 
       {/* Comments List */}

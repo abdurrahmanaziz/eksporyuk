@@ -142,10 +142,12 @@ export async function POST(request: NextRequest) {
     // CRITICAL: Create DB record FIRST before sending money to Xendit!
     // This ensures we have a record even if Xendit succeeds but subsequent DB operations fail
     const referenceId = `bank_${session.user.id}_${Date.now()}`
+    const payoutId = `payout_${Date.now()}_${Math.random().toString(36).substring(7)}`
     const bankCode = getBankCode(bankName)
     
     console.log('[BANK TRANSFER] Creating payout record BEFORE Xendit call:', {
       userId: session.user.id,
+      payoutId,
       amount,
       netAmount,
       bankCode,
@@ -155,6 +157,7 @@ export async function POST(request: NextRequest) {
     // Step 1: Create payout record with PENDING status
     const payoutRecord = await prisma.payout.create({
       data: {
+        id: payoutId,
         walletId: wallet.id,
         amount,
         status: 'PENDING',

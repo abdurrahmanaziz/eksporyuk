@@ -653,6 +653,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               >
                 <Video size={18} className="sm:w-5 sm:h-5 text-gray-400" />
               </button>
+              
+              <button
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt';
+                  input.multiple = true;
+                  input.onchange = (e) => {
+                    const files = (e.target as HTMLInputElement).files;
+                    if (files) handleFileUpload(files, 'document');
+                  };
+                  input.click();
+                }}
+                className="p-1.5 sm:p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Upload Document (PDF, DOC, EXCEL, etc)"
+                disabled={isUploading}
+              >
+                <FileText size={18} className="sm:w-5 sm:h-5 text-gray-400" />
+              </button>
             </>
           )}
           
