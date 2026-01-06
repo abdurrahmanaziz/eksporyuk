@@ -104,37 +104,3 @@ export async function getNextInvoiceNumber(maxRetries: number = 5): Promise<stri
   // Ultimate fallback if all retries fail
   return `INV${Date.now().toString().slice(-8)}`
 }
-
-/**
- * Format invoice number for display
- * Ensures consistent format: INV-XXXXX
- * Handles both new format (INV-12906) and old formats (INV19300, 1M617767967563, etc.)
- */
-export function formatInvoiceForDisplay(invoiceNumber: string | null | undefined, fallbackId?: string): string {
-  if (!invoiceNumber) {
-    // Fallback: use transaction ID if no invoice number
-    if (fallbackId) {
-      return `INV-${fallbackId.slice(0, 5).toUpperCase()}`;
-    }
-    return 'INV-????';
-  }
-
-  // If already in correct format INV-XXXXX, return as-is
-  if (invoiceNumber.match(/^INV-\d+$/)) {
-    return invoiceNumber;
-  }
-
-  // Extract number and reformat
-  const num = extractInvoiceNumber(invoiceNumber);
-  if (num > 0) {
-    // Format with leading zeros if 4 digits or less
-    if (num <= 9999) {
-      return `INV-${String(num).padStart(5, '0')}`;
-    } else {
-      return `INV-${num}`;
-    }
-  }
-
-  // Ultimate fallback
-  return invoiceNumber;
-}
