@@ -277,6 +277,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (!files.length) return;
     
     setIsUploading(true);
+    console.log('[RichTextEditor] Starting upload for', files.length, type, 'files');
     
     try {
       const uploads = [];
@@ -287,6 +288,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         formData.append('file', file);
         formData.append('type', type);
         
+        console.log('[RichTextEditor] Uploading file:', file.name, file.size, file.type);
+        
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
@@ -294,19 +297,27 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         
         if (response.ok) {
           const result = await response.json();
+          console.log('[RichTextEditor] Upload success:', result.url);
           uploads.push(result.url);
+        } else {
+          const error = await response.json();
+          console.error('[RichTextEditor] Upload failed:', error);
         }
       }
       
-      setContent(prev => ({
-        ...prev,
-        [type === 'image' ? 'images' : type === 'video' ? 'videos' : 'documents']: [
-          ...prev[type === 'image' ? 'images' : type === 'video' ? 'videos' : 'documents'],
-          ...uploads,
-        ],
-      }));
+      if (uploads.length > 0) {
+        setContent(prev => {
+          const key = type === 'image' ? 'images' : type === 'video' ? 'videos' : 'documents';
+          const newContent = {
+            ...prev,
+            [key]: [...prev[key], ...uploads],
+          };
+          console.log('[RichTextEditor] Updated content with uploads:', key, newContent[key]);
+          return newContent;
+        });
+      }
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error('[RichTextEditor] Upload error:', error);
     } finally {
       setIsUploading(false);
     }
@@ -511,12 +522,22 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [content.images, content.videos]);
 
   const handleSubmit = () => {
+    console.log('[RichTextEditor] handleSubmit called with content:', {
+      text: content.text,
+      images: content.images,
+      videos: content.videos,
+      documents: content.documents,
+      backgroundId: selectedBackground?.id
+    });
+    
     if (content.text.trim() || content.images.length || content.videos.length || content.documents.length) {
       if (onSubmit) {
-        onSubmit({
+        const submitData = {
           ...content,
           backgroundId: selectedBackground?.id || undefined,
-        });
+        };
+        console.log('[RichTextEditor] Calling onSubmit with:', submitData);
+        onSubmit(submitData);
       }
       
       // Reset content

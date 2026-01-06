@@ -296,24 +296,30 @@ export default function CommunityFeedPage() {
   }
 
   const createPost = async (postData: any) => {
+    console.log('[Feed] createPost called with:', postData);
+    
     const contentToPost = postData?.text || postContent;
     if (!contentToPost.trim() || posting) return
 
     setPosting(true)
     try {
+      const requestBody = {
+        content: contentToPost,
+        groupId: selectedGroupId || null,
+        taggedUsers: postData?.taggedUsers || [],
+        images: Array.isArray(postData?.images) ? postData.images.map((img: any) => typeof img === 'string' ? img : img.url) : [],
+        videos: Array.isArray(postData?.videos) ? postData.videos.map((vid: any) => typeof vid === 'string' ? vid : vid.url) : [],
+        documents: Array.isArray(postData?.documents) ? postData.documents.map((doc: any) => typeof doc === 'string' ? doc : doc.url) : [],
+        contentFormatted: postData?.contentFormatted || null,
+        backgroundId: postData?.backgroundId || null,
+      };
+      
+      console.log('[Feed] Sending to API:', requestBody);
+      
       const response = await fetch('/api/community/feed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: contentToPost,
-          groupId: selectedGroupId || null,
-          taggedUsers: postData?.taggedUsers || [],
-          images: Array.isArray(postData?.images) ? postData.images.map((img: any) => typeof img === 'string' ? img : img.url) : [],
-          videos: Array.isArray(postData?.videos) ? postData.videos.map((vid: any) => typeof vid === 'string' ? vid : vid.url) : [],
-          documents: Array.isArray(postData?.documents) ? postData.documents.map((doc: any) => typeof doc === 'string' ? doc : doc.url) : [],
-          contentFormatted: postData?.contentFormatted || null,
-          backgroundId: postData?.backgroundId || null,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (response.ok) {

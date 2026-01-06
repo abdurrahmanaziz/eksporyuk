@@ -315,7 +315,6 @@ export function PostDetailModal({
         <div className="border-t border-gray-200 dark:border-gray-800 flex-shrink-0 max-h-80 overflow-y-auto">
           <CommentSection 
             postId={post?.id || ''}
-            onCommentAdded={() => {}}
           />
         </div>
       </div>

@@ -215,7 +215,7 @@ export default function CommentInput({
     }
   }
 
-  // Handle image upload
+  // Handle image upload - upload ke server untuk mendapatkan URL permanen
   const handleImageUpload = async (files: File[]) => {
     setUploadingMedia(true)
     try {
@@ -223,56 +223,75 @@ export default function CommentInput({
         const validation = validateImageFile(file)
         if (!validation.valid) {
           toast.error(validation.error)
-          return
+          continue
         }
 
         // Create progress tracking for this file
         const fileId = `img-${Date.now()}-${Math.random()}`
-        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
+        setUploadProgress(prev => ({ ...prev, [fileId]: 10 }))
 
-        // Simulate upload progress
-        let progress = 0
-        const progressInterval = setInterval(() => {
-          progress += Math.random() * 40
-          if (progress > 90) progress = 90
-          setUploadProgress(prev => ({ ...prev, [fileId]: progress }))
-        }, 100)
+        try {
+          // Upload ke server untuk mendapatkan URL permanen
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('type', 'image')
 
-        // Store as URL (in production, upload to storage service)
-        const url = URL.createObjectURL(file)
-        
-        // Simulate completion
-        await new Promise(resolve => setTimeout(resolve, 500))
-        clearInterval(progressInterval)
-        setUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
-        
-        setImages(prev => [...prev, {
-          url,
-          type: 'image',
-          name: file.name,
-          size: file.size
-        }])
+          setUploadProgress(prev => ({ ...prev, [fileId]: 30 }))
 
-        // Clear progress after short delay
-        await new Promise(resolve => setTimeout(resolve, 200))
-        setUploadProgress(prev => {
-          const newProgress = { ...prev }
-          delete newProgress[fileId]
-          return newProgress
-        })
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          })
+
+          setUploadProgress(prev => ({ ...prev, [fileId]: 80 }))
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Upload gagal')
+          }
+
+          const data = await response.json()
+          const url = data.url
+
+          setUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
+          
+          setImages(prev => [...prev, {
+            url,
+            type: 'image',
+            name: file.name,
+            size: file.size
+          }])
+
+          // Clear progress after short delay
+          await new Promise(resolve => setTimeout(resolve, 200))
+          setUploadProgress(prev => {
+            const newProgress = { ...prev }
+            delete newProgress[fileId]
+            return newProgress
+          })
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError)
+          toast.error(uploadError instanceof Error ? uploadError.message : 'Gagal mengunggah gambar')
+          setUploadProgress(prev => {
+            const newProgress = { ...prev }
+            delete newProgress[fileId]
+            return newProgress
+          })
+        }
       }
       
-      if (files.length > 0) {
-        toast.success(`${files.length} gambar ditambahkan`)
+      if (files.length > 0 && images.length > 0) {
+        toast.success(`Gambar berhasil diunggah`)
       }
     } catch (error) {
+      console.error('Error in handleImageUpload:', error)
       toast.error('Gagal mengunggah gambar')
     } finally {
       setUploadingMedia(false)
     }
   }
 
-  // Handle video upload
+  // Handle video upload - upload ke server untuk mendapatkan URL permanen
   const handleVideoUpload = async (files: File[]) => {
     setUploadingMedia(true)
     try {
@@ -280,55 +299,75 @@ export default function CommentInput({
         const validation = validateVideoFile(file)
         if (!validation.valid) {
           toast.error(validation.error)
-          return
+          continue
         }
 
         // Create progress tracking for this file
         const fileId = `vid-${Date.now()}-${Math.random()}`
-        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
+        setUploadProgress(prev => ({ ...prev, [fileId]: 10 }))
 
-        // Simulate upload progress (videos take longer)
-        let progress = 0
-        const progressInterval = setInterval(() => {
-          progress += Math.random() * 30
-          if (progress > 90) progress = 90
-          setUploadProgress(prev => ({ ...prev, [fileId]: progress }))
-        }, 150)
+        try {
+          // Upload ke server untuk mendapatkan URL permanen
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('type', 'video')
 
-        const url = URL.createObjectURL(file)
-        
-        // Simulate completion
-        await new Promise(resolve => setTimeout(resolve, 800))
-        clearInterval(progressInterval)
-        setUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
-        
-        setVideos(prev => [...prev, {
-          url,
-          type: 'video',
-          name: file.name,
-          size: file.size
-        }])
+          setUploadProgress(prev => ({ ...prev, [fileId]: 30 }))
 
-        // Clear progress after short delay
-        await new Promise(resolve => setTimeout(resolve, 200))
-        setUploadProgress(prev => {
-          const newProgress = { ...prev }
-          delete newProgress[fileId]
-          return newProgress
-        })
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          })
+
+          setUploadProgress(prev => ({ ...prev, [fileId]: 80 }))
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Upload gagal')
+          }
+
+          const data = await response.json()
+          const url = data.url
+
+          setUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
+          
+          setVideos(prev => [...prev, {
+            url,
+            type: 'video',
+            name: file.name,
+            size: file.size
+          }])
+
+          // Clear progress after short delay
+          await new Promise(resolve => setTimeout(resolve, 200))
+          setUploadProgress(prev => {
+            const newProgress = { ...prev }
+            delete newProgress[fileId]
+            return newProgress
+          })
+        } catch (uploadError) {
+          console.error('Error uploading video:', uploadError)
+          toast.error(uploadError instanceof Error ? uploadError.message : 'Gagal mengunggah video')
+          setUploadProgress(prev => {
+            const newProgress = { ...prev }
+            delete newProgress[fileId]
+            return newProgress
+          })
+        }
       }
 
-      if (files.length > 0) {
-        toast.success(`${files.length} video ditambahkan`)
+      if (files.length > 0 && videos.length > 0) {
+        toast.success(`Video berhasil diunggah`)
       }
     } catch (error) {
+      console.error('Error in handleVideoUpload:', error)
       toast.error('Gagal mengunggah video')
     } finally {
       setUploadingMedia(false)
     }
   }
 
-  // Handle document upload
+  // Handle document upload - upload ke server untuk mendapatkan URL permanen
   const handleDocumentUpload = async (files: File[]) => {
     setUploadingMedia(true)
     try {
@@ -336,22 +375,66 @@ export default function CommentInput({
         const validation = validateDocumentFile(file)
         if (!validation.valid) {
           toast.error(validation.error)
-          return
+          continue
         }
 
-        const url = URL.createObjectURL(file)
-        setDocuments(prev => [...prev, {
-          url,
-          type: 'document',
-          name: file.name,
-          size: file.size
-        }])
+        // Create progress tracking for this file
+        const fileId = `doc-${Date.now()}-${Math.random()}`
+        setUploadProgress(prev => ({ ...prev, [fileId]: 10 }))
+
+        try {
+          // Upload ke server untuk mendapatkan URL permanen
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('type', 'document')
+
+          setUploadProgress(prev => ({ ...prev, [fileId]: 50 }))
+
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Upload gagal')
+          }
+
+          const data = await response.json()
+          const url = data.url
+
+          setUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
+
+          setDocuments(prev => [...prev, {
+            url,
+            type: 'document',
+            name: file.name,
+            size: file.size
+          }])
+
+          // Clear progress after short delay
+          await new Promise(resolve => setTimeout(resolve, 200))
+          setUploadProgress(prev => {
+            const newProgress = { ...prev }
+            delete newProgress[fileId]
+            return newProgress
+          })
+        } catch (uploadError) {
+          console.error('Error uploading document:', uploadError)
+          toast.error(uploadError instanceof Error ? uploadError.message : 'Gagal mengunggah dokumen')
+          setUploadProgress(prev => {
+            const newProgress = { ...prev }
+            delete newProgress[fileId]
+            return newProgress
+          })
+        }
       }
 
-      if (files.length > 0) {
-        toast.success(`${files.length} dokumen ditambahkan`)
+      if (files.length > 0 && documents.length > 0) {
+        toast.success(`Dokumen berhasil diunggah`)
       }
     } catch (error) {
+      console.error('Error in handleDocumentUpload:', error)
       toast.error('Gagal mengunggah dokumen')
     } finally {
       setUploadingMedia(false)
@@ -420,7 +503,10 @@ export default function CommentInput({
         throw new Error(error.error)
       }
 
-      toast.success('Komentar berhasil dikirim!')
+      const result = await response.json()
+      console.log('[CommentInput] Comment created:', result)
+
+      // Reset form
       setContent('')
       setImages([])
       setVideos([])
@@ -428,9 +514,14 @@ export default function CommentInput({
       setTaggedAll(false)
       setTaggedMembers(false)
       
+      // Trigger refresh after short delay to ensure DB is updated
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       if (onCommentAdded) {
         onCommentAdded()
       }
+
+      toast.success('Komentar berhasil dikirim!')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Gagal mengirim komentar')
     } finally {

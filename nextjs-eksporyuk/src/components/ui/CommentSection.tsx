@@ -107,11 +107,12 @@ export default function CommentSection({ postId, comments: propComments, onRefre
   }, [postId, propComments])
 
   // Handle refresh - either call parent's onRefresh or fetch internally
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
+    console.log('[CommentSection] Refreshing comments for postId:', postId)
     if (onRefresh) {
       onRefresh()
     } else {
-      fetchComments()
+      await fetchComments()
     }
     onCommentAdded?.()
   }
