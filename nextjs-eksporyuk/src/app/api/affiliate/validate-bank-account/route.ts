@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -26,13 +27,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get client IP and user agent for logging
+    const ipAddress = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown'
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+
     // Map bank name to Xendit bank code
     const bankCode = getBankCode(bankName)
     
     console.log('[BANK VALIDATION] Validating account:', {
+      userId: session.user.id,
       bankName,
       bankCode,
-      accountNumber: accountNumber.substring(0, 4) + '****'
+      accountNumber: accountNumber.substring(0, 4) + '****',
+      ipAddress
     })
 
     // Call Xendit Bank Account Validation API
@@ -47,62 +56,115 @@ export async function POST(request: NextRequest) {
 
     const auth = Buffer.from(XENDIT_SECRET_KEY + ':').toString('base64')
     
-    // Xendit Bank Account Data API
-    // https://developers.xendit.co/api-reference/#bank-account-data
-    const response = await fetch('https://api.xendit.co/bank_account_data_requests', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        bank_account_number: accountNumber,
-        bank_code: bankCode,
-      })
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.error('[BANK VALIDATION] Error:', {
-        status: response.status,
-        error: errorData
-      })
-      
-      // Handle specific errors
-      if (response.status === 400) {
-        return NextResponse.json(
-          { error: 'Nomor rekening tidak valid' },
-          { status: 400 }
-        )
-      }
-      
-      if (response.status === 404) {
-        return NextResponse.json(
-          { error: 'Bank account not found' },
-          { status: 404 }
-        )
-      }
-      
-      return NextResponse.json(
-        { error: 'Gagal validasi rekening bank' },
-        { status: 500 }
-      )
-    }
-
-    const data = await response.json()
+    let validationRecord
     
-    console.log('[BANK VALIDATION] Success:', {
-      accountHolderName: data.account_holder_name,
-      bankCode: data.bank_code
-    })
+    try {
+      // Xendit Bank Account Data API
+      const response = await fetch('https://api.xendit.co/bank_account_data_requests', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bank_account_number: accountNumber,
+          bank_code: bankCode,
+        })
+      })
 
-    return NextResponse.json({
-      success: true,
-      accountHolderName: data.account_holder_name,
-      bankCode: data.bank_code,
-      accountNumber: data.account_number,
-      isValid: true
-    })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('[BANK VALIDATION] Xendit error:', {
+          status: response.status,
+          error: errorData
+        })
+        
+        // Log failed validation
+        validationRecord = await prisma.bankAccountValidation.create({
+          data: {
+            userId: session.user.id,
+            bankName,
+            bankCode,
+            accountNumber,
+            isValid: false,
+            errorMessage: errorData.message || `HTTP ${response.status}`,
+            ipAddress,
+            userAgent,
+          }
+        })
+        
+        // Handle specific errors
+        if (response.status === 400) {
+          return NextResponse.json(
+            { error: 'Nomor rekening tidak valid' },
+            { status: 400 }
+          )
+        }
+        
+        if (response.status === 404) {
+          return NextResponse.json(
+            { error: 'Rekening tidak ditemukan' },
+            { status: 404 }
+          )
+        }
+        
+        return NextResponse.json(
+          { error: 'Gagal validasi rekening bank' },
+          { status: 500 }
+        )
+      }
+
+      const data = await response.json()
+      
+      console.log('[BANK VALIDATION] Success:', {
+        accountHolderName: data.account_holder_name,
+        bankCode: data.bank_code,
+        userId: session.user.id
+      })
+
+      // Log successful validation
+      validationRecord = await prisma.bankAccountValidation.create({
+        data: {
+          userId: session.user.id,
+          bankName,
+          bankCode,
+          accountNumber,
+          accountHolderName: data.account_holder_name,
+          isValid: true,
+          validatedAt: new Date(),
+          ipAddress,
+          userAgent,
+        }
+      })
+
+      return NextResponse.json({
+        success: true,
+        accountHolderName: data.account_holder_name,
+        bankCode: data.bank_code,
+        accountNumber: data.account_number,
+        isValid: true,
+        validationId: validationRecord.id
+      })
+
+    } catch (xenditError: any) {
+      console.error('[BANK VALIDATION] Xendit API error:', xenditError)
+      
+      // Log failed validation
+      await prisma.bankAccountValidation.create({
+        data: {
+          userId: session.user.id,
+          bankName,
+          bankCode,
+          accountNumber,
+          isValid: false,
+          errorMessage: xenditError.message || 'Unknown error',
+          ipAddress,
+          userAgent,
+        }
+      })
+      
+      throw xenditError
+    }
 
   } catch (error: any) {
     console.error('[BANK VALIDATION ERROR]', error)

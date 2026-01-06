@@ -1231,6 +1231,12 @@ export default function CommunityFeedPage() {
           isOpen={!!selectedPost}
           onClose={() => setSelectedPost(null)}
           initialImageIndex={selectedImageIndex}
+          onReact={handleReact}
+          onRemoveReact={handleRemoveReact}
+          onSave={handleSavePost}
+          onShare={handleSharePost}
+          postReactions={postReactions}
+          isSaved={savedPosts[selectedPost.id] || false}
         />
       )}
     </ResponsivePageWrapper>

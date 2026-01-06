@@ -2159,6 +2159,25 @@ model PointTransaction {
   createdAt   DateTime @default(now())
 }
 
+model BankAccountValidation {
+  id                String   @id @default(cuid())
+  userId            String
+  bankName          String
+  bankCode          String
+  accountNumber     String
+  accountHolderName String?
+  isValid           Boolean  @default(false)
+  validatedAt       DateTime?
+  errorMessage      String?
+  ipAddress         String?
+  userAgent         String?
+  createdAt         DateTime @default(now())
+  
+  @@index([userId])
+  @@index([accountNumber])
+  @@index([createdAt])
+}
+
 model Post {
   id               String         @id
   authorId         String
