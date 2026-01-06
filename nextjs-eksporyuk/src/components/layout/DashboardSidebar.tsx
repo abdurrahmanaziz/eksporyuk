@@ -325,9 +325,9 @@ const navigationByRole = {
     {
       title: 'UTAMA',
       items: [
-        { name: 'Dashboard', href: '/member/dashboard', icon: Home },
+        { name: 'Beranda', href: '/member/dashboard', icon: Home },
         { name: 'Kelas', href: '/member/learn', icon: GraduationCap },
-        { name: 'Grup', href: '/member/community/groups', icon: UsersRound },
+        { name: 'Grup Support', href: '/member/community/groups', icon: UsersRound },
       ]
     },
     {
@@ -342,9 +342,7 @@ const navigationByRole = {
     {
       title: 'KOMUNITAS',
       items: [
-        { name: 'Grup Saya', href: '/member/my-groups', icon: UsersRound },
         { name: 'Feed', href: '/member/community/feed', icon: MessageSquare },
-        { name: 'Grup', href: '/member/community/groups', icon: UsersRound },
         { name: 'Acara', href: '/member/community/events', icon: Calendar },
         { name: 'Region', href: '/member/member-directory', icon: MapPin },
         { name: 'Tersimpan', href: '/member/saved-posts', icon: Bookmark },
