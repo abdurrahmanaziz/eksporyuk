@@ -657,32 +657,32 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-full overflow-hidden bg-gray-50/50 dark:bg-gray-900/50 p-0 sm:p-4 lg:p-6 gap-6">
       {/* Mobile Menu Button */}
       {!showSidebar && activeRoom && (
         <button
           onClick={() => setShowSidebar(true)}
-          className="md:hidden fixed top-20 left-4 z-50 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg"
+          className="lg:hidden fixed top-20 left-4 z-50 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg"
         >
           <Menu className="w-5 h-5" />
         </button>
       )}
       
       {/* Sidebar */}
-      <div className={cn(
-        "bg-white dark:bg-gray-800 flex flex-col border-r border-gray-200 dark:border-gray-700 transition-all duration-300",
+      <section className={cn(
+        "bg-white dark:bg-gray-800 rounded-0 sm:rounded-2xl shadow-sm flex flex-col border-r sm:border border-gray-200 dark:border-gray-700 h-full overflow-hidden transition-all duration-300",
         showSidebar 
-          ? "w-full md:w-72 lg:w-80" 
-          : "w-0 overflow-hidden md:w-72 lg:w-80"
+          ? "w-full sm:w-80 lg:w-96" 
+          : "w-0 overflow-hidden sm:w-80 lg:w-96"
       )}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Chat</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Messages</h2>
             {activeRoom && (
               <button 
                 onClick={() => setShowSidebar(false)}
-                className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -691,74 +691,136 @@ export default function ChatPage() {
           
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
-              placeholder="Cari chat..."
-              className="pl-9 h-10 bg-gray-50 dark:bg-gray-700"
+              placeholder="Search mentors or messages..."
+              className="pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Tabs for Rooms & Mentors */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="w-full justify-start px-4 pt-2 bg-transparent">
-            <TabsTrigger value="rooms" className="flex-1">
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Percakapan
-              {rooms.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {rooms.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="mentors" className="flex-1">
-              <Users className="w-4 h-4 mr-2" />
-              Mentor
-              {mentors.filter(m => m.isOnline).length > 0 && (
-                <Badge variant="secondary" className="ml-2 bg-green-100 text-green-700">
-                  {mentors.filter(m => m.isOnline).length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Rooms List */}
-          <TabsContent value="rooms" className="flex-1 overflow-y-auto m-0 p-2">
-            {filteredRooms.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="font-medium">Belum ada percakapan</p>
-                <p className="text-sm">Mulai chat dengan memilih mentor</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {filteredRooms.map((room) => (
-                  <div
-                    key={room.id}
-                    onClick={() => selectRoom(room)}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors",
-                      activeRoom?.id === room.id 
-                        ? "bg-blue-50 dark:bg-blue-900/30" 
-                        : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                    )}
-                  >
-                    <Avatar className="w-12 h-12 flex-shrink-0">
-                      <AvatarImage src={room.avatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                        {room.name?.[0] || '?'}
+        {/* Chat Mentors Section */}
+        <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 flex-shrink-0">
+          <div className="px-4 pt-4 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">Chat Dengan Mentor</h3>
+            <button 
+              onClick={() => setActiveTab('mentors')}
+              className="text-blue-500 text-xs font-semibold hover:bg-blue-500/10 px-2 py-1 rounded-md transition-colors"
+            >
+              Lihat Semua
+            </button>
+          </div>
+          <div className="px-4 mt-2 flex gap-2">
+            <button 
+              onClick={() => setActiveTab('mentors')}
+              className="px-3 py-1 rounded-full bg-blue-500 text-white text-[11px] font-medium shadow-sm"
+            >
+              All
+            </button>
+            <button className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 text-[11px] font-medium transition-colors">
+              Online
+            </button>
+            <button className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 text-[11px] font-medium transition-colors">
+              Unread
+            </button>
+          </div>
+          
+          {/* Mentor Avatars Horizontal Scroll */}
+          <div className="flex gap-2 overflow-x-auto p-4 scrollbar-hide">
+            {filteredMentors.slice(0, 4).map((mentor) => (
+              <div 
+                key={mentor.id}
+                onClick={() => createOrGetRoom(mentor.id, mentor.name)}
+                className="flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group"
+              >
+                <div className="relative">
+                  <div className={cn(
+                    "w-[60px] h-[60px] rounded-full p-0.5 transition-all duration-200",
+                    mentor.isOnline 
+                      ? "bg-gradient-to-tr from-blue-500 to-blue-400 group-hover:scale-105" 
+                      : "bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 group-hover:from-blue-500 group-hover:to-blue-400"
+                  )}>
+                    <Avatar className="w-full h-full border-2 border-white dark:border-gray-800">
+                      <AvatarImage src={mentor.avatar} />
+                      <AvatarFallback className="bg-gradient-to-br from-green-500 to-teal-600 text-white text-sm font-semibold">
+                        {mentor.name?.[0] || '?'}
                       </AvatarFallback>
                     </Avatar>
+                  </div>
+                  <div 
+                    className={cn(
+                      "absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white dark:border-gray-800 rounded-full",
+                      mentor.isOnline ? "bg-green-500" : "bg-gray-400"
+                    )}
+                    title={mentor.isOnline ? "Online" : "Offline"}
+                  ></div>
+                  {mentor.unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full border border-white dark:border-gray-800 shadow-sm">
+                      {mentor.unreadCount}
+                    </div>
+                  )}
+                </div>
+                <div className="text-center w-full">
+                  <span className="text-xs font-semibold text-gray-900 dark:text-gray-200 block truncate w-16 mx-auto">
+                    {mentor.name.split(' ').map(n => n[0]).join('').slice(0, 2) + (mentor.name.split(' ').length > 1 ? '.' : '')}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Messages List */}
+        <div className="flex-1 overflow-y-auto">
+          {filteredRooms.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="font-medium">Belum ada percakapan</p>
+              <p className="text-sm">Mulai chat dengan memilih mentor</p>
+            </div>
+          ) : (
+            <div className="space-y-0">
+              {filteredRooms.map((room) => (
+                <div
+                  key={room.id}
+                  onClick={() => selectRoom(room)}
+                  className={cn(
+                    "cursor-pointer border-l-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
+                    activeRoom?.id === room.id 
+                      ? "bg-blue-500/5 dark:bg-blue-500/10 border-l-4 border-blue-500" 
+                      : "border-transparent"
+                  )}
+                >
+                  <div className="flex gap-3">
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="w-12 h-12 shadow-sm">
+                        <AvatarImage src={room.avatar} />
+                        <AvatarFallback className={cn(
+                          "font-bold shadow-sm",
+                          room.type === 'MENTOR' ? "bg-indigo-500 text-white" :
+                          room.type === 'SUPPORT' ? "bg-pink-500 text-white" :
+                          "bg-teal-600 text-white"
+                        )}>
+                          {room.name?.[0] || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      {room.participants.some(p => p.user.isOnline) && (
+                        <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-800 bg-green-500"></span>
+                      )}
+                    </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-gray-900 dark:text-white truncate">
+                      <div className="flex items-baseline justify-between mb-1">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                           {room.name}
-                        </p>
+                        </h3>
                         {room.lastMessage && (
-                          <span className="text-xs text-gray-500 flex-shrink-0">
+                          <span className={cn(
+                            "text-xs font-medium",
+                            activeRoom?.id === room.id ? "text-blue-500" : "text-gray-400"
+                          )}>
                             {formatDistanceToNow(new Date(room.lastMessage.createdAt), { 
                               addSuffix: false, 
                               locale: idLocale 
@@ -766,129 +828,106 @@ export default function ChatPage() {
                           </span>
                         )}
                       </div>
-                      {room.lastMessage && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      {room.lastMessage ? (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 truncate font-medium">
                           {room.lastMessage.content || 'Media'}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                          No messages yet
                         </p>
                       )}
                     </div>
                     
-                    {room.unreadCount > 0 && (
-                      <Badge variant="destructive" className="flex-shrink-0">
-                        {room.unreadCount}
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Mentors List */}
-          <TabsContent value="mentors" className="flex-1 overflow-y-auto m-0 p-2">
-            {filteredMentors.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="font-medium">Tidak ada mentor</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {/* Online mentors first */}
-                {filteredMentors
-                  .sort((a, b) => (b.isOnline ? 1 : 0) - (a.isOnline ? 1 : 0))
-                  .map((mentor) => (
-                  <div
-                    key={mentor.id}
-                    onClick={() => createOrGetRoom(mentor.id, mentor.name)}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                  >
-                    <div className="relative">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={mentor.avatar} />
-                        <AvatarFallback className="bg-gradient-to-br from-green-500 to-teal-600 text-white">
-                          {mentor.name?.[0] || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      {mentor.isOnline && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                    <div className="flex flex-col items-end gap-1">
+                      {room.unreadCount > 0 && (
+                        <Badge variant="destructive" className="flex-shrink-0">
+                          {room.unreadCount}
+                        </Badge>
                       )}
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white truncate">
-                        {mentor.name}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {mentor.isOnline ? (
-                          <span className="text-green-600">Online</span>
-                        ) : (
-                          'Offline'
-                        )}
-                      </p>
-                    </div>
-                    
-                    {mentor.unreadCount > 0 && (
-                      <Badge variant="destructive">
-                        {mentor.unreadCount}
-                      </Badge>
-                    )}
                   </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Chat Area */}
       {activeRoom ? (
-        <div className={cn(
-          "flex-1 flex flex-col",
-          !showSidebar ? "w-full" : "hidden md:flex"
+        <section className={cn(
+          "hidden sm:flex flex-1 flex-col bg-white dark:bg-gray-800 sm:rounded-2xl shadow-sm border sm:border-gray-200 dark:border-gray-700 h-full relative overflow-hidden",
+          !showSidebar ? "flex" : "hidden sm:flex"
         )}>
           {/* Chat Header */}
-          <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm z-10">
+            <div className="flex items-center gap-4">
               <button 
                 onClick={() => setShowSidebar(true)}
-                className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="sm:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={activeRoom.avatar} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                  {activeRoom.name?.[0] || '?'}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="w-10 h-10 shadow-sm">
+                  <AvatarImage src={activeRoom.avatar} />
+                  <AvatarFallback className="bg-indigo-500 text-white font-bold">
+                    {activeRoom.name?.[0] || '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-gray-800 bg-green-500"></span>
+              </div>
               
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+              <div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
                   {activeRoom.name}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {activeRoom.type === 'MENTOR' ? 'Mentor' : 
-                   activeRoom.type === 'GROUP' ? 'Grup' : 'Chat'}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-xs text-green-600 dark:text-green-400 font-medium">Online</span>
+                </div>
               </div>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <button className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </button>
+              <button className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors ml-1">
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
           {/* Messages Area */}
           <div 
-            className="flex-1 overflow-y-auto p-3 sm:p-4"
+            className="flex-1 overflow-y-auto p-6 bg-gray-50/50 dark:bg-gray-900/50"
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
             {messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                <div className="text-center">
-                  <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <h4 className="text-lg font-semibold mb-2">Belum ada pesan</h4>
-                  <p className="text-sm">Kirim pesan pertama untuk memulai percakapan</p>
+              <div className="flex flex-col justify-center items-center h-full">
+                <div className="text-center max-w-sm p-8 rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm">
+                  <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3 transform transition-transform hover:rotate-6">
+                    <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10m0 0V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2m10 0v10a2 2 0 01-2 2H9a2 2 0 01-2-2V8m10 0H7" />
+                    </svg>
+                  </div>
+                  <h4 className="text-gray-900 dark:text-white font-bold text-lg mb-2">Hello, Sultan! 👋</h4>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                    Welcome to the mentor chat. Ask any questions about exports, logistics, or regulations. We're here to help!
+                  </p>
                 </div>
               </div>
             ) : (
@@ -918,7 +957,7 @@ export default function ChatPage() {
           </div>
 
           {/* Input Area */}
-          <div className="p-3 sm:p-4 border-t bg-white dark:bg-gray-800">
+          <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
             {/* Reply Preview */}
             {replyingTo && (
               <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-blue-500">
@@ -950,79 +989,82 @@ export default function ChatPage() {
               </div>
             )}
 
-            <div className="flex items-end gap-2 sm:gap-3">
-              {/* Media Buttons */}
-              <div className="flex items-center">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors"
-                  title="Lampirkan file"
-                >
-                  <Paperclip className="h-5 w-5" />
-                </button>
-                
-                <button
-                  onClick={() => {
-                    const input = document.createElement('input')
-                    input.type = 'file'
-                    input.accept = 'image/*'
-                    input.onchange = (e) => {
-                      const files = Array.from((e.target as HTMLInputElement).files || [])
-                      handleFileUpload(files)
-                    }
-                    input.click()
-                  }}
-                  className="hidden sm:block p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-full transition-colors"
-                  title="Kirim gambar"
-                >
-                  <ImageIcon className="h-5 w-5" />
-                </button>
-
-                <button
-                  onMouseDown={startVoiceRecording}
-                  onMouseUp={stopVoiceRecording}
-                  onMouseLeave={stopVoiceRecording}
-                  onTouchStart={startVoiceRecording}
-                  onTouchEnd={stopVoiceRecording}
-                  className={cn(
-                    "hidden sm:block p-2 rounded-full transition-colors",
-                    isRecording 
-                      ? "text-red-600 bg-red-50 dark:bg-red-900/30" 
-                      : "text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-                  )}
-                  title={isRecording ? "Merekam... Lepas untuk kirim" : "Tahan untuk merekam"}
-                >
-                  <Mic className="h-5 w-5" />
-                </button>
+            <div className="flex flex-col gap-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm">
+              <Textarea
+                ref={textareaRef}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendMessage()
+                  }
+                }}
+                placeholder="Type your message here..."
+                className="w-full bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white placeholder-gray-400 text-sm resize-none min-h-[50px] max-h-[150px] p-2"
+                rows={1}
+                disabled={isRecording || sendingMessage}
+              />
+              <div className="flex items-center justify-between px-1 pb-1">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'image/*'
+                      input.onchange = (e) => {
+                        const files = Array.from((e.target as HTMLInputElement).files || [])
+                        handleFileUpload(files)
+                      }
+                      input.click()
+                    }}
+                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Add Image"
+                  >
+                    <ImageIcon className="h-5 w-5" />
+                  </button>
+                  <button className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Add Video">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Attach File"
+                  >
+                    <Paperclip className="h-5 w-5" />
+                  </button>
+                  <button
+                    onMouseDown={startVoiceRecording}
+                    onMouseUp={stopVoiceRecording}
+                    onMouseLeave={stopVoiceRecording}
+                    onTouchStart={startVoiceRecording}
+                    onTouchEnd={stopVoiceRecording}
+                    className={cn(
+                      "hidden sm:block p-2 rounded-lg transition-colors",
+                      isRecording 
+                        ? "text-red-600 bg-red-50 dark:bg-red-900/30" 
+                        : "text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    )}
+                    title="Voice Message"
+                  >
+                    <Mic className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button className="text-gray-400 hover:text-amber-400 transition-colors p-1">
+                    <Smile className="h-5 w-5" />
+                  </button>
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim() || isRecording || sendingMessage}
+                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <Send className="w-5 h-5 ml-0.5" />
+                  </Button>
+                </div>
               </div>
-              
-              {/* Message Input */}
-              <div className="flex-1 relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSendMessage()
-                    }
-                  }}
-                  placeholder={isRecording ? "Merekam..." : "Ketik pesan..."}
-                  className="min-h-[44px] max-h-32 py-3 px-4 rounded-2xl resize-none"
-                  rows={1}
-                  disabled={isRecording || sendingMessage}
-                />
-              </div>
-              
-              {/* Send Button */}
-              <Button 
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim() || isRecording || sendingMessage}
-                className="h-11 w-11 rounded-full flex-shrink-0"
-              >
-                <Send className="w-5 h-5" />
-              </Button>
             </div>
 
             {/* Hidden File Input */}
