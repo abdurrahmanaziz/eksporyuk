@@ -931,6 +931,7 @@ export default function CommunityFeedPage() {
                                     content={post.content}
                                     contentFormatted={post.contentFormatted}
                                     className=""
+                                    textColor={bg.textColor}
                                   />
                                 </div>
                               </div>
