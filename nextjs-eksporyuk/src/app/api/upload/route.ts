@@ -24,6 +24,13 @@ const ALLOWED_DOCUMENT_TYPES = [
   'application/zip',
   'application/x-rar-compressed',
   'application/x-7z-compressed',
+  'application/octet-stream', // Fallback for unknown types
+];
+
+// Extension-based validation as fallback
+const ALLOWED_DOCUMENT_EXTENSIONS = [
+  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+  '.txt', '.csv', '.zip', '.rar', '.7z'
 ];
 
 // Check if Vercel Blob is configured
@@ -63,8 +70,13 @@ export async function POST(request: NextRequest) {
     // Map logo and banner to image type for validation and storage
     const type = (uploadType === 'logo' || uploadType === 'banner') ? 'image' : uploadType;
 
+    // Get file extension for fallback validation
+    const fileExtension = path.extname(file.name).toLowerCase();
+
     // Validate file type
     let allowedTypes: string[] = [];
+    let isValidByExtension = false;
+    
     switch (type) {
       case 'image':
         allowedTypes = ALLOWED_IMAGE_TYPES;
@@ -74,13 +86,19 @@ export async function POST(request: NextRequest) {
         break;
       case 'document':
         allowedTypes = ALLOWED_DOCUMENT_TYPES;
+        // Also check by extension for documents (browsers sometimes report wrong MIME type)
+        isValidByExtension = ALLOWED_DOCUMENT_EXTENSIONS.includes(fileExtension);
         break;
       default:
         return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
     }
 
-    if (!allowedTypes.includes(file.type)) {
-      console.log('❌ File type not allowed:', file.type, 'Expected:', allowedTypes)
+    // For documents: allow if MIME type matches OR extension matches
+    const isValidMimeType = allowedTypes.includes(file.type);
+    const isValid = type === 'document' ? (isValidMimeType || isValidByExtension) : isValidMimeType;
+
+    if (!isValid) {
+      console.log('❌ File type not allowed:', file.type, 'Extension:', fileExtension, 'Expected types:', allowedTypes)
       return NextResponse.json({ error: 'File type not allowed' }, { status: 400 });
     }
 
@@ -89,7 +107,6 @@ export async function POST(request: NextRequest) {
     // Generate unique filename
     const timestamp = Date.now();
     const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_'); // Sanitize filename
-    const fileExtension = path.extname(originalName);
     const fileName = `${timestamp}-${path.basename(originalName, fileExtension)}${fileExtension}`;
 
     let publicUrl: string;

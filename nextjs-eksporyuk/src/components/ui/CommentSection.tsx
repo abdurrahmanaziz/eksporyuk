@@ -444,6 +444,7 @@ export default function CommentSection({ postId, comments: propComments, onRefre
                 images={comment.images || undefined}
                 videos={comment.videos || undefined}
                 documents={comment.documents || undefined}
+                commentContent={comment.content}
               />
             )}
 
