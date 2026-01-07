@@ -735,7 +735,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             >
               <Palette size={18} className={`sm:w-5 sm:h-5 ${selectedBackground ? 'text-indigo-600' : 'text-gray-400'}`} />
             </button>
-          )
+          )}
           
           {/* Remove Background Button */}
           {allowBackground && selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0 && (
