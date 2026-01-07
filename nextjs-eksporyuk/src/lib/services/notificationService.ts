@@ -103,13 +103,13 @@ class NotificationService {
       // Send via multiple channels
       const channels = data.channels || ['pusher', 'onesignal']
       const results = await Promise.allSettled([
-        // Real-time via Pusher (always send if user preference allows)
-        channels.includes('pusher') && preferences?.enableAllInApp
+        // Real-time via Pusher (always send if user preference allows, default true)
+        channels.includes('pusher') && (preferences?.enableAllInApp !== false)
           ? this.sendViaPusher(data.userId, notification)
           : Promise.resolve({ success: true }),
         
         // Push notification via OneSignal
-        channels.includes('onesignal') && preferences?.enableAllPush
+        channels.includes('onesignal') && (preferences?.enableAllPush !== false)
           ? this.sendViaPush(data)
           : Promise.resolve({ success: true }),
         
@@ -403,6 +403,8 @@ class NotificationService {
     const mapping: Record<NotificationType, string> = {
       CHAT_MESSAGE: 'chatNotifications',
       COMMENT: 'commentNotifications',
+      COMMENT_REPLY: 'commentNotifications',
+      MENTION: 'commentNotifications', // Mention uses same preference as comments
       POST: 'postNotifications',
       COURSE_DISCUSSION: 'courseNotifications',
       EVENT_REMINDER: 'eventNotifications',

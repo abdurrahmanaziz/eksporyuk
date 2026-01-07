@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { smartNotificationService } from '@/lib/services/smartNotificationService'
+import { notificationService } from '@/lib/services/notificationService'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,31 +62,29 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Send notification to post author
-      await smartNotificationService.send({
+      // Send notification to post author using unified notificationService
+      const result = await notificationService.send({
         userId: post.authorId,
         type: 'COMMENT',
         title: 'Komentar Baru',
         message: `${session.user.name || 'Seseorang'} mengomentari postingan Anda`,
-        link: `/posts/${postId}#comment-${commentId}`,
-        data: {
-          postId,
-          commentId,
-          authorId: session.user.id,
-          authorName: session.user.name,
-          authorAvatar: session.user.image,
+        postId,
+        commentId,
+        redirectUrl: `/posts/${postId}#comment-${commentId}`,
+        actorId: session.user.id,
+        actorName: session.user.name || undefined,
+        actorAvatar: session.user.image || undefined,
+        metadata: {
           commentPreview: (commentText || comment.content).substring(0, 50),
           notificationType: 'comment'
         },
-        channels: {
-          pusher: true,
-          onesignal: true
-        }
+        channels: ['pusher', 'onesignal']
       })
 
       return NextResponse.json({
-        success: true,
-        notified: true,
+        success: result.success,
+        notified: result.success,
+        notificationId: result.notificationId,
         postAuthorId: post.authorId
       })
     } catch (error) {

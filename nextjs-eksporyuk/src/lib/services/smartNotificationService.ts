@@ -13,7 +13,7 @@ import { oneSignalService } from '@/lib/onesignal'
 
 interface SmartNotificationData {
   userId: string | string[]  // Single user or array of users
-  type: 'SYSTEM' | 'CHAT' | 'PAYMENT' | 'AFFILIATE' | 'COURSE' | 'PRODUCT' | 'MEMBERSHIP' | 'ACHIEVEMENT'
+  type: 'SYSTEM' | 'CHAT' | 'PAYMENT' | 'AFFILIATE' | 'COURSE' | 'PRODUCT' | 'MEMBERSHIP' | 'ACHIEVEMENT' | 'MENTION' | 'COMMENT' | 'COMMENT_REPLY'
   title: string
   message: string
   link?: string

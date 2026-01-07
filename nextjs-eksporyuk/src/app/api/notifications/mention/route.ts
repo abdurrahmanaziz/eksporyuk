@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
-import { smartNotificationService } from '@/lib/services/smartNotificationService'
+import { notificationService } from '@/lib/services/notificationService'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,51 +38,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    // Send notification to each mentioned user
+    // Send notification to each mentioned user using notificationService
     const notificationPromises = mentionedUserIds.map(async (userId: string) => {
       // Don't notify self
       if (userId === session.user.id) return null
 
       try {
-        // Create in-app notification
-        await prisma.notification.create({
-          data: {
-            userId,
-            type: 'MENTION',
-            title: 'Anda disebutkan dalam postingan',
-            message: `${post.author.name} menyebut Anda dalam sebuah postingan`,
-            postId,
-            link: `/posts/${postId}`,
-            actorId: post.authorId,
-            actorName: post.author.name,
-            actorAvatar: post.author.avatar,
-            metadata: {
-              preview: post.content.slice(0, 100)
-            }
-          }
-        })
-
-        // Send smart notification (Pusher + OneSignal)
-        await smartNotificationService.send({
+        // Use unified notificationService which handles:
+        // - Database notification creation
+        // - Pusher real-time notification
+        // - OneSignal push notification
+        const result = await notificationService.send({
           userId,
           type: 'MENTION',
-          title: 'Mention Baru',
+          title: 'Disebutkan dalam Postingan',
           message: `${post.author.name} menyebut Anda dalam sebuah postingan`,
-          link: `/posts/${postId}`,
-          data: {
-            postId,
-            authorId: post.authorId,
-            authorName: post.author.name,
-            authorAvatar: post.author.avatar,
+          postId,
+          redirectUrl: `/posts/${postId}`,
+          actorId: post.authorId,
+          actorName: post.author.name || undefined,
+          actorAvatar: post.author.avatar || undefined,
+          metadata: {
+            preview: post.content.slice(0, 100),
             notificationType: 'mention'
           },
-          channels: {
-            pusher: true,
-            onesignal: true
-          }
+          channels: ['pusher', 'onesignal']
         })
 
-        return { success: true, userId }
+        return { success: result.success, userId, notificationId: result.notificationId }
       } catch (error) {
         console.error(`Failed to notify user ${userId}:`, error)
         return { success: false, userId, error }
