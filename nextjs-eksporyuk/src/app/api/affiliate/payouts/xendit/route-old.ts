@@ -281,9 +281,78 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Helper function to get Xendit bank code from bank name
- */
+// Additional error handler for edge cases
+async function handlePayoutError(error: any) {
+    console.error('[BANK TRANSFER WITHDRAWAL ERROR] Full error details:', {
+      message: error?.message,
+      code: error?.code,
+      status: error?.status,
+      response: error?.response,
+      stack: error?.stack?.split('\n').slice(0, 3).join('\n'), // First 3 lines only
+      type: error?.constructor?.name,
+      name: error?.name
+    })
+    
+    // Log error in a way that helps debugging
+    if (error instanceof Error) {
+      console.error('[BANK TRANSFER ERROR] Error object:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.split('\n').slice(0, 5)
+      })
+    }
+    
+    // Handle Xendit specific errors
+    if (error.message?.includes('DUPLICATE_REFERENCE_ID')) {
+      return NextResponse.json(
+        { error: 'Permintaan bank transfer sedang diproses, mohon tunggu' },
+        { status: 400 }
+      )
+    }
+    
+    if (error.message?.includes('INSUFFICIENT_BALANCE')) {
+      return NextResponse.json(
+        { error: 'Saldo platform tidak mencukupi, hubungi admin' },
+        { status: 400 }
+      )
+    }
+    
+    if (error.message?.includes('INVALID_ACCOUNT')) {
+      return NextResponse.json(
+        { error: 'Nomor rekening tidak valid atau bank tidak mendukung transfer otomatis' },
+        { status: 400 }
+      )
+    }
+    
+    if (error.message?.includes('Xendit not configured')) {
+      return NextResponse.json(
+        { error: 'Xendit belum dikonfigurasi. Hubungi administrator.' },
+        { status: 503 }
+      )
+    }
+    
+    // Return more specific error information for debugging
+    const errorMessage = error?.message || 'Gagal memproses bank transfer otomatis'
+    const errorCode = error?.code || error?.name || 'UNKNOWN_ERROR'
+    
+    console.error('[BANK TRANSFER WITHDRAWAL ERROR] Returning error response:', {
+      message: errorMessage,
+      code: errorCode
+    })
+    
+    return NextResponse.json(
+      { 
+        error: 'Gagal memproses bank transfer otomatis',
+        details: errorMessage,
+        code: errorCode,
+        hint: 'Periksa log server untuk detail lengkap'
+      },
+      { status: 500 }
+    )
+  }
+}
+
+// Map bank names to Xendit bank channel codes (Payout API v2)
 function getBankCode(bankName: string): string {
   const bankCodes: Record<string, string> = {
     // Major Banks
