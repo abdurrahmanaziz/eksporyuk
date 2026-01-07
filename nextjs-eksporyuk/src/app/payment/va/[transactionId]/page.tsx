@@ -423,18 +423,45 @@ export default function VirtualAccountPage() {
     return () => clearInterval(timer)
   }, [vaDetails?.expiredAt, calculateTimeLeft])
 
+  // Function to check payment status directly from Xendit
+  const checkPaymentStatus = async () => {
+    try {
+      const response = await fetch(`/api/payment/check-status/${params.transactionId}`)
+      const data = await response.json()
+      
+      console.log('[VA Page] Check status result:', data.status, data.xenditStatus)
+      
+      if (data.status === 'SUCCESS') {
+        console.log('[VA Page] ✅ Payment confirmed via direct check!')
+        router.push('/dashboard?payment=success')
+        return true
+      }
+      return false
+    } catch (err) {
+      console.error('[VA Page] Error checking payment status:', err)
+      return false
+    }
+  }
+
   useEffect(() => {
     fetchVADetails()
     
     // Set up polling interval for payment status check (every 5 seconds)
-    const pollInterval = setInterval(() => {
+    // This polls the local DB first, then checks Xendit directly
+    const pollInterval = setInterval(async () => {
       if (vaDetails?.status === 'PENDING') {
-        fetchVADetails()
+        // First try local DB
+        await fetchVADetails()
+        
+        // If still pending, check Xendit directly (every 10 seconds to avoid rate limit)
+        if (vaDetails?.status === 'PENDING') {
+          await checkPaymentStatus()
+        }
       }
     }, 5000) // Check every 5 seconds for faster detection
     
     return () => clearInterval(pollInterval)
-  }, [params.transactionId])
+  }, [params.transactionId, vaDetails?.status])
 
   const fetchVADetails = async () => {
     try {

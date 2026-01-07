@@ -301,53 +301,6 @@ export default function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 
-  // Fetch Functions
-  const fetchRooms = useCallback(async () => {
-    try {
-      const response = await fetch('/api/messages')
-      if (response.ok) {
-        const data = await response.json()
-        setRooms(data)
-      }
-    } catch (error) {
-      console.error('Error fetching rooms:', error)
-    }
-  }, [])
-
-  const fetchMentors = useCallback(async () => {
-    try {
-      const response = await fetch('/api/users?role=MENTOR')
-      if (response.ok) {
-        const data = await response.json()
-        const mentorData = data.map((mentor: any) => ({
-          id: mentor.id,
-          name: mentor.name,
-          avatar: mentor.avatar,
-          isOnline: mentor.isOnline || false,
-          unreadCount: 0
-        }))
-        setMentors(mentorData)
-      }
-    } catch (error) {
-      console.error('Error fetching mentors:', error)
-    }
-  }, [])
-
-  const fetchMessages = useCallback(async (roomId: string) => {
-    try {
-      const response = await fetch(`/api/messages/${roomId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setMessages(data)
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-        }, 100)
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error)
-    }
-  }, [])
-
   // File Upload Handler
   const handleFileUpload = async (files: File[]) => {
     if (!activeRoom) return
@@ -468,6 +421,7 @@ export default function ChatPage() {
 
       if (res.ok) {
         const data = await res.json()
+        // Handle response - either direct message or wrapped in success
         const newMsg = data.message || data
         if (newMsg && newMsg.id) {
           setMessages(prev => [...prev, newMsg])
@@ -494,25 +448,155 @@ export default function ChatPage() {
     await sendMessage(newMessage)
   }
 
+  // Voice Recording
+  const startVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      
+      const audioChunks: BlobPart[] = []
+      
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data)
+      }
+      
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
+        const audioFile = new File([audioBlob], `voice-${Date.now()}.wav`, { type: 'audio/wav' })
+        handleFileUpload([audioFile])
+        stream.getTracks().forEach(track => track.stop())
+      }
+      
+      mediaRecorder.start()
+      setIsRecording(true)
+    } catch (error) {
+      console.error('Error starting voice recording:', error)
+      toast.error('Gagal merekam suara')
+    }
+  }
+
+  const stopVoiceRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
+    }
+  }
+
+  // Fetch Functions
+  const fetchRooms = useCallback(async () => {
+    try {
+      const res = await fetch('/api/chat/rooms')
+      if (res.ok) {
+        const data = await res.json()
+        console.log('[Chat] Rooms loaded:', data.rooms?.length || 0)
+        setRooms(data.rooms || [])
+      } else {
+        console.error('Error fetching rooms:', res.status, res.statusText)
+        toast.error('Gagal memuat daftar percakapan')
+      }
+    } catch (error) {
+      console.error('Error fetching rooms:', error)
+      toast.error('Gagal memuat daftar percakapan')
+    }
+  }, [])
+
+  const fetchMentors = useCallback(async () => {
+    try {
+      const res = await fetch('/api/chat/mentors')
+      if (res.ok) {
+        const data = await res.json()
+        console.log('[Chat] Mentors loaded:', data?.length || 0)
+        // Transform mentors data to match interface
+        const mentorsData = (data || []).map((mentor: any) => ({
+          id: mentor.id,
+          name: mentor.name,
+          username: mentor.username,
+          avatar: mentor.avatar,
+          isOnline: mentor.isOnline || false,
+          unreadCount: 0 // Will be updated when rooms are fetched
+        }))
+        setMentors(mentorsData)
+      } else {
+        console.error('Error fetching mentors:', res.status, res.statusText)
+        toast.error('Gagal memuat daftar mentor')
+      }
+    } catch (error) {
+      console.error('Error fetching mentors:', error)
+      toast.error('Gagal memuat daftar mentor')
+    }
+  }, [])
+
+  const fetchMessages = useCallback(async (roomId: string) => {
+    try {
+      const res = await fetch(`/api/chat/messages?roomId=${roomId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data.messages || [])
+        
+        // Mark messages as read
+        await fetch('/api/chat/read', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId })
+        })
+        
+        // Scroll to bottom
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+      setMessages([])
+    }
+  }, [])
+
   const createOrGetRoom = async (mentorId: string, mentorName: string) => {
     try {
+      console.log('[Chat] Creating room with mentor:', { mentorId, mentorName })
       const res = await fetch('/api/chat/rooms/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'MENTOR',
-          mentorId,
-          name: mentorName
-        })
+        body: JSON.stringify({ mentorId, mentorName })
       })
       
       if (res.ok) {
         const data = await res.json()
+        console.log('[Chat] Room created/found:', data)
+        
+        // Refetch rooms to get updated list
         await fetchRooms()
         
-        const room = data.room || data
+        // Find mentor data for avatar
+        const mentor = mentors.find(m => m.id === mentorId)
+        
+        // Create or use returned room object
+        const room: ChatRoom = data.room || {
+          id: data.roomId,
+          name: mentorName,
+          type: 'DIRECT',
+          avatar: mentor?.avatar || null,
+          unreadCount: 0,
+          participants: [{
+            user: {
+              id: mentorId,
+              name: mentorName,
+              avatar: mentor?.avatar || null,
+              isOnline: mentor?.isOnline || false
+            }
+          }]
+        }
+        
         setActiveRoom(room)
-        fetchMessages(room.id)
+        await fetchMessages(room.id)
+        
+        // Hide sidebar on mobile after selecting
+        if (window.innerWidth < 768) {
+          setShowSidebar(false)
+        }
+        
+        // Switch to rooms tab
         setActiveTab('rooms')
         toast.success(`Chat dengan ${mentorName} dimulai`)
       } else {
@@ -627,6 +711,12 @@ export default function ChatPage() {
           ))
         })
 
+        // Listen for typing indicators
+        userChannel.bind('typing-indicator', (data: any) => {
+          console.log('[Pusher] User typing:', data)
+          // Add typing indicator logic here
+        })
+
         console.log('[Pusher] Client setup complete')
 
       } catch (error) {
@@ -739,8 +829,7 @@ export default function ChatPage() {
           </div>
           
           {/* Mentor Avatars */}
-          <div className="flex gap-3 overflow-x-auto p-4 scrollbar-hide">
-            {filteredMentors.slice(0, 4).map((mentor) => (
+          <div className="flex gap-3 overflow-x-auto p-4 scrollbar-hide">{filteredMentors.slice(0, 4).map((mentor) => (
               <div 
                 key={mentor.id}
                 onClick={() => createOrGetRoom(mentor.id, mentor.name)}
@@ -770,7 +859,6 @@ export default function ChatPage() {
                 </span>
               </div>
             ))}
-          </div>
         </div>
 
         {/* Conversation List */}
@@ -900,12 +988,6 @@ export default function ChatPage() {
                 
                 <div className="flex items-center gap-2">
                   <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  </button>
-                  <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <Video className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  </button>
-                  <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                     <Info className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </button>
                 </div>
@@ -1030,6 +1112,250 @@ export default function ChatPage() {
           </>
         )}
       </div>
+    </div>
+  )
+}
+                <Avatar className="w-10 h-10 shadow-sm">
+                  <AvatarImage src={activeRoom.avatar} />
+                  <AvatarFallback className="bg-indigo-500 text-white font-bold">
+                    {activeRoom.name?.[0] || '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-gray-800 bg-green-500"></span>
+              </div>
+              
+              <div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                  {activeRoom.name}
+                </h3>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-xs text-green-600 dark:text-green-400 font-medium">Online</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <button className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </button>
+              <button className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors ml-1">
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Messages Area */}
+          <div 
+            className="flex-1 overflow-y-auto p-6 bg-gray-50/50 dark:bg-gray-900/50"
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            {messages.length === 0 ? (
+              <div className="flex flex-col justify-center items-center h-full">
+                <div className="text-center max-w-sm p-8 rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm">
+                  <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3 transform transition-transform hover:rotate-6">
+                    <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10m0 0V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2m10 0v10a2 2 0 01-2 2H9a2 2 0 01-2-2V8m10 0H7" />
+                    </svg>
+                  </div>
+                  <h4 className="text-gray-900 dark:text-white font-bold text-lg mb-2">Hello, Sultan! 👋</h4>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                    Welcome to the mentor chat. Ask any questions about exports, logistics, or regulations. We're here to help!
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {messages.map((message) => (
+                  <MessageBubble 
+                    key={message.id} 
+                    message={message} 
+                    isOwn={message.senderId === session?.user?.id}
+                    handleReply={handleReply}
+                    handleAddReaction={handleAddReaction}
+                    setShowEmojiPicker={setShowEmojiPicker}
+                    showEmojiPicker={showEmojiPicker}
+                  />
+                ))}
+                <div ref={messagesEndRef} />
+              </>
+            )}
+
+            {/* Drag and Drop Overlay */}
+            {dragActive && (
+              <div className="fixed inset-0 bg-blue-500/20 flex items-center justify-center z-50 pointer-events-none">
+                <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                  <Upload className="h-12 w-12 text-blue-500 mx-auto mb-2" />
+                  <p className="text-blue-600 dark:text-blue-400 font-medium">
+                    Lepas file di sini untuk upload
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Input Area */}
+          <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+            {/* Reply Preview */}
+            {replyingTo && (
+              <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-blue-500">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                      Membalas {replyingTo.sender.name}
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                      {replyingTo.content || 'Media file'}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={cancelReply}
+                    className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* File Upload Preview */}
+            {uploadingFiles.length > 0 && (
+              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  Mengupload {uploadingFiles.length} file...
+                </p>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm">
+              <Textarea
+                ref={textareaRef}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendMessage()
+                  }
+                }}
+                placeholder="Type your message here..."
+                className="w-full bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white placeholder-gray-400 text-sm resize-none min-h-[50px] max-h-[150px] p-2"
+                rows={1}
+                disabled={isRecording || sendingMessage}
+              />
+              <div className="flex items-center justify-between px-1 pb-1">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'image/*'
+                      input.onchange = (e) => {
+                        const files = Array.from((e.target as HTMLInputElement).files || [])
+                        handleFileUpload(files)
+                      }
+                      input.click()
+                    }}
+                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Add Image"
+                  >
+                    <ImageIcon className="h-5 w-5" />
+                  </button>
+                  <button className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Add Video">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Attach File"
+                  >
+                    <Paperclip className="h-5 w-5" />
+                  </button>
+                  <button
+                    onMouseDown={startVoiceRecording}
+                    onMouseUp={stopVoiceRecording}
+                    onMouseLeave={stopVoiceRecording}
+                    onTouchStart={startVoiceRecording}
+                    onTouchEnd={stopVoiceRecording}
+                    className={cn(
+                      "hidden sm:block p-2 rounded-lg transition-colors",
+                      isRecording 
+                        ? "text-red-600 bg-red-50 dark:bg-red-900/30" 
+                        : "text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    )}
+                    title="Voice Message"
+                  >
+                    <Mic className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button className="text-gray-400 hover:text-amber-400 transition-colors p-1">
+                    <Smile className="h-5 w-5" />
+                  </button>
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim() || isRecording || sendingMessage}
+                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <Send className="w-5 h-5 ml-0.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Hidden File Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+              onChange={(e) => {
+                const files = Array.from(e.target.files || [])
+                handleFileUpload(files)
+                e.target.value = ''
+              }}
+              className="hidden"
+            />
+          </div>
+        </section>
+      ) : (
+        /* Empty State when no room selected */
+        <section className={cn(
+          "hidden sm:flex flex-1 flex-col bg-white dark:bg-gray-800 sm:rounded-2xl shadow-sm border sm:border-gray-200 dark:border-gray-700 h-full relative overflow-hidden items-center justify-center",
+          !showSidebar ? "flex" : "hidden sm:flex"
+        )}>
+          <div className="text-center max-w-md px-4">
+            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center">
+              <MessageCircle className="w-16 h-16 text-blue-500" />
+            </div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">
+              Selamat Datang di Chat!
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              Pilih percakapan dari daftar atau mulai chat baru dengan memilih mentor
+            </p>
+            <Button 
+              onClick={() => {/* Navigate to mentor selection */}} 
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Lihat Daftar Mentor
+            </Button>
+          </div>
+        </section>
+      )}
     </div>
   )
 }

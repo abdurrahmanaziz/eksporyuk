@@ -423,6 +423,31 @@ export class XenditService {
   }
 
   /**
+   * Get Payment Request by ID
+   * Used to check payment status for VA payments
+   */
+  async getPaymentRequest(paymentRequestId: string) {
+    await this.refreshClient();
+    
+    if (!this.paymentRequestApi) {
+      console.error('[Xendit] PaymentRequest API not available');
+      return { id: paymentRequestId, status: 'PENDING' };
+    }
+
+    try {
+      const paymentRequest = await this.paymentRequestApi.getPaymentRequestByID({
+        paymentRequestId: paymentRequestId
+      });
+      
+      console.log('[Xendit] Payment Request status:', paymentRequest.id, paymentRequest.status);
+      return paymentRequest;
+    } catch (error: any) {
+      console.error('[Xendit] Get payment request error:', error.message);
+      throw error;
+    }
+  }
+
+  /**
    * Verify Webhook Signature
    */
   verifyWebhookSignature(webhookToken: string, payload: string, signature: string): boolean {
