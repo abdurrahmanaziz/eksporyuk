@@ -350,9 +350,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Background only applies to text-only posts (no images/videos)
-    const hasMedia = (images && images.length > 0) || (videos && videos.length > 0)
+    // Background only applies to text-only posts (no images/videos/documents)
+    const hasMedia = (images && images.length > 0) || (videos && videos.length > 0) || (documents && documents.length > 0)
     const finalBackgroundId = hasMedia ? null : (backgroundId || null)
+    
+    console.log('[COMMUNITY FEED] Creating post with:', {
+      content: content?.substring(0, 50),
+      imagesCount: images?.length || 0,
+      videosCount: videos?.length || 0,
+      documentsCount: documents?.length || 0,
+      hasMedia,
+      finalBackgroundId,
+      userId: session.user.id
+    })
 
     // Create the post with atomic transaction for data consistency
     const result = await prisma.$transaction(async (tx) => {

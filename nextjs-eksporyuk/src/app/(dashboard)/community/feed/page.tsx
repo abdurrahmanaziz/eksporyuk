@@ -33,7 +33,9 @@ import {
   MoreHorizontal,
   Edit3,
   Trash2,
-  Flag
+  Flag,
+  FileText,
+  Download
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
@@ -962,6 +964,33 @@ export default function CommunityFeedPage() {
                                 />
                               </div>
                             ))}
+                          </div>
+                        )}
+
+                        {/* Post Documents */}
+                        {post.documents && post.documents.length > 0 && (
+                          <div className="space-y-2 mb-4">
+                            {post.documents.map((doc: string, idx: number) => {
+                              const filename = doc.split('/').pop() || 'document'
+                              return (
+                                <a
+                                  key={idx}
+                                  href={doc}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+                                >
+                                  <FileText className="h-8 w-8 text-blue-500 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate text-gray-900 dark:text-gray-100">
+                                      {filename}
+                                    </p>
+                                    <p className="text-xs text-gray-500">Klik untuk download</p>
+                                  </div>
+                                  <Download className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                                </a>
+                              )
+                            })}
                           </div>
                         )}
 
