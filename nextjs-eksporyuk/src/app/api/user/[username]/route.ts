@@ -177,6 +177,8 @@ export async function GET(
       select: {
         id: true,
         content: true,
+        contentFormatted: true,
+        backgroundId: true,
         images: true,
         isPinned: true,
         commentsEnabled: true,

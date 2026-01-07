@@ -75,6 +75,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
+import { RenderPostContent } from '@/components/community/RenderPostContent'
+import { getBackgroundById } from '@/lib/post-backgrounds'
 
 interface UserProfile {
   id: string
@@ -126,6 +128,8 @@ interface UserProfile {
   posts: Array<{
     id: string
     content: string
+    contentFormatted?: { html?: string } | null
+    backgroundId?: string | null
     createdAt: string
     type: string
     images?: string[]
@@ -1242,9 +1246,44 @@ export default function PublicProfilePage() {
                           </DropdownMenu>
                         </div>
                         
-                        <div className="prose prose-sm max-w-none mb-4 text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
-                          {post.content}
-                        </div>
+                        {/* Post Content with Background */}
+                        {post.backgroundId && !post.images?.length ? (
+                          // Post with background
+                          (() => {
+                            const bg = getBackgroundById(post.backgroundId);
+                            return bg ? (
+                              <div
+                                className="rounded-xl p-6 mb-4 min-h-[150px] flex items-center justify-center"
+                                style={bg.style}
+                              >
+                                <div
+                                  className="text-center text-lg font-medium leading-relaxed whitespace-pre-wrap"
+                                  style={{ color: bg.textColor }}
+                                >
+                                  <RenderPostContent 
+                                    content={post.content}
+                                    contentFormatted={post.contentFormatted}
+                                    className=""
+                                    textColor={bg.textColor}
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <RenderPostContent 
+                                content={post.content}
+                                contentFormatted={post.contentFormatted}
+                                className="mb-4 text-gray-700 dark:text-gray-300"
+                              />
+                            );
+                          })()
+                        ) : (
+                          // Regular post content
+                          <RenderPostContent 
+                            content={post.content}
+                            contentFormatted={post.contentFormatted}
+                            className="mb-4 text-gray-700 dark:text-gray-300"
+                          />
+                        )}
                         
                         {/* Post Images */}
                         {post.images && post.images.length > 0 && (
