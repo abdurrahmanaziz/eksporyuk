@@ -440,27 +440,23 @@ export default function PublicProfilePage() {
 
     try {
       setSubmittingPost(true)
-      const formData = new FormData()
-      formData.append('content', postData.text)
-      formData.append('type', 'POST')
-      formData.append('userId', profile.user.id)
+      
+      // Use same API as community feed for consistency
+      const requestBody = {
+        content: postData.text || '',
+        groupId: null, // Profile posts are not in groups
+        taggedUsers: postData?.taggedUsers || [],
+        images: Array.isArray(postData?.images) ? postData.images.map((img: any) => typeof img === 'string' ? img : img.url) : [],
+        videos: Array.isArray(postData?.videos) ? postData.videos.map((vid: any) => typeof vid === 'string' ? vid : vid.url) : [],
+        documents: Array.isArray(postData?.documents) ? postData.documents.map((doc: any) => typeof doc === 'string' ? doc : doc.url) : [],
+        contentFormatted: postData?.contentFormatted || null,
+        backgroundId: postData?.backgroundId || null,
+      };
 
-      // Handle images - convert base64 to files if needed
-      if (postData.images && postData.images.length > 0) {
-        for (const image of postData.images) {
-          if (typeof image === 'string' && image.startsWith('data:')) {
-            // Base64 image
-            const blob = await fetch(image).then(r => r.blob())
-            formData.append('images', blob, `image-${Date.now()}.jpg`)
-          } else if (image instanceof File) {
-            formData.append('images', image)
-          }
-        }
-      }
-
-      const response = await fetch('/api/posts', {
+      const response = await fetch('/api/community/feed', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
       })
 
       if (response.ok) {
