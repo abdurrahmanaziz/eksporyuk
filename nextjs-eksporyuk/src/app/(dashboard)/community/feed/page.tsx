@@ -923,12 +923,16 @@ export default function CommunityFeedPage() {
                                 className="rounded-xl p-6 mb-4 min-h-[150px] flex items-center justify-center"
                                 style={bg.style}
                               >
-                                <p
+                                <div
                                   className="text-center text-lg font-medium leading-relaxed whitespace-pre-wrap"
                                   style={{ color: bg.textColor }}
                                 >
-                                  {post.content}
-                                </p>
+                                  <RenderPostContent 
+                                    content={post.content}
+                                    contentFormatted={post.contentFormatted}
+                                    className=""
+                                  />
+                                </div>
                               </div>
                             ) : (
                               <RenderPostContent 
