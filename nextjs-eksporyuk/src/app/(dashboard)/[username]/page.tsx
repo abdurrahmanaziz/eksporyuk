@@ -751,6 +751,24 @@ export default function PublicProfilePage() {
     }
   }
 
+  // Fetch comments for a specific post (used by notification redirect)
+  const fetchComments = async (postId: string) => {
+    if (postComments[postId]) return // Already loaded
+    
+    setLoadingComments(prev => ({ ...prev, [postId]: true }))
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments`)
+      if (response.ok) {
+        const data = await response.json()
+        setPostComments(prev => ({ ...prev, [postId]: data.comments || [] }))
+      }
+    } catch (error) {
+      console.error('Error loading comments:', error)
+    } finally {
+      setLoadingComments(prev => ({ ...prev, [postId]: false }))
+    }
+  }
+
   // Comment handlers
   const toggleComments = async (postId: string) => {
     const isExpanded = expandedComments[postId]
