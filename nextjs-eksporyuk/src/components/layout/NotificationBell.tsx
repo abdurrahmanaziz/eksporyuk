@@ -143,9 +143,16 @@ export default function NotificationBell() {
       const channel = pusher.subscribe(`user-${session.user.id}`)
       
       channel.bind('notification', (data: Notification) => {
+        console.log('[NotificationBell] Received realtime notification:', data)
+        
         // Add new notification to top of list
         setNotifications(prev => [data, ...prev.slice(0, 9)])
         setUnreadCount(prev => prev + 1)
+        
+        // Play notification sound if enabled
+        if (soundEnabled) {
+          playTestSound()
+        }
         
         // Show floating notification at bottom right
         setFloatingNotification(data)
@@ -156,31 +163,11 @@ export default function NotificationBell() {
         channel.unsubscribe()
       }
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id, soundEnabled])
 
-  // Also use the new hook for enhanced notification handling
-  usePusherNotification(session?.user?.id, useCallback((notification) => {
-    // Convert PusherNotification to Notification format if needed
-    const formattedNotif: Notification = {
-      id: notification.id,
-      type: notification.type.toUpperCase(),
-      title: notification.title,
-      message: notification.content,
-      link: notification.url,
-      isRead: false,
-      createdAt: new Date(notification.timestamp).toISOString()
-    }
-
-    // Add to list if not already there
-    setNotifications(prev => {
-      const exists = prev.some(n => n.id === formattedNotif.id)
-      if (exists) return prev
-      return [formattedNotif, ...prev.slice(0, 9)]
-    })
-    
-    setUnreadCount(prev => prev + 1)
-    setFloatingNotification(formattedNotif)
-  }, []))
+  // The usePusherNotification hook is now disabled to prevent duplicate notifications
+  // The direct Pusher binding above handles all realtime notifications
+  // usePusherNotification(session?.user?.id, useCallback((notification) => { ... }, []))
 
   // Mark notification as read and navigate
   const handleNotificationClick = async (notification: Notification) => {

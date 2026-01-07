@@ -224,21 +224,28 @@ class NotificationService {
    */
   private async sendViaPusher(userId: string, notification: any): Promise<{ success: boolean }> {
     try {
+      // Send data that works with both NotificationBell direct handler and usePusherNotification hook
       const result = await pusherService.notifyUser(userId, 'notification', {
         id: notification.id,
         type: notification.type,
         title: notification.title,
-        message: notification.message,
-        link: notification.link,
+        message: notification.message,      // For NotificationBell direct handler
+        content: notification.message,      // For usePusherNotification hook
+        link: notification.link,            // For NotificationBell direct handler  
+        url: notification.link,             // For usePusherNotification hook
         image: notification.image,
         icon: notification.icon,
         actorName: notification.actorName,
         actorAvatar: notification.actorAvatar,
-        createdAt: notification.createdAt
+        createdAt: notification.createdAt,
+        isRead: false,
+        timestamp: Date.now()               // For usePusherNotification hook
       })
       
       if (!result.success) {
         console.warn(`[NotificationService] Pusher send failed for user ${userId}: ${result.error}`)
+      } else {
+        console.log(`[NotificationService] Pusher notification sent to user ${userId}`)
       }
       
       return result
