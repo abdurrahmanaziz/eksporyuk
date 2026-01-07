@@ -214,26 +214,44 @@ interface CommentMentionProps {
 
 /**
  * Render @mention tag dalam comment dengan clickable link
+ * Menampilkan nama user (bukan username) seperti Facebook
  */
 export function CommentMention({ userId, username, name }: CommentMentionProps) {
+  // Display name instead of username (like Facebook)
+  const displayName = name || username || 'User'
+  
   return (
     <Link href={`/@${username}`}>
-      <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded font-medium text-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
-        @{username}
+      <span 
+        className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm transition-all hover:opacity-80 cursor-pointer"
+        style={{
+          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+          color: '#fff',
+        }}
+        title={`@${username}`}
+      >
+        {displayName}
       </span>
     </Link>
   )
 }
 
+interface MentionedUser {
+  id?: string
+  username: string
+  name?: string
+}
+
 interface RenderCommentContentProps {
   content: string
-  mentionedUsers?: string[]
+  mentionedUsers?: (string | MentionedUser)[]
   showFormatted?: boolean
 }
 
 /**
  * Parse dan render comment content dengan mention tags
  * Detects @mention patterns dan replace dengan clickable tags
+ * Menampilkan nama user (bukan username) seperti Facebook
  */
 export function RenderCommentContent({
   content,
@@ -241,6 +259,16 @@ export function RenderCommentContent({
   showFormatted = false
 }: RenderCommentContentProps) {
   if (!content) return null
+
+  // Build a map of username -> user data for quick lookup
+  const userMap = new Map<string, MentionedUser>()
+  mentionedUsers.forEach(user => {
+    if (typeof user === 'string') {
+      userMap.set(user, { username: user, name: user })
+    } else {
+      userMap.set(user.username, user)
+    }
+  })
 
   // Simple mention regex - detects @username patterns
   const mentionRegex = /@(\w+)/g
@@ -255,21 +283,32 @@ export function RenderCommentContent({
     }
 
     const username = match[1]
-    // Check if this mention is in mentionedUsers
-    const isMentioned = mentionedUsers && mentionedUsers.includes(username)
-
-    if (isMentioned) {
+    const userData = userMap.get(username)
+    
+    // Check if this mention is valid
+    if (userData) {
       parts.push(
         <CommentMention
           key={`mention-${match.index}`}
-          userId={username}
+          userId={userData.id || username}
           username={username}
-          name={`@${username}`}
+          name={userData.name || username}
         />
       )
     } else {
-      // Just render as plain text if not in mentioned list
-      parts.push(`@${username}`)
+      // Render with gradient style even for unmatched mentions
+      parts.push(
+        <span
+          key={`mention-${match.index}`}
+          className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm cursor-pointer"
+          style={{
+            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+            color: '#fff',
+          }}
+        >
+          {username}
+        </span>
+      )
     }
 
     lastIndex = match.index + match[0].length

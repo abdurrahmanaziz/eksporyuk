@@ -50,27 +50,28 @@ export function RenderPostContent({ content, contentFormatted, className = '' }:
   )
 }
 
-// CSS untuk mention tag (tambahkan ke global styles atau inline)
+// CSS untuk mention tag - Facebook style dengan gradient
 export const mentionStyles = `
   .mention-tag {
     display: inline-block;
-    padding: 0 4px;
+    padding: 0 6px;
     border-radius: 4px;
-    background-color: #dbeafe;
-    color: #2563eb;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: #fff;
     cursor: pointer;
     user-select: all;
-    transition: opacity 0.2s;
+    font-weight: 500;
+    transition: opacity 0.2s, transform 0.15s;
   }
   .mention-tag:hover {
-    opacity: 0.8;
-    background-color: #bfdbfe;
+    opacity: 0.85;
+    transform: translateY(-1px);
   }
   .dark .mention-tag {
-    background-color: rgba(37, 99, 235, 0.3);
-    color: #93c5fd;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: #fff;
   }
   .dark .mention-tag:hover {
-    background-color: rgba(37, 99, 235, 0.4);
+    opacity: 0.85;
   }
 `

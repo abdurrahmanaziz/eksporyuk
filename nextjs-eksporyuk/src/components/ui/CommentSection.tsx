@@ -341,7 +341,7 @@ export default function CommentSection({ postId, comments: propComments, onRefre
     }
   }
 
-  // Render mentions with links
+  // Render mentions with links - Facebook style with gradient
   const renderContentWithMentions = (content: string) => {
     const parts = content.split(/(@\w+)/g)
     return parts.map((part, index) => {
@@ -351,9 +351,14 @@ export default function CommentSection({ postId, comments: propComments, onRefre
           <Link
             key={index}
             href={`/${username}`}
-            className="text-blue-600 hover:underline font-semibold"
+            className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm transition-all hover:opacity-80 cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              color: '#fff',
+            }}
+            title={`@${username}`}
           >
-            {part}
+            {username}
           </Link>
         )
       }

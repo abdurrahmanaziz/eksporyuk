@@ -441,13 +441,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             deleteRange.setEnd(textNode, range.startOffset);
             deleteRange.deleteContents();
             
-            // Create mention element
+            // Create mention element - display name (not username)
             const mentionElement = document.createElement('span');
             mentionElement.contentEditable = 'false';
-            mentionElement.className = 'mention-tag bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1 rounded';
+            mentionElement.className = 'mention-tag';
+            mentionElement.style.cssText = 'display:inline-block;padding:0 6px;border-radius:4px;background:linear-gradient(135deg, #3b82f6, #8b5cf6);color:#fff;cursor:pointer;font-weight:500;user-select:all;';
             mentionElement.setAttribute('data-user-id', user.id);
-            mentionElement.setAttribute('data-user-name', user.name);
-            mentionElement.textContent = `@${user.name}`;
+            mentionElement.setAttribute('data-user-name', user.name || 'User');
+            mentionElement.setAttribute('data-username', user.username || '');
+            // Display Name (not @username)
+            mentionElement.textContent = user.name || 'User';
             
             // Insert mention and space
             const spaceNode = document.createTextNode(' ');
@@ -849,7 +852,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <div>
               {mentionSearchTerm && (
                 <div className="px-3 py-2 text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
-                  Search: @{mentionSearchTerm}
+                  Mencari: @{mentionSearchTerm}
                 </div>
               )}
               {mentionResults.map((user) => (
@@ -858,16 +861,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                   onClick={() => handleUserMention(user)}
                   className="w-full p-3 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
+                  <Avatar className="w-8 h-8 flex-shrink-0">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-semibold">
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 text-left">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      @{user.name}
+                      {user.name || 'User'}
                     </div>
-                    {user.email && (
+                    {user.username && (
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {user.email}
+                        @{user.username}
                       </div>
                     )}
                   </div>
