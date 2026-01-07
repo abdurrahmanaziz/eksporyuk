@@ -22,17 +22,20 @@ interface CommentMediaProps {
 export function CommentMedia({ images, videos, documents }: CommentMediaProps) {
   return (
     <div className="space-y-2 mt-2">
-      {/* Images */}
+      {/* Images - Responsive grid */}
       {images && images.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`grid gap-2 ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {images.map((image, idx) => (
-            <div key={idx} className="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 aspect-square">
-              <Image
+            <div 
+              key={idx} 
+              className="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 cursor-pointer"
+              onClick={() => window.open(image, '_blank')}
+            >
+              <img
                 src={image}
                 alt="comment-image"
-                fill
-                className="object-cover hover:opacity-90 cursor-pointer transition-opacity"
-                onClick={() => window.open(image, '_blank')}
+                className="w-full h-auto max-h-80 object-contain hover:opacity-90 transition-opacity"
+                loading="lazy"
               />
             </div>
           ))}
@@ -41,15 +44,14 @@ export function CommentMedia({ images, videos, documents }: CommentMediaProps) {
 
       {/* Videos */}
       {videos && videos.length > 0 && (
-        <div className="space-y-1">
+        <div className="space-y-2">
           {videos.map((video, idx) => (
-            <div
+            <video
               key={idx}
-              className="relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden aspect-video flex items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
-              onClick={() => window.open(video, '_blank')}
-            >
-              <Play className="h-12 w-12 text-white opacity-70 hover:opacity-100" />
-            </div>
+              src={video}
+              controls
+              className="w-full max-h-80 rounded-lg bg-black"
+            />
           ))}
         </div>
       )}

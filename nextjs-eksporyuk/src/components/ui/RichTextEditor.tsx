@@ -679,7 +679,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 onClick={() => {
                   const input = document.createElement('input');
                   input.type = 'file';
-                  input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt';
+                  input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.zip,.rar,.7z';
                   input.multiple = true;
                   input.onchange = (e) => {
                     const files = (e.target as HTMLInputElement).files;

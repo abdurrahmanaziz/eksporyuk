@@ -755,7 +755,7 @@ export default function CommentInput({
             <div className="relative">
               <input
                 type="file"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z"
                 onChange={(e) => handleFileChange(e, 'document')}
                 className="hidden"
                 id="document-input"

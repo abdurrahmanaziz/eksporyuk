@@ -36,10 +36,15 @@ export const UPLOAD_CONFIG = {
       'application/vnd.ms-powerpoint',
       'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       'text/plain',
-      'text/csv'
+      'text/csv',
+      'application/zip',
+      'application/x-rar-compressed',
+      'application/x-7z-compressed',
+      'application/octet-stream', // For some files that browser reports as generic
     ],
     allowedExtensions: [
-      '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv'
+      '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv',
+      '.zip', '.rar', '.7z'
     ]
   },
   
