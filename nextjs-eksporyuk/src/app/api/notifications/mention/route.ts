@@ -48,11 +48,11 @@ export async function POST(request: NextRequest) {
         await prisma.notification.create({
           data: {
             userId,
-            type: 'SYSTEM',
-            title: 'You were mentioned in a post',
-            message: `${post.author.name} mentioned you in a post`,
+            type: 'MENTION',
+            title: 'Anda disebutkan dalam postingan',
+            message: `${post.author.name} menyebut Anda dalam sebuah postingan`,
             postId,
-            link: `/community/feed?post=${postId}`,
+            link: `/posts/${postId}`,
             actorId: post.authorId,
             actorName: post.author.name,
             actorAvatar: post.author.avatar,
@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
         // Send smart notification (Pusher + OneSignal)
         await smartNotificationService.send({
           userId,
-          type: 'SYSTEM',
-          title: 'New Mention',
-          message: `${post.author.name} mentioned you in a post`,
-          link: `/community/feed?post=${postId}`,
+          type: 'MENTION',
+          title: 'Mention Baru',
+          message: `${post.author.name} menyebut Anda dalam sebuah postingan`,
+          link: `/posts/${postId}`,
           data: {
             postId,
             authorId: post.authorId,

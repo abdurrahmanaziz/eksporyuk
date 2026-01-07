@@ -393,7 +393,7 @@ export default function CommentSection({ postId, comments: propComments, onRefre
     const isReply = depth > 0
 
     return (
-      <div key={comment.id} className={`${isReply ? '' : 'pb-4'}`}>
+      <div key={comment.id} id={`comment-${comment.id}`} className={`${isReply ? '' : 'pb-4'} scroll-mt-20 transition-all duration-300`}>
         <div className="flex gap-3">
           {/* Avatar with thread line */}
           <div className="flex flex-col items-center">

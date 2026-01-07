@@ -221,12 +221,64 @@ export default function PublicProfilePage() {
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
   const [savedPosts, setSavedPosts] = useState<Record<string, boolean>>({})
   const [savingPost, setSavingPost] = useState<Record<string, boolean>>({})
+  
+  // State for scroll to comment from notification
+  const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null)
+  const [scrollToCommentId, setScrollToCommentId] = useState<string | null>(null)
 
   useEffect(() => {
     if (username) {
       fetchProfile()
     }
   }, [username])
+  
+  // Handle scroll to comment from notification redirect
+  useEffect(() => {
+    if (!loading && profile) {
+      const highlightPost = sessionStorage.getItem('highlightPost')
+      const scrollToComment = sessionStorage.getItem('scrollToComment')
+      
+      if (highlightPost) {
+        setHighlightedPostId(highlightPost)
+        sessionStorage.removeItem('highlightPost')
+        
+        // Auto-expand comments for the highlighted post
+        setExpandedComments(prev => ({ ...prev, [highlightPost]: true }))
+        
+        // Fetch comments for the highlighted post
+        fetchComments(highlightPost)
+        
+        // Scroll to the post after a short delay
+        setTimeout(() => {
+          const postElement = document.getElementById(`post-${highlightPost}`)
+          if (postElement) {
+            postElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            postElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50')
+            setTimeout(() => {
+              postElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50')
+            }, 3000)
+          }
+        }, 500)
+      }
+      
+      if (scrollToComment) {
+        setScrollToCommentId(scrollToComment)
+        sessionStorage.removeItem('scrollToComment')
+        
+        // Scroll to comment after comments are loaded
+        setTimeout(() => {
+          const commentElement = document.getElementById(`comment-${scrollToComment}`)
+          if (commentElement) {
+            commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            commentElement.classList.add('bg-yellow-50', 'ring-2', 'ring-yellow-400')
+            setTimeout(() => {
+              commentElement.classList.remove('bg-yellow-50', 'ring-2', 'ring-yellow-400')
+            }, 3000)
+          }
+        }, 1500) // Longer delay to ensure comments are loaded
+      }
+    }
+  }, [loading, profile])
 
   const fetchProfile = async () => {
     try {
@@ -1068,7 +1120,11 @@ export default function PublicProfilePage() {
               </Card>
             ) : (
               posts.map((post) => (
-                <Card key={post.id} className="border-0 shadow-md rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 bg-white dark:bg-gray-800">
+                <Card 
+                  key={post.id} 
+                  id={`post-${post.id}`}
+                  className={`border-0 shadow-md rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 bg-white dark:bg-gray-800 ${highlightedPostId === post.id ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}
+                >
                   <CardContent className="p-6 relative">
 
                     {/* Pinned Badge */}

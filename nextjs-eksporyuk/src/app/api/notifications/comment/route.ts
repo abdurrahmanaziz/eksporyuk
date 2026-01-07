@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
       // Send notification to post author
       await smartNotificationService.send({
         userId: post.authorId,
-        type: 'SYSTEM',
-        title: 'New Comment',
-        message: `${session.user.name || 'Someone'} commented on your post`,
-        link: `/community/feed?post=${postId}#comment-${commentId}`,
+        type: 'COMMENT',
+        title: 'Komentar Baru',
+        message: `${session.user.name || 'Seseorang'} mengomentari postingan Anda`,
+        link: `/posts/${postId}#comment-${commentId}`,
         data: {
           postId,
           commentId,

@@ -164,10 +164,15 @@ export default function CommunityFeedPage() {
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
   const [postComments, setPostComments] = useState<Record<string, any[]>>({})
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
+  
+  // State for scroll to comment from notification
+  const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null)
+  const [scrollToCommentId, setScrollToCommentId] = useState<string | null>(null)
 
   // Post detail modal states
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  
   useEffect(() => {
     if (session) {
       fetchPosts()
@@ -176,6 +181,54 @@ export default function CommunityFeedPage() {
       fetchActiveUsers()
     }
   }, [session])
+  
+  // Handle scroll to comment from notification redirect
+  useEffect(() => {
+    if (!loading && posts.length > 0) {
+      const highlightPost = sessionStorage.getItem('highlightPost')
+      const scrollToComment = sessionStorage.getItem('scrollToComment')
+      
+      if (highlightPost) {
+        setHighlightedPostId(highlightPost)
+        sessionStorage.removeItem('highlightPost')
+        
+        // Auto-expand comments for the highlighted post
+        setExpandedComments(prev => ({ ...prev, [highlightPost]: true }))
+        
+        // Fetch comments for the highlighted post
+        fetchComments(highlightPost)
+        
+        // Scroll to the post after a short delay
+        setTimeout(() => {
+          const postElement = document.getElementById(`post-${highlightPost}`)
+          if (postElement) {
+            postElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            postElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50')
+            setTimeout(() => {
+              postElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50')
+            }, 3000)
+          }
+        }, 500)
+      }
+      
+      if (scrollToComment) {
+        setScrollToCommentId(scrollToComment)
+        sessionStorage.removeItem('scrollToComment')
+        
+        // Scroll to comment after comments are loaded
+        setTimeout(() => {
+          const commentElement = document.getElementById(`comment-${scrollToComment}`)
+          if (commentElement) {
+            commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            commentElement.classList.add('bg-yellow-50', 'ring-2', 'ring-yellow-400')
+            setTimeout(() => {
+              commentElement.classList.remove('bg-yellow-50', 'ring-2', 'ring-yellow-400')
+            }, 3000)
+          }
+        }, 1500) // Longer delay to ensure comments are loaded
+      }
+    }
+  }, [loading, posts])
 
   const fetchPosts = async () => {
     try {
@@ -585,6 +638,24 @@ export default function CommunityFeedPage() {
   }
 
   // Comment functions
+  const fetchComments = async (postId: string) => {
+    if (postComments[postId]) return // Already loaded
+    
+    setLoadingComments(prev => ({ ...prev, [postId]: true }))
+    
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments`)
+      if (response.ok) {
+        const data = await response.json()
+        setPostComments(prev => ({ ...prev, [postId]: data.comments || [] }))
+      }
+    } catch (error) {
+      console.error('Error loading comments:', error)
+    } finally {
+      setLoadingComments(prev => ({ ...prev, [postId]: false }))
+    }
+  }
+  
   const toggleComments = async (postId: string) => {
     const isExpanded = expandedComments[postId]
     
@@ -833,7 +904,10 @@ export default function CommunityFeedPage() {
                         {/* Insert banner every 5 posts */}
                         {index > 0 && index % 5 === 4 && <FeedBanner index={index} />}
                         
-                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                        <Card 
+                          id={`post-${post.id}`}
+                          className={`border-0 shadow-md hover:shadow-lg transition-all overflow-hidden scroll-mt-20 ${highlightedPostId === post.id ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}
+                        >
                         <CardContent className="p-4 sm:p-6">
                           {/* Post Header */}
                           <div className="flex items-start justify-between mb-4">
