@@ -37,59 +37,65 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get client IP and user agent for logging
-    const ipAddress = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown'
+    // TEMPORARY: Bank validation feature not yet available in current Xendit account
+    // Return error instructing user to input name manually
+    return NextResponse.json(
+      { 
+        error: 'Validasi otomatis belum tersedia. Silakan input Nama Pemilik Rekening secara manual di bawah.',
+        requireManualInput: true
+      },
+      { status: 503 }
+    )
+
+    /* TODO: Enable when Xendit Bank Validation is activated
+    const ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
-
-    // Map bank name to Xendit bank code
     const bankCode = getBankCode(bankName)
-    
-    console.log('[BANK VALIDATION] Validating account:', {
-      userId: session.user.id,
-      bankName,
-      bankCode,
-      accountNumber: cleanAccountNumber.substring(0, 4) + '****',
-      ipAddress
-    })
-
-    // Call Xendit Bank Account Validation API
     const XENDIT_SECRET_KEY = process.env.XENDIT_SECRET_KEY
     
     if (!XENDIT_SECRET_KEY) {
-      return NextResponse.json(
-        { error: 'Xendit not configured' },
-        { status: 503 }
-      )
+      return NextResponse.json({ error: 'Xendit not configured' }, { status: 503 })
     }
-
+    
     const auth = Buffer.from(XENDIT_SECRET_KEY + ':').toString('base64')
     
-    let validationRecord
-    
-    try {
-      // Xendit Bank Account Validation API (v2)
-      // Documentation: https://developers.xendit.co/api-reference/disbursement/bank-account-validation
-      const xenditPayload = {
+    // Call Xendit Bank Account Inquiry API
+    const response = await fetch('https://api.xendit.co/bank_account_data_requests', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         account_number: cleanAccountNumber,
-        bank_code: bankCode,
-      }
-      
-      console.log('[BANK VALIDATION] Calling Xendit Validation API:', {
-        bank_code: bankCode,
-        account_length: cleanAccountNumber.length,
-        endpoint: 'POST /validation/bank_account_validation'
+        bank_code: bankCode
       })
-      
-      const response = await fetch('https://api.xendit.co/validation/bank_account_validation', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(xenditPayload)
-      })
+    })
+    
+    const data = await response.json()
+    
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: 'Gagal validasi rekening. Silakan input nama manual.' },
+        { status: response.status }
+      )
+    }
+    
+    return NextResponse.json({
+      success: true,
+      accountHolderName: data.account_holder_name,
+      isValid: true
+    })
+    */
+
+  } catch (error: any) {
+    console.error('[BANK VALIDATION] API error:', error)
+    return NextResponse.json(
+      { error: 'Server error. Silakan input nama manual.' },
+      { status: 500 }
+    )
+  }
+}
 
       const responseText = await response.text()
       let errorData: any = {}
@@ -160,13 +166,28 @@ export async function POST(request: NextRequest) {
 
       const data = errorData
       
-      // Xendit Bank Validation returns: bank_code, account_number, account_holder_name
-      console.log('[BANK VALIDATION] Success:', {
-        accountHolderName: data.account_holder_name,
+      // Xendit Bank Account Data Request returns account details after processing
+      // Response format: { account_number, bank_code, account_holder_name, account_status, etc }
+      const accountHolderName = data.account_holder_name || ''
+      const accountStatus = data.account_status || data.status || ''
+      
+      console.log('[BANK VALIDATION] Response received:', {
+        accountHolderName: accountHolderName,
+        accountStatus: accountStatus,
         bankCode: data.bank_code,
         accountNumber: data.account_number,
-        userId: session.user.id
+        userId: session.user.id,
+        responseId: data.id
       })
+      
+      // If we got account holder name, validation successful
+      if (!accountHolderName) {
+        // If status is PENDING, we need to poll or wait for callback
+        return NextResponse.json(
+          { error: 'Validasi sedang diproses. Silakan coba lagi dalam beberapa saat.' },
+          { status: 202 }
+        )
+      }
 
       // Log successful validation
       validationRecord = await prisma.bankAccountValidation.create({
@@ -175,7 +196,7 @@ export async function POST(request: NextRequest) {
           bankName,
           bankCode,
           accountNumber: cleanAccountNumber,
-          accountHolderName: data.account_holder_name,
+          accountHolderName: accountHolderName,
           isValid: true,
           validatedAt: new Date(),
           ipAddress,
@@ -185,7 +206,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        accountHolderName: data.account_holder_name,
+        accountHolderName: accountHolderName,
         bankCode: data.bank_code,
         accountNumber: data.account_number || cleanAccountNumber,
         isValid: true,

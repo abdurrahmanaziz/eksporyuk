@@ -122,7 +122,13 @@ export default function UserWalletPage() {
           accountHolderName: '',
           validationId: ''
         })
-        toast.error(data.error || 'Gagal validasi rekening')
+        
+        // If manual input required, show friendly message
+        if (data.requireManualInput) {
+          toast.error(data.error || 'Validasi otomatis belum tersedia. Silakan input nama manual.')
+        } else {
+          toast.error(data.error || 'Gagal validasi rekening')
+        }
       }
     } catch (error) {
       setBankValidation({
@@ -1014,6 +1020,27 @@ export default function UserWalletPage() {
                           </p>
                           <p className="text-sm text-green-700 font-medium mt-1">
                             Nama Pemilik: {bankValidation.accountHolderName}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Manual Input for Account Name (Bank) - Always show after entering account number */}
+                      {withdrawForm.accountNumber && withdrawForm.accountNumber.length >= 8 && !isEWallet(withdrawForm.bankName) && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Nama Pemilik Rekening <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={withdrawForm.accountName}
+                            onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
+                            required
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="Masukkan nama pemilik rekening sesuai buku tabungan"
+                            disabled={bankValidation.isValid}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            💡 Nama harus sesuai dengan yang tertera di buku rekening
                           </p>
                         </div>
                       )}

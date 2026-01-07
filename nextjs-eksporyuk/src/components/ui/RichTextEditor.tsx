@@ -204,7 +204,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       handleContentChange(text);
       
       // Auto-assign random background when user starts typing (no media)
-      if (allowBackground && text.trim().length > 0 && !selectedBackground && content.images.length === 0 && content.videos.length === 0) {
+      if (allowBackground && text.trim().length > 0 && !selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0) {
         const randomBg = getRandomBackground();
         setSelectedBackground(randomBg);
         setContent(prev => ({
@@ -513,13 +513,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     setShowBackgroundPicker(false);
   };
 
-  // Disable background when media is added
+  // Disable background when media is added (images, videos, OR documents)
   useEffect(() => {
-    if (content.images.length > 0 || content.videos.length > 0) {
+    if (content.images.length > 0 || content.videos.length > 0 || content.documents.length > 0) {
       setSelectedBackground(null);
       setContent(prev => ({ ...prev, backgroundId: undefined }));
     }
-  }, [content.images, content.videos]);
+  }, [content.images, content.videos, content.documents]);
 
   const handleSubmit = () => {
     console.log('[RichTextEditor] handleSubmit called with content:', {
@@ -582,11 +582,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
         {/* Avatar + Editor Area */}
         <div className={`flex gap-3 p-4 pb-2 ${
-          selectedBackground && content.images.length === 0 && content.videos.length === 0 
+          selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0
             ? 'flex-col items-center' 
             : 'items-start'
         }`}>
-          {userAvatar && !(selectedBackground && content.images.length === 0 && content.videos.length === 0) && (
+          {userAvatar && !(selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0) && (
             <Avatar className="w-12 h-12 flex-shrink-0">
               <AvatarImage src={userAvatar} alt={userName || 'User'} />
               <AvatarFallback className="bg-blue-500 text-white text-base">
@@ -595,12 +595,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </Avatar>
           )}
           <div className={`relative ${
-            selectedBackground && content.images.length === 0 && content.videos.length === 0 
+            selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0
               ? 'w-full' 
               : 'flex-1'
           }`}>
             {/* Background Preview Layer - Full width card style like Facebook */}
-            {selectedBackground && content.images.length === 0 && content.videos.length === 0 && (
+            {selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0 && (
               <div
                 className="absolute inset-0 rounded-xl pointer-events-none"
                 style={{
@@ -617,13 +617,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               onInput={handleInput}
               onKeyDown={handleKeyDown}
               className={`focus:outline-none leading-relaxed relative z-10 ${
-                selectedBackground && content.images.length === 0 && content.videos.length === 0
+                selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0
                   ? 'min-h-[180px] flex items-center justify-center text-center font-bold text-xl p-6'
                   : 'min-h-[60px] text-[15px] text-gray-900 dark:text-gray-100'
               }`}
               style={{
                 whiteSpace: 'pre-wrap',
-                color: selectedBackground && content.images.length === 0 && content.videos.length === 0
+                color: selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0
                   ? selectedBackground.textColor
                   : undefined,
               }}
@@ -713,7 +713,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </button>
           
           {/* Background Selector Button - Click to shuffle/change background */}
-          {allowBackground && content.images.length === 0 && content.videos.length === 0 && (
+          {allowBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0 && (
             <button
               onClick={() => {
                 if (selectedBackground && content.text.trim()) {
@@ -735,10 +735,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             >
               <Palette size={18} className={`sm:w-5 sm:h-5 ${selectedBackground ? 'text-indigo-600' : 'text-gray-400'}`} />
             </button>
-          )}
+          )
           
           {/* Remove Background Button */}
-          {allowBackground && selectedBackground && content.images.length === 0 && content.videos.length === 0 && (
+          {allowBackground && selectedBackground && content.images.length === 0 && content.videos.length === 0 && content.documents.length === 0 && (
             <button
               onClick={() => {
                 setSelectedBackground(null);
