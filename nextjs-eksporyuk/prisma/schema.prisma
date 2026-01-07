@@ -2107,7 +2107,7 @@ model Payout {
   approvedAt    DateTime?
   paidAt        DateTime?
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime     @updatedAt
 
   // Xendit Payout Integration (new fields - optional to maintain backward compatibility)
   xenditPayoutId   String? // Xendit payout ID from API response

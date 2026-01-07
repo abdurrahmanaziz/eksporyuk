@@ -419,6 +419,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating community post:', error)
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack?.split('\n').slice(0, 5) : undefined
+    })
     
     // Provide better error messages
     if (error instanceof SyntaxError) {
@@ -432,6 +437,11 @@ export async function POST(request: NextRequest) {
       if (error.message.includes('not found')) {
         return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
       }
+      // Return actual error message for debugging
+      return NextResponse.json({ 
+        error: 'Failed to create post', 
+        details: error.message 
+      }, { status: 500 })
     }
     
     return NextResponse.json({ error: 'Failed to create post. Please try again.' }, { status: 500 })

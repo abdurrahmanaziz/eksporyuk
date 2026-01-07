@@ -143,10 +143,15 @@ export async function POST(request: NextRequest) {
         accountName,
         accountNumber,
         notes: 'Bank transfer via Xendit - Pending',
+        referenceId,
+        channelCode: getBankCode(bankName),
+        channelCategory: 'BANK',
+        adminFee: adminFee,
+        netAmount: netAmount,
         metadata: {
+          requestedAmount: Number(amount),
           adminFee,
           netAmount,
-          referenceId,
           bankCode: getBankCode(bankName),
         },
       },
@@ -221,6 +226,8 @@ export async function POST(request: NextRequest) {
         data: {
           status: 'FAILED',
           notes: `Xendit error: ${errorData.message || 'API Error'}`,
+          failureReason: errorData.message || 'API Error',
+          xenditStatus: 'FAILED',
         },
       })
       
@@ -246,10 +253,14 @@ export async function POST(request: NextRequest) {
       data: {
         status: 'PROCESSING',
         notes: 'Bank transfer via Xendit - Processing',
+        xenditPayoutId: xenditPayout.id,
+        xenditStatus: xenditPayout.status,
+        estimatedArrival: xenditPayout.estimated_arrival_time ? new Date(xenditPayout.estimated_arrival_time) : null,
         metadata: {
-          ...payoutRecord.metadata,
+          ...payoutRecord.metadata as object,
           xenditId: xenditPayout.id,
           xenditStatus: xenditPayout.status,
+          xenditResponse: xenditPayout,
         },
       },
     })
