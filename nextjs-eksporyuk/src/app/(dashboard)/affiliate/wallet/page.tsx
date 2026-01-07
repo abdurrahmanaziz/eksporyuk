@@ -70,7 +70,8 @@ export default function UserWalletPage() {
     isValidating: false,
     isValid: false,
     accountHolderName: '',
-    validationId: ''
+    validationId: '',
+    attemptedValidation: false
   })
 
   // Helper function to check if selected option is e-wallet
@@ -86,7 +87,7 @@ export default function UserWalletPage() {
       return
     }
 
-    setBankValidation({ ...bankValidation, isValidating: true })
+    setBankValidation({ ...bankValidation, isValidating: true, attemptedValidation: true })
 
     try {
       const response = await fetch('/api/affiliate/validate-bank-account', {
@@ -105,7 +106,8 @@ export default function UserWalletPage() {
           isValidating: false,
           isValid: true,
           accountHolderName: data.accountHolderName,
-          validationId: data.validationId
+          validationId: data.validationId,
+          attemptedValidation: true
         })
 
         // Auto-fill account name
@@ -120,12 +122,13 @@ export default function UserWalletPage() {
           isValidating: false,
           isValid: false,
           accountHolderName: '',
-          validationId: ''
+          validationId: '',
+          attemptedValidation: true
         })
         
         // If manual input required, show friendly message
         if (data.requireManualInput) {
-          toast.error(data.error || 'Validasi otomatis belum tersedia. Silakan input nama manual.')
+          toast.info('Validasi otomatis belum tersedia. Silakan input nama rekening secara manual di bawah.')
         } else {
           toast.error(data.error || 'Gagal validasi rekening')
         }
@@ -135,7 +138,8 @@ export default function UserWalletPage() {
         isValidating: false,
         isValid: false,
         accountHolderName: '',
-        validationId: ''
+        validationId: '',
+        attemptedValidation: true
       })
       toast.error('Terjadi kesalahan saat validasi')
     }
@@ -916,7 +920,17 @@ export default function UserWalletPage() {
                 </label>
                 <select
                   value={withdrawForm.bankName}
-                  onChange={(e) => setWithdrawForm({ ...withdrawForm, bankName: e.target.value })}
+                  onChange={(e) => {
+                    setWithdrawForm({ ...withdrawForm, bankName: e.target.value })
+                    // Reset validation when bank changes
+                    setBankValidation({
+                      isValidating: false,
+                      isValid: false,
+                      accountHolderName: '',
+                      validationId: '',
+                      attemptedValidation: false
+                    })
+                  }}
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                 >
@@ -981,14 +995,15 @@ export default function UserWalletPage() {
                           value={withdrawForm.accountNumber}
                           onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, '')
-                            setWithdrawForm({ ...withdrawForm, accountNumber: value })
+                            setWithdrawForm({ ...withdrawForm, accountNumber: value, accountName: '' })
                             
                             // Reset validation saat nomor berubah
                             setBankValidation({
                               isValidating: false,
                               isValid: false,
                               accountHolderName: '',
-                              validationId: ''
+                              validationId: '',
+                              attemptedValidation: false
                             })
                           }}
                           required
@@ -1024,10 +1039,10 @@ export default function UserWalletPage() {
                         </div>
                       )}
                       
-                      {/* Manual Input for Account Name (Bank) - Always show after entering account number */}
-                      {withdrawForm.accountNumber && withdrawForm.accountNumber.length >= 8 && !isEWallet(withdrawForm.bankName) && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {/* Manual Input Field - Only show AFTER user clicked Cek Rekening and validation failed */}
+                      {!isEWallet(withdrawForm.bankName) && bankValidation.attemptedValidation && !bankValidation.isValid && (
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700">
                             Nama Pemilik Rekening <span className="text-red-500">*</span>
                           </label>
                           <input
@@ -1037,7 +1052,6 @@ export default function UserWalletPage() {
                             required
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                             placeholder="Masukkan nama pemilik rekening sesuai buku tabungan"
-                            disabled={bankValidation.isValid}
                           />
                           <p className="text-xs text-gray-500 mt-1">
                             💡 Nama harus sesuai dengan yang tertera di buku rekening
