@@ -241,14 +241,31 @@ export async function GET(request: NextRequest) {
 // POST /api/community/posts - Create global community post
 // Support: text, images, videos, documents (PDF, DOC, XLS, dll)
 export async function POST(request: NextRequest) {
+  console.log('[COMMUNITY FEED POST] Starting request...')
+  
   try {
     const session = await getServerSession(authOptions)
+    console.log('[COMMUNITY FEED POST] Session:', session?.user?.id ? 'Found' : 'Not found')
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { content, groupId, images, videos, documents, taggedUsers, contentFormatted, backgroundId, type = 'POST' } = await request.json()
+    let body
+    try {
+      body = await request.json()
+      console.log('[COMMUNITY FEED POST] Request body parsed:', {
+        content: body.content?.substring(0, 50),
+        hasGroupId: !!body.groupId,
+        imagesCount: body.images?.length || 0,
+        hasBackgroundId: !!body.backgroundId
+      })
+    } catch (parseError) {
+      console.error('[COMMUNITY FEED POST] JSON parse error:', parseError)
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    const { content, groupId, images, videos, documents, taggedUsers, contentFormatted, backgroundId, type = 'POST' } = body
 
     // Validate content
     if (!content?.trim()) {
@@ -365,37 +382,48 @@ export async function POST(request: NextRequest) {
     })
 
     // Create the post with atomic transaction for data consistency
-    const result = await prisma.$transaction(async (tx) => {
-      const post = await tx.post.create({
-        data: {
-          id: createId(),
-          content: content.trim(),
-          authorId: session.user.id,
-          groupId: groupId || null,
-          type,
-          images: images || [],
-          videos: videos || [],
-          documents: documents || [],
-          taggedUsers: taggedUsers || [],
-          ...(contentFormatted && { contentFormatted }),
-          backgroundId: finalBackgroundId,
-          approvalStatus: 'APPROVED',
-          updatedAt: new Date(),
-        }
+    console.log('[COMMUNITY FEED POST] Creating post in database...')
+    
+    let result
+    try {
+      result = await prisma.$transaction(async (tx) => {
+        console.log('[COMMUNITY FEED POST] Inside transaction, creating post...')
+        const post = await tx.post.create({
+          data: {
+            id: createId(),
+            content: content.trim(),
+            authorId: session.user.id,
+            groupId: groupId || null,
+            type,
+            images: images || [],
+            videos: videos || [],
+            documents: documents || [],
+            taggedUsers: taggedUsers || [],
+            ...(contentFormatted && { contentFormatted }),
+            backgroundId: finalBackgroundId,
+            approvalStatus: 'APPROVED',
+            updatedAt: new Date(),
+          }
+        })
+        console.log('[COMMUNITY FEED POST] Post created with id:', post.id)
+
+        const author = await tx.user.findUnique({
+          where: { id: session.user.id },
+          select: { id: true, name: true, avatar: true }
+        })
+        console.log('[COMMUNITY FEED POST] Author found:', author?.name)
+
+        const group = groupId ? await tx.group.findUnique({
+          where: { id: groupId },
+          select: { id: true, name: true, slug: true }
+        }) : null
+
+        return { post, author, group }
       })
-
-      const author = await tx.user.findUnique({
-        where: { id: session.user.id },
-        select: { id: true, name: true, avatar: true }
-      })
-
-      const group = groupId ? await tx.group.findUnique({
-        where: { id: groupId },
-        select: { id: true, name: true, slug: true }
-      }) : null
-
-      return { post, author, group }
-    })
+    } catch (txError) {
+      console.error('[COMMUNITY FEED POST] Transaction error:', txError)
+      throw txError
+    }
 
     const { post, author, group } = result
 
