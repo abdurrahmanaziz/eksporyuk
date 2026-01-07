@@ -223,10 +223,10 @@ export function CommentMention({ userId, username, name }: CommentMentionProps) 
   return (
     <Link href={`/@${username}`}>
       <span 
-        className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm transition-all hover:opacity-80 cursor-pointer"
+        className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm transition-all hover:opacity-90 cursor-pointer"
         style={{
-          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-          color: '#fff',
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))',
+          color: '#3b82f6',
         }}
         title={`@${username}`}
       >
@@ -296,14 +296,14 @@ export function RenderCommentContent({
         />
       )
     } else {
-      // Render with gradient style even for unmatched mentions
+      // Render with soft gradient style even for unmatched mentions
       parts.push(
         <span
           key={`mention-${match.index}`}
           className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm cursor-pointer"
           style={{
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            color: '#fff',
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))',
+            color: '#3b82f6',
           }}
         >
           {username}

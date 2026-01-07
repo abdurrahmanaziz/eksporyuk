@@ -441,11 +441,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             deleteRange.setEnd(textNode, range.startOffset);
             deleteRange.deleteContents();
             
-            // Create mention element - display name (not username)
+            // Create mention element - display name (not username) with soft gradient
             const mentionElement = document.createElement('span');
             mentionElement.contentEditable = 'false';
             mentionElement.className = 'mention-tag';
-            mentionElement.style.cssText = 'display:inline-block;padding:0 6px;border-radius:4px;background:linear-gradient(135deg, #3b82f6, #8b5cf6);color:#fff;cursor:pointer;font-weight:500;user-select:all;';
+            mentionElement.style.cssText = 'display:inline-block;padding:2px 6px;border-radius:4px;background:linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));color:#3b82f6;cursor:pointer;font-weight:500;user-select:all;';
             mentionElement.setAttribute('data-user-id', user.id);
             mentionElement.setAttribute('data-user-name', user.name || 'User');
             mentionElement.setAttribute('data-username', user.username || '');

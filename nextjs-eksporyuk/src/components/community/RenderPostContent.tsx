@@ -50,28 +50,28 @@ export function RenderPostContent({ content, contentFormatted, className = '' }:
   )
 }
 
-// CSS untuk mention tag - Facebook style dengan gradient
+// CSS untuk mention tag - Facebook style dengan soft gradient
 export const mentionStyles = `
   .mention-tag {
     display: inline-block;
-    padding: 0 6px;
+    padding: 2px 6px;
     border-radius: 4px;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    color: #fff;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+    color: #3b82f6;
     cursor: pointer;
     user-select: all;
     font-weight: 500;
-    transition: opacity 0.2s, transform 0.15s;
+    transition: opacity 0.2s, background 0.2s;
   }
   .mention-tag:hover {
-    opacity: 0.85;
-    transform: translateY(-1px);
+    opacity: 0.9;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.25));
   }
   .dark .mention-tag {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    color: #fff;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+    color: #60a5fa;
   }
   .dark .mention-tag:hover {
-    opacity: 0.85;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3));
   }
 `

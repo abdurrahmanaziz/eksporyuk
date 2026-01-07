@@ -27,6 +27,7 @@ interface Comment {
   images?: string[] | null
   videos?: string[] | null
   documents?: string[] | null
+  mentionedUsers?: Array<{id: string, username: string, name: string}> | null
   user?: {
     id: string
     name: string
@@ -341,24 +342,35 @@ export default function CommentSection({ postId, comments: propComments, onRefre
     }
   }
 
-  // Render mentions with links - Facebook style with gradient
-  const renderContentWithMentions = (content: string) => {
+  // Render mentions with links - Facebook style with soft gradient
+  const renderContentWithMentions = (content: string, mentionedUsers?: Array<{id: string, username: string, name: string}> | null) => {
+    // Build username to name map
+    const userMap = new Map<string, string>()
+    if (mentionedUsers) {
+      mentionedUsers.forEach(u => {
+        userMap.set(u.username.toLowerCase(), u.name)
+      })
+    }
+    
     const parts = content.split(/(@\w+)/g)
     return parts.map((part, index) => {
       if (part.startsWith('@')) {
         const username = part.substring(1)
+        // Get name from mentionedUsers map, fallback to username
+        const displayName = userMap.get(username.toLowerCase()) || username
+        
         return (
           <Link
             key={index}
             href={`/${username}`}
-            className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm transition-all hover:opacity-80 cursor-pointer"
+            className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm transition-all hover:opacity-90 cursor-pointer"
             style={{
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              color: '#fff',
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))',
+              color: '#3b82f6',
             }}
             title={`@${username}`}
           >
-            {username}
+            {displayName}
           </Link>
         )
       }
@@ -440,7 +452,7 @@ export default function CommentSection({ postId, comments: propComments, onRefre
             
             {/* Comment text */}
             <p className="text-sm text-gray-800 dark:text-gray-200 mt-1 whitespace-pre-wrap break-words leading-relaxed">
-              {renderContentWithMentions(comment.content)}
+              {renderContentWithMentions(comment.content, comment.mentionedUsers)}
             </p>
 
             {/* Comment media attachments */}

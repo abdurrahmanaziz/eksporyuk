@@ -261,26 +261,32 @@ export async function POST(
       }
     }
 
-    // Build mentionedUsers array - combine regular mentions with @all/@member
-    let mentionedUserIds: string[] = []
+    // Build mentionedUsers array dengan data lengkap (id, username, name)
+    let mentionedUsersData: Array<{id: string, username: string, name: string}> = []
     
     if (mentions.length > 0) {
       const mentionedUsers = await prisma.user.findMany({
         where: {
           username: { in: mentions }
         },
-        select: { id: true }
+        select: { id: true, username: true, name: true }
       })
-      mentionedUserIds = mentionedUsers.map(u => u.id)
+      mentionedUsersData = mentionedUsers.map(u => ({
+        id: u.id,
+        username: u.username || '',
+        name: u.name || u.username || 'User'
+      }))
     }
 
-    // Handle @all tag
+    // Handle @all tag - tambahkan ke mentionedUsersData untuk notifikasi
+    let allMentionedUserIds: string[] = mentionedUsersData.map(u => u.id)
+    
     if (taggedAll && post.groupId) {
       const groupMembers = await prisma.groupMember.findMany({
         where: { groupId: post.groupId },
         select: { userId: true }
       })
-      mentionedUserIds = [...new Set([...mentionedUserIds, ...groupMembers.map(m => m.userId)])]
+      allMentionedUserIds = [...new Set([...allMentionedUserIds, ...groupMembers.map(m => m.userId)])]
     }
 
     // Handle @member tag (all members except bots/guests)
@@ -294,7 +300,7 @@ export async function POST(
         },
         select: { userId: true }
       })
-      mentionedUserIds = [...new Set([...mentionedUserIds, ...members.map(m => m.userId)])]
+      allMentionedUserIds = [...new Set([...allMentionedUserIds, ...members.map(m => m.userId)])]
     }
 
     // Create comment with media attachments
@@ -308,7 +314,7 @@ export async function POST(
           images: images.length > 0 ? images : null,
           videos: videos.length > 0 ? videos : null,
           documents: documents.length > 0 ? documents : null,
-          mentionedUsers: mentionedUserIds.length > 0 ? mentionedUserIds : null,
+          mentionedUsers: mentionedUsersData.length > 0 ? mentionedUsersData : null,
           ...(parentId && { parentId }),
         },
         include: {
