@@ -5,13 +5,16 @@ import NextAuth from 'next-auth'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// Validate environment variables before initializing NextAuth
-if (!process.env.NEXTAUTH_SECRET && !process.env.AUTH_SECRET) {
+// Skip validation during build time (no DATABASE_URL = build time)
+const isBuildTime = !process.env.DATABASE_URL
+
+// Validate environment variables at runtime only (not build time)
+if (!isBuildTime && !process.env.NEXTAUTH_SECRET && !process.env.AUTH_SECRET) {
   console.error('[NEXTAUTH] CRITICAL ERROR: NEXTAUTH_SECRET is not set!')
   throw new Error('NEXTAUTH_SECRET environment variable is required')
 }
 
-const handler = NextAuth(authOptions)
+const handler = isBuildTime ? null : NextAuth(authOptions)
 
 // Helper to add no-cache headers
 function addNoCacheHeaders(response: Response): Response {
@@ -31,6 +34,11 @@ function addNoCacheHeaders(response: Response): Response {
 
 // Export with explicit error handling and no-cache headers
 export async function GET(req: Request, context: any) {
+  // Return error during build time
+  if (!handler) {
+    return new Response(JSON.stringify({ error: 'Auth not available during build' }), { status: 503 })
+  }
+  
   try {
     const response = await handler(req, context)
     return addNoCacheHeaders(response)
@@ -53,6 +61,11 @@ export async function GET(req: Request, context: any) {
 }
 
 export async function POST(req: Request, context: any) {
+  // Return error during build time
+  if (!handler) {
+    return new Response(JSON.stringify({ error: 'Auth not available during build' }), { status: 503 })
+  }
+  
   try {
     const response = await handler(req, context)
     return addNoCacheHeaders(response)
