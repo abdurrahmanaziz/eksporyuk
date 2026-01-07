@@ -15,7 +15,7 @@ const BANK_CODE_MAP: Record<string, string> = {
   'Permata': 'PERMATA',
   'Danamon': 'DANAMON',
   'BSI': 'BSI',
-  'Jenius': 'BTPN', // Jenius is BTPN
+  'Jenius': 'BTPN',
   'LINE Bank': 'LINE_BANK',
   'SeaBank': 'SEABANK',
   'Jago': 'JAGO',
@@ -33,8 +33,18 @@ const BANK_CODE_MAP: Record<string, string> = {
 /**
  * POST /api/affiliate/validate-bank-account
  * 
- * Try to validate bank account using Xendit Disbursement API
- * Creates a small test disbursement that gets validated by Xendit
+ * IMPORTANT: Xendit Indonesia does NOT provide a standalone Bank Account Inquiry API.
+ * The `can_name_validate: true` field in available_disbursements_banks means Xendit
+ * will validate the account holder name DURING the actual disbursement process,
+ * not before.
+ * 
+ * For pre-disbursement validation, you need either:
+ * 1. Third-party services (FLIP, DANA Business, etc.)
+ * 2. Contact Xendit for enterprise Bank Account Inquiry access
+ * 3. Manual input from user (current implementation)
+ * 
+ * This endpoint validates that the bank code exists and account number format is valid,
+ * then requires manual name input from user.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -66,73 +76,61 @@ export async function POST(request: NextRequest) {
     const xenditSecretKey = process.env.XENDIT_SECRET_KEY
 
     if (!xenditSecretKey) {
-      return NextResponse.json(
-        { error: 'Xendit not configured', requireManualInput: true },
-        { status: 503 }
-      )
+      return NextResponse.json({
+        success: false,
+        requireManualInput: true,
+        bankCode: bankCode,
+        message: 'Silakan masukkan nama pemilik rekening sesuai buku tabungan.'
+      }, { status: 200 })
     }
 
-    // Try to get account holder name using Xendit's bank account inquiry
-    // This creates a disbursement request that Xendit validates
-    const externalId = `inquiry-${session.user.id}-${Date.now()}`
-    
-    const disbursementResponse = await fetch('https://api.xendit.co/disbursements', {
-      method: 'POST',
+    // Validate that the bank code exists in Xendit's supported banks
+    const banksResponse = await fetch('https://api.xendit.co/available_disbursements_banks', {
+      method: 'GET',
       headers: {
         'Authorization': `Basic ${Buffer.from(xenditSecretKey + ':').toString('base64')}`,
-        'Content-Type': 'application/json',
-        'X-IDEMPOTENCY-KEY': externalId
-      },
-      body: JSON.stringify({
-        external_id: externalId,
-        bank_code: bankCode,
-        account_holder_name: 'INQUIRY',
-        account_number: cleanAccountNumber,
-        amount: 1, // Minimum amount for inquiry
-        description: 'Bank account validation inquiry'
-      })
+      }
     })
 
-    const disbursementData = await disbursementResponse.json()
-    console.log('[BANK VALIDATION] Disbursement response:', JSON.stringify(disbursementData))
-
-    // Check if we got an error with account holder name info
-    if (disbursementData.error_code) {
-      // If error mentions invalid account, let user know
-      if (disbursementData.error_code === 'INVALID_DESTINATION') {
-        return NextResponse.json({
-          error: 'Nomor rekening tidak valid atau tidak ditemukan di bank ' + bankName,
-          requireManualInput: true
-        }, { status: 400 })
-      }
-      
-      // For other errors, allow manual input
+    if (!banksResponse.ok) {
+      console.error('[BANK VALIDATION] Failed to fetch banks list')
       return NextResponse.json({
-        error: 'Validasi otomatis gagal. Silakan input nama pemilik rekening secara manual.',
+        success: false,
         requireManualInput: true,
-        details: disbursementData.message
-      }, { status: 503 })
+        bankCode: bankCode,
+        message: 'Silakan masukkan nama pemilik rekening sesuai buku tabungan.'
+      }, { status: 200 })
     }
 
-    // Disbursement created successfully - this means account exists
-    // Unfortunately, Xendit doesn't return actual account holder name in disbursement response
-    // The actual name will only be available in the callback/webhook after processing
+    const banks = await banksResponse.json()
+    const bankExists = banks.find((b: any) => b.code === bankCode)
     
-    // For now, we confirm the account EXISTS but user still needs to input name manually
+    if (!bankExists) {
+      return NextResponse.json({
+        error: `Bank "${bankName}" tidak ditemukan dalam daftar bank yang didukung`,
+        requireManualInput: false
+      }, { status: 400 })
+    }
+
+    // Bank exists, account number format is valid
+    // Return success with requireManualInput to get account holder name
     return NextResponse.json({
-      success: false,
-      error: 'Rekening valid. Silakan input Nama Pemilik Rekening secara manual.',
+      success: true,
       requireManualInput: true,
-      accountValid: true,
       bankCode: bankCode,
-      message: 'Nomor rekening terdeteksi valid. Masukkan nama sesuai buku tabungan.'
+      bankName: bankExists.name,
+      canNameValidate: bankExists.can_name_validate || false,
+      message: bankExists.can_name_validate 
+        ? 'Nama pemilik rekening akan diverifikasi saat proses withdrawal.'
+        : 'Silakan masukkan nama pemilik rekening sesuai buku tabungan.'
     }, { status: 200 })
 
   } catch (error: any) {
     console.error('[BANK VALIDATION] API error:', error)
-    return NextResponse.json(
-      { error: 'Server error. Silakan input nama manual.', requireManualInput: true },
-      { status: 500 }
-    )
+    return NextResponse.json({
+      success: false,
+      requireManualInput: true,
+      message: 'Silakan masukkan nama pemilik rekening sesuai buku tabungan.'
+    }, { status: 200 })
   }
 }

@@ -26,7 +26,7 @@ export function RenderPostContent({ content, contentFormatted, className = '', t
         const userId = target.getAttribute('data-user-id')
         
         if (username) {
-          router.push(`/@${username}`)
+          router.push(`/${username}`)
         } else if (userId) {
           router.push(`/profile/${userId}`)
         }

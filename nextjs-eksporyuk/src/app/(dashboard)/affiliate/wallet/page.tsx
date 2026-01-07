@@ -101,12 +101,13 @@ export default function UserWalletPage() {
 
       const data = await response.json()
 
-      if (response.ok && data.success) {
+      if (response.ok && data.success && data.accountHolderName) {
+        // Auto-validation successful (if Xendit provides direct validation in future)
         setBankValidation({
           isValidating: false,
           isValid: true,
           accountHolderName: data.accountHolderName,
-          validationId: data.validationId,
+          validationId: data.validationId || '',
           attemptedValidation: true
         })
 
@@ -117,6 +118,21 @@ export default function UserWalletPage() {
         })
 
         toast.success(`✅ Rekening tervalidasi: ${data.accountHolderName}`)
+      } else if (response.ok && data.success && data.requireManualInput) {
+        // Bank exists and is valid, but requires manual name input
+        // This is the normal flow since Xendit doesn't have pre-disbursement validation
+        setBankValidation({
+          isValidating: false,
+          isValid: false,
+          accountHolderName: '',
+          validationId: '',
+          attemptedValidation: true
+        })
+        
+        toast.success(data.canNameValidate 
+          ? '✅ Bank terdeteksi! Nama akan diverifikasi otomatis saat proses withdrawal.'
+          : '✅ Bank terdeteksi! Silakan input nama pemilik rekening.'
+        )
       } else {
         setBankValidation({
           isValidating: false,
@@ -126,13 +142,10 @@ export default function UserWalletPage() {
           attemptedValidation: true
         })
         
-        // Check if account is valid but needs manual name input
-        if (data.accountValid) {
-          toast.success('✅ Nomor rekening valid! Silakan input nama pemilik rekening.')
-        } else if (data.requireManualInput) {
-          toast.info(data.message || 'Silakan input nama pemilik rekening secara manual.')
+        if (data.error) {
+          toast.error(data.error)
         } else {
-          toast.error(data.error || 'Gagal validasi rekening')
+          toast.info('Silakan input nama pemilik rekening secara manual.')
         }
       }
     } catch (error) {
@@ -1043,15 +1056,15 @@ export default function UserWalletPage() {
                       
                       {/* Manual Input Field - Only show AFTER user clicked Cek Rekening and validation failed */}
                       {!isEWallet(withdrawForm.bankName) && bankValidation.attemptedValidation && !bankValidation.isValid && (
-                        <div className="space-y-3 p-4 bg-green-50 border-2 border-green-300 rounded-xl">
-                          <div className="flex items-center gap-2 text-green-700">
+                        <div className="space-y-3 p-4 bg-blue-50 border-2 border-blue-300 rounded-xl">
+                          <div className="flex items-center gap-2 text-blue-700">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                             </svg>
-                            <span className="font-semibold text-sm">Nomor rekening terdeteksi valid</span>
+                            <span className="font-semibold text-sm">Masukkan Nama Pemilik Rekening</span>
                           </div>
-                          <p className="text-xs text-green-600">
-                            Silakan masukkan nama pemilik rekening sesuai buku tabungan.
+                          <p className="text-xs text-blue-600">
+                            Nama akan diverifikasi oleh sistem perbankan saat proses withdrawal.
                           </p>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1060,15 +1073,18 @@ export default function UserWalletPage() {
                             <input
                               type="text"
                               value={withdrawForm.accountName}
-                              onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
+                              onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value.toUpperCase() })}
                               required
-                              className="w-full px-4 py-3 border-2 border-green-400 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white"
+                              className="w-full px-4 py-3 border-2 border-blue-400 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white uppercase"
                               placeholder="Contoh: ABDURRAHMAN AZIZ"
                             />
                           </div>
-                          <p className="text-xs text-gray-500">
-                            💡 Pastikan nama sama persis dengan yang tertera di buku rekening
-                          </p>
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                            <p className="text-xs text-yellow-800">
+                              ⚠️ <strong>Penting:</strong> Pastikan nama sama persis dengan yang tertera di buku rekening/e-banking.
+                              Jika tidak sesuai, withdrawal akan ditolak oleh bank.
+                            </p>
+                          </div>
                         </div>
                       )}
                     </>

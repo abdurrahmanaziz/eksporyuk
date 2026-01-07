@@ -355,14 +355,14 @@ export default function CommentSection({ postId, comments: propComments, onRefre
     const parts = content.split(/(@\w+)/g)
     return parts.map((part, index) => {
       if (part.startsWith('@')) {
-        const username = part.substring(1)
+        const usernameText = part.substring(1)
         // Get name from mentionedUsers map, fallback to username
-        const displayName = userMap.get(username.toLowerCase()) || username
+        const displayName = userMap.get(usernameText.toLowerCase()) || usernameText
         
         return (
           <Link
             key={index}
-            href={`/${username}`}
+            href={`/${usernameText}`}
             className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm transition-all hover:opacity-90 cursor-pointer"
             style={{
               background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))',

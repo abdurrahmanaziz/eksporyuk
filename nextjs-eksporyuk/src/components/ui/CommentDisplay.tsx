@@ -221,7 +221,7 @@ export function CommentMention({ userId, username, name }: CommentMentionProps) 
   const displayName = name || username || 'User'
   
   return (
-    <Link href={`/@${username}`}>
+    <Link href={`/${username}`}>
       <span 
         className="inline-flex items-center px-1.5 py-0.5 rounded font-medium text-sm transition-all hover:opacity-90 cursor-pointer"
         style={{
