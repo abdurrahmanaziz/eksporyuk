@@ -86,11 +86,11 @@ export default function AffiliateActivation() {
   if (loading) {
     return (
       <Card>
-        <CardContent className=\"p-6\">
-          <div className=\"animate-pulse space-y-4\">
-            <div className=\"h-6 bg-gray-200 rounded w-1/3\"></div>
-            <div className=\"h-4 bg-gray-200 rounded w-2/3\"></div>
-            <div className=\"h-10 bg-gray-200 rounded w-1/4\"></div>
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-10 bg-gray-200 rounded w-1/4"></div>
           </div>
         </CardContent>
       </Card>
@@ -100,7 +100,7 @@ export default function AffiliateActivation() {
   // If already active affiliate
   if (status?.isActive) {
     return (
-      <Card className=\"border-green-200 bg-green-50\">
+      <Card className="border-green-200 bg-green-50">
         <CardHeader>
           <CardTitle className=\"flex items-center gap-2 text-green-700\">
             <CheckCircle className=\"w-5 h-5\" />
