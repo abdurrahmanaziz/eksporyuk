@@ -1,5 +1,6 @@
-/* Import Poppins Font */
+/* Import Poppins and Plus Jakarta Sans Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 /* Eksporyuk Platform Styles - Rebuild v2.0 */
 @tailwind base;
@@ -41,6 +42,34 @@
     --button-danger-bg: #EF4444;
     --button-danger-text: #FFFFFF;
     --button-border-radius: 0.5rem;
+  }
+
+  /* Custom scrollbar styles matching the reference design */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   .dark {

@@ -92,6 +92,172 @@ interface Message {
   }
 }
 
+// Message Component
+const MessageBubble = ({ message, isOwn, handleReply, handleAddReaction, setShowEmojiPicker, showEmojiPicker }: { 
+  message: Message; 
+  isOwn: boolean;
+  handleReply: (message: Message) => void;
+  handleAddReaction: (messageId: string, emoji: string) => void;
+  setShowEmojiPicker: (messageId: string | null) => void;
+  showEmojiPicker: string | null;
+}) => (
+  <div className={cn("flex mb-4", isOwn ? "justify-end" : "justify-start")}>
+    {/* Avatar for other users */}
+    {!isOwn && (
+      <Avatar className="w-8 h-8 mr-2 flex-shrink-0">
+        <AvatarImage src={message.sender?.avatar} />
+        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs">
+          {message.sender?.name?.[0] || '?'}
+        </AvatarFallback>
+      </Avatar>
+    )}
+    
+    <div className={cn(
+      "max-w-[75%] sm:max-w-[70%] rounded-2xl p-3 relative group",
+      isOwn 
+        ? "bg-blue-500 text-white rounded-br-md" 
+        : "bg-gray-100 dark:bg-gray-700 rounded-bl-md"
+    )}>
+      {/* Sender name for group chats */}
+      {!isOwn && (
+        <p className="text-xs font-medium mb-1 text-gray-600 dark:text-gray-300">
+          {message.sender?.name}
+        </p>
+      )}
+      
+      {/* Reply Context */}
+      {message.replyTo && (
+        <div className={cn(
+          "mb-2 p-2 rounded border-l-2",
+          isOwn 
+            ? "bg-blue-400/30 border-blue-300" 
+            : "bg-gray-200 dark:bg-gray-600 border-gray-400"
+        )}>
+          <p className="text-xs opacity-75">{message.replyTo.sender.name}</p>
+          <p className="text-sm truncate">{message.replyTo.content}</p>
+        </div>
+      )}
+
+      {/* Text Message */}
+      {message.type === 'TEXT' && (
+        <p className="break-words whitespace-pre-wrap">{message.content}</p>
+      )}
+
+      {/* Image Attachment */}
+      {message.type === 'IMAGE' && message.attachment && (
+        <div className="mb-2">
+          <img 
+            src={message.attachment.url} 
+            alt={message.attachment.name}
+            className="max-w-full rounded cursor-pointer"
+            onClick={() => window.open(message.attachment!.url, '_blank')}
+          />
+          {message.content && <p className="mt-2">{message.content}</p>}
+        </div>
+      )}
+
+      {/* Video Attachment */}
+      {message.type === 'VIDEO' && message.attachment && (
+        <div className="mb-2">
+          <video 
+            src={message.attachment.url}
+            controls
+            className="max-w-full rounded"
+          />
+          {message.content && <p className="mt-2">{message.content}</p>}
+        </div>
+      )}
+
+      {/* File Attachment */}
+      {message.type === 'FILE' && message.attachment && (
+        <div className="flex items-center space-x-2 mb-2">
+          <Download className="h-4 w-4 flex-shrink-0" />
+          <a 
+            href={message.attachment.url}
+            download={message.attachment.name}
+            className="underline truncate"
+          >
+            {message.attachment.name}
+          </a>
+          <span className="text-xs opacity-75 whitespace-nowrap">
+            ({Math.round(message.attachment.size / 1024)} KB)
+          </span>
+        </div>
+      )}
+
+      {/* Audio Attachment */}
+      {message.type === 'AUDIO' && message.attachment && (
+        <div className="mb-2">
+          <audio src={message.attachment.url} controls className="max-w-full" />
+          {message.content && <p className="mt-2">{message.content}</p>}
+        </div>
+      )}
+
+      {/* Message Info */}
+      <div className="flex items-center justify-between mt-1 text-xs opacity-75">
+        <span>
+          {new Date(message.createdAt).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })}
+          {message.isEdited && <span className="ml-1">(edited)</span>}
+        </span>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleReply(message)}>
+              Balas
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowEmojiPicker(message.id)}>
+              Tambah Reaksi
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Reactions */}
+      {message.reactions && Object.keys(message.reactions).length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {Object.entries(message.reactions).map(([emoji, reaction]) => (
+            <button
+              key={emoji}
+              onClick={() => handleAddReaction(message.id, emoji)}
+              className="px-2 py-0.5 rounded-full text-xs bg-white/20 hover:bg-white/30"
+            >
+              {emoji} {reaction.count}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Emoji Picker */}
+      {showEmojiPicker === message.id && (
+        <div className="absolute bottom-full mb-2 bg-white dark:bg-gray-800 border rounded-lg shadow-lg p-2 z-10">
+          <div className="flex gap-1">
+            {['😀', '😂', '😍', '😢', '😮', '😡', '👍', '👎', '❤️', '🔥'].map(emoji => (
+              <button
+                key={emoji}
+                onClick={() => {
+                  handleAddReaction(message.id, emoji)
+                  setShowEmojiPicker(null)
+                }}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)
+
 export default function ChatPage() {
   const { data: session } = useSession()
   
@@ -485,177 +651,6 @@ export default function ChatPage() {
     mentor.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  // Message Component
-  const MessageBubble = ({ message, isOwn }: { message: Message; isOwn: boolean }) => (
-    <div className={cn("flex mb-4", isOwn ? "justify-end" : "justify-start")}>
-      {/* Avatar for other users */}
-      {!isOwn && (
-        <Avatar className="w-8 h-8 mr-2 flex-shrink-0">
-          <AvatarImage src={message.sender?.avatar} />
-          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs">
-            {message.sender?.name?.[0] || '?'}
-          </AvatarFallback>
-        </Avatar>
-      )}
-      
-      <div className={cn(
-        "max-w-[75%] sm:max-w-[70%] rounded-2xl p-3 relative group",
-        isOwn 
-          ? "bg-blue-500 text-white rounded-br-md" 
-          : "bg-gray-100 dark:bg-gray-700 rounded-bl-md"
-      )}>
-        {/* Sender name for group chats */}
-        {!isOwn && (
-          <p className="text-xs font-medium mb-1 text-gray-600 dark:text-gray-300">
-            {message.sender?.name}
-          </p>
-        )}
-        
-        {/* Reply Context */}
-        {message.replyTo && (
-          <div className={cn(
-            "mb-2 p-2 rounded border-l-2",
-            isOwn 
-              ? "bg-blue-400/30 border-blue-300" 
-              : "bg-gray-200 dark:bg-gray-600 border-gray-400"
-          )}>
-            <p className="text-xs opacity-75">{message.replyTo.sender.name}</p>
-            <p className="text-sm truncate">{message.replyTo.content}</p>
-          </div>
-        )}
-
-        {/* Text Message */}
-        {message.type === 'TEXT' && (
-          <p className="break-words whitespace-pre-wrap">{message.content}</p>
-        )}
-
-        {/* Image Attachment */}
-        {message.type === 'IMAGE' && message.attachment && (
-          <div className="mb-2">
-            <img 
-              src={message.attachment.url} 
-              alt={message.attachment.name}
-              className="max-w-full rounded cursor-pointer"
-              onClick={() => window.open(message.attachment!.url, '_blank')}
-            />
-            {message.content && <p className="mt-2">{message.content}</p>}
-          </div>
-        )}
-
-        {/* Video Attachment */}
-        {message.type === 'VIDEO' && message.attachment && (
-          <div className="mb-2">
-            <video 
-              src={message.attachment.url}
-              controls
-              className="max-w-full rounded"
-            />
-            {message.content && <p className="mt-2">{message.content}</p>}
-          </div>
-        )}
-
-        {/* File Attachment */}
-        {message.type === 'FILE' && message.attachment && (
-          <div className="flex items-center space-x-2 mb-2">
-            <Download className="h-4 w-4 flex-shrink-0" />
-            <a 
-              href={message.attachment.url}
-              download={message.attachment.name}
-              className="underline truncate"
-            >
-              {message.attachment.name}
-            </a>
-            <span className="text-xs opacity-75 whitespace-nowrap">
-              ({Math.round(message.attachment.size / 1024)} KB)
-            </span>
-          </div>
-        )}
-
-        {/* Audio Attachment */}
-        {message.type === 'AUDIO' && message.attachment && (
-          <div className="mb-2">
-            <audio src={message.attachment.url} controls className="max-w-full" />
-            {message.content && <p className="mt-2">{message.content}</p>}
-          </div>
-        )}
-
-        {/* Message Info */}
-        <div className="flex items-center justify-between mt-1 text-xs opacity-75">
-          <span>
-            {new Date(message.createdAt).toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
-            {message.isEdited && <span className="ml-1">(edited)</span>}
-          </span>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleReply(message)}>
-                Balas
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowEmojiPicker(message.id)}>
-                Tambah Reaksi
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Reactions */}
-        {message.reactions && Object.keys(message.reactions).length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {Object.entries(message.reactions).map(([emoji, reaction]) => (
-              <button
-                key={emoji}
-                onClick={() => handleAddReaction(message.id, emoji)}
-                className="px-2 py-0.5 rounded-full text-xs bg-white/20 hover:bg-white/30"
-              >
-                {emoji} {reaction.count}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Emoji Picker */}
-        {showEmojiPicker === message.id && (
-          <div className="absolute bottom-full mb-2 bg-white dark:bg-gray-800 border rounded-lg shadow-lg p-2 z-10">
-            <div className="flex gap-1">
-              {['😀', '😂', '😍', '😢', '😮', '😡', '👍', '👎', '❤️', '🔥'].map(emoji => (
-                <button
-                  key={emoji}
-                  onClick={() => {
-                    handleAddReaction(message.id, emoji)
-                    setShowEmojiPicker(null)
-                  }}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  // Loading State
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-120px)] bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500 dark:text-gray-400">Memuat chat...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="flex h-full overflow-hidden bg-gray-50/50 dark:bg-gray-900/50 p-0 sm:p-4 lg:p-6 gap-6">
       {/* Mobile Menu Button */}
@@ -669,8 +664,8 @@ export default function ChatPage() {
       )}
       
       {/* Sidebar */}
-      <section className={cn(
-        "bg-white dark:bg-gray-800 rounded-0 sm:rounded-2xl shadow-sm flex flex-col border-r sm:border border-gray-200 dark:border-gray-700 h-full overflow-hidden transition-all duration-300",
+      <div className={cn(
+        "bg-white dark:bg-gray-800 rounded-none sm:rounded-2xl shadow-sm flex flex-col border-r sm:border border-gray-200 dark:border-gray-700 h-full overflow-hidden transition-all duration-300",
         showSidebar 
           ? "w-full sm:w-80 lg:w-96" 
           : "w-0 overflow-hidden sm:w-80 lg:w-96"
@@ -936,7 +931,11 @@ export default function ChatPage() {
                   <MessageBubble 
                     key={message.id} 
                     message={message} 
-                    isOwn={message.senderId === session?.user?.id} 
+                    isOwn={message.senderId === session?.user?.id}
+                    handleReply={handleReply}
+                    handleAddReaction={handleAddReaction}
+                    setShowEmojiPicker={setShowEmojiPicker}
+                    showEmojiPicker={showEmojiPicker}
                   />
                 ))}
                 <div ref={messagesEndRef} />
@@ -1081,12 +1080,12 @@ export default function ChatPage() {
               className="hidden"
             />
           </div>
-        </div>
+        </section>
       ) : (
         /* Empty State when no room selected */
-        <div className={cn(
-          "flex-1 flex items-center justify-center text-gray-500 bg-gray-50 dark:bg-gray-900",
-          !showSidebar ? "hidden" : "hidden md:flex"
+        <section className={cn(
+          "hidden sm:flex flex-1 flex-col bg-white dark:bg-gray-800 sm:rounded-2xl shadow-sm border sm:border-gray-200 dark:border-gray-700 h-full relative overflow-hidden items-center justify-center",
+          !showSidebar ? "flex" : "hidden sm:flex"
         )}>
           <div className="text-center max-w-md px-4">
             <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center">
@@ -1098,12 +1097,15 @@ export default function ChatPage() {
             <p className="text-gray-500 dark:text-gray-400 mb-6">
               Pilih percakapan dari daftar atau mulai chat baru dengan memilih mentor
             </p>
-            <Button onClick={() => setActiveTab('mentors')} variant="outline">
+            <Button 
+              onClick={() => {/* Navigate to mentor selection */}} 
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
               <Users className="w-4 h-4 mr-2" />
               Lihat Daftar Mentor
             </Button>
           </div>
-        </div>
+        </section>
       )}
     </div>
   )
