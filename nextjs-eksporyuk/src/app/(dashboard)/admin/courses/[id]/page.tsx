@@ -94,6 +94,92 @@ type Course = {
   modules: Module[]
 }
 
+// Sortable Module Item Component
+interface SortableModuleProps {
+  module: Module
+  moduleIndex: number
+  onEdit: (module: Module) => void
+  onDelete: (moduleId: string) => void
+  onCreateLesson: (moduleId: string) => void
+  children: React.ReactNode
+}
+
+function SortableModuleItem({ module, moduleIndex, onEdit, onDelete, onCreateLesson, children }: SortableModuleProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: module.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
+  }
+
+  return (
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={`${isDragging ? 'shadow-lg ring-2 ring-primary' : ''}`}
+    >
+      <CardHeader className="bg-muted/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing touch-none"
+            >
+              <GripVertical className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <BookOpen className="h-5 w-5 text-primary" />
+            <div>
+              <CardTitle className="text-lg">
+                Modul {moduleIndex + 1}: {module.title}
+              </CardTitle>
+              {module.description && (
+                <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onEdit(module)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onCreateLesson(module.id)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Lesson
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => onDelete(module.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-4">
+        {children}
+      </CardContent>
+    </Card>
+  )
+}
+
 // Sortable Lesson Item Component
 interface SortableLessonProps {
   lesson: Lesson
@@ -666,6 +752,52 @@ export default function AdminCourseDetailPage() {
       }
     } catch (error) {
       console.error('Reorder lessons error:', error)
+      await fetchCourse()
+      toast.error('Terjadi kesalahan')
+    }
+  }
+
+  // Handle module reorder via drag and drop
+  const handleModuleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id) return
+
+    const oldIndex = modules.findIndex(m => m.id === active.id)
+    const newIndex = modules.findIndex(m => m.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) return
+
+    // Optimistically update UI
+    const newModules = arrayMove(modules, oldIndex, newIndex)
+    const updatedModules = newModules.map((m, idx) => ({ ...m, order: idx + 1 }))
+    setModules(updatedModules)
+
+    // Save to server
+    try {
+      const moduleOrders = updatedModules.map(mod => ({
+        id: mod.id,
+        order: mod.order
+      }))
+
+      const res = await fetch(
+        `/api/admin/courses/${courseId}/modules/reorder`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ modules: moduleOrders })
+        }
+      )
+
+      if (res.ok) {
+        toast.success('Urutan modul berhasil diupdate')
+      } else {
+        // Revert on error
+        await fetchCourse()
+        toast.error('Gagal mengupdate urutan modul')
+      }
+    } catch (error) {
+      console.error('Reorder modules error:', error)
       await fetchCourse()
       toast.error('Terjadi kesalahan')
     }
@@ -1430,85 +1562,62 @@ export default function AdminCourseDetailPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
-                {modules.map((module, moduleIndex) => (
-                  <Card key={module.id}>
-                    <CardHeader className="bg-muted/50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
-                          <div>
-                            <CardTitle className="text-lg">
-                              Modul {moduleIndex + 1}: {module.title}
-                            </CardTitle>
-                            {module.description && (
-                              <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEditingModule(module)}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleModuleDragEnd}
+              >
+                <SortableContext
+                  items={modules.map(m => m.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-4">
+                    {modules.map((module, moduleIndex) => (
+                      <SortableModuleItem
+                        key={module.id}
+                        module={module}
+                        moduleIndex={moduleIndex}
+                        onEdit={(m) => setEditingModule(m)}
+                        onDelete={handleDeleteModule}
+                        onCreateLesson={handleCreateLesson}
+                      >
+                        {module.lessons.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-4">
+                            Belum ada lesson. Klik "+ Lesson" untuk menambahkan.
+                          </p>
+                        ) : (
+                          <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={(event) => handleLessonDragEnd(event, module.id)}
                           >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCreateLesson(module.id)}
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Lesson
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeleteModule(module.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      {module.lessons.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                          Belum ada lesson. Klik "+ Lesson" untuk menambahkan.
-                        </p>
-                      ) : (
-                        <DndContext
-                          sensors={sensors}
-                          collisionDetection={closestCenter}
-                          onDragEnd={(event) => handleLessonDragEnd(event, module.id)}
-                        >
-                          <SortableContext
-                            items={module.lessons.map(l => l.id)}
-                            strategy={verticalListSortingStrategy}
-                          >
-                            <div className="space-y-2">
-                              {module.lessons.map((lesson, lessonIndex) => (
-                                <SortableLessonItem
-                                  key={lesson.id}
-                                  lesson={lesson}
-                                  lessonIndex={lessonIndex}
-                                  module={module}
-                                  onEdit={(mod, les) => {
-                                    setSelectedModule(mod)
-                                    setEditingLesson(les)
-                                  }}
-                                  onDelete={handleDeleteLesson}
-                                />
-                              ))}
-                            </div>
-                          </SortableContext>
-                        </DndContext>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                            <SortableContext
+                              items={module.lessons.map(l => l.id)}
+                              strategy={verticalListSortingStrategy}
+                            >
+                              <div className="space-y-2">
+                                {module.lessons.map((lesson, lessonIndex) => (
+                                  <SortableLessonItem
+                                    key={lesson.id}
+                                    lesson={lesson}
+                                    lessonIndex={lessonIndex}
+                                    module={module}
+                                    onEdit={(mod, les) => {
+                                      setSelectedModule(mod)
+                                      setEditingLesson(les)
+                                    }}
+                                    onDelete={handleDeleteLesson}
+                                  />
+                                ))}
+                              </div>
+                            </SortableContext>
+                          </DndContext>
+                        )}
+                      </SortableModuleItem>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </TabsContent>

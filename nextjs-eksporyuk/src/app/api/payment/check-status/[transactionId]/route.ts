@@ -148,16 +148,16 @@ async function processSuccessfulMembership(transaction: any) {
   const membershipId = transaction.membershipId
   const userId = transaction.userId
 
-  // Check if UserMembership already exists
-  const existingUserMembership = await prisma.userMembership.findFirst({
+  // Check if UserMembership already exists for THIS transaction
+  const existingForThisTxn = await prisma.userMembership.findFirst({
     where: {
       userId: userId,
       transactionId: transaction.id,
     },
   })
 
-  if (existingUserMembership) {
-    console.log('[Check Status] UserMembership already exists')
+  if (existingForThisTxn) {
+    console.log('[Check Status] UserMembership already exists for this transaction')
     return
   }
 
@@ -170,18 +170,6 @@ async function processSuccessfulMembership(transaction: any) {
     console.error('[Check Status] Membership not found:', membershipId)
     return
   }
-
-  // Deactivate old memberships
-  await prisma.userMembership.updateMany({
-    where: { 
-      userId: userId,
-      isActive: true 
-    },
-    data: { 
-      isActive: false,
-      status: 'EXPIRED'
-    }
-  })
 
   // Calculate end date
   const now = new Date()
@@ -205,27 +193,65 @@ async function processSuccessfulMembership(transaction: any) {
       break
   }
 
-  // Create UserMembership
-  await prisma.userMembership.create({
-    data: {
-      id: `um_poll_${transaction.id}`,
+  // Check if user already has UserMembership for this membershipId (maybe old/expired)
+  const existingForThisMembership = await prisma.userMembership.findFirst({
+    where: {
       userId: userId,
       membershipId: membershipId,
-      status: 'ACTIVE',
-      isActive: true,
-      activatedAt: now,
-      startDate: now,
-      endDate,
-      price: transaction.amount,
-      transactionId: transaction.id,
     },
   })
 
-  console.log('[Check Status] ✅ UserMembership created')
+  if (existingForThisMembership) {
+    // Update existing UserMembership instead of creating new
+    await prisma.userMembership.update({
+      where: { id: existingForThisMembership.id },
+      data: {
+        status: 'ACTIVE',
+        isActive: true,
+        activatedAt: now,
+        startDate: now,
+        endDate,
+        price: transaction.amount,
+        transactionId: transaction.id,
+      },
+    })
+    console.log('[Check Status] ✅ Existing UserMembership updated:', existingForThisMembership.id)
+  } else {
+    // Deactivate ALL other active memberships
+    await prisma.userMembership.updateMany({
+      where: { 
+        userId: userId,
+        isActive: true 
+      },
+      data: { 
+        isActive: false,
+        status: 'EXPIRED'
+      }
+    })
 
-  // Upgrade user role
+    // Create new UserMembership
+    await prisma.userMembership.create({
+      data: {
+        id: `um_poll_${transaction.id}`,
+        userId: userId,
+        membershipId: membershipId,
+        status: 'ACTIVE',
+        isActive: true,
+        activatedAt: now,
+        startDate: now,
+        endDate,
+        price: transaction.amount,
+        transactionId: transaction.id,
+      },
+    })
+    console.log('[Check Status] ✅ New UserMembership created')
+  }
+
+  // Upgrade user role to MEMBER_PREMIUM (except ADMIN, FOUNDER, CO_FOUNDER, MENTOR)
   const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (user && (user.role === 'MEMBER_FREE' || user.role === 'CUSTOMER')) {
+  const keepRoles = ['ADMIN', 'FOUNDER', 'CO_FOUNDER', 'MENTOR']
+  
+  if (user && !keepRoles.includes(user.role)) {
     await prisma.user.update({
       where: { id: userId },
       data: { role: 'MEMBER_PREMIUM' }
