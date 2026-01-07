@@ -353,22 +353,19 @@ export async function checkAndLockExpiredAccess() {
     })
 
     // 3. Downgrade users with no active memberships back to MEMBER_FREE
-    // Find MEMBER_PREMIUM users who have no active memberships
-    const premiumUsersWithoutActiveMembership = await prisma.user.findMany({
-      where: {
-        role: 'MEMBER_PREMIUM',
-        NOT: {
-          memberships: {
-            some: {
-              isActive: true,
-              status: 'ACTIVE',
-              endDate: { gte: now }
-            }
-          }
-        }
-      },
-      select: { id: true, email: true }
-    })
+    // Use raw query since User model doesn't have direct relation to UserMembership
+    const premiumUsersWithoutActiveMembership: { id: string, email: string }[] = await prisma.$queryRaw`
+      SELECT u.id, u.email
+      FROM "User" u
+      WHERE u.role = 'MEMBER_PREMIUM'
+      AND NOT EXISTS (
+        SELECT 1 FROM "UserMembership" um 
+        WHERE um."userId" = u.id 
+          AND um.status = 'ACTIVE' 
+          AND um."isActive" = true 
+          AND um."endDate" >= ${now}
+      )
+    `
 
     // Downgrade them to MEMBER_FREE and revoke all feature permissions
     let usersDowngraded = 0

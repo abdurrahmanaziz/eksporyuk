@@ -240,7 +240,34 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 4. Return summary report
+    // 4. Downgrade users without any active membership to MEMBER_FREE
+    console.log('[CRON] Checking users to downgrade...')
+    
+    const usersToDowngrade: { id: string, email: string }[] = await prisma.$queryRaw`
+      SELECT u.id, u.email
+      FROM "User" u
+      WHERE u.role = 'MEMBER_PREMIUM'
+      AND NOT EXISTS (
+        SELECT 1 FROM "UserMembership" um 
+        WHERE um."userId" = u.id 
+          AND um.status = 'ACTIVE' 
+          AND um."isActive" = true 
+          AND um."endDate" >= ${now}
+      )
+    `
+
+    let usersDowngraded = 0
+    if (usersToDowngrade.length > 0) {
+      const userIds = usersToDowngrade.map(u => u.id)
+      const downgradeResult = await prisma.user.updateMany({
+        where: { id: { in: userIds } },
+        data: { role: 'MEMBER_FREE' }
+      })
+      usersDowngraded = downgradeResult.count
+      console.log(`[CRON] Downgraded ${usersDowngraded} users to MEMBER_FREE`)
+    }
+
+    // 5. Return summary report
     const report = {
       success: true,
       timestamp: new Date().toISOString(),
@@ -249,10 +276,11 @@ export async function GET(request: NextRequest) {
         total: results.total,
         success: results.success,
         failed: results.failed,
-        errors: results.errors
+        errors: results.errors,
+        usersDowngraded: usersDowngraded
       },
       details: results.details,
-      message: `Processed ${results.total} expired memberships: ${results.success} success, ${results.failed} failed`
+      message: `Processed ${results.total} expired memberships: ${results.success} success, ${results.failed} failed. Downgraded ${usersDowngraded} users.`
     }
 
     console.log('[CRON] Job completed:', {
