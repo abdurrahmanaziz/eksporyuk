@@ -45,10 +45,17 @@ export class XenditPayout {
       ? 'https://api.xendit.co'
       : 'https://api.xendit.co'
     
-    this.secretKey = process.env.XENDIT_SECRET_KEY || ''
+    // Try both XENDIT_SECRET_KEY and XENDIT_API_KEY
+    this.secretKey = process.env.XENDIT_SECRET_KEY || process.env.XENDIT_API_KEY || ''
+    
+    console.log('[Xendit Bank Payout] Environment check:', {
+      hasSecretKey: !!process.env.XENDIT_SECRET_KEY,
+      hasApiKey: !!process.env.XENDIT_API_KEY,
+      usingKey: this.secretKey ? this.secretKey.substring(0, 20) + '...' : 'NONE'
+    })
     
     if (!this.secretKey) {
-      console.warn('[Xendit Bank Payout] Secret key not configured')
+      console.error('[Xendit Bank Payout] No API key configured - checked XENDIT_SECRET_KEY and XENDIT_API_KEY')
     }
   }
 
