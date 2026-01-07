@@ -126,9 +126,11 @@ export default function UserWalletPage() {
           attemptedValidation: true
         })
         
-        // If manual input required, show friendly message
-        if (data.requireManualInput) {
-          toast.info('Validasi otomatis belum tersedia. Silakan input nama rekening secara manual di bawah.')
+        // Check if account is valid but needs manual name input
+        if (data.accountValid) {
+          toast.success('✅ Nomor rekening valid! Silakan input nama pemilik rekening.')
+        } else if (data.requireManualInput) {
+          toast.info(data.message || 'Silakan input nama pemilik rekening secara manual.')
         } else {
           toast.error(data.error || 'Gagal validasi rekening')
         }
@@ -1041,15 +1043,15 @@ export default function UserWalletPage() {
                       
                       {/* Manual Input Field - Only show AFTER user clicked Cek Rekening and validation failed */}
                       {!isEWallet(withdrawForm.bankName) && bankValidation.attemptedValidation && !bankValidation.isValid && (
-                        <div className="space-y-3 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
-                          <div className="flex items-center gap-2 text-yellow-700">
+                        <div className="space-y-3 p-4 bg-green-50 border-2 border-green-300 rounded-xl">
+                          <div className="flex items-center gap-2 text-green-700">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
-                            <span className="font-semibold text-sm">Validasi otomatis belum tersedia</span>
+                            <span className="font-semibold text-sm">Nomor rekening terdeteksi valid</span>
                           </div>
-                          <p className="text-xs text-yellow-600">
-                            Silakan masukkan nama pemilik rekening secara manual di bawah ini.
+                          <p className="text-xs text-green-600">
+                            Silakan masukkan nama pemilik rekening sesuai buku tabungan.
                           </p>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1060,8 +1062,8 @@ export default function UserWalletPage() {
                               value={withdrawForm.accountName}
                               onChange={(e) => setWithdrawForm({ ...withdrawForm, accountName: e.target.value })}
                               required
-                              className="w-full px-4 py-3 border-2 border-yellow-400 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white"
-                              placeholder="Masukkan nama sesuai buku tabungan"
+                              className="w-full px-4 py-3 border-2 border-green-400 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white"
+                              placeholder="Contoh: ABDURRAHMAN AZIZ"
                             />
                           </div>
                           <p className="text-xs text-gray-500">

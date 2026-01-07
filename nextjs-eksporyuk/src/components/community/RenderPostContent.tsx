@@ -53,25 +53,25 @@ export function RenderPostContent({ content, contentFormatted, className = '' }:
 // CSS untuk mention tag - Facebook style dengan soft gradient
 export const mentionStyles = `
   .mention-tag {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
-    color: #3b82f6;
-    cursor: pointer;
-    user-select: all;
-    font-weight: 500;
-    transition: opacity 0.2s, background 0.2s;
+    display: inline-block !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15)) !important;
+    color: #3b82f6 !important;
+    cursor: pointer !important;
+    user-select: all !important;
+    font-weight: 500 !important;
+    transition: opacity 0.2s, background 0.2s !important;
   }
   .mention-tag:hover {
-    opacity: 0.9;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.25));
+    opacity: 0.9 !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.25)) !important;
   }
   .dark .mention-tag {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
-    color: #60a5fa;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)) !important;
+    color: #60a5fa !important;
   }
   .dark .mention-tag:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3));
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3)) !important;
   }
 `

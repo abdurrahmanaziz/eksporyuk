@@ -374,8 +374,8 @@ export async function POST(
     }
 
     // 🔔 NOTIFICATION: Send to all mentioned users
-    if (mentionedUserIds.length > 0) {
-      for (const mentionedUserId of mentionedUserIds) {
+    if (allMentionedUserIds.length > 0) {
+      for (const mentionedUserId of allMentionedUserIds) {
         if (mentionedUserId !== session.user.id) {
           await notificationService.send({
             userId: mentionedUserId,
