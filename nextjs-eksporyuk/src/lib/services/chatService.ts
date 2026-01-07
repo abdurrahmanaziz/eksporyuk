@@ -196,22 +196,43 @@ class ChatService {
             select: {
               id: true,
               name: true,
-              avatar: true
-            }
-          },
-          replyTo: {
-            select: {
-              id: true,
-              content: true,
-              sender: {
-                select: {
-                  name: true
-                }
-              }
+              avatar: true,
+              isOnline: true
             }
           }
         }
       })
+
+      // Get reply-to message if exists
+      let replyToMessage = null
+      if (data.replyToId) {
+        try {
+          replyToMessage = await prisma.message.findUnique({
+            where: { id: data.replyToId },
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true
+                }
+              }
+            }
+          })
+        } catch (e) {
+          console.warn('[ChatService] Could not fetch reply-to message:', e)
+        }
+      }
+
+      // Add replyTo to message response
+      const messageWithReply = {
+        ...message,
+        replyTo: replyToMessage ? {
+          id: replyToMessage.id,
+          content: replyToMessage.content,
+          sender: replyToMessage.sender
+        } : null
+      }
       
       // Update room's last message
       await prisma.chatRoom.update({
@@ -244,14 +265,14 @@ class ChatService {
       // Broadcast via Pusher to all participants
       if (room) {
         // Trigger to room channel for real-time chat update
-        await pusherService.trigger(`private-room-${data.roomId}`, 'new-message', message)
+        await pusherService.trigger(`private-room-${data.roomId}`, 'new-message', messageWithReply)
         
         for (const participant of room.participants) {
           if (participant.userId !== data.senderId) {
             // Send real-time message to user channel for ChatBell icon update
             await pusherService.notifyUser(participant.userId, 'new-message', {
               roomId: data.roomId,
-              senderName: message.sender.name,
+              senderName: messageWithReply.sender.name,
               content: data.content.substring(0, 50)
             })
             
@@ -260,7 +281,7 @@ class ChatService {
             try {
               await notificationService.sendPushOnly({
                 userId: participant.userId,
-                title: `Pesan dari ${message.sender.name}`,
+                title: `Pesan dari ${messageWithReply.sender.name}`,
                 message: data.content.substring(0, 100),
                 link: `/chat?room=${data.roomId}`,
               })
@@ -272,7 +293,7 @@ class ChatService {
         }
       }
       
-      return message
+      return messageWithReply
     } catch (error: any) {
       console.error('[ChatService] SendMessage error:', error)
       throw error
@@ -299,24 +320,51 @@ class ChatService {
             select: {
               id: true,
               name: true,
-              avatar: true
-            }
-          },
-          replyTo: {
-            select: {
-              id: true,
-              content: true,
-              sender: {
-                select: {
-                  name: true
-                }
-              }
+              avatar: true,
+              isOnline: true
             }
           }
         }
       })
       
-      return messages.reverse()
+      // Get reply-to messages for each message that has replyToId
+      const messagesWithReplies = await Promise.all(
+        messages.map(async (message) => {
+          let replyTo = null
+          if (message.replyToId) {
+            try {
+              const replyToMessage = await prisma.message.findUnique({
+                where: { id: message.replyToId },
+                include: {
+                  sender: {
+                    select: {
+                      id: true,
+                      name: true,
+                      avatar: true
+                    }
+                  }
+                }
+              })
+              if (replyToMessage) {
+                replyTo = {
+                  id: replyToMessage.id,
+                  content: replyToMessage.content,
+                  sender: replyToMessage.sender
+                }
+              }
+            } catch (e) {
+              console.warn('[ChatService] Could not fetch reply-to for message:', message.id)
+            }
+          }
+          
+          return {
+            ...message,
+            replyTo
+          }
+        })
+      )
+      
+      return messagesWithReplies.reverse()
     } catch (error: any) {
       console.error('[ChatService] GetMessages error:', error)
       return []

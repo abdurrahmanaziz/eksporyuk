@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
  * GET /api/chat/mentors
  * 
  * Fetch list of mentors for chat
- * Returns users with MENTOR role
+ * Returns users with MENTOR role + ADMIN users
  */
 export async function GET(request: NextRequest) {
   try {
@@ -20,12 +20,21 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch users with MENTOR role
+    console.log('[Chat API] Fetching mentors for user:', session.user.id)
+
+    // Fetch users with MENTOR role or ADMIN role (admins can also chat)
     const mentors = await prisma.user.findMany({
       where: {
-        role: 'MENTOR',
+        OR: [
+          { role: 'MENTOR' },
+          { role: 'ADMIN' }
+        ],
         isActive: true,
-        isSuspended: false
+        isSuspended: false,
+        // Don't include the current user
+        NOT: {
+          id: session.user.id
+        }
       },
       select: {
         id: true,
@@ -43,11 +52,13 @@ export async function GET(request: NextRequest) {
       ]
     })
 
+    console.log('[Chat API] Found mentors:', mentors.length)
+
     return NextResponse.json(mentors)
   } catch (error) {
     console.error('Error fetching mentors:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch mentors' },
+      { error: 'Failed to fetch mentors', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
