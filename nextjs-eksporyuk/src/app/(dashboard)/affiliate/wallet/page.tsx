@@ -344,18 +344,24 @@ export default function UserWalletPage() {
       // For e-wallets, account name should be auto-filled from verification
       // If it's empty, it means verification wasn't done properly
       if (isEWallet(withdrawForm.bankName)) {
-        toast.error('Nama pemilik akun harus diisi terlebih dahulu. Klik "Cek Nama Akun" untuk mendapatkannya secara otomatis.')
+        toast.error('Nama pomilik akun harus diisi terlebih dahulu. Klik "Cek Nama Akun" untuk mendapatkannya secara otomatis.')
         return
       } else {
-        // For banks, manual entry is required
-        toast.error('Nama pemilik akun harus diisi')
+        // For banks, check if user has attempted validation first
+        if (!bankValidation.attemptedValidation) {
+          toast.error('Harap klik "Cek Rekening" terlebih dahulu untuk memvalidasi bank')
+          return
+        }
+        toast.error('Nama pemilik rekening harus diisi')
         return
       }
     }
 
-    // For bank instant withdrawal, ensure account is validated
+    // For bank instant withdrawal, ensure account is validated OR manual name is provided after validation attempt
     if (withdrawForm.withdrawalType === 'instant' && !isEWallet(withdrawForm.bankName)) {
-      if (!bankValidation.isValid) {
+      // Accept if: 1) Auto-validation succeeded, OR 2) User clicked Cek Rekening and entered name manually
+      const isManuallyValidated = bankValidation.attemptedValidation && withdrawForm.accountName.trim().length > 0
+      if (!bankValidation.isValid && !isManuallyValidated) {
         toast.error('Harap validasi rekening bank terlebih dahulu dengan klik tombol "Cek Rekening"')
         return
       }
