@@ -309,6 +309,7 @@ export const authOptions: NextAuthOptions = {
                   isSuspended: false,  // CRITICAL: Not suspended
                   emailVerified: true, // Auto-verify Google OAuth users
                   memberCode: memberCode,
+                  updatedAt: new Date(), // CRITICAL: Required field
                   wallet: {
                     create: {
                       balance: 0,
