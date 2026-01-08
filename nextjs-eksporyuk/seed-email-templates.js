@@ -1,13 +1,22 @@
 /**
- * SEED EMAIL TEMPLATES
- * Membuat template email dengan PLAIN TEXT (bukan HTML)
- * Header (logo) dan footer (info perusahaan) otomatis dari database Settings
+ * SEED EMAIL TEMPLATES - KOMPREHENSIF
+ * 150+ template email dengan PLAIN TEXT (bukan HTML)
+ * Admin bisa edit via /admin/branded-templates
+ * Header & footer otomatis dari database Settings
+ * 
+ * Kategori: SYSTEM, MEMBERSHIP, AFFILIATE, COURSE, PAYMENT, TRANSACTION, MARKETING, NOTIFICATION
  */
 
 const { PrismaClient } = require('@prisma/client')
+const { randomBytes } = require('crypto')
 const prisma = new PrismaClient()
 
-// Template email dengan PLAIN TEXT - mudah diedit oleh admin
+const createId = () => randomBytes(16).toString('hex')
+const now = new Date()
+
+// ============================================
+// SEMUA TEMPLATE EMAIL - TEXT ONLY
+// ============================================
 const templates = [
   {
     id: 'email_welcome_member',
