@@ -182,7 +182,40 @@ export async function POST(
           }
         }
 
-        console.log(`[Admin Confirm] ✅ Membership activated with ${membershipGroups.length} groups and ${membershipCourses.length} courses`)
+        // ===== AUTO-GRANT PRODUCTS =====
+        // Get products linked to this membership
+        const membershipProducts = await prisma.membershipProduct.findMany({
+          where: { membershipId: membership.id }
+        })
+
+        for (const mp of membershipProducts) {
+          try {
+            // Check if already owned
+            const existingProduct = await prisma.userProduct.findFirst({
+              where: {
+                productId: mp.productId,
+                userId: transaction.userId
+              }
+            })
+
+            if (!existingProduct) {
+              await prisma.userProduct.create({
+                data: {
+                  userId: transaction.userId,
+                  productId: mp.productId,
+                  transactionId: transaction.id,
+                  purchaseDate: new Date(),
+                  price: 0 // Free as part of membership
+                }
+              })
+              console.log(`[Admin Confirm] ✅ User ${transaction.userId} granted product ${mp.productId}`)
+            }
+          } catch (productError) {
+            console.error(`[Admin Confirm] Error granting product ${mp.productId}:`, productError)
+          }
+        }
+
+        console.log(`[Admin Confirm] ✅ Membership activated with ${membershipGroups.length} groups, ${membershipCourses.length} courses, ${membershipProducts.length} products`)
       }
     }
 

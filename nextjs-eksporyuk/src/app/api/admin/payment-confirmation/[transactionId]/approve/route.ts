@@ -193,10 +193,77 @@ export async function POST(
             } catch (activationError) {
               console.error('[Payment Approve] Failed to auto-assign groups/courses:', activationError)
             }
+
+            // Upgrade user role to MEMBER_PREMIUM
+            const txUser = await prisma.user.findUnique({
+              where: { id: transaction.userId },
+              select: { role: true }
+            })
+            if (txUser && (txUser.role === 'MEMBER_FREE' || txUser.role === 'CUSTOMER')) {
+              await prisma.user.update({
+                where: { id: transaction.userId },
+                data: { role: 'MEMBER_PREMIUM' }
+              })
+              console.log(`[Payment Approve] ✅ User role upgraded to MEMBER_PREMIUM`)
+            }
           }
         }
       } catch (membershipError) {
         console.error('[Payment Approve] Failed to activate membership:', membershipError)
+      }
+    }
+
+    // Handle Course enrollment
+    if (transaction.type === 'COURSE' && transaction.courseId) {
+      try {
+        const existingEnrollment = await prisma.courseEnrollment.findFirst({
+          where: {
+            userId: transaction.userId,
+            courseId: transaction.courseId
+          }
+        })
+
+        if (!existingEnrollment) {
+          await prisma.courseEnrollment.create({
+            data: {
+              id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+              userId: transaction.userId,
+              courseId: transaction.courseId,
+              transactionId: transaction.id,
+              updatedAt: new Date()
+            }
+          })
+          console.log(`[Payment Approve] ✅ Course enrollment created for ${transaction.courseId}`)
+        }
+      } catch (courseError) {
+        console.error('[Payment Approve] Failed to enroll in course:', courseError)
+      }
+    }
+
+    // Handle Product purchase
+    if (transaction.type === 'PRODUCT' && transaction.productId) {
+      try {
+        const existingProduct = await prisma.userProduct.findFirst({
+          where: {
+            userId: transaction.userId,
+            productId: transaction.productId
+          }
+        })
+
+        if (!existingProduct) {
+          await prisma.userProduct.create({
+            data: {
+              userId: transaction.userId,
+              productId: transaction.productId,
+              transactionId: transaction.id,
+              purchaseDate: new Date(),
+              price: transaction.amount
+            }
+          })
+          console.log(`[Payment Approve] ✅ Product access granted for ${transaction.productId}`)
+        }
+      } catch (productError) {
+        console.error('[Payment Approve] Failed to grant product access:', productError)
       }
     }
 
