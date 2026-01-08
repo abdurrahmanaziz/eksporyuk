@@ -295,8 +295,10 @@ export const authOptions: NextAuthOptions = {
               // Continue without member code - can be generated later
             }
             
+            // Create user - separated try-catch blocks for better error handling
+            let newUser
             try {
-              const newUser = await prisma.user.create({
+              newUser = await prisma.user.create({
                 data: {
                   email: user.email,
                   name: displayName,
@@ -333,8 +335,24 @@ export const authOptions: NextAuthOptions = {
                 isActive: newUser.isActive,
                 isSuspended: newUser.isSuspended
               })
+            } catch (createError: any) {
+              console.error(`[AUTH ${timestamp}] ❌ Failed to create Google user:`, createError)
+              console.error(`[AUTH ${timestamp}] Prisma error code:`, createError.code)
+              console.error(`[AUTH ${timestamp}] Prisma error meta:`, createError.meta)
               
-              // Send welcome email for Google OAuth user
+              // If it's a unique constraint violation, user might have been created by another request
+              if (createError.code === 'P2002') {
+                console.log(`[AUTH ${timestamp}] User already exists (race condition), allowing sign in`)
+                return true
+              }
+              
+              // For other database errors, block sign in to prevent inconsistent state
+              console.error(`[AUTH ${timestamp}] ❌ BLOCKING sign in due to database error`)
+              return false
+            }
+            
+            // If user created successfully, send welcome email (don't block if this fails)
+            if (newUser) {
               try {
                 await mailketing.sendEmail({
                   to: newUser.email,
@@ -368,11 +386,11 @@ export const authOptions: NextAuthOptions = {
                 })
                 console.log(`[AUTH ${timestamp}] ✅ Welcome email sent to Google OAuth user`)
               } catch (emailError) {
-                console.error(`[AUTH ${timestamp}] ❌ Failed to send welcome email:`, emailError)
+                console.error(`[AUTH ${timestamp}] ❌ Failed to send welcome email (non-blocking):`, emailError)
                 // Don't block registration if email fails
               }
               
-              // Log activity for new user
+              // Log activity for new user (also non-blocking)
               try {
                 await prisma.activityLog.create({
                   data: {
@@ -386,25 +404,11 @@ export const authOptions: NextAuthOptions = {
                     }
                   },
                 })
+                console.log(`[AUTH ${timestamp}] ✅ Activity logged for new Google user`)
               } catch (logError) {
-                console.error(`[AUTH ${timestamp}] Failed to log activity:`, logError)
+                console.error(`[AUTH ${timestamp}] ❌ Failed to log activity (non-blocking):`, logError)
+                // Don't block registration if activity log fails
               }
-              
-            } catch (createError: any) {
-              console.error(`[AUTH ${timestamp}] ❌ Failed to create Google user:`, createError)
-              console.error(`[AUTH ${timestamp}] Prisma error code:`, createError.code)
-              console.error(`[AUTH ${timestamp}] Prisma error meta:`, createError.meta)
-              console.error(`[AUTH ${timestamp}] Full error:`, JSON.stringify(createError, null, 2))
-              
-              // If it's a unique constraint violation, user might have been created by another request
-              if (createError.code === 'P2002') {
-                console.log(`[AUTH ${timestamp}] User already exists (race condition), allowing sign in`)
-                return true
-              }
-              
-              // For other errors, block sign in to prevent inconsistent state
-              console.error(`[AUTH ${timestamp}] ❌ BLOCKING sign in due to database error`)
-              return false
             }
           } else {
             // Check if user is suspended
