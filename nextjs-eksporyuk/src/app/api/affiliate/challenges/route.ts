@@ -302,12 +302,13 @@ export async function POST(req: NextRequest) {
       }
     })
 
-    // Send challenge joined email in background (don't wait for it)
+    // Send notifications in background (don't wait for them)
     try {
       const user = await prisma.user.findUnique({ where: { id: session.user.id } })
       const daysRemaining = Math.ceil((challenge.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
       
       if (user?.email) {
+        // Send email notification
         sendChallengeJoinedEmail({
           email: user.email,
           name: affiliateProfile.displayName || user.name || 'Affiliate',
@@ -324,10 +325,41 @@ export async function POST(req: NextRequest) {
         }).catch(err => {
           console.error('Failed to send challenge joined email:', err)
         })
+
+        // Send push notification
+        notificationService.send({
+          userId: session.user.id,
+          type: 'AFFILIATE' as any,
+          title: '🎯 Tantangan Berhasil Diikuti!',
+          message: `Anda berhasil mengikuti tantangan "${challenge.title}". Target: ${challenge.targetValue} ${challenge.targetType.replace(/_/g, ' ').toLowerCase()}. Reward: ${challenge.rewardType === 'CASH_BONUS' ? 'Rp ' + Number(challenge.rewardValue).toLocaleString('id-ID') : challenge.rewardType.replace(/_/g, ' ')}.`,
+          link: `${process.env.NEXT_PUBLIC_APP_URL}/affiliate/challenges/${challenge.id}`,
+          channels: ['pusher', 'onesignal'],
+          metadata: {
+            challengeId: challenge.id,
+            challengeName: challenge.title,
+            targetValue: challenge.targetValue,
+            rewardValue: challenge.rewardValue
+          }
+        }).catch(err => {
+          console.error('Failed to send push notification:', err)
+        })
+
+        // Send WhatsApp notification if available
+        const waNumber = user.whatsapp || user.phone
+        if (waNumber && starsenderService.isConfigured()) {
+          const waMessage = `🎯 *Tantangan Berhasil Diikuti!*\n\nHalo ${user.name}!\n\nAnda berhasil mengikuti tantangan:\n\n📋 *${challenge.title}*\n🎯 Target: ${challenge.targetValue} ${challenge.targetType.replace(/_/g, ' ').toLowerCase()}\n🏆 Reward: ${challenge.rewardType === 'CASH_BONUS' ? 'Rp ' + Number(challenge.rewardValue).toLocaleString('id-ID') : challenge.rewardType.replace(/_/g, ' ')}\n⏰ Deadline: ${daysRemaining} hari lagi\n\n✨ Semangat meraih target! 🚀\n\nLihat progress: ${process.env.NEXT_PUBLIC_APP_URL}/affiliate/challenges/${challenge.id}`
+          
+          starsenderService.sendWhatsApp({
+            to: waNumber,
+            message: waMessage
+          }).catch(err => {
+            console.error('Failed to send WhatsApp notification:', err)
+          })
+        }
       }
     } catch (emailErr) {
-      console.error('Error sending challenge joined email:', emailErr)
-      // Don't fail the request if email fails
+      console.error('Error sending challenge notifications:', emailErr)
+      // Don't fail the request if notifications fail
     }
 
     return NextResponse.json({ progress }, { status: 201 })

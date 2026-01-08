@@ -7,6 +7,7 @@ import { SettingsProvider } from "@/components/providers/SettingsProvider";
 import OneSignalProvider from "@/components/providers/OneSignalProvider";
 import OnlineStatusTracker from "@/components/OnlineStatusTracker";
 import AffiliateTracker from "@/components/affiliate/AffiliateTracker";
+import AdminViewAsOverlay from "@/components/admin/AdminViewAsOverlay";
 import ReactQueryProvider from "@/lib/react-query-provider";
 import "./globals.css";
 
@@ -54,6 +55,9 @@ export default function RootLayout({
           <AuthProvider>
             <OneSignalProvider />
             <SettingsProvider>
+              {/* Admin View As Overlay - hanya muncul ketika admin impersonate user */}
+              <AdminViewAsOverlay />
+              
               {/* Global Affiliate Tracker - captures ?ref=CODE on any page */}
               <Suspense fallback={null}>
                 <AffiliateTracker />

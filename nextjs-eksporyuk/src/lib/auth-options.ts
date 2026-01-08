@@ -419,6 +419,97 @@ export const authOptions: NextAuthOptions = {
       console.log(`[AUTH ${timestamp}] Provider:`, account?.provider)
       console.log(`[AUTH ${timestamp}] Token email:`, token.email)
       
+      // Handle admin impersonation from session update
+      if (trigger === 'update' && updateSession?.impersonation) {
+        console.log(`[AUTH ${timestamp}] IMPERSONATION - Admin viewing as user`)
+        const impersonationData = updateSession.impersonation
+        
+        // Store original admin data before impersonation
+        if (!token.originalAdmin) {
+          token.originalAdmin = {
+            id: token.id,
+            email: token.email,
+            name: token.name,
+            role: token.role,
+            username: token.username,
+            avatar: token.avatar,
+            whatsapp: token.whatsapp,
+            emailVerified: token.emailVerified,
+            memberCode: token.memberCode,
+            affiliateMenuEnabled: token.affiliateMenuEnabled,
+            preferredDashboard: token.preferredDashboard,
+            allRoles: token.allRoles
+          }
+        }
+        
+        // Update token to impersonate target user
+        token.id = impersonationData.targetUser.id
+        token.email = impersonationData.targetUser.email
+        token.name = impersonationData.targetUser.name
+        token.role = impersonationData.targetUser.role
+        token.allRoles = impersonationData.targetUser.allRoles
+        token.username = impersonationData.targetUser.username
+        token.avatar = impersonationData.targetUser.avatar
+        token.whatsapp = impersonationData.targetUser.whatsapp
+        token.emailVerified = impersonationData.targetUser.emailVerified
+        token.memberCode = impersonationData.targetUser.memberCode
+        token.affiliateMenuEnabled = impersonationData.targetUser.affiliateMenuEnabled
+        token.hasAffiliateProfile = impersonationData.targetUser.hasAffiliateProfile
+        token.preferredDashboard = impersonationData.targetUser.preferredDashboard
+        
+        // Store impersonation metadata in token
+        token.isImpersonating = true
+        token.impersonationReason = impersonationData.impersonation.reason
+        token.impersonationStartedAt = impersonationData.impersonation.startedAt
+        token.impersonationAdminId = impersonationData.impersonation.adminId
+        token.impersonationAdminEmail = impersonationData.impersonation.adminEmail
+        
+        console.log(`[AUTH ${timestamp}] IMPERSONATION - Token updated for target user:`, {
+          targetUserId: token.id,
+          targetUserEmail: token.email,
+          adminId: token.impersonationAdminId
+        })
+        
+        return token
+      }
+
+      // Handle exit from impersonation
+      if (trigger === 'update' && updateSession?.exitImpersonation && token.isImpersonating) {
+        console.log(`[AUTH ${timestamp}] EXIT IMPERSONATION - Returning to admin session`)
+        
+        if (token.originalAdmin) {
+          // Restore original admin token
+          token.id = token.originalAdmin.id
+          token.email = token.originalAdmin.email
+          token.name = token.originalAdmin.name
+          token.role = token.originalAdmin.role
+          token.username = token.originalAdmin.username
+          token.avatar = token.originalAdmin.avatar
+          token.whatsapp = token.originalAdmin.whatsapp
+          token.emailVerified = token.originalAdmin.emailVerified
+          token.memberCode = token.originalAdmin.memberCode
+          token.affiliateMenuEnabled = token.originalAdmin.affiliateMenuEnabled
+          token.preferredDashboard = token.originalAdmin.preferredDashboard
+          token.allRoles = token.originalAdmin.allRoles
+          
+          // Remove impersonation metadata
+          delete token.isImpersonating
+          delete token.originalAdmin
+          delete token.impersonationReason
+          delete token.impersonationStartedAt
+          delete token.impersonationAdminId
+          delete token.impersonationAdminEmail
+          delete token.hasAffiliateProfile
+          
+          console.log(`[AUTH ${timestamp}] EXIT IMPERSONATION - Admin session restored:`, {
+            adminId: token.id,
+            adminEmail: token.email
+          })
+        }
+        
+        return token
+      }
+
       // Handle session update from client (e.g., RoleSwitcher calling update())
       if (trigger === 'update' && updateSession?.preferredDashboard !== undefined) {
         console.log(`[AUTH ${timestamp}] JWT - Updating preferredDashboard to:`, updateSession.preferredDashboard)
@@ -627,6 +718,23 @@ export const authOptions: NextAuthOptions = {
         session.user.hasAffiliateProfile = token.hasAffiliateProfile as boolean || false
         session.user.preferredDashboard = token.preferredDashboard as string || null
         
+        // Add impersonation data to session
+        if (token.isImpersonating) {
+          session.impersonation = {
+            isImpersonating: true,
+            adminId: token.impersonationAdminId as string,
+            adminEmail: token.impersonationAdminEmail as string,
+            reason: token.impersonationReason as string,
+            startedAt: token.impersonationStartedAt as string,
+            originalAdmin: token.originalAdmin as any
+          }
+          session.user.isBeingImpersonated = true
+        } else {
+          // Ensure impersonation data is cleared when not impersonating
+          delete session.impersonation
+          delete session.user.isBeingImpersonated
+        }
+        
         console.log(`[AUTH ${timestamp}] SESSION - Set session user:`, {
           id: session.user.id,
           email: session.user.email,
@@ -634,7 +742,9 @@ export const authOptions: NextAuthOptions = {
           allRoles: session.user.allRoles,
           username: session.user.username,
           affiliateMenuEnabled: session.user.affiliateMenuEnabled,
-          hasAffiliateProfile: session.user.hasAffiliateProfile
+          hasAffiliateProfile: session.user.hasAffiliateProfile,
+          isImpersonating: !!session.impersonation?.isImpersonating,
+          adminId: session.impersonation?.adminId
         })
       }
       

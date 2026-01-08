@@ -9,6 +9,8 @@ import { pusherService } from '@/lib/pusher'
 import { oneSignalService } from '@/lib/onesignal'
 import { mailketingService } from '@/lib/services/mailketingService'
 import { starsenderService } from '@/lib/services/starsenderService'
+import { generateBioPageUpdatedEmail } from '@/lib/email-templates/bio-page-email-helper'
+import { generateAutomationCreatedEmail, generateAutomationStatusEmail } from '@/lib/email-templates/automation-email-helper'
 
 export interface NotificationData {
   userId: string
@@ -571,6 +573,45 @@ class NotificationService {
       })
     } catch (error) {
       return 0
+    }
+  }
+
+  /**
+   * Send email with template support
+   */
+  async sendEmail(options: {
+    to: string;
+    template: string;
+    data: any;
+  }): Promise<{ success: boolean; error?: string }> {
+    try {
+      let emailContent: { subject: string; htmlContent: string; textContent: string }
+
+      switch (options.template) {
+        case 'bio-page-updated':
+          emailContent = generateBioPageUpdatedEmail(options.data)
+          break
+        case 'automation-created':
+          emailContent = generateAutomationCreatedEmail(options.data)
+          break
+        case 'automation-status-changed':
+          emailContent = generateAutomationStatusEmail(options.data)
+          break
+        default:
+          return { success: false, error: `Unknown template: ${options.template}` }
+      }
+
+      await mailketingService.sendEmail({
+        to: options.to,
+        subject: emailContent.subject,
+        html: emailContent.htmlContent,
+        text: emailContent.textContent
+      })
+
+      return { success: true }
+    } catch (error: any) {
+      console.error('[NotificationService] Email template error:', error)
+      return { success: false, error: error.message }
     }
   }
 }

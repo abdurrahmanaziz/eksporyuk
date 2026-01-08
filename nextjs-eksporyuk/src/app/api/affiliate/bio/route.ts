@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/services/notificationService'
+import { starsenderService } from '@/lib/services/starsenderService'
+import { oneSignalService } from '@/lib/services/oneSignalService'
 
 // Increase body size limit for base64 images
 export const maxDuration = 60 // seconds
@@ -216,6 +219,54 @@ export async function POST(req: NextRequest) {
       hasCover: !!bioPage.coverImage,
       coverLength: bioPage.coverImage?.length
     })
+
+    // Send multi-channel notifications for bio page update
+    try {
+      const bioUrl = `${process.env.NEXTAUTH_URL}/bio/${affiliateProfile.shortLinkUsername}`
+      const isNewBio = !bioPage.createdAt || (Date.now() - new Date(bioPage.createdAt).getTime() < 30000)
+      
+      // Email notification
+      await notificationService.sendEmail({
+        to: user.email,
+        template: 'bio-page-updated',
+        data: {
+          userName: displayName || user.email,
+          bioUrl,
+          displayName: displayName || 'Bio Page Anda',
+          action: isNewBio ? 'dibuat' : 'diperbarui',
+          features: [
+            avatarUrl ? 'Foto profil ditambahkan' : null,
+            coverImage ? 'Cover image ditambahkan' : null,
+            whatsappNumber ? 'WhatsApp contact ditambahkan' : null,
+            showSocialIcons ? 'Social media links aktif' : null
+          ].filter(Boolean)
+        }
+      })
+      
+      // WhatsApp notification
+      if (user.whatsapp) {
+        await starsenderService.sendMessage({
+          to: user.whatsapp,
+          message: `🎉 Bio Page Anda ${isNewBio ? 'berhasil dibuat' : 'telah diperbarui'}!\n\n` +
+                   `📄 ${displayName || 'Bio Page Anda'}\n` +
+                   `🔗 Link: ${bioUrl}\n\n` +
+                   `Sekarang Anda bisa share link bio page ini untuk meningkatkan engagement dengan audience!`
+        })
+      }
+      
+      // Push notification
+      await oneSignalService.sendToUser(
+        user.id,
+        `🎉 Bio Page ${isNewBio ? 'Dibuat' : 'Diperbarui'}!`,
+        `${displayName || 'Bio page Anda'} siap untuk dishare ke audience. Cek sekarang!`,
+        { url: `/affiliate/bio` }
+      )
+      
+      console.log('✅ Bio page notifications sent successfully')
+    } catch (notifError) {
+      console.error('⚠️ Failed to send bio page notifications:', notifError)
+      // Don't fail the main request for notification errors
+    }
 
     return NextResponse.json({
       message: 'Bio page updated successfully',

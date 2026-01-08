@@ -43,6 +43,8 @@ import RichTextEditor from '@/components/ui/RichTextEditor'
 import ReactionButton, { ReactionType } from '@/components/ui/ReactionButton'
 import CommentSection from '@/components/ui/CommentSection'
 import SidebarBanner from '@/components/banners/SidebarBanner'
+import ProfileActionsMenu from '@/components/admin/ProfileActionsMenu'
+import ProfileActionsMenu from '@/components/admin/ProfileActionsMenu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -1044,6 +1046,12 @@ export default function PublicProfilePage() {
                             <MessageCircle className="h-4 w-4 mr-2" />
                             Pesan
                           </Button>
+                          {/* Admin/Founder Actions Menu */}
+                          <ProfileActionsMenu 
+                            targetUserId={user?.id || ''}
+                            targetUsername={user?.username || ''}
+                            targetUserName={user?.name || ''}
+                          />
                         </>
                       )}
                     </div>

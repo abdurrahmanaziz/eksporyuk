@@ -1,4 +1,7 @@
 import { prisma } from './prisma'
+import { notificationService } from './services/notificationService'
+import { starsenderService } from './services/starsenderService'
+import { sendChallengeProgressUpdateEmail, sendChallengeCompletedEmail } from './challenge-email-helper'
 
 /**
  * Challenge Helper
@@ -81,9 +84,20 @@ export async function updateChallengeProgress(params: UpdateChallengeProgressPar
           incrementValue = 1
       }
       
-      const newValue = Number(progress.currentValue) + incrementValue
+      const oldValue = Number(progress.currentValue)
+      const newValue = oldValue + incrementValue
       const targetValue = Number(challenge.targetValue)
       const isCompleted = newValue >= targetValue
+      
+      // Calculate progress percentages
+      const oldProgress = Math.floor((oldValue / targetValue) * 100)
+      const newProgress = Math.floor((newValue / targetValue) * 100)
+      
+      // Check for milestone achievements (25%, 50%, 75%)
+      const milestones = [25, 50, 75]
+      const achievedMilestone = milestones.find(milestone => 
+        oldProgress < milestone && newProgress >= milestone
+      )
       
       await prisma.affiliateChallengeProgress.update({
         where: { id: progress.id },
@@ -93,6 +107,116 @@ export async function updateChallengeProgress(params: UpdateChallengeProgressPar
           completedAt: isCompleted ? new Date() : null
         }
       })
+      
+      // Send notifications for significant progress updates
+      try {
+        // Get affiliate user data
+        const affiliate = await prisma.affiliateProfile.findUnique({
+          where: { id: progress.affiliateId },
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, whatsapp: true, phone: true }
+            }
+          }
+        })
+        
+        if (affiliate?.user) {
+          const user = affiliate.user
+          const progressPercentage = Math.min(100, Math.floor((newValue / targetValue) * 100))
+          
+          // Send completion notification
+          if (isCompleted) {
+            // Email notification
+            if (user.email) {
+              sendChallengeCompletedEmail({
+                email: user.email,
+                name: user.name || 'Affiliate',
+                challengeName: challenge.title,
+                targetValue: Number(challenge.targetValue),
+                targetType: challenge.targetType.replace(/_/g, ' '),
+                rewardValue: Number(challenge.rewardValue),
+                rewardType: challenge.rewardType.replace(/_/g, ' '),
+                currentValue: newValue,
+                completionDate: new Date().toLocaleDateString('id-ID')
+              }).catch(err => {
+                console.error('Failed to send challenge completed email:', err)
+              })
+            }
+            
+            // Push notification
+            notificationService.send({
+              userId: user.id,
+              type: 'AFFILIATE' as any,
+              title: '🏆 Tantangan Selesai!',
+              message: `Selamat! Anda telah menyelesaikan tantangan "${challenge.title}". Klaim reward Anda sekarang!`,
+              link: `${process.env.NEXT_PUBLIC_APP_URL}/affiliate/challenges/${challenge.id}`,
+              channels: ['pusher', 'onesignal'],
+              metadata: {
+                challengeId: challenge.id,
+                completed: true,
+                rewardValue: challenge.rewardValue,
+                rewardType: challenge.rewardType
+              }
+            }).catch(err => {
+              console.error('Failed to send completion push notification:', err)
+            })
+            
+            // WhatsApp notification
+            const waNumber = user.whatsapp || user.phone
+            if (waNumber && starsenderService.isConfigured()) {
+              const waMessage = `🏆 *TANTANGAN SELESAI!*\n\nSelamat ${user.name}! 🎉\n\nAnda telah berhasil menyelesaikan tantangan:\n\n📋 *${challenge.title}*\n✅ Progress: ${newValue}/${targetValue} (100%)\n🎁 Reward: ${challenge.rewardType === 'CASH_BONUS' ? 'Rp ' + Number(challenge.rewardValue).toLocaleString('id-ID') : challenge.rewardType.replace(/_/g, ' ')}\n\n🚀 Jangan lupa klaim reward Anda!\n\nKlaim sekarang: ${process.env.NEXT_PUBLIC_APP_URL}/affiliate/challenges/${challenge.id}`
+              
+              starsenderService.sendWhatsApp({
+                to: waNumber,
+                message: waMessage
+              }).catch(err => {
+                console.error('Failed to send completion WhatsApp:', err)
+              })
+            }
+          }
+          // Send milestone notification
+          else if (achievedMilestone) {
+            // Push notification for milestone
+            notificationService.send({
+              userId: user.id,
+              type: 'AFFILIATE' as any,
+              title: `🎯 Milestone ${achievedMilestone}% Tercapai!`,
+              message: `Progress tantangan "${challenge.title}": ${newValue}/${targetValue} (${progressPercentage}%). Terus semangat!`,
+              link: `${process.env.NEXT_PUBLIC_APP_URL}/affiliate/challenges/${challenge.id}`,
+              channels: ['pusher'],
+              metadata: {
+                challengeId: challenge.id,
+                milestone: achievedMilestone,
+                currentValue: newValue,
+                targetValue: challenge.targetValue
+              }
+            }).catch(err => {
+              console.error('Failed to send milestone notification:', err)
+            })
+          }
+          // Send progress update email for significant progress (every 10%)
+          else if (Math.floor(newProgress / 10) > Math.floor(oldProgress / 10)) {
+            if (user.email) {
+              sendChallengeProgressUpdateEmail({
+                email: user.email,
+                name: user.name || 'Affiliate',
+                challengeName: challenge.title,
+                targetValue: Number(challenge.targetValue),
+                targetType: challenge.targetType.replace(/_/g, ' '),
+                rewardValue: Number(challenge.rewardValue),
+                rewardType: challenge.rewardType.replace(/_/g, ' '),
+                currentValue: newValue,
+                progressPercentage: progressPercentage,
+                remainingValue: Math.max(0, targetValue - newValue)
+              }).catch(err => {
+                console.error('Failed to send progress update email:', err)
+              })
+            }
+          }
+        }
+      } catch (notifErr) {
+        console.error('Error sending challenge notifications:', notifErr)
+      }
       
       console.log(`[Challenge] Updated progress for ${challenge.title}: ${newValue}/${targetValue} (${isCompleted ? 'COMPLETED' : 'in progress'})`)
     }

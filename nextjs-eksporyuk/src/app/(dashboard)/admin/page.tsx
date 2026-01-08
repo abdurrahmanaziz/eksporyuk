@@ -34,7 +34,8 @@ import {
   BarChart3,
   Eye,
   MousePointer,
-  Target
+  Target,
+  UserCheck
 } from 'lucide-react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
@@ -42,6 +43,7 @@ import ResponsivePageWrapper from '@/components/layout/ResponsivePageWrapper'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAdminStats, useXenditBalance } from '@/hooks/use-api'
 import { cn } from '@/lib/utils'
+import ViewAsUserModal from '@/components/admin/ViewAsUserModal'
 
 interface DashboardStats {
   users: {
@@ -111,6 +113,7 @@ export default function AdminPage() {
   const [topAffiliates, setTopAffiliates] = React.useState<TopAffiliate[]>([])
   const [affiliatesLoading, setAffiliatesLoading] = React.useState(true)
   const [affiliatesPeriod, setAffiliatesPeriod] = React.useState('')
+  const [showViewAsUserModal, setShowViewAsUserModal] = React.useState(false)
   
   // Use React Query hooks for cached, auto-refreshing data
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useAdminStats()
@@ -222,6 +225,14 @@ export default function AdminPage() {
                 {stats.moderation.pendingReports} Reports
               </Badge>
             )}
+            <Button 
+              variant="outline"
+              onClick={() => setShowViewAsUserModal(true)}
+              className="rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 hover:from-purple-100 hover:to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 dark:border-purple-700"
+            >
+              <UserCheck className="h-4 w-4 mr-2" />
+              View As User
+            </Button>
             <Button 
               variant="outline" 
               size="icon"
@@ -670,7 +681,102 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Security & Audit Tools Section */}
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border-red-200 dark:border-red-800">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl shadow-md">
+                  <Shield className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg text-red-900 dark:text-red-100">Security & Audit Tools</CardTitle>
+                  <CardDescription className="text-red-700 dark:text-red-300">
+                    Tools keamanan dan monitoring untuk admin
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge variant="outline" className="border-red-300 text-red-700 dark:text-red-400">
+                Admin Only
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              
+              {/* View As User Tool */}
+              <div className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <UserCheck className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white">View As User</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      Melihat platform dari perspektif user lain untuk debugging dan support
+                    </p>
+                    <Button 
+                      size="sm"
+                      onClick={() => setShowViewAsUserModal(true)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <UserCheck className="w-4 h-4 mr-2" />
+                      Launch Tool
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Audit Log Tool */}
+              <div className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                    <Activity className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Audit Logs</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      Melihat log aktivitas admin view-as-user untuk audit trail
+                    </p>
+                    <Link href="/admin/audit/view-as-user">
+                      <Button size="sm" variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                        <Activity className="w-4 h-4 mr-2" />
+                        View Logs
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Warning Notice */}
+            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                    Perhatian Keamanan
+                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                    Semua aktivitas admin dicatat dalam audit log. Gunakan fitur ini hanya untuk keperluan 
+                    debugging, dukungan customer, atau moderasi komunitas yang sah.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+          </CardContent>
+        </Card>
+        
     </div>
+    
+    {/* View As User Modal */}
+    <ViewAsUserModal 
+      isOpen={showViewAsUserModal}
+      onClose={() => setShowViewAsUserModal(false)}
+    />
     </ResponsivePageWrapper>
   )
 }

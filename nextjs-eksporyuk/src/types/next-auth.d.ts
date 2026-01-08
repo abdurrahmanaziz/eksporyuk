@@ -17,10 +17,32 @@ declare module 'next-auth' {
       affiliateMenuEnabled?: boolean
       hasAffiliateProfile?: boolean
       preferredDashboard?: string | null
+      isBeingImpersonated?: boolean // NEW: Flag for when user is being viewed by admin
     }
     createdAt?: string
     trialEndsAt?: string
     hasMembership?: boolean
+    impersonation?: { // NEW: Admin impersonation data
+      isImpersonating: boolean
+      adminId: string
+      adminEmail: string
+      reason: string
+      startedAt: string
+      originalAdmin?: {
+        id: string
+        email: string
+        name: string
+        role: string
+        username?: string | null
+        avatar?: string | null
+        whatsapp?: string | null
+        emailVerified?: boolean
+        memberCode?: string | null
+        affiliateMenuEnabled?: boolean
+        preferredDashboard?: string | null
+        allRoles?: string[]
+      }
+    }
   }
 
   interface User {
@@ -37,6 +59,7 @@ declare module 'next-auth' {
     affiliateMenuEnabled?: boolean
     hasAffiliateProfile?: boolean
     preferredDashboard?: string | null
+    isBeingImpersonated?: boolean // NEW: Flag for impersonation
   }
 }
 
@@ -56,5 +79,25 @@ declare module 'next-auth/jwt' {
     createdAt?: string
     trialEndsAt?: string
     hasMembership?: boolean
+    // NEW: Admin impersonation fields
+    isImpersonating?: boolean
+    impersonationReason?: string
+    impersonationStartedAt?: string
+    impersonationAdminId?: string
+    impersonationAdminEmail?: string
+    originalAdmin?: {
+      id: string
+      email: string
+      name: string
+      role: string
+      username?: string | null
+      avatar?: string | null
+      whatsapp?: string | null
+      emailVerified?: boolean
+      memberCode?: string | null
+      affiliateMenuEnabled?: boolean
+      preferredDashboard?: string | null
+      allRoles?: string[]
+    }
   }
 }

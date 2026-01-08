@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import DashboardSidebar from '@/components/layout/DashboardSidebar'
 import DashboardHeader from '@/components/layout/DashboardHeader'
 import NotificationPrompt from '@/components/notifications/NotificationPrompt'
+import ViewAsUserOverlay from '@/components/admin/ViewAsUserOverlay'
 
 export default function DashboardLayoutClient({
   children,
@@ -38,6 +39,7 @@ export default function DashboardLayoutClient({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ViewAsUserOverlay />
       <DashboardSidebar />
       <div className="lg:pl-64">
         <DashboardHeader />
