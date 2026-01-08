@@ -6,6 +6,7 @@ import { getGoogleOAuthConfig } from '@/lib/integration-config'
 import { getNextMemberCode } from '@/lib/member-code'
 import { mailketing } from '@/lib/integrations/mailketing'
 import bcrypt from 'bcryptjs'
+import { randomUUID } from 'crypto'
 
 // Conditionally include Google provider only if credentials are configured
 const providers: any[] = [
@@ -328,9 +329,12 @@ export const authOptions: NextAuthOptions = {
             
             // Create user - separated try-catch blocks for better error handling
             let newUser
+            const userId = randomUUID()
+            const walletId = randomUUID()
             try {
               newUser = await prisma.user.create({
                 data: {
+                  id: userId, // CRITICAL: Required field - no auto-generate in schema
                   email: user.email,
                   name: displayName,
                   username: username,
@@ -343,8 +347,10 @@ export const authOptions: NextAuthOptions = {
                   updatedAt: new Date(), // CRITICAL: Required field
                   wallet: {
                     create: {
+                      id: walletId, // CRITICAL: Required field
                       balance: 0,
                       balancePending: 0,
+                      updatedAt: new Date(), // CRITICAL: Required field
                     },
                   },
                 },
