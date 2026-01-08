@@ -49,78 +49,122 @@ export async function POST(
       },
     })
 
-    // Activate membership if exists
-    // Check if there's a UserMembership record with this transactionId
-    const userMembership = await prisma.userMembership.findUnique({
-      where: { transactionId: transaction.id },
-    })
+    // ===== HANDLE MEMBERSHIP ACTIVATION =====
+    if (transaction.type === 'MEMBERSHIP') {
+      // Get membershipId from transaction field OR metadata
+      const metadata = transaction.metadata as any
+      const membershipId = transaction.membershipId || metadata?.membershipId
 
-    if (userMembership) {
-      // Get membership data
-      const membership = await prisma.membership.findUnique({ 
-        where: { id: userMembership.membershipId } 
-      })
+      if (membershipId) {
+        const membership = await prisma.membership.findUnique({ 
+          where: { id: membershipId } 
+        })
 
-      if (membership) {
-        const duration = membership.duration
-        const durationValue = typeof duration === 'number' ? duration : 365 // Default to 1 year
-        const expiresAt = duration === 'LIFETIME' 
-          ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years for lifetime
-          : new Date(Date.now() + durationValue * 24 * 60 * 60 * 1000)
-
-        // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
-        await prisma.userMembership.updateMany({
-          where: { 
-            userId: transaction.userId,
-            isActive: true,
-            id: { not: userMembership.id }
-          },
-          data: { 
-            isActive: false,
-            status: 'EXPIRED'
+        if (membership) {
+          // Calculate end date based on duration
+          const now = new Date()
+          let endDate = new Date(now)
+          
+          switch (membership.duration) {
+            case 'ONE_MONTH':
+              endDate.setMonth(endDate.getMonth() + 1)
+              break
+            case 'THREE_MONTHS':
+              endDate.setMonth(endDate.getMonth() + 3)
+              break
+            case 'SIX_MONTHS':
+              endDate.setMonth(endDate.getMonth() + 6)
+              break
+            case 'TWELVE_MONTHS':
+              endDate.setFullYear(endDate.getFullYear() + 1)
+              break
+            case 'LIFETIME':
+              endDate.setFullYear(endDate.getFullYear() + 100)
+              break
+            default:
+              // If duration is a number (legacy), use as days
+              const durationValue = typeof membership.duration === 'number' ? membership.duration : 365
+              endDate = new Date(Date.now() + durationValue * 24 * 60 * 60 * 1000)
           }
-        })
 
-        // 🔒 CANCEL OTHER PENDING MEMBERSHIP TRANSACTIONS
-        const cancelledTransactions = await prisma.transaction.updateMany({
-          where: {
-            userId: transaction.userId,
-            type: 'MEMBERSHIP',
-            status: 'PENDING',
-            id: { not: transaction.id }
-          },
-          data: {
-            status: 'CANCELLED',
+          // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
+          await prisma.userMembership.updateMany({
+            where: { 
+              userId: transaction.userId,
+              isActive: true
+            },
+            data: { 
+              isActive: false,
+              status: 'EXPIRED'
+            }
+          })
+
+          // 🔒 CANCEL OTHER PENDING MEMBERSHIP TRANSACTIONS
+          const cancelledTransactions = await prisma.transaction.updateMany({
+            where: {
+              userId: transaction.userId,
+              type: 'MEMBERSHIP',
+              status: 'PENDING',
+              id: { not: transaction.id }
+            },
+            data: {
+              status: 'CANCELLED',
+            }
+          })
+          
+          if (cancelledTransactions.count > 0) {
+            console.log(`[Admin Confirm] ✅ Auto-cancelled ${cancelledTransactions.count} pending membership transactions for user ${transaction.userId}`)
           }
-        })
-        
-        if (cancelledTransactions.count > 0) {
-          console.log(`[Admin Confirm] ✅ Auto-cancelled ${cancelledTransactions.count} pending membership transactions for user ${transaction.userId}`)
-        }
 
-        // Update userMembership to active
-        await prisma.userMembership.update({
-          where: { id: userMembership.id },
-          data: {
-            status: 'ACTIVE',
-            isActive: true,
-            endDate: expiresAt,
-            activatedAt: new Date(),
-            updatedAt: new Date()
+          // Check if UserMembership already exists for this transaction
+          let userMembership = await prisma.userMembership.findUnique({
+            where: { transactionId: transaction.id },
+          })
+
+          if (userMembership) {
+            // UPDATE existing UserMembership
+            await prisma.userMembership.update({
+              where: { id: userMembership.id },
+              data: {
+                status: 'ACTIVE',
+                isActive: true,
+                startDate: now,
+                endDate,
+                activatedAt: now,
+                updatedAt: now
+              }
+            })
+            console.log(`[Admin Confirm] ✅ Updated existing UserMembership to ACTIVE`)
+          } else {
+            // CREATE new UserMembership (for PENDING transactions that didn't have one)
+            userMembership = await prisma.userMembership.create({
+              data: {
+                id: `um_${transaction.id}`,
+                userId: transaction.userId,
+                membershipId: membershipId,
+                transactionId: transaction.id,
+                status: 'ACTIVE',
+                isActive: true,
+                startDate: now,
+                endDate,
+                activatedAt: now,
+                price: transaction.amount
+              }
+            })
+            console.log(`[Admin Confirm] ✅ Created NEW UserMembership for transaction ${transaction.id}`)
           }
-        })
 
-        // Update user role to MEMBER_PREMIUM if not already
-        await prisma.user.update({
-          where: { id: transaction.userId },
-          data: { role: 'MEMBER_PREMIUM' }
-        })
+          // Update user role to MEMBER_PREMIUM
+          await prisma.user.update({
+            where: { id: transaction.userId },
+            data: { role: 'MEMBER_PREMIUM' }
+          })
+          console.log(`[Admin Confirm] ✅ User role upgraded to MEMBER_PREMIUM`)
 
-        // ===== AUTO-JOIN GROUPS =====
-        // Get groups linked to this membership
-        const membershipGroups = await prisma.membershipGroup.findMany({
-          where: { membershipId: membership.id }
-        })
+          // ===== AUTO-JOIN GROUPS =====
+          const membershipGroups = await prisma.membershipGroup.findMany({
+            where: { membershipId: membership.id }
+          })
 
         for (const mg of membershipGroups) {
           try {
@@ -218,6 +262,7 @@ export async function POST(
         console.log(`[Admin Confirm] ✅ Membership activated with ${membershipGroups.length} groups, ${membershipCourses.length} courses, ${membershipProducts.length} products`)
       }
     }
+  }
 
     // Process commission if affiliate conversion exists
     // Get system users for commission distribution
