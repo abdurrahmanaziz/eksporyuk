@@ -8,18 +8,28 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
 
 export default function ViewAsUserOverlay() {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const [duration, setDuration] = useState('')
   const [startTime, setStartTime] = useState<Date | null>(null)
   const [isExiting, setIsExiting] = useState(false)
 
-  // Only show if impersonating
-  const isImpersonating = session?.user?.impersonating?.isActive
-  const targetUser = session?.user?.impersonating?.targetUser
+  // Check if impersonating from token data
+  const isImpersonating = session?.user?.isImpersonating || false
+  const targetUserName = session?.user?.name
+  const originalAdminName = session?.user?.originalAdmin?.name
+  const impersonationStartedAt = session?.user?.impersonationStartedAt
+
+  console.log('[VIEW-AS-USER-OVERLAY] Session debug:', {
+    hasSession: !!session,
+    isImpersonating,
+    targetUserName,
+    originalAdminName,
+    impersonationStartedAt
+  })
 
   useEffect(() => {
-    if (isImpersonating && session?.user?.impersonating?.startedAt) {
-      const start = new Date(session.user.impersonating.startedAt)
+    if (isImpersonating && impersonationStartedAt) {
+      const start = new Date(impersonationStartedAt)
       setStartTime(start)
 
       const interval = setInterval(() => {
@@ -32,33 +42,43 @@ export default function ViewAsUserOverlay() {
 
       return () => clearInterval(interval)
     }
-  }, [isImpersonating, session])
+  }, [isImpersonating, impersonationStartedAt])
 
   const handleExitImpersonation = async () => {
     try {
       setIsExiting(true)
       
+      console.log('[VIEW-AS-USER-OVERLAY] Exiting impersonation...')
+
       const response = await fetch('/api/admin/view-as-user', {
         method: 'DELETE',
       })
 
       if (response.ok) {
+        // Use NextAuth update to trigger session refresh
+        await update({ 
+          exitImpersonation: true 
+        })
+        
         toast.success('Berhasil kembali ke akun admin')
-        // Force reload to update session
-        window.location.reload()
+        
+        // Force reload to ensure clean state
+        setTimeout(() => {
+          window.location.reload()
+        }, 500)
       } else {
         const error = await response.json()
         toast.error(error.error || 'Gagal exit impersonation')
       }
     } catch (error) {
-      console.error('Error exiting impersonation:', error)
+      console.error('[VIEW-AS-USER-OVERLAY] Error exiting impersonation:', error)
       toast.error('Terjadi kesalahan')
     } finally {
       setIsExiting(false)
     }
   }
 
-  if (!isImpersonating || !targetUser) {
+  if (!isImpersonating) {
     return null
   }
 
@@ -72,7 +92,7 @@ export default function ViewAsUserOverlay() {
               <AlertTriangle className="h-5 w-5" />
               <div>
                 <span className="font-semibold">
-                  Viewing sebagai: {targetUser.name}
+                  Viewing sebagai: {targetUserName}
                 </span>
                 <div className="flex items-center gap-2 text-sm text-orange-100">
                   <Clock className="h-3 w-3" />
@@ -103,8 +123,8 @@ export default function ViewAsUserOverlay() {
             <span className="font-semibold text-sm">View As User</span>
           </div>
           <div className="text-xs text-orange-100">
-            <p>Admin: {session?.user?.originalData?.name}</p>
-            <p>Viewing: {targetUser.name}</p>
+            <p>Admin: {originalAdminName || 'Unknown'}</p>
+            <p>Viewing: {targetUserName}</p>
             <p className="mt-1 text-orange-200">Duration: {duration}</p>
           </div>
         </div>

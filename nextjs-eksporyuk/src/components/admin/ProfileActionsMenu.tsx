@@ -24,7 +24,7 @@ export default function ProfileActionsMenu({
   targetUsername, 
   targetUserName 
 }: ProfileActionsMenuProps) {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const [isViewingAs, setIsViewingAs] = useState(false)
 
   // Only show for ADMIN, FOUNDER, CO_FOUNDER
@@ -41,6 +41,12 @@ export default function ProfileActionsMenu({
     try {
       setIsViewingAs(true)
       
+      console.log('[VIEW-AS-USER] Starting impersonation:', {
+        adminId: session.user.id,
+        targetUserId,
+        targetUsername
+      })
+
       const response = await fetch('/api/admin/view-as-user', {
         method: 'POST',
         headers: {
@@ -52,19 +58,29 @@ export default function ProfileActionsMenu({
         }),
       })
 
-      if (response.ok) {
-        toast.success(`Sekarang viewing sebagai ${targetUserName}`)
-        // Trigger session update
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
-      } else {
+      if (!response.ok) {
         const error = await response.json()
-        toast.error(error.error || 'Gagal switch user')
+        throw new Error(error.error || 'Failed to start impersonation')
       }
+
+      const impersonationData = await response.json()
+      console.log('[VIEW-AS-USER] API Response:', impersonationData)
+
+      // Critical: Use NextAuth update() to trigger session refresh
+      await update({ 
+        impersonation: impersonationData 
+      })
+      
+      toast.success(`Sekarang viewing sebagai ${targetUserName}`)
+      
+      // Force reload to ensure all components re-render with new session
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+
     } catch (error) {
-      console.error('Error viewing as user:', error)
-      toast.error('Terjadi kesalahan')
+      console.error('[VIEW-AS-USER] Error:', error)
+      toast.error(error.message || 'Terjadi kesalahan')
     } finally {
       setIsViewingAs(false)
     }

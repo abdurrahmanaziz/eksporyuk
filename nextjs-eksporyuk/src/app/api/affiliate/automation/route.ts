@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 import { starsenderService } from '@/lib/services/starsenderService'
-import { oneSignalService } from '@/lib/services/oneSignalService'
+import BrandedPushNotificationHelper from '@/lib/push-templates/branded-push-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -125,13 +125,18 @@ export async function POST(request: Request) {
           })
         }
         
-        // Push notification
-        await oneSignalService.sendToUser(
-          session.user.id,
-          `🤖 Automation "${name}" Dibuat!`,
-          `Trigger: ${triggerType.replace('_', ' ')}. Tambahkan email steps untuk mengaktifkan.`,
-          { url: '/affiliate/automation' }
-        )
+        // Push notification dengan branded template
+        await BrandedPushNotificationHelper.sendAutomationCreated({
+          userId: session.user.id,
+          userName: user.email,
+          feature: name,
+          action: 'dibuat',
+          details: `Trigger: ${triggerType.replace('_', ' ')}. Tambahkan email steps untuk aktivasi.`,
+          link: `/affiliate/automation`,
+          buttonText: 'Setup Automation',
+          buttonUrl: `/affiliate/automation`,
+          urgency: 'normal'
+        })
         
         console.log('✅ Automation creation notifications sent')
       }

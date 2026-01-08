@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 import { starsenderService } from '@/lib/services/starsenderService'
-import { oneSignalService } from '@/lib/services/oneSignalService'
+import BrandedPushNotificationHelper from '@/lib/push-templates/branded-push-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -140,13 +140,18 @@ export async function PATCH(
             })
           }
           
-          // Push notification
-          await oneSignalService.sendToUser(
-            session.user.id,
-            `${statusEmoji} Automation ${status}`,
-            `"${automation.name}" ${isActive ? 'siap bekerja otomatis' : 'dihentikan sementara'}`,
-            { url: '/affiliate/automation' }
-          )
+          // Push notification dengan branded template
+          await BrandedPushNotificationHelper.sendAutomationStatusChanged({
+            userId: session.user.id,
+            userName: user.email,
+            feature: automation.name,
+            action: isActive ? 'diaktifkan' : 'dinonaktifkan',
+            details: `${automation.steps.length} email steps. ${isActive ? 'Automation siap bekerja otomatis' : 'Automation dihentikan sementara'}.`,
+            link: `/affiliate/automation`,
+            buttonText: 'Kelola Automation',
+            buttonUrl: `/affiliate/automation`,
+            urgency: isActive ? 'normal' : 'low'
+          })
           
           console.log(`✅ Automation status change notifications sent: ${status}`)
         }

@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { notificationService } from '@/lib/services/notificationService'
 import { starsenderService } from '@/lib/services/starsenderService'
-import { oneSignalService } from '@/lib/services/oneSignalService'
+import { sendAffiliateBioPageNotification } from '@/lib/branded-template-helpers'
 
 // Increase body size limit for base64 images
 export const maxDuration = 60 // seconds
@@ -254,13 +254,17 @@ export async function POST(req: NextRequest) {
         })
       }
       
-      // Push notification
-      await oneSignalService.sendToUser(
-        user.id,
-        `🎉 Bio Page ${isNewBio ? 'Dibuat' : 'Diperbarui'}!`,
-        `${displayName || 'Bio page Anda'} siap untuk dishare ke audience. Cek sekarang!`,
-        { url: `/affiliate/bio` }
-      )
+      // Push notification dengan branded template
+      await sendAffiliateBioPageNotification({
+        userId: user.id,
+        action: isNewBio ? 'created' : 'updated',
+        bioName: displayName || 'Bio Page Anda',
+        details: `${isNewBio ? 'Siap untuk dishare' : 'Telah diperbarui'} dengan fitur: ${[
+          avatarUrl ? 'foto profil' : null,
+          coverImage ? 'cover image' : null,
+          whatsappNumber ? 'WhatsApp contact' : null
+        ].filter(Boolean).join(', ')}`
+      })
       
       console.log('✅ Bio page notifications sent successfully')
     } catch (notifError) {

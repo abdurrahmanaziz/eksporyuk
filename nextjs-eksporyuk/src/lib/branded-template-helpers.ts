@@ -1,6 +1,139 @@
 import { prisma } from '@/lib/prisma'
 import { createBrandedEmailAsync, processShortcodes, TemplateData } from './branded-template-engine'
 import { mailketing } from './integrations/mailketing'
+// Import OneSignal dan Pusher services
+const OneSignal = require('@onesignal/node-onesignal')
+const Pusher = require('pusher')
+
+// Initialize OneSignal (jika ada API key)
+const oneSignalClient = process.env.ONESIGNAL_APP_ID ? new OneSignal.DefaultApi() : null
+const oneSignalAppId = process.env.ONESIGNAL_APP_ID
+
+// Initialize Pusher (jika ada API key)
+const pusherClient = process.env.PUSHER_APP_ID ? new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
+  cluster: process.env.PUSHER_CLUSTER || 'ap1',
+  useTLS: true
+}) : null
+
+/**
+ * Send OneSignal notification dengan branding
+ */
+async function sendOneSignalNotification({
+  playerIds,
+  title,
+  message,
+  url,
+  bigPicture,
+  data = {}
+}: {
+  playerIds: string[]
+  title: string
+  message: string
+  url?: string
+  bigPicture?: string
+  data?: Record<string, any>
+}) {
+  if (!oneSignalClient || !oneSignalAppId) {
+    console.warn('OneSignal not configured, skipping browser push notification')
+    return
+  }
+
+  try {
+    const notification = {
+      app_id: oneSignalAppId,
+      include_player_ids: playerIds,
+      headings: {
+        en: title,
+        id: title
+      },
+      contents: {
+        en: message,
+        id: message
+      },
+      url: url || undefined,
+      big_picture: bigPicture || undefined,
+      web_buttons: url ? [{
+        id: 'action',
+        text: 'Lihat Detail',
+        url: `${process.env.NEXTAUTH_URL}${url}`
+      }] : undefined,
+      android_accent_color: '#3B82F6', // EksporYuk blue
+      data,
+      priority: 9,
+      ttl: 86400 // 24 hours
+    }
+
+    await oneSignalClient.createNotification(notification)
+    console.log('✅ OneSignal notification sent')
+  } catch (error) {
+    console.error('❌ OneSignal notification failed:', error)
+  }
+}
+
+/**
+ * Send Pusher notification untuk real-time updates
+ */
+async function sendPusherNotification({
+  channel,
+  event,
+  data
+}: {
+  channel: string
+  event: string
+  data: Record<string, any>
+}) {
+  if (!pusherClient) {
+    console.warn('Pusher not configured, skipping real-time notification')
+    return
+  }
+
+  try {
+    await pusherClient.trigger(channel, event, data)
+    console.log('✅ Pusher notification sent')
+  } catch (error) {
+    console.error('❌ Pusher notification failed:', error)
+  }
+}
+
+/**
+ * Get branded notification image berdasarkan category
+ */
+function getBrandedNotificationImage(category: string): string {
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://eksporyuk.com'
+  const images: Record<string, string> = {
+    SYSTEM: `${baseUrl}/assets/notifications/system-update.png`,
+    MEMBERSHIP: `${baseUrl}/assets/notifications/membership-success.png`,
+    AFFILIATE: `${baseUrl}/assets/notifications/affiliate-achievement.png`,
+    COURSE: `${baseUrl}/assets/notifications/course-success.png`,
+    PAYMENT: `${baseUrl}/assets/notifications/payment-success.png`,
+    MARKETING: `${baseUrl}/assets/notifications/marketing-promo.png`,
+    NOTIFICATION: `${baseUrl}/assets/notifications/general-announcement.png`,
+    TRANSACTION: `${baseUrl}/assets/notifications/transaction-success.png`
+  }
+  
+  return images[category] || images.NOTIFICATION
+}
+
+/**
+ * Get icon berdasarkan category
+ */
+function getCategoryIcon(category: string): string {
+  const icons: Record<string, string> = {
+    SYSTEM: '⚙️',
+    MEMBERSHIP: '🎯',
+    AFFILIATE: '💼',
+    COURSE: '📚',
+    PAYMENT: '💰',
+    MARKETING: '📢',
+    NOTIFICATION: '🔔',
+    TRANSACTION: '💳'
+  }
+  
+  return icons[category] || '📄'
+}
 
 /**
  * Fungsi helper untuk mengirim email menggunakan branded template
@@ -228,8 +361,37 @@ export async function sendBrandedPushNotification({
     const message = processShortcodes(template.content, templateData)
     const url = template.ctaLink ? processShortcodes(template.ctaLink, templateData) : undefined
 
-    // Send push notification (integrate dengan OneSignal)
-    // Contoh: await sendPushViaOneSignal(user.oneSignalPlayerId, title, message, url)
+    // Send via OneSignal (browser push)
+    if (user.oneSignalPlayerId) {
+      await sendOneSignalNotification({
+        playerIds: [user.oneSignalPlayerId],
+        title,
+        message,
+        url,
+        bigPicture: getBrandedNotificationImage(template.category),
+        data: {
+          templateSlug,
+          category: template.category,
+          userId,
+          timestamp: new Date().toISOString()
+        }
+      })
+    }
+
+    // Send via Pusher (real-time)
+    await sendPusherNotification({
+      channel: `user.${userId}`,
+      event: 'notification',
+      data: {
+        title,
+        message,
+        url,
+        category: template.category,
+        icon: getCategoryIcon(template.category),
+        timestamp: new Date().toISOString(),
+        action: url ? 'action_required' : 'info'
+      }
+    })
     
     // Track usage
     await trackTemplateUsage({
@@ -237,7 +399,9 @@ export async function sendBrandedPushNotification({
       userId,
       context: 'AUTOMATED',
       metadata: {
-        sent_at: new Date().toISOString()
+        sent_at: new Date().toISOString(),
+        oneSignal: !!user.oneSignalPlayerId,
+        pusher: true
       }
     })
 
@@ -384,5 +548,214 @@ export async function sendPaymentConfirmation(
       }
     },
     userId: user.id
+  })
+}
+
+// ==================== AFFILIATE NOTIFICATION HELPERS ====================
+
+/**
+ * Helper untuk affiliate bio page notifications
+ */
+export async function sendAffiliateBioPageNotification({
+  userId,
+  action, // 'created' | 'updated'
+  bioName,
+  details = ''
+}: {
+  userId: string
+  action: 'created' | 'updated'
+  bioName: string
+  details?: string
+}) {
+  const templateMap = {
+    created: 'push-bio-page-dibuat',
+    updated: 'push-bio-page-diupdate'
+  }
+  
+  return sendBrandedPushNotification({
+    templateSlug: templateMap[action],
+    userId,
+    data: {
+      bio_name: bioName,
+      details
+    }
+  })
+}
+
+/**
+ * Helper untuk affiliate challenge notifications
+ */
+export async function sendAffiliateChallengeNotification({
+  userId,
+  action, // 'joined' | 'milestone' | 'completed'
+  challengeName,
+  target,
+  reward,
+  progress,
+  challengeId
+}: {
+  userId: string
+  action: 'joined' | 'milestone' | 'completed'
+  challengeName: string
+  target?: string
+  reward?: string
+  progress?: string
+  challengeId?: string
+}) {
+  const templateMap = {
+    joined: 'push-challenge-joined',
+    milestone: 'push-challenge-milestone',
+    completed: 'push-challenge-completed'
+  }
+  
+  return sendBrandedPushNotification({
+    templateSlug: templateMap[action],
+    userId,
+    data: {
+      challenge_name: challengeName,
+      target,
+      reward,
+      progress,
+      challenge_id: challengeId,
+      details: action === 'milestone' ? `Progress bagus! Terus semangat!` : undefined
+    }
+  })
+}
+
+/**
+ * Helper untuk affiliate automation notifications
+ */
+export async function sendAffiliateAutomationNotification({
+  userId,
+  action, // 'created' | 'activated' | 'paused'
+  automationName,
+  trigger,
+  setupGuidance,
+  performanceLink,
+  reason,
+  automationId
+}: {
+  userId: string
+  action: 'created' | 'activated' | 'paused'
+  automationName: string
+  trigger?: string
+  setupGuidance?: string
+  performanceLink?: string
+  reason?: string
+  automationId?: string
+}) {
+  const templateMap = {
+    created: 'push-automation-created',
+    activated: 'push-automation-activated',
+    paused: 'push-automation-paused'
+  }
+  
+  return sendBrandedPushNotification({
+    templateSlug: templateMap[action],
+    userId,
+    data: {
+      automation_name: automationName,
+      trigger,
+      setup_guidance: setupGuidance || 'Tambahkan email steps untuk aktivasi',
+      performance_link: performanceLink,
+      reason: reason || 'Dihentikan manual',
+      automation_id: automationId
+    }
+  })
+}
+
+/**
+ * Helper untuk affiliate commission notifications
+ */
+export async function sendAffiliateCommissionNotification({
+  userId,
+  amount,
+  source,
+  totalBalance,
+  type = 'earned' // 'earned' | 'withdrawal_approved'
+}: {
+  userId: string
+  amount: string
+  source?: string
+  totalBalance?: string
+  type?: 'earned' | 'withdrawal_approved'
+}) {
+  const templateMap = {
+    earned: 'push-komisi-masuk',
+    withdrawal_approved: 'push-withdrawal-disetujui'
+  }
+  
+  return sendBrandedPushNotification({
+    templateSlug: templateMap[type],
+    userId,
+    data: {
+      commission: amount,
+      amount,
+      source: source || 'Referral',
+      total_balance: totalBalance
+    }
+  })
+}
+
+/**
+ * Helper untuk affiliate lead notifications
+ */
+export async function sendAffiliateLeadNotification({
+  userId,
+  leadName,
+  source
+}: {
+  userId: string
+  leadName: string
+  source: string
+}) {
+  return sendBrandedPushNotification({
+    templateSlug: 'push-lead-captured',
+    userId,
+    data: {
+      lead_name: leadName,
+      source
+    }
+  })
+}
+
+/**
+ * Helper untuk affiliate system notifications
+ */
+export async function sendAffiliateSystemNotification({
+  userId,
+  type, // 'training' | 'performance' | 'update' | 'feedback'
+  title,
+  description,
+  metrics,
+  actionSuggestion,
+  featureName
+}: {
+  userId: string
+  type: 'training' | 'performance' | 'update' | 'feedback'
+  title?: string
+  description?: string
+  metrics?: string
+  actionSuggestion?: string
+  featureName?: string
+}) {
+  const templateMap = {
+    training: 'push-training-update',
+    performance: 'push-performance-alert',
+    update: 'push-system-update',
+    feedback: 'push-feedback-request'
+  }
+  
+  return sendBrandedPushNotification({
+    templateSlug: templateMap[type],
+    userId,
+    data: {
+      training_title: title,
+      feature_name: featureName || title,
+      description,
+      metrics,
+      action_suggestion: actionSuggestion,
+      feature: featureName
+    }
   })
 }

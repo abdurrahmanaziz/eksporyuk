@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { sendChallengeJoinedEmail } from '@/lib/challenge-email-helper'
+import { notificationService } from '@/lib/services/notificationService'
+import { starsenderService } from '@/lib/services/starsenderService'
+import BrandedPushNotificationHelper from '@/lib/push-templates/branded-push-helper'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -326,22 +329,19 @@ export async function POST(req: NextRequest) {
           console.error('Failed to send challenge joined email:', err)
         })
 
-        // Send push notification
-        notificationService.send({
+        // Send branded push notification
+        await BrandedPushNotificationHelper.sendChallengeJoined({
           userId: session.user.id,
-          type: 'AFFILIATE' as any,
-          title: '🎯 Tantangan Berhasil Diikuti!',
-          message: `Anda berhasil mengikuti tantangan "${challenge.title}". Target: ${challenge.targetValue} ${challenge.targetType.replace(/_/g, ' ').toLowerCase()}. Reward: ${challenge.rewardType === 'CASH_BONUS' ? 'Rp ' + Number(challenge.rewardValue).toLocaleString('id-ID') : challenge.rewardType.replace(/_/g, ' ')}.`,
-          link: `${process.env.NEXT_PUBLIC_APP_URL}/affiliate/challenges/${challenge.id}`,
-          channels: ['pusher', 'onesignal'],
-          metadata: {
-            challengeId: challenge.id,
-            challengeName: challenge.title,
-            targetValue: challenge.targetValue,
-            rewardValue: challenge.rewardValue
-          }
+          userName: affiliateProfile.displayName || user.name || 'Affiliate',
+          feature: challenge.title,
+          action: 'dimulai',
+          details: `Target: ${challenge.targetValue} ${challenge.targetType.replace(/_/g, ' ').toLowerCase()}. Reward: ${challenge.rewardType === 'CASH_BONUS' ? 'Rp ' + Number(challenge.rewardValue).toLocaleString('id-ID') : challenge.rewardType.replace(/_/g, ' ')}. Sisa ${daysRemaining} hari.`,
+          link: `/affiliate/challenges/${challenge.id}`,
+          buttonText: 'Lihat Progress',
+          buttonUrl: `/affiliate/challenges/${challenge.id}`,
+          urgency: 'high'
         }).catch(err => {
-          console.error('Failed to send push notification:', err)
+          console.error('Failed to send branded push notification:', err)
         })
 
         // Send WhatsApp notification if available

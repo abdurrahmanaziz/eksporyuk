@@ -718,21 +718,36 @@ export const authOptions: NextAuthOptions = {
         session.user.hasAffiliateProfile = token.hasAffiliateProfile as boolean || false
         session.user.preferredDashboard = token.preferredDashboard as string || null
         
-        // Add impersonation data to session
+        // Add impersonation data to session and user object
         if (token.isImpersonating) {
+          session.user.isImpersonating = true
+          session.user.impersonationStartedAt = token.impersonationStartedAt as string
+          session.user.impersonationReason = token.impersonationReason as string
+          session.user.impersonationAdminId = token.impersonationAdminId as string
+          session.user.originalAdmin = token.originalAdmin as any
+          
           session.impersonation = {
-            isImpersonating: true,
+            isActive: true,
             adminId: token.impersonationAdminId as string,
             adminEmail: token.impersonationAdminEmail as string,
             reason: token.impersonationReason as string,
             startedAt: token.impersonationStartedAt as string,
+            targetUser: {
+              id: token.id as string,
+              name: token.name as string,
+              email: token.email as string,
+              role: token.role as string
+            },
             originalAdmin: token.originalAdmin as any
           }
-          session.user.isBeingImpersonated = true
         } else {
           // Ensure impersonation data is cleared when not impersonating
+          session.user.isImpersonating = false
+          delete session.user.impersonationStartedAt
+          delete session.user.impersonationReason
+          delete session.user.impersonationAdminId
+          delete session.user.originalAdmin
           delete session.impersonation
-          delete session.user.isBeingImpersonated
         }
         
         console.log(`[AUTH ${timestamp}] SESSION - Set session user:`, {
