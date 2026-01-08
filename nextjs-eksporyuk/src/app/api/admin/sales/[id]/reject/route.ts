@@ -39,13 +39,22 @@ export async function POST(
       return NextResponse.json({ error: 'Transaction already rejected' }, { status: 400 })
     }
 
-    // Update transaction status
+    // Get current metadata to preserve existing data
+    const currentMetadata = (transaction.metadata as any) || {}
+
+    // Update transaction status and store rejection reason
     const updatedTransaction = await prisma.transaction.update({
       where: { id: transactionId },
       data: { 
         status: 'FAILED',
         updatedAt: new Date(),
-        // Store rejection reason in notes or separate field if exists
+        notes: reason, // Store rejection reason in notes field
+        metadata: {
+          ...currentMetadata,
+          rejectionReason: reason,
+          rejectedAt: new Date().toISOString(),
+          rejectedBy: session.user?.email || 'admin'
+        }
       },
     })
 

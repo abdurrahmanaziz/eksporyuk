@@ -25,25 +25,53 @@ const providers: any[] = [
 
       try {
         // Check database first - MUST explicitly select password field
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            password: true,  // CRITICAL: Must select password for comparison
-            role: true,
-            avatar: true,
-            username: true,
-            whatsapp: true,
-            emailVerified: true,
-            isSuspended: true,
-            suspendReason: true,
-            isActive: true,
-            affiliateMenuEnabled: true,
-            preferredDashboard: true,
+        let user = null
+        try {
+          user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,  // CRITICAL: Must select password for comparison
+              role: true,
+              avatar: true,
+              username: true,
+              whatsapp: true,
+              emailVerified: true,
+              isSuspended: true,
+              suspendReason: true,
+              isActive: true,
+              affiliateMenuEnabled: true,
+              preferredDashboard: true,
+            }
+          })
+        } catch (dbError: any) {
+          console.error('[AUTH] Authorization error:', dbError)
+          
+          // Fallback query without optional columns if schema mismatch
+          if (dbError.code === 'P2022') {
+            user = await prisma.user.findUnique({
+              where: { email: credentials.email },
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                password: true,
+                role: true,
+                avatar: true,
+                username: true,
+                whatsapp: true,
+                emailVerified: true,
+                isSuspended: true,
+                suspendReason: true,
+                isActive: true,
+              }
+            })
+          } else {
+            throw dbError
           }
-        })
+        }
         
         // Manual lookup for affiliateProfile (schema has no relations)
         let affiliateProfile = null
@@ -154,7 +182,7 @@ const providers: any[] = [
           emailVerified: user.emailVerified,
           affiliateMenuEnabled: shouldHaveAffiliateAccess, // Auto-enable based on commission/wallet
           hasAffiliateProfile: shouldHaveAffiliateAccess || (!!affiliateProfile && affiliateProfile.isActive),
-          preferredDashboard: user.preferredDashboard,
+          preferredDashboard: (user as any).preferredDashboard || null,
         }
       } catch (error: any) {
         console.error('[AUTH] Authorization error:', error.message)
@@ -206,6 +234,9 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error',
     newUser: '/dashboard', // Redirect new OAuth users to dashboard
   },
+  // IMPORTANT: Allow users who registered with email/password to also login via Google
+  // This enables seamless login experience - user can use either method
+  allowDangerousEmailAccountLinking: true,
   debug: process.env.NODE_ENV === 'development', // Enable debugging in development
   providers,
   callbacks: {
@@ -437,7 +468,7 @@ export const authOptions: NextAuthOptions = {
             emailVerified: token.emailVerified,
             memberCode: token.memberCode,
             affiliateMenuEnabled: token.affiliateMenuEnabled,
-            preferredDashboard: token.preferredDashboard,
+            preferredDashboard: token.preferredDashboard || null,
             allRoles: token.allRoles
           }
         }
@@ -477,7 +508,7 @@ export const authOptions: NextAuthOptions = {
           token.emailVerified = token.originalAdmin.emailVerified
           token.memberCode = token.originalAdmin.memberCode
           token.affiliateMenuEnabled = token.originalAdmin.affiliateMenuEnabled
-          token.preferredDashboard = token.originalAdmin.preferredDashboard
+          token.preferredDashboard = (token.originalAdmin as any).preferredDashboard || null
           token.allRoles = token.originalAdmin.allRoles
           
           // Remove impersonation metadata

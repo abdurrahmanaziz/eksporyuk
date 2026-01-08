@@ -778,12 +778,25 @@ export default function CheckoutPage() {
 
       if (res.ok && data.paymentUrl) {
         console.log('[DEBUG] ✅ Checkout SUCCESS! Redirecting to:', data.paymentUrl)
-        toast.success('Mengarahkan ke halaman pembayaran...')
+        
+        // Validate URL untuk keamanan (hanya allow Xendit domain)
+        const isValidXenditUrl = data.paymentUrl.includes('checkout.xendit.co') || 
+                                data.paymentUrl.includes('eksporyuk.com')
+        
+        if (!isValidXenditUrl) {
+          console.error('[DEBUG] ❌ Invalid payment URL domain:', data.paymentUrl)
+          toast.error('Invalid payment URL. Please contact support.')
+          setProcessing(false)
+          return
+        }
+        
+        toast.success('Mengarahkan ke halaman pembayaran Xendit...')
+        
         // Use window.location.href for external URL redirect (Xendit checkout)
         // router.push only works for internal Next.js routes
         setTimeout(() => {
           window.location.href = data.paymentUrl
-        }, 500)
+        }, 1000)
       } else {
         console.error('[DEBUG] ❌ Checkout failed - No paymentUrl:', data)
         const errorMessage = data.message || data.error || `Error ${res.status}: ${res.statusText}`

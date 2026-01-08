@@ -117,84 +117,227 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // If status is SUCCESS, activate access for each transaction
+      // If status is SUCCESS, activate access for each transaction (FULL ACTIVATION like single confirm)
       if (action === 'SUCCESS' || action === 'payment_confirmed') {
-        // Get transactions (no relations in schema)
+        // Get transactions
         const transactions = await prisma.transaction.findMany({
           where: { id: { in: transactionIds } },
         })
-        
-        // Get user memberships for all these transactions
-        const userMemberships = await prisma.userMembership.findMany({
-          where: { transactionId: { in: transactionIds } },
-        })
-        const membershipIds = [...new Set(userMemberships.map((um: any) => um.membershipId).filter(Boolean))]
-        const memberships = membershipIds.length > 0 ? await prisma.membership.findMany({
-          where: { id: { in: membershipIds as string[] } },
-        }) : []
-        const membershipMap = new Map(memberships.map(m => [m.id, m]))
-        const userMembershipMap = new Map(userMemberships.map((um: any) => [um.transactionId, um]))
-        
-        // Get products and courses
-        const productIds = [...new Set(transactions.filter(t => t.productId).map(t => t.productId!))]
-        const courseIds = [...new Set(transactions.filter(t => t.courseId).map(t => t.courseId!))]
-        const products = productIds.length > 0 ? await prisma.product.findMany({ where: { id: { in: productIds } } }) : []
-        const courses = courseIds.length > 0 ? await prisma.course.findMany({ where: { id: { in: courseIds } } }) : []
-        const productMap = new Map(products.map(p => [p.id, p]))
-        const courseMap = new Map(courses.map(c => [c.id, c]))
 
         for (const tx of transactions) {
           try {
-            // 1. Activate Membership Access
-            const userMembership = userMembershipMap.get(tx.id)
-            if (tx.type === 'MEMBERSHIP' && userMembership) {
-              const membership = membershipMap.get((userMembership as any).membershipId)
-              if (membership) {
-                const durationMap: Record<string, number> = {
-                  'ONE_MONTH': 30,
-                  'THREE_MONTHS': 90,
-                  'SIX_MONTHS': 180,
-                  'TWELVE_MONTHS': 365,
-                  'LIFETIME': 36500
-                }
-                
-                const days = durationMap[membership.duration] || 30
-                const startDate = new Date()
-                const endDate = new Date()
-                endDate.setDate(endDate.getDate() + days)
+            // ===== HANDLE MEMBERSHIP ACTIVATION (Same as single confirm) =====
+            if (tx.type === 'MEMBERSHIP') {
+              // Get membershipId from transaction field OR metadata
+              const metadata = tx.metadata as any
+              const membershipId = tx.membershipId || metadata?.membershipId
 
-                await prisma.userMembership.upsert({
-                  where: {
-                    userId_membershipId: {
-                      userId: tx.userId,
-                      membershipId: membership.id
-                    }
-                  },
-                  create: {
-                    id: createId(),
-                    userId: tx.userId,
-                    membershipId: membership.id,
-                    startDate,
-                    endDate,
-                    isActive: true,
-                    transactionId: tx.id,
-                    status: 'ACTIVE',
-                    updatedAt: new Date()
-                  },
-                  update: {
-                    startDate,
-                    endDate,
-                    isActive: true
-                  }
+              if (membershipId) {
+                const membership = await prisma.membership.findUnique({ 
+                  where: { id: membershipId } 
                 })
 
-                console.log(`✓ Activated membership ${membership.name} for user ${tx.userId}`)
+                if (membership) {
+                  // Calculate end date based on duration
+                  const now = new Date()
+                  let endDate = new Date(now)
+                  
+                  switch (membership.duration) {
+                    case 'ONE_MONTH':
+                      endDate.setMonth(endDate.getMonth() + 1)
+                      break
+                    case 'THREE_MONTHS':
+                      endDate.setMonth(endDate.getMonth() + 3)
+                      break
+                    case 'SIX_MONTHS':
+                      endDate.setMonth(endDate.getMonth() + 6)
+                      break
+                    case 'TWELVE_MONTHS':
+                      endDate.setFullYear(endDate.getFullYear() + 1)
+                      break
+                    case 'LIFETIME':
+                      endDate.setFullYear(endDate.getFullYear() + 100)
+                      break
+                    default:
+                      const durationValue = typeof membership.duration === 'number' ? membership.duration : 365
+                      endDate = new Date(Date.now() + durationValue * 24 * 60 * 60 * 1000)
+                  }
+
+                  // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
+                  await prisma.userMembership.updateMany({
+                    where: { 
+                      userId: tx.userId,
+                      isActive: true
+                    },
+                    data: { 
+                      isActive: false,
+                      status: 'EXPIRED'
+                    }
+                  })
+                  console.log(`[Bulk Confirm] ✅ Deactivated old memberships for user ${tx.userId}`)
+
+                  // 🔒 CANCEL OTHER PENDING MEMBERSHIP TRANSACTIONS
+                  const cancelledTransactions = await prisma.transaction.updateMany({
+                    where: {
+                      userId: tx.userId,
+                      type: 'MEMBERSHIP',
+                      status: 'PENDING',
+                      id: { not: tx.id }
+                    },
+                    data: {
+                      status: 'CANCELLED',
+                    }
+                  })
+                  
+                  if (cancelledTransactions.count > 0) {
+                    console.log(`[Bulk Confirm] ✅ Auto-cancelled ${cancelledTransactions.count} pending membership transactions`)
+                  }
+
+                  // Check if UserMembership already exists for this transaction
+                  let userMembership = await prisma.userMembership.findUnique({
+                    where: { transactionId: tx.id },
+                  })
+
+                  if (userMembership) {
+                    // UPDATE existing UserMembership
+                    await prisma.userMembership.update({
+                      where: { id: userMembership.id },
+                      data: {
+                        status: 'ACTIVE',
+                        isActive: true,
+                        startDate: now,
+                        endDate,
+                        activatedAt: now,
+                        updatedAt: now
+                      }
+                    })
+                    console.log(`[Bulk Confirm] ✅ Updated existing UserMembership to ACTIVE`)
+                  } else {
+                    // CREATE new UserMembership
+                    userMembership = await prisma.userMembership.create({
+                      data: {
+                        id: `um_${tx.id}`,
+                        userId: tx.userId,
+                        membershipId: membershipId,
+                        transactionId: tx.id,
+                        status: 'ACTIVE',
+                        isActive: true,
+                        startDate: now,
+                        endDate,
+                        activatedAt: now,
+                        price: tx.amount
+                      }
+                    })
+                    console.log(`[Bulk Confirm] ✅ Created NEW UserMembership for transaction ${tx.id}`)
+                  }
+
+                  // Update user role to MEMBER_PREMIUM
+                  await prisma.user.update({
+                    where: { id: tx.userId },
+                    data: { role: 'MEMBER_PREMIUM' }
+                  })
+                  console.log(`[Bulk Confirm] ✅ User role upgraded to MEMBER_PREMIUM`)
+
+                  // ===== AUTO-JOIN GROUPS =====
+                  const membershipGroups = await prisma.membershipGroup.findMany({
+                    where: { membershipId: membership.id }
+                  })
+
+                  for (const mg of membershipGroups) {
+                    try {
+                      const existingMember = await prisma.groupMember.findUnique({
+                        where: {
+                          groupId_userId: {
+                            groupId: mg.groupId,
+                            userId: tx.userId
+                          }
+                        }
+                      })
+
+                      if (!existingMember) {
+                        await prisma.groupMember.create({
+                          data: {
+                            id: createId(),
+                            groupId: mg.groupId,
+                            userId: tx.userId,
+                            role: 'MEMBER'
+                          }
+                        })
+                        console.log(`[Bulk Confirm] ✅ User ${tx.userId} added to group ${mg.groupId}`)
+                      }
+                    } catch (groupError) {
+                      console.error(`[Bulk Confirm] Error adding user to group:`, groupError)
+                    }
+                  }
+
+                  // ===== AUTO-ENROLL COURSES =====
+                  const membershipCourses = await prisma.membershipCourse.findMany({
+                    where: { membershipId: membership.id }
+                  })
+
+                  for (const mc of membershipCourses) {
+                    try {
+                      const existingEnrollment = await prisma.courseEnrollment.findFirst({
+                        where: {
+                          courseId: mc.courseId,
+                          userId: tx.userId
+                        }
+                      })
+
+                      if (!existingEnrollment) {
+                        await prisma.courseEnrollment.create({
+                          data: {
+                            id: createId(),
+                            courseId: mc.courseId,
+                            userId: tx.userId,
+                            updatedAt: new Date()
+                          }
+                        })
+                        console.log(`[Bulk Confirm] ✅ User ${tx.userId} enrolled in course ${mc.courseId}`)
+                      }
+                    } catch (courseError) {
+                      console.error(`[Bulk Confirm] Error enrolling user in course:`, courseError)
+                    }
+                  }
+
+                  // ===== AUTO-GRANT PRODUCTS =====
+                  const membershipProducts = await prisma.membershipProduct.findMany({
+                    where: { membershipId: membership.id }
+                  })
+
+                  for (const mp of membershipProducts) {
+                    try {
+                      const existingProduct = await prisma.userProduct.findFirst({
+                        where: {
+                          productId: mp.productId,
+                          userId: tx.userId
+                        }
+                      })
+
+                      if (!existingProduct) {
+                        await prisma.userProduct.create({
+                          data: {
+                            userId: tx.userId,
+                            productId: mp.productId,
+                            transactionId: tx.id,
+                            purchaseDate: new Date(),
+                            price: 0 // Free as part of membership
+                          }
+                        })
+                        console.log(`[Bulk Confirm] ✅ User ${tx.userId} granted product ${mp.productId}`)
+                      }
+                    } catch (productError) {
+                      console.error(`[Bulk Confirm] Error granting product:`, productError)
+                    }
+                  }
+
+                  console.log(`[Bulk Confirm] ✅ Membership ${membership.name} fully activated for user ${tx.userId}`)
+                }
               }
             }
 
-            // 2. Enroll in Course
+            // 2. Enroll in Course (for COURSE type transactions)
             if (tx.type === 'COURSE' && tx.courseId) {
-              // Check if enrollment exists
               const existingEnrollment = await prisma.courseEnrollment.findFirst({
                 where: {
                   userId: tx.userId,

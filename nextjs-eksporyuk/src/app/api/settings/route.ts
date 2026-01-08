@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
+import { safePrisma } from '@/lib/safe-prisma'
 import { apiCache, CACHE_KEYS, CACHE_TTL } from '@/lib/api-cache'
 
 // Force this route to be dynamic - no caching at edge
@@ -23,15 +24,12 @@ export async function GET() {
       return response
     }
 
-    // Get or create default settings - fetch all columns dynamically
+    // Get or create default settings using safe query
     let settings: any = null
     try {
-      settings = await prisma.settings.findUnique({
-        where: { id: 1 }
-      })
+      settings = await safePrisma.findSettings()
     } catch (dbError: any) {
       console.error('Settings fetch error:', dbError)
-      // Return defaults if database query fails
       settings = null
     }
 

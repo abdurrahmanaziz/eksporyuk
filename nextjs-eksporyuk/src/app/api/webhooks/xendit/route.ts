@@ -77,8 +77,8 @@ async function handleInvoicePaid(data: any) {
   try {
     const { external_id, id: invoiceId, amount, payment_channel, payment_destination } = data
     
-    // Find transaction by externalId
-    const transaction = await prisma.transaction.findUnique({
+    // Find transaction by externalId (using findFirst since externalId is not unique)
+    const transaction = await prisma.transaction.findFirst({
       where: { externalId: external_id },
       include: { 
         user: true,
@@ -1045,7 +1045,8 @@ async function handleVAPaymentComplete(data: any) {
     
     console.log('[Xendit Webhook] Processing VA payment:', { external_id, payment_id, bank_code })
     
-    const transaction = await prisma.transaction.findUnique({
+    // Using findFirst since externalId is not a unique field in schema
+    const transaction = await prisma.transaction.findFirst({
       where: { externalId: external_id },
       include: { 
         user: true,
@@ -1752,7 +1753,8 @@ async function handlePaymentFailed(data: any) {
     
     console.log('[Xendit Webhook] Processing payment failed:', { external_id, failure_reason })
     
-    const transaction = await prisma.transaction.findUnique({
+    // Using findFirst since externalId is not a unique field in schema
+    const transaction = await prisma.transaction.findFirst({
       where: { externalId: external_id }
     })
 

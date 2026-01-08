@@ -10,7 +10,6 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type CourseProgress = {
   courseId: string
@@ -44,7 +43,6 @@ export default function MyCoursesPage() {
   const { data: session } = useSession()
   const [courses, setCourses] = useState<CourseProgress[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('in-progress')
 
   useEffect(() => {
     fetchMyCourses()
@@ -69,6 +67,25 @@ export default function MyCoursesPage() {
     }
   }
 
+  // Sort courses by priority: not started -> in progress -> completed
+  const sortedCourses = [...courses].sort((a, b) => {
+    // Not started (0%) comes first
+    if (a.progress === 0 && b.progress > 0) return -1
+    if (b.progress === 0 && a.progress > 0) return 1
+    
+    // Then in progress (1-99%)
+    if (a.progress > 0 && a.progress < 100 && b.progress === 100) return -1
+    if (b.progress > 0 && b.progress < 100 && a.progress === 100) return 1
+    
+    // Within the same category, sort by last accessed or alphabetically
+    if (a.lastAccessed && b.lastAccessed) {
+      return new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime()
+    }
+    
+    return a.course.title.localeCompare(b.course.title)
+  })
+
+  // Calculate stats
   const inProgressCourses = courses.filter(c => c.progress < 100 && c.progress > 0)
   const notStartedCourses = courses.filter(c => c.progress === 0)
   const completedCourses = courses.filter(c => c.progress === 100)
@@ -109,6 +126,18 @@ export default function MyCoursesPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
+              <p className="text-sm text-gray-600 mb-1">Belum Dimulai</p>
+              <p className="text-2xl font-bold text-gray-600">{notStartedCourses.length}</p>
+            </div>
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Play className="w-6 h-6 text-gray-600" />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
               <p className="text-sm text-gray-600 mb-1">Sedang Berjalan</p>
               <p className="text-2xl font-bold text-orange-600">{inProgressCourses.length}</p>
             </div>
@@ -129,99 +158,42 @@ export default function MyCoursesPage() {
             </div>
           </div>
         </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Sertifikat</p>
-              <p className="text-2xl font-bold text-purple-600">
-                {courses.filter(c => c.certificateIssued).length}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Award className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </Card>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="in-progress">
-            Sedang Belajar ({inProgressCourses.length})
-          </TabsTrigger>
-          <TabsTrigger value="not-started">
-            Belum Dimulai ({notStartedCourses.length})
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            Selesai ({completedCourses.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="in-progress">
-          {inProgressCourses.length === 0 ? (
-            <Card className="p-12 text-center">
-              <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Belum Ada Kursus yang Sedang Berjalan
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Mulai belajar dari kursus yang sudah Anda daftarkan
+      {/* All Courses Display */}
+      <div className="space-y-6">
+        {courses.length === 0 ? (
+          <Card className="p-12 text-center">
+            <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Belum Ada Kursus Terdaftar
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Daftarkan diri Anda ke kursus dan mulai perjalanan belajar
+            </p>
+            <Link href="/courses">
+              <Button>Jelajah Kursus</Button>
+            </Link>
+          </Card>
+        ) : (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Semua Kursus ({courses.length})
+              </h2>
+              <p className="text-sm text-gray-500">
+                Diurutkan berdasarkan prioritas belajar
               </p>
-              <Link href="/courses">
-                <Button>Jelajah Kursus</Button>
-              </Link>
-            </Card>
-          ) : (
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {inProgressCourses.map((enrollment) => (
+              {sortedCourses.map((enrollment) => (
                 <CourseCard key={enrollment.courseId} enrollment={enrollment} />
               ))}
             </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="not-started">
-          {notStartedCourses.length === 0 ? (
-            <Card className="p-12 text-center">
-              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Semua Kursus Sudah Dimulai
-              </h3>
-              <p className="text-gray-600">
-                Anda sudah memulai semua kursus yang terdaftar
-              </p>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {notStartedCourses.map((enrollment) => (
-                <CourseCard key={enrollment.courseId} enrollment={enrollment} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="completed">
-          {completedCourses.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Belum Ada Kursus yang Selesai
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Selesaikan kursus untuk mendapatkan sertifikat
-              </p>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {completedCourses.map((enrollment) => (
-                <CourseCard key={enrollment.courseId} enrollment={enrollment} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          </div>
+        )}
+      </div>
     </div>
     </ResponsivePageWrapper>
   )
