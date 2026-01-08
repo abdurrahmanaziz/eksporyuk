@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 /**
  * Get commission settings for all memberships and products
  * GET /api/admin/commission/settings

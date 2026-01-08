@@ -424,7 +424,7 @@ export const authOptions: NextAuthOptions = {
         console.log(`[AUTH ${timestamp}] IMPERSONATION - Admin viewing as user`)
         const impersonationData = updateSession.impersonation
         
-        // Store original admin data before impersonation
+        // Store original admin data if not already stored
         if (!token.originalAdmin) {
           token.originalAdmin = {
             id: token.id,
@@ -442,32 +442,20 @@ export const authOptions: NextAuthOptions = {
           }
         }
         
-        // Update token to impersonate target user
-        token.id = impersonationData.targetUser.id
-        token.email = impersonationData.targetUser.email
-        token.name = impersonationData.targetUser.name
-        token.role = impersonationData.targetUser.role
-        token.allRoles = impersonationData.targetUser.allRoles
-        token.username = impersonationData.targetUser.username
-        token.avatar = impersonationData.targetUser.avatar
-        token.whatsapp = impersonationData.targetUser.whatsapp
-        token.emailVerified = impersonationData.targetUser.emailVerified
-        token.memberCode = impersonationData.targetUser.memberCode
-        token.affiliateMenuEnabled = impersonationData.targetUser.affiliateMenuEnabled
-        token.hasAffiliateProfile = impersonationData.targetUser.hasAffiliateProfile
-        token.preferredDashboard = impersonationData.targetUser.preferredDashboard
-        
-        // Store impersonation metadata in token
+        // Store impersonation metadata in token WITHOUT changing core identity
+        // This prevents JWT signature issues
         token.isImpersonating = true
+        token.impersonationTargetUser = impersonationData.targetUser
         token.impersonationReason = impersonationData.impersonation.reason
         token.impersonationStartedAt = impersonationData.impersonation.startedAt
         token.impersonationAdminId = impersonationData.impersonation.adminId
         token.impersonationAdminEmail = impersonationData.impersonation.adminEmail
         
-        console.log(`[AUTH ${timestamp}] IMPERSONATION - Token updated for target user:`, {
-          targetUserId: token.id,
-          targetUserEmail: token.email,
-          adminId: token.impersonationAdminId
+        console.log(`[AUTH ${timestamp}] IMPERSONATION - Token updated with metadata:`, {
+          targetUserId: impersonationData.targetUser.id,
+          targetUserEmail: impersonationData.targetUser.email,
+          adminId: token.impersonationAdminId,
+          keepingOriginalTokenId: token.id
         })
         
         return token
@@ -719,7 +707,23 @@ export const authOptions: NextAuthOptions = {
         session.user.preferredDashboard = token.preferredDashboard as string || null
         
         // Add impersonation data to session and user object
-        if (token.isImpersonating) {
+        if (token.isImpersonating && token.impersonationTargetUser) {
+          // Show target user data in session.user but keep admin context
+          const targetUser = token.impersonationTargetUser as any
+          
+          session.user.id = targetUser.id
+          session.user.email = targetUser.email
+          session.user.name = targetUser.name
+          session.user.role = targetUser.role
+          session.user.allRoles = targetUser.allRoles || [targetUser.role]
+          session.user.username = targetUser.username || ''
+          session.user.whatsapp = targetUser.whatsapp
+          session.user.emailVerified = targetUser.emailVerified || false
+          session.user.affiliateMenuEnabled = targetUser.affiliateMenuEnabled || false
+          session.user.hasAffiliateProfile = targetUser.hasAffiliateProfile || false
+          session.user.preferredDashboard = targetUser.preferredDashboard || null
+          
+          // Add impersonation metadata
           session.user.isImpersonating = true
           session.user.impersonationStartedAt = token.impersonationStartedAt as string
           session.user.impersonationReason = token.impersonationReason as string
@@ -733,14 +737,25 @@ export const authOptions: NextAuthOptions = {
             reason: token.impersonationReason as string,
             startedAt: token.impersonationStartedAt as string,
             targetUser: {
-              id: token.id as string,
-              name: token.name as string,
-              email: token.email as string,
-              role: token.role as string
+              id: targetUser.id,
+              name: targetUser.name,
+              email: targetUser.email,
+              role: targetUser.role
             },
             originalAdmin: token.originalAdmin as any
           }
         } else {
+          // Normal session - use token data directly  
+          session.user.id = token.id as string
+          session.user.role = token.role as string
+          session.user.allRoles = token.allRoles as string[] || [token.role as string]
+          session.user.username = token.username as string || ''
+          session.user.whatsapp = token.whatsapp as string
+          session.user.emailVerified = token.emailVerified as boolean || false
+          session.user.affiliateMenuEnabled = token.affiliateMenuEnabled as boolean || false
+          session.user.hasAffiliateProfile = token.hasAffiliateProfile as boolean || false
+          session.user.preferredDashboard = token.preferredDashboard as string || null
+          
           // Ensure impersonation data is cleared when not impersonating
           session.user.isImpersonating = false
           delete session.user.impersonationStartedAt

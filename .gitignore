@@ -35,3 +35,8 @@ eksporyuk_clean.sql
 .vercel
 .env*.local
 nextjs-eksporyuk/vercel-blob-backup/
+.next/
+*.log
+node_modules/
+.env
+.env.local
