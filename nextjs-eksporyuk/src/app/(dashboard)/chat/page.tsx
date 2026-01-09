@@ -589,28 +589,23 @@ export default function ChatPage() {
 
         setPusherClient(client)
 
-        // Subscribe to user channel for direct messages
+        // Subscribe to user channel for notifications (sidebar updates)
         const userChannel = client.subscribe(`user-${session.user.id}`)
         
-        // Listen for new messages
+        // Listen for new message notifications (for sidebar/bell update)
         userChannel.bind('new-message', (data: any) => {
-          console.log('[Pusher] Received new message:', data)
+          console.log('[Pusher] User channel - new message notification:', data)
           
-          // Add message to current conversation if it matches active room
-          if (data.roomId === activeRoom?.id) {
-            setMessages(prev => [...prev, data.message])
-          }
-          
-          // Update room's last message in sidebar
+          // Update room's last message and unread count in sidebar
           setRooms(prev => prev.map(room => 
             room.id === data.roomId 
               ? { 
                   ...room, 
                   lastMessage: {
-                    content: data.message.content,
-                    createdAt: data.message.createdAt
+                    content: data.content || 'Pesan baru',
+                    createdAt: new Date().toISOString()
                   },
-                  unreadCount: room.id === activeRoom?.id ? room.unreadCount : room.unreadCount + 1
+                  unreadCount: room.unreadCount + 1
                 }
               : room
           ))
@@ -648,15 +643,31 @@ export default function ChatPage() {
   useEffect(() => {
     if (!pusherClient || !activeRoom?.id) return
 
-    const roomChannel = pusherClient.subscribe(`room-${activeRoom.id}`)
+    const channelName = `private-room-${activeRoom.id}`
+    const roomChannel = pusherClient.subscribe(channelName)
     
     roomChannel.bind('new-message', (data: any) => {
-      console.log('[Pusher] Room message:', data)
-      setMessages(prev => [...prev, data.message])
+      console.log('[Pusher] Room message received:', data)
+      // data is the message directly, not wrapped
+      if (data.id) {
+        setMessages(prev => {
+          // Avoid duplicates
+          if (prev.some(m => m.id === data.id)) return prev
+          return [...prev, data]
+        })
+      }
+    })
+
+    roomChannel.bind('pusher:subscription_succeeded', () => {
+      console.log('[Pusher] Successfully subscribed to:', channelName)
+    })
+
+    roomChannel.bind('pusher:subscription_error', (error: any) => {
+      console.error('[Pusher] Subscription error:', channelName, error)
     })
 
     return () => {
-      pusherClient.unsubscribe(`room-${activeRoom.id}`)
+      pusherClient.unsubscribe(channelName)
     }
   }, [pusherClient, activeRoom?.id])
 

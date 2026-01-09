@@ -103,16 +103,38 @@ class OneSignalService {
     }
   }
 
-  async sendToUser(userId: string, heading: string, content: string, url?: string): Promise<{ 
+  async sendToUser(userId: string, options: {
+    headings?: { en: string; id?: string };
+    contents?: { en: string; id?: string };
+    url?: string;
+    data?: Record<string, any>;
+  } | string, content?: string, url?: string): Promise<{ 
     success: boolean
     error?: string 
   }> {
-    const result = await this.sendNotification({
-      userIds: [userId],
-      heading,
-      content,
-      url
-    })
+    // Support both old (string params) and new (object param) signatures
+    let notification: PushNotification;
+    
+    if (typeof options === 'string') {
+      // Old signature: sendToUser(userId, heading, content, url)
+      notification = {
+        userIds: [userId],
+        heading: options,
+        content: content || '',
+        url: url
+      }
+    } else {
+      // New signature: sendToUser(userId, { headings, contents, url, data })
+      notification = {
+        userIds: [userId],
+        heading: options.headings?.en || options.headings?.id || '',
+        content: options.contents?.en || options.contents?.id || '',
+        url: options.url,
+        data: options.data
+      }
+    }
+    
+    const result = await this.sendNotification(notification)
     
     return {
       success: result.success,
