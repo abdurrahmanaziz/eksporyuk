@@ -32,9 +32,9 @@ export async function GET(
         createdAt: true,
         _count: {
           select: {
-            posts: true,
-            followers: true,
-            following: true
+            Post: true,
+            Follow_Follow_followingIdToUser: true, // followers (people following this user)
+            Follow_Follow_followerIdToUser: true   // following (people this user follows)
           }
         }
       }
@@ -58,8 +58,24 @@ export async function GET(
       isFollowing = !!follow
     }
 
+    // Transform response to use cleaner names
     return NextResponse.json({
-      ...user,
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      role: user.role,
+      bio: user.bio,
+      city: user.city,
+      province: user.province,
+      locationVerified: user.locationVerified,
+      createdAt: user.createdAt,
+      _count: {
+        posts: user._count.Post,
+        followers: user._count.Follow_Follow_followingIdToUser,
+        following: user._count.Follow_Follow_followerIdToUser
+      },
       isFollowing
     })
   } catch (error) {

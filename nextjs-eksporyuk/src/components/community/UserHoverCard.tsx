@@ -1,14 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { MessageCircle, UserPlus, Eye, MapPin } from 'lucide-react'
+import { MessageCircle, UserPlus, UserMinus, Eye, MapPin, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
+import { toast } from 'sonner'
 
 interface UserHoverCardProps {
   userId: string
@@ -36,9 +38,12 @@ interface UserProfile {
 }
 
 export default function UserHoverCard({ userId, username, children }: UserHoverCardProps) {
+  const { data: session } = useSession()
   const [showCard, setShowCard] = useState(false)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(false)
+  const [followLoading, setFollowLoading] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [hoverTimeout, setHoverTimeoutState] = useState<NodeJS.Timeout | null>(null)
 
@@ -51,11 +56,41 @@ export default function UserHoverCard({ userId, username, children }: UserHoverC
       if (response.ok) {
         const data = await response.json()
         setProfile(data)
+        setIsFollowing(data.isFollowing || false)
       }
     } catch (error) {
       console.error('Failed to fetch profile preview:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleFollow = async () => {
+    if (!session?.user?.id || followLoading) return
+    
+    setFollowLoading(true)
+    try {
+      const res = await fetch(`/api/users/${userId}/follow`, {
+        method: isFollowing ? 'DELETE' : 'POST',
+      })
+      
+      if (res.ok) {
+        setIsFollowing(!isFollowing)
+        if (profile) {
+          setProfile({
+            ...profile,
+            _count: {
+              ...profile._count,
+              followers: profile._count.followers + (isFollowing ? -1 : 1)
+            }
+          })
+        }
+        toast.success(isFollowing ? 'Berhenti mengikuti' : 'Berhasil mengikuti')
+      }
+    } catch (error) {
+      toast.error('Gagal memproses permintaan')
+    } finally {
+      setFollowLoading(false)
     }
   }
 
@@ -188,14 +223,33 @@ export default function UserHoverCard({ userId, username, children }: UserHoverC
                   <Button size="sm" className="flex-1" asChild>
                     <Link href={`/chat?user=${profile.username}`}>
                       <MessageCircle className="w-4 h-4 mr-1" />
-                      Message
+                      Chat
                     </Link>
                   </Button>
                   
-                  <Button size="sm" variant="outline" className="flex-1">
-                    <UserPlus className="w-4 h-4 mr-1" />
-                    Follow
-                  </Button>
+                  {session?.user?.id !== profile.id && (
+                    <Button 
+                      size="sm" 
+                      variant={isFollowing ? "secondary" : "outline"} 
+                      className="flex-1"
+                      onClick={handleFollow}
+                      disabled={followLoading}
+                    >
+                      {followLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : isFollowing ? (
+                        <>
+                          <UserMinus className="w-4 h-4 mr-1" />
+                          Unfollow
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4 mr-1" />
+                          Follow
+                        </>
+                      )}
+                    </Button>
+                  )}
                   
                   <Button size="sm" variant="outline" asChild>
                     <Link href={`/${profile.username}`}>
