@@ -542,17 +542,19 @@ export default function ChatPage() {
   const otherUser = getOtherParticipant()
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-gray-100 dark:bg-gray-900">
-      {/* Sidebar - 30% on desktop, full on mobile when active */}
-      <div className={cn(
-        "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 flex-shrink-0",
-        // Mobile: full width or hidden
-        showSidebar ? "w-full" : "w-0 overflow-hidden",
-        // Tablet: 320px fixed
-        "sm:w-[320px]",
-        // Desktop: 30% width with min/max constraints
-        "lg:w-[30%] lg:min-w-[300px] lg:max-w-[400px]"
-      )}>
+    <div className="h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900 overflow-hidden">
+      <div className="h-full flex">
+        {/* Sidebar - Chat List */}
+        <aside className={cn(
+          "h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col",
+          // Mobile behavior
+          "absolute inset-y-0 left-0 z-20 w-full transition-transform duration-300 ease-in-out",
+          showSidebar ? "translate-x-0" : "-translate-x-full",
+          // Tablet and up: static positioning with fixed width
+          "sm:relative sm:translate-x-0 sm:w-80",
+          // Large screens: 30% width
+          "lg:w-[30%] lg:min-w-[320px] lg:max-w-[400px]"
+        )}>
         {/* Header */}
         <div className="p-5 border-b border-gray-100 dark:border-gray-700">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Messages</h1>
@@ -686,16 +688,12 @@ export default function ChatPage() {
             </div>
           )}
         </div>
-      </div>
+        </aside>
 
-      {/* Main Chat Area - 70% on desktop */}
-      <div className={cn(
-        "flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 min-w-0",
-        // On mobile, show full width when sidebar is hidden
-        !showSidebar ? "w-full" : "hidden sm:flex",
-        // Desktop: takes remaining 70%
-        "lg:flex lg:w-[70%]"
-      )}>
+        {/* Main Chat Area - 70% on desktop */}
+        <main className={cn(
+          "flex-1 h-full flex flex-col bg-gray-50 dark:bg-gray-900 min-w-0"
+        )}>
         {!activeRoom ? (
           /* Welcome Screen */
           <div className="flex-1 flex items-center justify-center">
@@ -890,6 +888,7 @@ export default function ChatPage() {
             </div>
           </>
         )}
+        </main>
       </div>
     </div>
   )
