@@ -542,18 +542,18 @@ export default function ChatPage() {
   const otherUser = getOtherParticipant()
 
   return (
-    <div className="h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900 overflow-hidden">
-      <div className="h-full flex">
-        {/* Sidebar - Chat List */}
+    <div className="-m-4 sm:-m-6 -mt-20 lg:-mt-6 h-[calc(100vh-64px)] lg:h-[calc(100vh)] overflow-hidden">
+      <div className="h-full flex bg-gray-50 dark:bg-gray-900">
+        {/* Sidebar - Chat List (30%) */}
         <aside className={cn(
-          "h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col",
-          // Mobile behavior
-          "absolute inset-y-0 left-0 z-20 w-full transition-transform duration-300 ease-in-out",
+          "h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col flex-shrink-0",
+          // Mobile: full width overlay
+          "fixed inset-0 z-30 w-full transition-transform duration-300 ease-in-out",
           showSidebar ? "translate-x-0" : "-translate-x-full",
-          // Tablet and up: static positioning with fixed width
-          "sm:relative sm:translate-x-0 sm:w-80",
-          // Large screens: 30% width
-          "lg:w-[30%] lg:min-w-[320px] lg:max-w-[400px]"
+          // Tablet: 320px fixed, static position
+          "sm:static sm:translate-x-0 sm:w-80",
+          // Desktop: 30% width
+          "lg:w-[30%] lg:min-w-[320px] lg:max-w-[420px]"
         )}>
         {/* Header */}
         <div className="p-5 border-b border-gray-100 dark:border-gray-700">
@@ -690,21 +690,19 @@ export default function ChatPage() {
         </div>
         </aside>
 
-        {/* Main Chat Area - 70% on desktop */}
-        <main className={cn(
-          "flex-1 h-full flex flex-col bg-gray-50 dark:bg-gray-900 min-w-0"
-        )}>
+        {/* Main Chat Area (70%) */}
+        <main className="flex-1 h-full flex flex-col bg-gray-50 dark:bg-gray-900 min-w-0">
         {!activeRoom ? (
-          /* Welcome Screen */
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center px-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <MessageCircle className="w-10 h-10 text-white" />
+          /* Welcome Screen - Centered in main area */
+          <div className="flex-1 flex items-center justify-center p-6">
+            <div className="text-center max-w-sm">
+              <div className="w-24 h-24 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-[28px] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20">
+                <MessageCircle className="w-12 h-12 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
                 Hello, {session?.user?.name?.split(' ')[0] || 'there'}! 👋
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+              <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
                 Welcome to the mentor chat. Ask any questions about exports, logistics, or regulations. We're here to help!
               </p>
             </div>
