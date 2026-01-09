@@ -393,10 +393,18 @@ export default function CheckoutPage() {
         if (data.plan.prices && data.plan.prices.length > 0) {
           setSelectedPrice(data.plan.prices[0])
         }
+      } else if (res.status === 403) {
+        // Membership is not active
+        toast.error('Paket membership ini sudah tidak tersedia')
+        router.push('/pricing')
+      } else if (res.status === 404) {
+        // Membership not found
+        toast.error('Paket membership tidak ditemukan')
+        router.push('/pricing')
       } else {
         const errorText = await res.text()
         console.error('[Checkout] Error response:', errorText)
-        toast.error('Paket membership tidak ditemukan')
+        toast.error('Gagal memuat paket membership')
         router.push('/')
       }
     } catch (error) {

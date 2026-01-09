@@ -190,18 +190,18 @@ export async function GET(request: NextRequest) {
         productId: true,
         courseId: true,
         supplierId: true,
-        // Optimized relations - only select needed fields
+        // Optimized relations - include isActive/affiliateEnabled status
         membership: {
-          select: { id: true, name: true, slug: true }
+          select: { id: true, name: true, slug: true, isActive: true, affiliateEnabled: true }
         },
         product: {
-          select: { id: true, name: true, slug: true }
+          select: { id: true, name: true, slug: true, isActive: true }
         },
         course: {
-          select: { id: true, title: true }
+          select: { id: true, title: true, isPublished: true }
         },
         supplier: {
-          select: { id: true, companyName: true, province: true, city: true }
+          select: { id: true, companyName: true, province: true, city: true, isVerified: true }
         }
       },
       orderBy: {
@@ -213,36 +213,70 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ [Affiliate Links] Retrieved ${links.length} links`)
 
-    // Build optimized response with pagination
-    const linksWithStats = links.map((link) => {
-      return {
-        id: link.id,
-        code: link.code,
-        url: link.fullUrl,
-        linkType: link.linkType,
-        couponCode: link.couponCode,
-        clicks: link.clicks,
-        conversions: link.conversions || 0,
-        revenue: 0, // Calculate separately if needed
-        isArchived: link.isArchived,
-        membership: link.membership,
-        product: link.product,
-        course: link.course,
-        supplier: link.supplier,
-        createdAt: link.createdAt.toISOString(),
-      }
-    })
+    // Build optimized response with pagination - FILTER OUT inactive items
+    const linksWithStats = links
+      .filter((link) => {
+        // Filter out links where the associated item is no longer active/enabled for affiliates
+        if (link.membership) {
+          return link.membership.isActive && link.membership.affiliateEnabled
+        }
+        if (link.product) {
+          return link.product.isActive
+        }
+        if (link.course) {
+          return link.course.isPublished
+        }
+        if (link.supplier) {
+          return link.supplier.isVerified
+        }
+        return true // Keep links without specific target
+      })
+      .map((link) => {
+        return {
+          id: link.id,
+          code: link.code,
+          url: link.fullUrl,
+          linkType: link.linkType,
+          couponCode: link.couponCode,
+          clicks: link.clicks,
+          conversions: link.conversions || 0,
+          revenue: 0, // Calculate separately if needed
+          isArchived: link.isArchived,
+          membership: link.membership ? {
+            id: link.membership.id,
+            name: link.membership.name,
+            slug: link.membership.slug,
+            isActive: link.membership.isActive,
+            affiliateEnabled: link.membership.affiliateEnabled
+          } : null,
+          product: link.product ? {
+            id: link.product.id,
+            name: link.product.name,
+            slug: link.product.slug,
+            isActive: link.product.isActive
+          } : null,
+          course: link.course ? {
+            id: link.course.id,
+            title: link.course.title,
+            isPublished: link.course.isPublished
+          } : null,
+          supplier: link.supplier,
+          createdAt: link.createdAt.toISOString(),
+        }
+      })
 
-    const totalPages = Math.ceil(totalCount / limit)
+    // Recalculate total after filtering
+    const filteredTotal = linksWithStats.length
+    const totalPages = Math.ceil(filteredTotal / limit)
 
-    console.log(`✅ [Affiliate Links] Success - returning ${linksWithStats.length} links`)
+    console.log(`✅ [Affiliate Links] Success - returning ${linksWithStats.length} links (filtered from ${links.length})`)
 
     return NextResponse.json({
       links: linksWithStats,
       pagination: {
         page,
         limit,
-        total: totalCount,
+        total: filteredTotal,
         totalPages,
         hasNext: page < totalPages,
         hasPrev: page > 1

@@ -116,6 +116,32 @@ export async function POST(request: NextRequest) {
     */
     console.log('⚠️ [DEBUG] Bypassing payment channel validation for testing')
 
+    // Validate membership is active and available for purchase
+    if (type === 'MEMBERSHIP' && membershipId) {
+      const membership = await prisma.membership.findUnique({
+        where: { id: membershipId },
+        select: { id: true, name: true, isActive: true, status: true }
+      })
+      
+      if (!membership) {
+        console.error('❌ Membership not found:', membershipId)
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Paket membership tidak ditemukan' 
+        }, { status: 404 })
+      }
+      
+      if (!membership.isActive || membership.status === 'ARCHIVED') {
+        console.error('❌ Membership is not active:', membershipId, membership.status)
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Paket membership ini sudah tidak tersedia' 
+        }, { status: 400 })
+      }
+      
+      console.log(`✅ Membership validated: ${membership.name} (active: ${membership.isActive})`)
+    }
+
     // Get payment expiry settings
     let settings = await prisma.settings.findFirst()
     if (!settings) {
