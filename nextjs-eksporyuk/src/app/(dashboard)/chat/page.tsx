@@ -4,29 +4,25 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { 
   Send, Search, Paperclip, Smile, X, MessageCircle, 
-  Image as ImageIcon, Mic, Download, MoreHorizontal, 
-  Upload, ArrowLeft, Menu, Users, ChevronLeft, ArrowRight,
-  Phone, Video, MoreVertical, FileText
+  Image as ImageIcon, Mic, ArrowLeft, Phone, Video, MoreVertical
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { formatDistanceToNow } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { toast } from 'react-hot-toast'
 import { cn } from '@/lib/utils'
 import PusherClient from 'pusher-js'
 
-// Interfaces
+// ============= INTERFACES =============
 interface Mentor {
   id: string
   name: string
   username?: string
   avatar?: string
   isOnline: boolean
-  unreadCount: number
+  role?: string
 }
 
 interface ChatRoom {
@@ -58,30 +54,16 @@ interface Message {
   type: 'TEXT' | 'IMAGE' | 'VIDEO' | 'FILE' | 'AUDIO'
   createdAt: string
   isRead: boolean
-  isEdited?: boolean
-  editedAt?: Date
   attachment?: {
     url: string
     type: 'IMAGE' | 'VIDEO' | 'FILE' | 'AUDIO'
     name: string
     size: number
-    mimeType: string
-    thumbnailUrl?: string
-  }
-  reactions?: {
-    [emoji: string]: {
-      count: number
-      users: string[]
-    }
   }
   replyTo?: {
     id: string
     content: string
-    sender: {
-      id: string
-      name: string
-      avatar?: string
-    }
+    sender: { id: string; name: string }
   }
   sender: {
     id: string
@@ -92,121 +74,67 @@ interface Message {
   }
 }
 
-// Message Bubble Component
-const MessageBubble = ({ message, isOwn, handleReply, handleAddReaction, setShowEmojiPicker, showEmojiPicker }: { 
-  message: Message; 
-  isOwn: boolean;
-  handleReply: (message: Message) => void;
-  handleAddReaction: (messageId: string, emoji: string) => void;
-  setShowEmojiPicker: (messageId: string | null) => void;
-  showEmojiPicker: string | null;
-}) => (
-  <div className={cn("flex mb-4", isOwn ? "justify-end" : "justify-start")}>
-    {!isOwn && (
-      <Avatar className="w-8 h-8 mr-2 flex-shrink-0">
-        <AvatarImage src={message.sender?.avatar} />
-        <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-500 text-white text-xs font-semibold">
-          {message.sender?.name?.[0] || '?'}
-        </AvatarFallback>
-      </Avatar>
-    )}
-    
-    <div className={cn(
-      "max-w-[70%] rounded-2xl px-4 py-2.5 relative group",
-      isOwn 
-        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-sm" 
-        : "bg-white dark:bg-gray-700 shadow-sm border border-gray-100 dark:border-gray-600 rounded-bl-sm"
-    )}>
+// ============= MESSAGE BUBBLE =============
+function MessageBubble({ message, isOwn }: { message: Message; isOwn: boolean }) {
+  return (
+    <div className={cn("flex mb-3", isOwn ? "justify-end" : "justify-start")}>
       {!isOwn && (
-        <p className="text-xs font-semibold mb-1 text-emerald-600 dark:text-emerald-400">
-          {message.sender?.name}
-        </p>
+        <Avatar className="w-8 h-8 mr-2 flex-shrink-0">
+          <AvatarImage src={message.sender?.avatar} />
+          <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-500 text-white text-xs font-semibold">
+            {message.sender?.name?.[0] || '?'}
+          </AvatarFallback>
+        </Avatar>
       )}
       
-      {message.replyTo && (
-        <div className={cn(
-          "mb-2 p-2 rounded-lg border-l-3",
-          isOwn 
-            ? "bg-blue-400/30 border-blue-300" 
-            : "bg-gray-100 dark:bg-gray-600 border-gray-400"
-        )}>
-          <p className="text-xs opacity-75">{message.replyTo.sender.name}</p>
-          <p className="text-sm truncate">{message.replyTo.content}</p>
-        </div>
-      )}
+      <div className={cn(
+        "max-w-[75%] rounded-2xl px-4 py-2.5",
+        isOwn 
+          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md" 
+          : "bg-white dark:bg-gray-700 shadow-sm border border-gray-100 dark:border-gray-600 rounded-bl-md"
+      )}>
+        {!isOwn && (
+          <p className="text-xs font-semibold mb-1 text-emerald-600 dark:text-emerald-400">
+            {message.sender?.name}
+          </p>
+        )}
+        
+        {message.replyTo && (
+          <div className={cn(
+            "mb-2 p-2 rounded-lg border-l-2 text-sm",
+            isOwn ? "bg-blue-400/30 border-blue-300" : "bg-gray-100 dark:bg-gray-600 border-gray-400"
+          )}>
+            <p className="text-xs opacity-75">{message.replyTo.sender.name}</p>
+            <p className="truncate">{message.replyTo.content}</p>
+          </div>
+        )}
 
-      {message.type === 'TEXT' && (
-        <p className={cn(
-          "break-words whitespace-pre-wrap text-sm leading-relaxed",
-          !isOwn && "text-gray-800 dark:text-gray-100"
-        )}>{message.content}</p>
-      )}
-
-      {message.type === 'IMAGE' && message.attachment && (
-        <div className="mb-2">
+        {message.type === 'IMAGE' && message.attachment && (
           <img 
             src={message.attachment.url} 
-            alt={message.attachment.name}
-            className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+            alt="attachment"
+            className="max-w-full rounded-lg mb-2 cursor-pointer"
             onClick={() => window.open(message.attachment!.url, '_blank')}
           />
-          {message.content && <p className="mt-2 text-sm">{message.content}</p>}
-        </div>
-      )}
+        )}
 
-      {message.type === 'VIDEO' && message.attachment && (
-        <div className="mb-2">
-          <video src={message.attachment.url} controls className="max-w-full rounded-lg" />
-          {message.content && <p className="mt-2 text-sm">{message.content}</p>}
-        </div>
-      )}
+        <p className={cn(
+          "break-words whitespace-pre-wrap text-sm",
+          !isOwn && "text-gray-800 dark:text-gray-100"
+        )}>{message.content}</p>
 
-      {message.type === 'FILE' && message.attachment && (
-        <div className="flex items-center gap-2 mb-2">
-          <Download className="h-4 w-4 flex-shrink-0" />
-          <a href={message.attachment.url} download={message.attachment.name} className="underline truncate text-sm">
-            {message.attachment.name}
-          </a>
-          <span className="text-xs opacity-75 whitespace-nowrap">
-            ({Math.round(message.attachment.size / 1024)} KB)
-          </span>
-        </div>
-      )}
-
-      {message.type === 'AUDIO' && message.attachment && (
-        <div className="mb-2">
-          <audio src={message.attachment.url} controls className="max-w-full" />
-          {message.content && <p className="mt-2 text-sm">{message.content}</p>}
-        </div>
-      )}
-
-      <div className={cn(
-        "flex items-center justify-end mt-1 text-[10px]",
-        isOwn ? "text-blue-100" : "text-gray-400"
-      )}>
-        <span>
+        <p className={cn(
+          "text-[10px] mt-1 text-right",
+          isOwn ? "text-blue-100" : "text-gray-400"
+        )}>
           {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          {message.isEdited && <span className="ml-1">(edited)</span>}
-        </span>
+        </p>
       </div>
-
-      {message.reactions && Object.keys(message.reactions).length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {Object.entries(message.reactions).map(([emoji, reaction]) => (
-            <button
-              key={emoji}
-              onClick={() => handleAddReaction(message.id, emoji)}
-              className="px-2 py-0.5 rounded-full text-xs bg-white/20 hover:bg-white/30"
-            >
-              {emoji} {reaction.count}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
-  </div>
-)
+  )
+}
 
+// ============= MAIN COMPONENT =============
 export default function ChatPage() {
   const { data: session } = useSession()
   
@@ -220,9 +148,7 @@ export default function ChatPage() {
   const [sendingMessage, setSendingMessage] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [replyingTo, setReplyingTo] = useState<Message | null>(null)
-  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null)
-  const [uploadingFiles, setUploadingFiles] = useState<File[]>([])
-  const [showSidebar, setShowSidebar] = useState(true)
+  const [showMobileSidebar, setShowMobileSidebar] = useState(true)
   const [mentorFilter, setMentorFilter] = useState<'all' | 'online' | 'unread'>('all')
   const [pusherClient, setPusherClient] = useState<PusherClient | null>(null)
   
@@ -231,7 +157,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Scroll to bottom of messages
+  // Scroll to bottom
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
@@ -240,7 +166,7 @@ export default function ChatPage() {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  // Fetch rooms and mentors
+  // ============= FETCH DATA =============
   useEffect(() => {
     if (!session?.user?.id) return
     
@@ -260,10 +186,11 @@ export default function ChatPage() {
         
         if (mentorsRes.ok) {
           const mentorsData = await mentorsRes.json()
-          setMentors(mentorsData.mentors || [])
+          setMentors(mentorsData || [])
         }
       } catch (error) {
         console.error('Failed to fetch chat data:', error)
+        toast.error('Gagal memuat data chat')
       } finally {
         setLoading(false)
       }
@@ -272,7 +199,7 @@ export default function ChatPage() {
     fetchData()
   }, [session?.user?.id])
 
-  // Fetch messages when room changes
+  // ============= FETCH MESSAGES =============
   useEffect(() => {
     if (!activeRoom?.id) return
     
@@ -291,44 +218,35 @@ export default function ChatPage() {
     fetchMessages()
   }, [activeRoom?.id])
 
-  // Handle responsive sidebar
-  useEffect(() => {
-    const handleResize = () => {
-      // On tablet and desktop (>= 640px), always show sidebar
-      if (window.innerWidth >= 640) {
-        setShowSidebar(true)
-      } else {
-        // On mobile, show sidebar when no active room
-        setShowSidebar(!activeRoom)
-      }
-    }
-    
-    // Set initial state
-    handleResize()
-    
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [activeRoom])
-
-  // Setup Pusher
+  // ============= PUSHER SETUP =============
   useEffect(() => {
     if (!session?.user?.id) return
 
     const setupPusher = async () => {
       try {
-        const client = new PusherClient(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-          cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+        const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+        const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+
+        if (!pusherKey || !pusherCluster) {
+          console.warn('[Chat] Pusher not configured')
+          return
+        }
+
+        const client = new PusherClient(pusherKey, {
+          cluster: pusherCluster,
           forceTLS: true,
           authEndpoint: '/api/pusher/auth'
         })
 
         setPusherClient(client)
 
+        // Subscribe to user channel for notifications
         const userChannel = client.subscribe(`user-${session.user.id}`)
         
         userChannel.bind('new-message', (data: any) => {
-          console.log('[Pusher] User channel - new message notification:', data)
+          console.log('[Pusher] New message notification:', data)
           
+          // Update room list with new message
           setRooms(prev => prev.map(room => 
             room.id === data.roomId 
               ? { 
@@ -340,12 +258,6 @@ export default function ChatPage() {
                   unreadCount: room.unreadCount + 1
                 }
               : room
-          ))
-        })
-
-        userChannel.bind('message-reaction', (data: any) => {
-          setMessages(prev => prev.map(msg => 
-            msg.id === data.messageId ? { ...msg, reactions: data.reactions } : msg
           ))
         })
 
@@ -363,7 +275,7 @@ export default function ChatPage() {
     }
   }, [session?.user?.id])
 
-  // Subscribe to active room channel
+  // Subscribe to active room
   useEffect(() => {
     if (!pusherClient || !activeRoom?.id) return
 
@@ -371,6 +283,7 @@ export default function ChatPage() {
     const roomChannel = pusherClient.subscribe(channelName)
     
     roomChannel.bind('new-message', (data: any) => {
+      console.log('[Pusher] Room message:', data)
       if (data.id) {
         setMessages(prev => {
           if (prev.some(m => m.id === data.id)) return prev
@@ -384,13 +297,10 @@ export default function ChatPage() {
     }
   }, [pusherClient, activeRoom?.id])
 
-  // Select room
+  // ============= SELECT ROOM =============
   const selectRoom = async (room: ChatRoom) => {
     setActiveRoom(room)
-    // On mobile (< 640px), hide sidebar when selecting room
-    if (window.innerWidth < 640) {
-      setShowSidebar(false)
-    }
+    setShowMobileSidebar(false)
     
     // Mark as read
     try {
@@ -408,8 +318,8 @@ export default function ChatPage() {
     }
   }
 
-  // Create or get room with mentor
-  const createOrGetRoom = async (mentorId: string, mentorName: string) => {
+  // ============= START CHAT WITH MENTOR =============
+  const startChatWithMentor = async (mentorId: string) => {
     try {
       const res = await fetch('/api/chat/start', {
         method: 'POST',
@@ -429,13 +339,15 @@ export default function ChatPage() {
         })
         
         selectRoom(room)
+      } else {
+        toast.error('Gagal memulai chat')
       }
     } catch (error) {
       toast.error('Gagal memulai chat')
     }
   }
 
-  // Send message
+  // ============= SEND MESSAGE =============
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !activeRoom || sendingMessage) return
     
@@ -460,6 +372,13 @@ export default function ChatPage() {
         setMessages(prev => [...prev, data.message])
         setReplyingTo(null)
         scrollToBottom()
+        
+        // Update room's last message
+        setRooms(prev => prev.map(r => 
+          r.id === activeRoom.id 
+            ? { ...r, lastMessage: { content: messageContent, createdAt: new Date().toISOString() } }
+            : r
+        ))
       } else {
         toast.error('Gagal mengirim pesan')
         setNewMessage(messageContent)
@@ -472,420 +391,379 @@ export default function ChatPage() {
     }
   }
 
-  // Handle file upload
-  const handleFileUpload = async (files: File[]) => {
-    if (files.length === 0 || !activeRoom) return
+  // ============= FILE UPLOAD =============
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files?.length || !activeRoom) return
     
-    for (const file of files) {
-      try {
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('roomId', activeRoom.id)
-        
-        const res = await fetch('/api/chat/upload', {
-          method: 'POST',
-          body: formData
-        })
-        
-        if (res.ok) {
-          const data = await res.json()
-          setMessages(prev => [...prev, data.message])
-        }
-      } catch (error) {
+    const file = files[0]
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('roomId', activeRoom.id)
+    
+    try {
+      const res = await fetch('/api/chat/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(prev => [...prev, data.message])
+        scrollToBottom()
+      } else {
         toast.error('Gagal upload file')
       }
-    }
-  }
-
-  // Handle reply
-  const handleReply = (message: Message) => {
-    setReplyingTo(message)
-    textareaRef.current?.focus()
-  }
-
-  const cancelReply = () => {
-    setReplyingTo(null)
-  }
-
-  // Handle reaction
-  const handleAddReaction = async (messageId: string, emoji: string) => {
-    try {
-      await fetch('/api/chat/reactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messageId, emoji })
-      })
     } catch (error) {
-      console.error('Failed to add reaction:', error)
+      toast.error('Gagal upload file')
     }
+    
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  // Filter mentors
+  // ============= FILTER DATA =============
   const filteredMentors = mentors.filter(mentor => {
     const matchesSearch = mentor.name?.toLowerCase().includes(searchQuery.toLowerCase())
     if (mentorFilter === 'online') return matchesSearch && mentor.isOnline
-    if (mentorFilter === 'unread') return matchesSearch && mentor.unreadCount > 0
     return matchesSearch
   })
 
-  // Filter rooms
   const filteredRooms = rooms.filter(room => 
     room.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  // Get other participant info for active room
-  const getOtherParticipant = () => {
+  const getOtherUser = () => {
     if (!activeRoom || !session?.user?.id) return null
     return activeRoom.participants.find(p => p.user.id !== session.user.id)?.user
   }
 
-  const otherUser = getOtherParticipant()
+  const otherUser = getOtherUser()
 
+  // ============= RENDER =============
   return (
-    <div className="-m-4 sm:-m-6 -mt-20 lg:-mt-6 h-[calc(100vh-64px)] lg:h-[calc(100vh)] overflow-hidden">
-      <div className="h-full flex bg-gray-50 dark:bg-gray-900">
-        {/* Sidebar - Chat List (30%) */}
+    <div className="h-[calc(100vh-120px)] lg:h-[calc(100vh-48px)] bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="h-full flex">
+        
+        {/* ===== LEFT SIDEBAR - Chat List (30%) ===== */}
         <aside className={cn(
           "h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col flex-shrink-0",
-          // Mobile: full width overlay
-          "fixed inset-0 z-30 w-full transition-transform duration-300 ease-in-out",
-          showSidebar ? "translate-x-0" : "-translate-x-full",
-          // Tablet: 320px fixed, static position
-          "sm:static sm:translate-x-0 sm:w-80",
-          // Desktop: 30% width
-          "lg:w-[30%] lg:min-w-[320px] lg:max-w-[420px]"
+          // Mobile: overlay full screen
+          "fixed inset-0 z-30 transition-transform duration-300 lg:static lg:translate-x-0",
+          showMobileSidebar ? "translate-x-0" : "-translate-x-full",
+          // Width: 30% on large screens
+          "w-full sm:w-80 lg:w-[30%] lg:min-w-[280px] lg:max-w-[360px]"
         )}>
-        {/* Header */}
-        <div className="p-5 border-b border-gray-100 dark:border-gray-700">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Messages</h1>
           
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search mentors or messages..."
-              className="pl-10 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 rounded-xl h-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Mentor Section */}
-        <div className="border-b border-gray-100 dark:border-gray-700">
-          <div className="px-5 pt-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Chat Dengan Mentor</h2>
-            <button className="text-blue-600 text-xs font-medium hover:underline">
-              Lihat Semua
-            </button>
-          </div>
-          
-          {/* Filter Tabs */}
-          <div className="px-5 pt-3 flex gap-2">
-            {(['all', 'online', 'unread'] as const).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setMentorFilter(filter)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-medium transition-colors",
-                  mentorFilter === filter
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                )}
-              >
-                {filter === 'all' ? 'All' : filter === 'online' ? 'Online' : 'Unread'}
-              </button>
-            ))}
-          </div>
-          
-          {/* Mentor Avatars */}
-          <div className="flex gap-4 overflow-x-auto px-5 py-4 scrollbar-hide">
-            {filteredMentors.map((mentor) => (
-              <button
-                key={mentor.id}
-                onClick={() => createOrGetRoom(mentor.id, mentor.name)}
-                className="flex flex-col items-center gap-2 min-w-[60px] group"
-              >
-                <div className="relative">
-                  <Avatar className="w-14 h-14 border-2 border-white dark:border-gray-700 shadow-md group-hover:scale-105 transition-transform">
-                    <AvatarImage src={mentor.avatar} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
-                      {mentor.name?.[0] || '?'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className={cn(
-                    "absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white dark:border-gray-700 rounded-full",
-                    mentor.isOnline ? "bg-green-500" : "bg-gray-400"
-                  )} />
-                  {mentor.unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                      {mentor.unreadCount}
-                    </span>
-                  )}
-                </div>
-                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate w-14 text-center">
-                  {mentor.name.split(' ')[0]}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat List */}
-        <div className="flex-1 overflow-y-auto">
-          {filteredRooms.length === 0 ? (
-            <div className="text-center py-12 px-4">
-              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-sm text-gray-500">Belum ada percakapan</p>
+          {/* Header */}
+          <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Messages</h1>
+            
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Cari mentor atau pesan..."
+                className="pl-9 bg-gray-50 dark:bg-gray-900 border-gray-200 rounded-lg h-9 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-          ) : (
-            <div>
-              {filteredRooms.map((room) => (
+          </div>
+
+          {/* Mentor Section */}
+          <div className="border-b border-gray-100 dark:border-gray-700">
+            <div className="px-4 pt-3 flex items-center justify-between">
+              <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Chat Dengan Mentor</h2>
+              <span className="text-blue-600 text-xs">Lihat Semua</span>
+            </div>
+            
+            {/* Filter */}
+            <div className="px-4 pt-2 flex gap-1.5">
+              {(['all', 'online'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setMentorFilter(filter)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+                    mentorFilter === filter
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
+                >
+                  {filter === 'all' ? 'Semua' : 'Online'}
+                </button>
+              ))}
+            </div>
+            
+            {/* Mentor Avatars */}
+            <div className="flex gap-3 overflow-x-auto px-4 py-3">
+              {loading ? (
+                <div className="flex gap-3">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="w-12 h-12 rounded-full bg-gray-200 animate-pulse" />
+                  ))}
+                </div>
+              ) : filteredMentors.length === 0 ? (
+                <p className="text-xs text-gray-400">Tidak ada mentor</p>
+              ) : (
+                filteredMentors.slice(0, 8).map((mentor) => (
+                  <button
+                    key={mentor.id}
+                    onClick={() => startChatWithMentor(mentor.id)}
+                    className="flex flex-col items-center gap-1 min-w-[56px] group"
+                  >
+                    <div className="relative">
+                      <Avatar className="w-12 h-12 border-2 border-white shadow group-hover:scale-105 transition">
+                        <AvatarImage src={mentor.avatar} />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-semibold">
+                          {mentor.name?.[0] || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className={cn(
+                        "absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full",
+                        mentor.isOnline ? "bg-green-500" : "bg-gray-400"
+                      )} />
+                    </div>
+                    <span className="text-[10px] text-gray-600 truncate w-12 text-center">
+                      {mentor.name?.split(' ')[0]}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Chat List */}
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="p-4 space-y-3">
+                {[1,2,3].map(i => (
+                  <div key={i} className="flex gap-3 animate-pulse">
+                    <div className="w-10 h-10 rounded-full bg-gray-200" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredRooms.length === 0 ? (
+              <div className="text-center py-10 px-4">
+                <MessageCircle className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm text-gray-500">Belum ada percakapan</p>
+                <p className="text-xs text-gray-400 mt-1">Mulai chat dengan mentor di atas</p>
+              </div>
+            ) : (
+              filteredRooms.map((room) => (
                 <button
                   key={room.id}
                   onClick={() => selectRoom(room)}
                   className={cn(
-                    "w-full px-5 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left",
-                    activeRoom?.id === room.id && "bg-blue-50 dark:bg-blue-900/20"
+                    "w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition text-left border-b border-gray-50",
+                    activeRoom?.id === room.id && "bg-blue-50"
                   )}
                 >
                   <div className="relative flex-shrink-0">
-                    <Avatar className="w-12 h-12">
+                    <Avatar className="w-11 h-11">
                       <AvatarImage src={room.avatar} />
                       <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-500 text-white font-semibold">
                         {room.name?.[0] || '?'}
                       </AvatarFallback>
                     </Avatar>
-                    {room.participants.some(p => p.user.isOnline) && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full" />
+                    {room.participants?.some(p => p.user.isOnline) && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                     )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                        {room.name}
-                      </h3>
+                      <h3 className="text-sm font-semibold text-gray-900 truncate">{room.name}</h3>
                       {room.lastMessage && (
-                        <span className="text-[11px] text-gray-400 flex-shrink-0">
+                        <span className="text-[10px] text-gray-400 ml-2">
                           {formatDistanceToNow(new Date(room.lastMessage.createdAt), { addSuffix: false, locale: idLocale })}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center justify-between mt-0.5">
                       <p className="text-xs text-gray-500 truncate pr-2">
-                        {room.lastMessage?.content || 'No messages yet'}
+                        {room.lastMessage?.content || 'Belum ada pesan'}
                       </p>
                       {room.unreadCount > 0 && (
-                        <span className="w-5 h-5 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="w-5 h-5 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                           {room.unreadCount}
                         </span>
                       )}
                     </div>
                   </div>
                 </button>
-              ))}
-            </div>
-          )}
-        </div>
+              ))
+            )}
+          </div>
         </aside>
 
-        {/* Main Chat Area (70%) */}
+        {/* ===== RIGHT SIDE - Chat Area (70%) ===== */}
         <main className="flex-1 h-full flex flex-col bg-gray-50 dark:bg-gray-900 min-w-0">
-        {!activeRoom ? (
-          /* Welcome Screen - Centered in main area */
-          <div className="flex-1 flex items-center justify-center p-6">
-            <div className="text-center max-w-sm">
-              <div className="w-24 h-24 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-[28px] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20">
-                <MessageCircle className="w-12 h-12 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
-                Hello, {session?.user?.name?.split(' ')[0] || 'there'}! 👋
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                Welcome to the mentor chat. Ask any questions about exports, logistics, or regulations. We're here to help!
-              </p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Chat Header */}
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setShowSidebar(true)}
-                    className="sm:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={activeRoom.avatar || otherUser?.avatar} />
-                    <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-500 text-white font-semibold">
-                      {activeRoom.name?.[0] || '?'}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div>
-                    <h2 className="font-semibold text-gray-900 dark:text-white">{activeRoom.name}</h2>
-                    <p className={cn(
-                      "text-xs flex items-center gap-1",
-                      otherUser?.isOnline ? "text-green-500" : "text-gray-400"
-                    )}>
-                      <span className={cn(
-                        "w-2 h-2 rounded-full",
-                        otherUser?.isOnline ? "bg-green-500" : "bg-gray-400"
-                      )} />
-                      {otherUser?.isOnline ? 'Online' : 'Offline'}
-                    </p>
-                  </div>
+          
+          {!activeRoom ? (
+            /* Welcome Screen */
+            <div className="flex-1 flex items-center justify-center p-6">
+              <div className="text-center max-w-sm">
+                <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-[24px] flex items-center justify-center mx-auto mb-5 shadow-lg shadow-blue-500/20">
+                  <MessageCircle className="w-10 h-10 text-white" />
                 </div>
-                
-                <div className="flex items-center gap-1">
-                  <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <Phone className="w-5 h-5 text-gray-500" />
-                  </button>
-                  <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <Video className="w-5 h-5 text-gray-500" />
-                  </button>
-                  <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <MoreVertical className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                  Hello, {session?.user?.name?.split(' ')[0] || 'there'}! 👋
+                </h2>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Selamat datang di chat mentor. Tanyakan apapun tentang ekspor, logistik, atau regulasi. Kami siap membantu!
+                </p>
               </div>
             </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4">
-              {loading ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <MessageCircle className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Hello, {session?.user?.name?.split(' ')[0]}! 👋
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto text-sm">
-                    Welcome to the mentor chat. Ask any questions about exports, logistics, or regulations. We're here to help!
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {messages.map((message) => (
-                    <MessageBubble
-                      key={message.id}
-                      message={message}
-                      isOwn={message.senderId === session?.user?.id}
-                      handleReply={handleReply}
-                      handleAddReaction={handleAddReaction}
-                      setShowEmojiPicker={setShowEmojiPicker}
-                      showEmojiPicker={showEmojiPicker}
-                    />
-                  ))}
-                  <div ref={messagesEndRef} />
-                </>
-              )}
-            </div>
-
-            {/* Input Area */}
-            <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
-              {replyingTo && (
-                <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                      Replying to {replyingTo.sender.name}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                      {replyingTo.content}
-                    </p>
-                  </div>
-                  <button onClick={cancelReply} className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded">
-                    <X className="w-4 h-4 text-blue-600" />
-                  </button>
-                </div>
-              )}
-
-              <div className="flex items-end gap-2">
-                <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-2xl px-4 py-2">
-                  <Textarea
-                    ref={textareaRef}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSendMessage()
-                      }
-                    }}
-                    placeholder="Type your message here..."
-                    className="resize-none border-0 bg-transparent focus:ring-0 p-0 min-h-[24px] max-h-32 text-sm"
-                    rows={1}
-                  />
-                  
-                  {/* Action Icons */}
-                  <div className="flex items-center gap-1 mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      multiple
-                      accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
-                      onChange={(e) => {
-                        if (e.target.files) handleFileUpload(Array.from(e.target.files))
-                      }}
-                      className="hidden"
-                    />
+          ) : (
+            <>
+              {/* Chat Header */}
+              <div className="bg-white dark:bg-gray-800 border-b border-gray-200 px-4 py-3 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
                     <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                      title="Image"
+                      onClick={() => setShowMobileSidebar(true)}
+                      className="lg:hidden p-2 hover:bg-gray-100 rounded-lg -ml-2"
                     >
-                      <ImageIcon className="w-5 h-5 text-gray-500" />
+                      <ArrowLeft className="w-5 h-5" />
                     </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                      title="Video"
-                    >
+                    
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={activeRoom.avatar || otherUser?.avatar} />
+                      <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-500 text-white font-semibold">
+                        {activeRoom.name?.[0] || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div>
+                      <h2 className="font-semibold text-gray-900 dark:text-white">{activeRoom.name}</h2>
+                      <p className={cn(
+                        "text-xs flex items-center gap-1",
+                        otherUser?.isOnline ? "text-green-500" : "text-gray-400"
+                      )}>
+                        <span className={cn(
+                          "w-2 h-2 rounded-full",
+                          otherUser?.isOnline ? "bg-green-500" : "bg-gray-400"
+                        )} />
+                        {otherUser?.isOnline ? 'Online' : 'Offline'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-1">
+                    <button className="p-2 hover:bg-gray-100 rounded-lg">
+                      <Phone className="w-5 h-5 text-gray-500" />
+                    </button>
+                    <button className="p-2 hover:bg-gray-100 rounded-lg">
                       <Video className="w-5 h-5 text-gray-500" />
                     </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                      title="Attachment"
-                    >
-                      <Paperclip className="w-5 h-5 text-gray-500" />
-                    </button>
-                    <button
-                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                      title="Voice"
-                    >
-                      <Mic className="w-5 h-5 text-gray-500" />
-                    </button>
-                    <button
-                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                      title="Emoji"
-                    >
-                      <Smile className="w-5 h-5 text-gray-500" />
+                    <button className="p-2 hover:bg-gray-100 rounded-lg">
+                      <MoreVertical className="w-5 h-5 text-gray-500" />
                     </button>
                   </div>
                 </div>
-                
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || sendingMessage}
-                  className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-full transition-colors shadow-lg"
-                >
-                  <Send className="w-5 h-5 text-white" />
-                </button>
               </div>
-            </div>
-          </>
-        )}
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {messages.length === 0 ? (
+                  <div className="text-center py-10">
+                    <div className="w-14 h-14 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow">
+                      <MessageCircle className="w-7 h-7 text-white" />
+                    </div>
+                    <p className="text-gray-500 text-sm">Mulai percakapan dengan {activeRoom.name}</p>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((message) => (
+                      <MessageBubble
+                        key={message.id}
+                        message={message}
+                        isOwn={message.senderId === session?.user?.id}
+                      />
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
+              </div>
+
+              {/* Input Area */}
+              <div className="bg-white dark:bg-gray-800 border-t border-gray-200 p-3 flex-shrink-0">
+                {replyingTo && (
+                  <div className="mb-2 p-2 bg-blue-50 rounded-lg flex items-start justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-blue-600">
+                        Membalas {replyingTo.sender.name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">{replyingTo.content}</p>
+                    </div>
+                    <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-blue-100 rounded">
+                      <X className="w-4 h-4 text-blue-600" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-end gap-2">
+                  <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-2xl px-4 py-2">
+                    <Textarea
+                      ref={textareaRef}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSendMessage()
+                        }
+                      }}
+                      placeholder="Ketik pesan..."
+                      className="resize-none border-0 bg-transparent focus:ring-0 p-0 min-h-[24px] max-h-24 text-sm"
+                      rows={1}
+                    />
+                    
+                    <div className="flex items-center gap-1 mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*,video/*,.pdf,.doc,.docx"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-1.5 hover:bg-gray-200 rounded-lg"
+                      >
+                        <ImageIcon className="w-5 h-5 text-gray-500" />
+                      </button>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-1.5 hover:bg-gray-200 rounded-lg"
+                      >
+                        <Paperclip className="w-5 h-5 text-gray-500" />
+                      </button>
+                      <button className="p-1.5 hover:bg-gray-200 rounded-lg">
+                        <Mic className="w-5 h-5 text-gray-500" />
+                      </button>
+                      <button className="p-1.5 hover:bg-gray-200 rounded-lg">
+                        <Smile className="w-5 h-5 text-gray-500" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim() || sendingMessage}
+                    className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-full transition shadow-lg flex-shrink-0"
+                  >
+                    <Send className="w-5 h-5 text-white" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </main>
       </div>
     </div>
