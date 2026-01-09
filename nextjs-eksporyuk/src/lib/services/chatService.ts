@@ -7,6 +7,7 @@ import { ChatRoomType } from '@prisma/client'
 import { pusherService } from '@/lib/pusher'
 import { notificationService } from './notificationService'
 import { prisma } from '@/lib/prisma'
+import { randomUUID } from 'crypto'
 
 export interface CreateChatRoomData {
   type: ChatRoomType
@@ -73,16 +74,18 @@ class ChatService {
       
       if (!room) {
         console.log('[ChatService] Creating new room...')
-        // Create new room
+        // Create new room with generated IDs
+        const roomId = randomUUID()
         room = await prisma.chatRoom.create({
           data: {
+            id: roomId,
             type: 'DIRECT',
             user1Id,
             user2Id,
             participants: {
               create: [
-                { userId: user1Id },
-                { userId: user2Id }
+                { id: randomUUID(), userId: user1Id },
+                { id: randomUUID(), userId: user2Id }
               ]
             }
           },
@@ -140,12 +143,13 @@ class ChatService {
     try {
       const room = await prisma.chatRoom.create({
         data: {
+          id: randomUUID(),
           type: data.type,
           name: data.name,
           avatar: data.avatar,
           groupId: data.groupId,
           participants: {
-            create: data.participantIds?.map(userId => ({ userId })) || []
+            create: data.participantIds?.map(userId => ({ id: randomUUID(), userId })) || []
           }
         },
         include: {
@@ -179,6 +183,7 @@ class ChatService {
       // Create message
       const message = await prisma.message.create({
         data: {
+          id: randomUUID(),
           roomId: data.roomId,
           senderId: data.senderId,
           content: data.content,
