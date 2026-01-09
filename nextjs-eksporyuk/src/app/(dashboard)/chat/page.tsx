@@ -442,17 +442,19 @@ export default function ChatPage() {
 
   // ============= RENDER =============
   return (
-    <div className="h-[calc(100vh-120px)] lg:h-[calc(100vh-48px)] bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
-      <div className="h-full flex">
+    <div className="h-[calc(100vh-140px)] bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="h-full flex relative">
         
-        {/* ===== LEFT SIDEBAR - Chat List (30%) ===== */}
+        {/* ===== LEFT - Chat List (30%) ===== */}
         <aside className={cn(
           "h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col flex-shrink-0",
-          // Mobile: overlay full screen
-          "fixed inset-0 z-30 transition-transform duration-300 lg:static lg:translate-x-0",
+          // Mobile: absolute within container, not fixed to viewport
+          "absolute inset-y-0 left-0 z-20 transition-transform duration-300",
           showMobileSidebar ? "translate-x-0" : "-translate-x-full",
-          // Width: 30% on large screens
-          "w-full sm:w-80 lg:w-[30%] lg:min-w-[280px] lg:max-w-[360px]"
+          // Desktop: static position
+          "lg:static lg:translate-x-0",
+          // Width
+          "w-[85%] sm:w-80 lg:w-[30%] lg:min-w-[280px] lg:max-w-[360px]"
         )}>
           
           {/* Header */}
