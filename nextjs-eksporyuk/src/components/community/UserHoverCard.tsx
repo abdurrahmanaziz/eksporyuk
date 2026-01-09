@@ -46,6 +46,9 @@ export default function UserHoverCard({ userId, username, children }: UserHoverC
   const [isFollowing, setIsFollowing] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [hoverTimeout, setHoverTimeoutState] = useState<NodeJS.Timeout | null>(null)
+  const [leaveTimeout, setLeaveTimeoutState] = useState<NodeJS.Timeout | null>(null)
+  const [isHoveringCard, setIsHoveringCard] = useState(false)
+  const [isHoveringTrigger, setIsHoveringTrigger] = useState(false)
 
   const fetchProfile = async () => {
     if (profile || loading) return
@@ -95,6 +98,14 @@ export default function UserHoverCard({ userId, username, children }: UserHoverC
   }
 
   const handleMouseEnter = (e: React.MouseEvent) => {
+    // Clear any pending leave timeout
+    if (leaveTimeout) {
+      clearTimeout(leaveTimeout)
+      setLeaveTimeoutState(null)
+    }
+    
+    setIsHoveringTrigger(true)
+    
     const rect = e.currentTarget.getBoundingClientRect()
     setPosition({
       x: rect.left + rect.width / 2,
@@ -104,42 +115,59 @@ export default function UserHoverCard({ userId, username, children }: UserHoverC
     const timeout = setTimeout(() => {
       setShowCard(true)
       fetchProfile()
-    }, 500) // Delay 500ms sebelum muncul
+    }, 400) // Delay 400ms sebelum muncul
     
     setHoverTimeoutState(timeout)
   }
 
   const handleMouseLeave = () => {
+    setIsHoveringTrigger(false)
+    
     if (hoverTimeout) {
       clearTimeout(hoverTimeout)
       setHoverTimeoutState(null)
     }
     
-    // Delay sebelum hilang agar user bisa klik card
-    setTimeout(() => {
-      setShowCard(false)
-    }, 300)
+    // Delay 4 detik sebelum hilang agar user bisa klik card
+    const timeout = setTimeout(() => {
+      if (!isHoveringCard) {
+        setShowCard(false)
+      }
+    }, 4000)
+    setLeaveTimeoutState(timeout)
   }
 
   const handleCardMouseEnter = () => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout)
+    setIsHoveringCard(true)
+    // Clear leave timeout when hovering card
+    if (leaveTimeout) {
+      clearTimeout(leaveTimeout)
+      setLeaveTimeoutState(null)
     }
   }
 
   const handleCardMouseLeave = () => {
-    setShowCard(false)
+    setIsHoveringCard(false)
+    // Only hide if not hovering trigger either
+    if (!isHoveringTrigger) {
+      // Small delay before hiding
+      const timeout = setTimeout(() => {
+        setShowCard(false)
+      }, 500)
+      setLeaveTimeoutState(timeout)
+    }
   }
 
   return (
     <>
-      <span
+      <Link
+        href={`/${username}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="inline-block cursor-pointer"
+        className="inline-block cursor-pointer hover:underline"
       >
         {children}
-      </span>
+      </Link>
 
       {showCard && (
         <div
