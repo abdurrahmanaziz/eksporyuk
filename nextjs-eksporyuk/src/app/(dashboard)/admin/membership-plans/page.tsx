@@ -405,9 +405,23 @@ export default function MembershipPlansPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4 align-top">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200">
-                        Active
-                      </span>
+                      {plan.status === 'PUBLISHED' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                          Aktif
+                        </span>
+                      ) : plan.status === 'DRAFT' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700 border border-yellow-200">
+                          Draft
+                        </span>
+                      ) : plan.status === 'ARCHIVED' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                          Arsip
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
+                          {plan.isActive ? 'Aktif' : 'Nonaktif'}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 align-top text-right">
                       <div className="flex gap-1 justify-end">
