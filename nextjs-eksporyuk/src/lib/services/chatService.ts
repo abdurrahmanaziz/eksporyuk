@@ -76,12 +76,14 @@ class ChatService {
         console.log('[ChatService] Creating new room...')
         // Create new room with generated IDs
         const roomId = randomUUID()
+        const now = new Date()
         room = await prisma.chatRoom.create({
           data: {
             id: roomId,
             type: 'DIRECT',
             user1Id,
             user2Id,
+            updatedAt: now,
             participants: {
               create: [
                 { id: randomUUID(), userId: user1Id },
@@ -148,6 +150,7 @@ class ChatService {
           name: data.name,
           avatar: data.avatar,
           groupId: data.groupId,
+          updatedAt: new Date(),
           participants: {
             create: data.participantIds?.map(userId => ({ id: randomUUID(), userId })) || []
           }
@@ -181,6 +184,7 @@ class ChatService {
   async sendMessage(data: SendMessageData): Promise<any> {
     try {
       // Create message
+      const now = new Date()
       const message = await prisma.message.create({
         data: {
           id: randomUUID(),
@@ -194,7 +198,8 @@ class ChatService {
           attachmentName: data.attachmentName,
           replyToId: data.replyToId,
           isDelivered: true,
-          deliveredAt: new Date()
+          deliveredAt: now,
+          updatedAt: now
         },
         include: {
           sender: {

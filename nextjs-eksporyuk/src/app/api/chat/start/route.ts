@@ -114,17 +114,24 @@ export async function POST(request: NextRequest) {
       console.log('[API] Supplier check skipped:', supplierCheckError)
     }
     
+    console.log('[API] Creating/getting room for:', { userId: session.user.id, recipientId })
     const room = await chatService.getOrCreateDirectRoom(session.user.id, recipientId)
+    console.log('[API] Room created/found:', room?.id)
     
     return NextResponse.json({
       success: true,
       room
     })
   } catch (error: any) {
-    console.error('[API] Start chat error:', error)
-    // Return safe error response instead of 500
+    console.error('[API] Start chat error:', error?.message || error)
+    console.error('[API] Start chat error stack:', error?.stack)
+    // Return detailed error for debugging
     return NextResponse.json(
-      { error: 'Tidak dapat memulai chat. Silakan coba lagi.', success: false },
+      { 
+        error: 'Tidak dapat memulai chat. Silakan coba lagi.', 
+        success: false,
+        debug: process.env.NODE_ENV === 'development' ? error?.message : undefined
+      },
       { status: 400 }
     )
   }
