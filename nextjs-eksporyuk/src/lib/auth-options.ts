@@ -296,44 +296,57 @@ export const authOptions: NextAuthOptions = {
               // Continue without member code - can be generated later
             }
             
-            // Create user - separated try-catch blocks for better error handling
+            // Create user and wallet using Prisma transaction for atomicity
             let newUser
             const userId = randomUUID()
             const walletId = randomUUID()
             try {
-              newUser = await prisma.user.create({
-                data: {
-                  id: userId, // CRITICAL: Required field - no auto-generate in schema
-                  email: user.email,
-                  name: displayName,
-                  username: username,
-                  avatar: user.image,
-                  role: 'MEMBER_FREE',
-                  isActive: true,  // CRITICAL: Active by default
-                  isSuspended: false,  // CRITICAL: Not suspended
-                  emailVerified: true, // Auto-verify Google OAuth users
-                  memberCode: memberCode,
-                  updatedAt: new Date(), // CRITICAL: Required field
-                  wallet: {
-                    create: {
-                      id: walletId, // CRITICAL: Required field
-                      balance: 0,
-                      balancePending: 0,
-                      updatedAt: new Date(), // CRITICAL: Required field
-                    },
+              // Use transaction to create user and wallet atomically
+              const result = await prisma.$transaction(async (tx) => {
+                // First create the user
+                const createdUser = await tx.user.create({
+                  data: {
+                    id: userId,
+                    email: user.email,
+                    name: displayName,
+                    username: username,
+                    avatar: user.image,
+                    role: 'MEMBER_FREE',
+                    isActive: true,
+                    isSuspended: false,
+                    emailVerified: true,
+                    memberCode: memberCode,
+                    updatedAt: new Date(),
                   },
-                },
-                select: {
-                  id: true,
-                  email: true,
-                  name: true,
-                  username: true,
-                  role: true,
-                  memberCode: true,
-                  isActive: true,
-                  isSuspended: true,
-                }
+                  select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    username: true,
+                    role: true,
+                    memberCode: true,
+                    isActive: true,
+                    isSuspended: true,
+                  }
+                })
+                
+                // Then create the wallet separately
+                await tx.wallet.create({
+                  data: {
+                    id: walletId,
+                    userId: createdUser.id,
+                    balance: 0,
+                    balancePending: 0,
+                    totalEarnings: 0,
+                    totalPayout: 0,
+                    updatedAt: new Date(),
+                  }
+                })
+                
+                return createdUser
               })
+              
+              newUser = result
               console.log(`[AUTH ${timestamp}] ✅ New Google user created successfully:`, {
                 id: newUser.id,
                 email: newUser.email,
@@ -353,9 +366,10 @@ export const authOptions: NextAuthOptions = {
                 return true
               }
               
-              // For other database errors, block sign in to prevent inconsistent state
-              console.error(`[AUTH ${timestamp}] ❌ BLOCKING sign in due to database error`)
-              return false
+              // For other database errors, we still allow sign-in to avoid locking user out.
+              // NextAuth can handle this state.
+              console.error(`[AUTH ${timestamp}] ❌ Allowing sign in despite database error during user creation.`)
+              return true
             }
             
             // If user created successfully, send welcome email (don't block if this fails)

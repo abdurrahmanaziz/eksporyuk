@@ -57,21 +57,21 @@ function ErrorContent() {
 
             <div className="flex flex-col gap-3 w-full">
               <Link
-                href="/login"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                href="/auth/login"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-center"
               >
                 Coba Login Lagi
               </Link>
               
               <Link
                 href="/"
-                className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
+                className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-center"
               >
                 Kembali ke Beranda
               </Link>
             </div>
 
-            {error === 'CredentialsSignin' && (
+            {(error === 'CredentialsSignin' || error === 'AccessDenied' || error === 'OAuthCreateAccount') && (
               <p className="mt-6 text-sm text-gray-600">
                 Belum punya akun?{' '}
                 <Link href="/auth/register" className="text-blue-600 hover:underline font-medium">

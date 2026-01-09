@@ -5,6 +5,7 @@ import { createVerificationToken, sendVerificationEmail, isValidGmailEmail, auto
 import { mailketing } from '@/lib/integrations/mailketing'
 import { getNextMemberCode } from '@/lib/member-code'
 import { addUserToRoleLists } from '@/lib/services/mailketing-list-service'
+import { randomUUID } from 'crypto'
 
 
 export const dynamic = 'force-dynamic';
@@ -90,8 +91,10 @@ export async function POST(request: NextRequest) {
       memberCode = null
     }
 
-    // Create user with wallet
+    // Create user with wallet using transaction for atomicity
     let user
+    const userId = randomUUID()
+    const walletId = randomUUID()
     try {
       console.log('[Register] Creating user with data:', {
         email,
@@ -103,39 +106,56 @@ export async function POST(request: NextRequest) {
         memberCode,
       })
       
-      user = await prisma.user.create({
-        data: {
-          email,
-          name,
-          password: hashedPassword,
-          username: finalUsername,
-          whatsapp: userWhatsapp,
-          role: 'MEMBER_FREE',
-          emailVerified: false, // Set to false initially
-          isActive: true,  // CRITICAL: Set active by default
-          isSuspended: false,  // CRITICAL: Not suspended by default
-          memberCode, // Auto-generated EY0001, EY0002, dst (or null if failed)
-          wallet: {
-            create: {
-              balance: 0,
-              balancePending: 0,
-            },
+      // Use transaction to create user and wallet atomically
+      const result = await prisma.$transaction(async (tx) => {
+        // First create the user
+        const createdUser = await tx.user.create({
+          data: {
+            id: userId,
+            email,
+            name,
+            password: hashedPassword,
+            username: finalUsername,
+            whatsapp: userWhatsapp,
+            role: 'MEMBER_FREE',
+            emailVerified: false,
+            isActive: true,
+            isSuspended: false,
+            memberCode,
+            updatedAt: new Date(),
           },
-        },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          username: true,
-          whatsapp: true,
-          role: true,
-          emailVerified: true,
-          memberCode: true,
-          isActive: true,
-          isSuspended: true,
-          createdAt: true,
-        },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            username: true,
+            whatsapp: true,
+            role: true,
+            emailVerified: true,
+            memberCode: true,
+            isActive: true,
+            isSuspended: true,
+            createdAt: true,
+          },
+        })
+        
+        // Then create the wallet separately
+        await tx.wallet.create({
+          data: {
+            id: walletId,
+            userId: createdUser.id,
+            balance: 0,
+            balancePending: 0,
+            totalEarnings: 0,
+            totalPayout: 0,
+            updatedAt: new Date(),
+          }
+        })
+        
+        return createdUser
       })
+      
+      user = result
       console.log('[Register] User created successfully:', {
         id: user.id,
         email: user.email,
