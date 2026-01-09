@@ -294,12 +294,17 @@ export default function ChatPage() {
   // Handle responsive sidebar
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setShowSidebar(!activeRoom)
-      } else {
+      // On tablet and desktop (>= 640px), always show sidebar
+      if (window.innerWidth >= 640) {
         setShowSidebar(true)
+      } else {
+        // On mobile, show sidebar when no active room
+        setShowSidebar(!activeRoom)
       }
     }
+    
+    // Set initial state
+    handleResize()
     
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
@@ -382,7 +387,8 @@ export default function ChatPage() {
   // Select room
   const selectRoom = async (room: ChatRoom) => {
     setActiveRoom(room)
-    if (window.innerWidth < 768) {
+    // On mobile (< 640px), hide sidebar when selecting room
+    if (window.innerWidth < 640) {
       setShowSidebar(false)
     }
     
@@ -537,10 +543,15 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-[calc(100vh-64px)] bg-gray-100 dark:bg-gray-900">
-      {/* Sidebar */}
+      {/* Sidebar - 30% on desktop, full on mobile when active */}
       <div className={cn(
-        "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300",
-        showSidebar ? "w-full md:w-[380px]" : "w-0 overflow-hidden md:w-[380px]"
+        "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 flex-shrink-0",
+        // Mobile: full width or hidden
+        showSidebar ? "w-full" : "w-0 overflow-hidden",
+        // Tablet: 320px fixed
+        "sm:w-[320px]",
+        // Desktop: 30% width with min/max constraints
+        "lg:w-[30%] lg:min-w-[300px] lg:max-w-[400px]"
       )}>
         {/* Header */}
         <div className="p-5 border-b border-gray-100 dark:border-gray-700">
@@ -677,8 +688,14 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
+      {/* Main Chat Area - 70% on desktop */}
+      <div className={cn(
+        "flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 min-w-0",
+        // On mobile, show full width when sidebar is hidden
+        !showSidebar ? "w-full" : "hidden sm:flex",
+        // Desktop: takes remaining 70%
+        "lg:flex lg:w-[70%]"
+      )}>
         {!activeRoom ? (
           /* Welcome Screen */
           <div className="flex-1 flex items-center justify-center">
@@ -702,7 +719,7 @@ export default function ChatPage() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowSidebar(true)}
-                    className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                    className="sm:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
