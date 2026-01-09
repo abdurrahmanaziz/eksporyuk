@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { processTransactionCommission } from '@/lib/commission-helper'
+import { notificationService } from '@/lib/services/notificationService'
 import { randomBytes } from 'crypto'
 
 const createId = () => randomBytes(16).toString('hex')
@@ -260,6 +261,17 @@ export async function POST(
         }
 
         console.log(`[Admin Confirm] ✅ Membership activated with ${membershipGroups.length} groups, ${membershipCourses.length} courses, ${membershipProducts.length} products`)
+        
+        // 🔔 Send notification for membership activation
+        await notificationService.send({
+          userId: transaction.userId,
+          type: 'TRANSACTION_SUCCESS',
+          title: 'Pembayaran Dikonfirmasi',
+          message: `Pembayaran membership ${membership.name} telah dikonfirmasi. Akses Anda sudah aktif!`,
+          transactionId: transaction.id,
+          redirectUrl: '/dashboard',
+          channels: ['pusher', 'onesignal', 'email'],
+        })
       }
     }
   }
@@ -330,8 +342,7 @@ export async function POST(
       }
     }
 
-    // Send notification (optional - can be expanded)
-    // await notificationService.sendTransactionConfirmed(transaction)
+    // Notification already sent in membership activation block above
 
     return NextResponse.json({ 
       success: true, 
