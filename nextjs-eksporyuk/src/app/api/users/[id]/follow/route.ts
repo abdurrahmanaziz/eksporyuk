@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { pusherService } from '@/lib/pusher'
+import { randomUUID } from 'crypto'
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
@@ -70,6 +71,7 @@ export async function POST(
       // Follow
       const follow = await prisma.follow.create({
         data: {
+          id: randomUUID(),
           followerId: session.user.id,
           followingId: targetUserId
         }
@@ -87,8 +89,10 @@ export async function POST(
       // Create notification record in database
       let notificationId = ''
       try {
+        const now = new Date()
         const notification = await prisma.notification.create({
           data: {
+            id: randomUUID(),
             userId: targetUserId,
             type: 'FOLLOW',
             title: 'Pengikut Baru',
@@ -102,7 +106,8 @@ export async function POST(
             actorAvatar: follower?.avatar || null,
             isRead: false,
             isSent: true,
-            sentAt: new Date()
+            sentAt: now,
+            updatedAt: now
           }
         })
         notificationId = notification.id
