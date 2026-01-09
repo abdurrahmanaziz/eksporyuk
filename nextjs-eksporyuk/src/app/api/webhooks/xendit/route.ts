@@ -1788,15 +1788,18 @@ async function handleEWalletPaymentComplete(data: any) {
   try {
     const { reference_id, capture_amount, channel_code } = data
     
+    // E-Wallet uses reference_id as transaction ID
     const transaction = await prisma.transaction.findUnique({
       where: { id: reference_id },
       include: { 
-        membership: true,
         user: true,
       }
     })
 
-    if (!transaction) return
+    if (!transaction) {
+      console.error('[Xendit E-Wallet Webhook] Transaction not found:', reference_id)
+      return
+    }
 
     const currentMetadata = transaction.metadata as any || {}
 
@@ -1815,89 +1818,330 @@ async function handleEWalletPaymentComplete(data: any) {
       }
     })
 
-    console.log('[Xendit Webhook] ✅ E-Wallet payment SUCCESS:', transaction.id)
+    console.log('[Xendit E-Wallet Webhook] ✅ Transaction updated to SUCCESS:', transaction.id)
+
+    // 🔔 NOTIFICATION TRIGGER: Transaction successful
+    await notificationService.send({
+      userId: transaction.userId,
+      type: 'TRANSACTION_SUCCESS',
+      title: 'Pembayaran Berhasil',
+      message: `Pembayaran Anda sebesar Rp ${Number(capture_amount).toLocaleString('id-ID')} telah berhasil diproses via E-Wallet`,
+      transactionId: transaction.id,
+      redirectUrl: `/transactions/${transaction.id}`,
+      channels: ['pusher', 'onesignal', 'email'],
+    })
 
     // ============================================
-    // Handle MEMBERSHIP via E-Wallet
+    // Handle MEMBERSHIP via E-Wallet (FULL LOGIC - same as Invoice/VA)
     // ============================================
-    if (transaction.membership) {
-      await prisma.userMembership.update({
-        where: { id: transaction.membership.id },
-        data: {
-          status: 'ACTIVE',
-          isActive: true,
-          activatedAt: new Date()
-        }
-      })
-      console.log('[Xendit Webhook] ✅ Membership activated via E-Wallet')
+    if (transaction.type === 'MEMBERSHIP') {
+      // Try membershipId from transaction field first, then fallback to metadata
+      const metadata = transaction.metadata as any
+      const membershipId = transaction.membershipId || metadata?.membershipId
 
-      // Auto-enroll to courses and groups for E-Wallet payment
-      const membershipId = transaction.membership.membershipId
-      
-      // Fetch related data
-      const [membershipGroupsEW, membershipCoursesEW, membershipProductsEW] = await Promise.all([
-        prisma.membershipGroup.findMany({ where: { membershipId } }),
-        prisma.membershipCourse.findMany({ where: { membershipId } }),
-        prisma.membershipProduct.findMany({ where: { membershipId } })
-      ])
-
-      const groupIdsEW = membershipGroupsEW.map(mg => mg.groupId)
-      const courseIdsEW = membershipCoursesEW.map(mc => mc.courseId)
-      const productIdsEW = membershipProductsEW.map(mp => mp.productId)
-
-      const [groupsEW, coursesEW, productsEW] = await Promise.all([
-        groupIdsEW.length > 0 ? prisma.group.findMany({
-          where: { id: { in: groupIdsEW } },
-          select: { id: true, name: true }
-        }) : [],
-        courseIdsEW.length > 0 ? prisma.course.findMany({
-          where: { id: { in: courseIdsEW } },
-          select: { id: true, title: true }
-        }) : [],
-        productIdsEW.length > 0 ? prisma.product.findMany({
-          where: { id: { in: productIdsEW } },
-          select: { id: true, name: true }
-        }) : []
-      ])
-
-      // Auto-join groups
-      for (const group of groupsEW) {
-        await prisma.groupMember.create({
-          data: {
-            groupId: group.id,
+      if (membershipId) {
+        const existingUserMembership = await prisma.userMembership.findFirst({
+          where: {
             userId: transaction.userId,
-            role: 'MEMBER'
-          }
-        }).catch(() => {})
-      }
-
-      // Auto-enroll courses
-      for (const course of coursesEW) {
-        await prisma.courseEnrollment.create({
-          data: {
-            id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-            userId: transaction.userId,
-            courseId: course.id,
-            updatedAt: new Date()
-          }
-        }).catch(() => {})
-      }
-
-      // Auto-grant products
-      const now = new Date()
-      for (const product of productsEW) {
-        await prisma.userProduct.create({
-          data: {
-            userId: transaction.userId,
-            productId: product.id,
             transactionId: transaction.id,
-            purchaseDate: now,
-            price: 0
-          }
-        }).catch(() => {})
-      }
+          },
+        })
 
-      console.log(`[Xendit Webhook] ✅ E-Wallet: Auto-joined ${groupsEW.length} groups, ${coursesEW.length} courses, ${productsEW.length} products`)
+        if (!existingUserMembership) {
+          const membership = await prisma.membership.findUnique({
+            where: { id: membershipId }
+          })
+
+          if (membership) {
+            // 🔒 DEACTIVATE OLD MEMBERSHIPS - User can only have 1 active membership
+            await prisma.userMembership.updateMany({
+              where: { 
+                userId: transaction.userId,
+                isActive: true 
+              },
+              data: { 
+                isActive: false,
+                status: 'EXPIRED'
+              }
+            })
+            console.log(`[Xendit E-Wallet Webhook] Deactivated old memberships for user ${transaction.userId}`)
+
+            // 🔒 CANCEL OTHER PENDING MEMBERSHIP TRANSACTIONS
+            const cancelledTransactions = await prisma.transaction.updateMany({
+              where: {
+                userId: transaction.userId,
+                type: 'MEMBERSHIP',
+                status: 'PENDING',
+                id: { not: transaction.id }
+              },
+              data: {
+                status: 'CANCELLED',
+                metadata: {
+                  cancelledAt: new Date().toISOString(),
+                  cancelReason: 'Auto-cancelled: Another membership was purchased via E-Wallet',
+                  cancelledByTransactionId: transaction.id
+                }
+              }
+            })
+            
+            if (cancelledTransactions.count > 0) {
+              console.log(`[Xendit E-Wallet Webhook] ✅ Auto-cancelled ${cancelledTransactions.count} pending membership transactions`)
+            }
+
+            // Fetch related data
+            const [membershipGroupsEW, membershipCoursesEW, membershipProductsEW] = await Promise.all([
+              prisma.membershipGroup.findMany({ where: { membershipId } }),
+              prisma.membershipCourse.findMany({ where: { membershipId } }),
+              prisma.membershipProduct.findMany({ where: { membershipId } })
+            ])
+
+            const groupIdsEW = membershipGroupsEW.map(mg => mg.groupId)
+            const courseIdsEW = membershipCoursesEW.map(mc => mc.courseId)
+            const productIdsEW = membershipProductsEW.map(mp => mp.productId)
+
+            const [groupsEW, coursesEW, productsEW] = await Promise.all([
+              groupIdsEW.length > 0 ? prisma.group.findMany({
+                where: { id: { in: groupIdsEW } },
+                select: { id: true, name: true }
+              }) : [],
+              courseIdsEW.length > 0 ? prisma.course.findMany({
+                where: { id: { in: courseIdsEW } },
+                select: { id: true, title: true }
+              }) : [],
+              productIdsEW.length > 0 ? prisma.product.findMany({
+                where: { id: { in: productIdsEW } },
+                select: { id: true, name: true }
+              }) : []
+            ])
+
+            // Calculate end date based on duration
+            const now = new Date()
+            let endDate = new Date(now)
+
+            switch (membership.duration) {
+              case 'ONE_MONTH':
+                endDate.setMonth(endDate.getMonth() + 1)
+                break
+              case 'THREE_MONTHS':
+                endDate.setMonth(endDate.getMonth() + 3)
+                break
+              case 'SIX_MONTHS':
+                endDate.setMonth(endDate.getMonth() + 6)
+                break
+              case 'TWELVE_MONTHS':
+                endDate.setFullYear(endDate.getFullYear() + 1)
+                break
+              case 'LIFETIME':
+                endDate.setFullYear(endDate.getFullYear() + 100)
+                break
+            }
+
+            // Create new UserMembership for this transaction
+            await prisma.userMembership.create({
+              data: {
+                id: `um_${transaction.id}`,
+                userId: transaction.userId,
+                membershipId: membershipId,
+                status: 'ACTIVE',
+                isActive: true,
+                activatedAt: now,
+                startDate: now,
+                endDate,
+                price: transaction.amount,
+                transactionId: transaction.id,
+              },
+            })
+            console.log(`[Xendit E-Wallet Webhook] ✅ UserMembership created: ${transaction.userId}`)
+
+            // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
+            if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+              const oldRole = transaction.user.role as any
+              await prisma.user.update({
+                where: { id: transaction.userId },
+                data: { role: 'MEMBER_PREMIUM' }
+              })
+              console.log(`[Xendit E-Wallet Webhook] ✅ User role upgraded to MEMBER_PREMIUM: ${transaction.userId}`)
+              
+              // Add user to Mailketing lists for new role
+              try {
+                await handleRoleChange(transaction.userId, 'MEMBER_PREMIUM', oldRole)
+              } catch (roleListError) {
+                console.error('[Xendit E-Wallet Webhook] ⚠️ Failed to add to role lists:', roleListError)
+              }
+            }
+
+            // Add user to Mailketing list if configured
+            if (membership.mailketingListId && membership.autoAddToList) {
+              try {
+                const listResult = await addUserToMailketingList(
+                  transaction.user.email,
+                  membership.mailketingListId,
+                  {
+                    name: transaction.user.name,
+                    phone: transaction.user.phone || transaction.customerPhone || undefined,
+                    purchaseType: 'membership',
+                    purchaseItem: membership.name,
+                    purchaseDate: now,
+                    purchaseAmount: Number(transaction.amount)
+                  }
+                )
+
+                if (listResult.success) {
+                  const currentLists = (transaction.user.mailketingLists as string[]) || []
+                  if (!currentLists.includes(membership.mailketingListId)) {
+                    await prisma.user.update({
+                      where: { id: transaction.userId },
+                      data: {
+                        mailketingLists: [...currentLists, membership.mailketingListId]
+                      }
+                    })
+                  }
+                  console.log('[Xendit E-Wallet Webhook] ✅ User added to Mailketing list')
+                }
+              } catch (error) {
+                console.error('[Xendit E-Wallet Webhook] ❌ Mailketing error:', error)
+              }
+            }
+
+            // Auto-join groups
+            for (const group of groupsEW) {
+              await prisma.groupMember.create({
+                data: {
+                  groupId: group.id,
+                  userId: transaction.userId,
+                  role: 'MEMBER'
+                }
+              }).catch(() => {})
+            }
+
+            // Auto-enroll courses
+            for (const course of coursesEW) {
+              await prisma.courseEnrollment.create({
+                data: {
+                  id: `enroll_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+                  userId: transaction.userId,
+                  courseId: course.id,
+                  updatedAt: new Date()
+                }
+              }).catch(() => {})
+            }
+
+            // Auto-grant products
+            for (const product of productsEW) {
+              await prisma.userProduct.create({
+                data: {
+                  userId: transaction.userId,
+                  productId: product.id,
+                  transactionId: transaction.id,
+                  purchaseDate: now,
+                  price: 0
+                }
+              }).catch(() => {})
+            }
+
+            console.log(`[Xendit E-Wallet Webhook] ✅ Auto-joined ${groupsEW.length} groups, ${coursesEW.length} courses, ${productsEW.length} products`)
+
+            // Send membership activation welcome email
+            try {
+              await mailketing.sendEmail({
+                to: transaction.user.email,
+                subject: `Selamat! Membership ${membership.name} Anda Aktif`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                      <h1 style="margin: 0; font-size: 28px;">Membership Aktif!</h1>
+                    </div>
+                    <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+                      <p style="font-size: 16px;">Halo <strong>${transaction.user.name}</strong>,</p>
+                      <p style="font-size: 16px;">Selamat! Membership <strong>${membership.name}</strong> Anda telah aktif.</p>
+                      
+                      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin: 0 0 15px 0; color: #374151;">Detail Membership:</h3>
+                        <table style="width: 100%; font-size: 14px;">
+                          <tr>
+                            <td style="padding: 8px 0; color: #6b7280;">Paket:</td>
+                            <td style="text-align: right; font-weight: bold;">${membership.name}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px 0; color: #6b7280;">Mulai:</td>
+                            <td style="text-align: right;">${now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px 0; color: #6b7280;">Berakhir:</td>
+                            <td style="text-align: right;">${endDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                          </tr>
+                        </table>
+                      </div>
+
+                      <p style="font-size: 16px;">Anda sekarang memiliki akses ke:</p>
+                      <ul style="font-size: 14px; color: #4b5563;">
+                        ${coursesEW.length > 0 ? `<li>${coursesEW.length} Kursus Premium</li>` : ''}
+                        ${groupsEW.length > 0 ? `<li>${groupsEW.length} Grup Komunitas</li>` : ''}
+                        ${productsEW.length > 0 ? `<li>${productsEW.length} Produk Digital</li>` : ''}
+                        <li>Akses penuh ke fitur membership</li>
+                      </ul>
+                      
+                      <div style="text-align: center; margin: 30px 0;">
+                        <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}/dashboard" 
+                           style="display: inline-block; background: #f97316; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                          Mulai Belajar Sekarang
+                        </a>
+                      </div>
+                      
+                      <p style="font-size: 14px; color: #6b7280;">Jika ada pertanyaan, hubungi kami via WhatsApp atau email.</p>
+                      <p style="font-size: 14px; color: #6b7280;">Salam sukses,<br><strong>Tim EksporYuk</strong></p>
+                    </div>
+                  </div>
+                `,
+                tags: ['membership', 'activation', 'welcome', 'ewallet']
+              })
+              console.log(`[Xendit E-Wallet Webhook] ✅ Welcome email sent for membership activation: ${membership.name}`)
+            } catch (emailError) {
+              console.error('[Xendit E-Wallet Webhook] Error sending membership welcome email:', emailError)
+            }
+
+            // Process revenue distribution
+            const { processRevenueDistribution } = await import('@/lib/revenue-split')
+            await processRevenueDistribution({
+              amount: Number(transaction.amount),
+              type: 'MEMBERSHIP',
+              affiliateId: metadata?.affiliateId,
+              membershipId,
+              transactionId: transaction.id
+            })
+            console.log(`[Xendit E-Wallet Webhook] ✅ Revenue distribution processed`)
+          }
+        } else {
+          // Update existing UserMembership to active
+          await prisma.userMembership.update({
+            where: { id: existingUserMembership.id },
+            data: {
+              status: 'ACTIVE',
+              isActive: true,
+              activatedAt: new Date(),
+            },
+          })
+
+          // Upgrade user role to MEMBER_PREMIUM if currently MEMBER_FREE or CUSTOMER
+          if (transaction.user.role === 'MEMBER_FREE' || transaction.user.role === 'CUSTOMER') {
+            const oldRole = transaction.user.role as any
+            await prisma.user.update({
+              where: { id: transaction.userId },
+              data: { role: 'MEMBER_PREMIUM' }
+            })
+            console.log(`[Xendit E-Wallet Webhook] ✅ User role upgraded to MEMBER_PREMIUM (reactivate): ${transaction.userId}`)
+            
+            // Add user to Mailketing lists for new role
+            try {
+              await handleRoleChange(transaction.userId, 'MEMBER_PREMIUM', oldRole)
+            } catch (roleListError) {
+              console.error('[Xendit E-Wallet Webhook] ⚠️ Failed to add to role lists:', roleListError)
+            }
+          }
+
+          console.log('[Xendit E-Wallet Webhook] ✅ UserMembership activated')
+        }
+      }
     }
 
     // ============================================
