@@ -368,7 +368,7 @@ export default function CommentSection({ postId, comments: propComments, onRefre
               background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))',
               color: '#3b82f6',
             }}
-            title={`@${username}`}
+            title={`@${usernameText}`}
           >
             {displayName}
           </Link>
