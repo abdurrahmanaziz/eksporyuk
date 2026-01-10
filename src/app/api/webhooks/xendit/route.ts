@@ -80,9 +80,6 @@ async function handleInvoicePaid(data: any) {
     // Find transaction by externalId (using findFirst since externalId is not unique)
     const transaction = await prisma.transaction.findFirst({
       where: { externalId: external_id },
-      include: { 
-        user: true,
-      }
     })
 
     if (!transaction) {
@@ -1048,9 +1045,6 @@ async function handleVAPaymentComplete(data: any) {
     // Using findFirst since externalId is not a unique field in schema
     const transaction = await prisma.transaction.findFirst({
       where: { externalId: external_id },
-      include: { 
-        user: true,
-      }
     })
 
     if (!transaction) {
@@ -1791,9 +1785,6 @@ async function handleEWalletPaymentComplete(data: any) {
     // E-Wallet uses reference_id as transaction ID
     const transaction = await prisma.transaction.findUnique({
       where: { id: reference_id },
-      include: { 
-        user: true,
-      }
     })
 
     if (!transaction) {

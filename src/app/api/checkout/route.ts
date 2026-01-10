@@ -577,7 +577,6 @@ export async function GET(request: NextRequest) {
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
       include: {
-        user: true,
         coupon: true
       }
     })
