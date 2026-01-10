@@ -1,0 +1,4211 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String                       @id @default(cuid())
+  email                   String                       @unique
+  username                String?                      @unique
+  name                    String
+  password                String?
+  role                    Role                         @default(MEMBER_FREE)
+  avatar                  String?
+  bio                     String?
+  phone                   String?
+  whatsapp                String?
+  province                String?
+  city                    String?
+  district                String?
+  address                 String?
+  postalCode              String?
+  latitude                Float?
+  longitude               Float?
+  locationVerified        Boolean                      @default(false)
+  profileCompleted        Boolean                      @default(false)
+  isOnline                Boolean                      @default(false)
+  lastSeenAt              DateTime?
+  lastActiveAt            DateTime?
+  emailVerified           Boolean                      @default(false)
+  isActive                Boolean                      @default(true)
+  isSuspended             Boolean                      @default(false)
+  suspendReason           String?
+  suspendedAt             DateTime?
+  suspendedBy             String?
+  isFounder               Boolean                      @default(false)
+  isCoFounder             Boolean                      @default(false)
+  affiliateMenuEnabled    Boolean                      @default(false)
+  revenueSharePercent     Float?
+  emailNotifications      Boolean                      @default(true)
+  whatsappNotifications   Boolean                      @default(false)
+  oneSignalPlayerId       String?
+  oneSignalSubscribedAt   DateTime?
+  oneSignalTags           Json?
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+  referredById            String?
+  mailketingLists         Json?
+  mailketingSubscriberId  String?
+  withdrawalPin           String?
+  withdrawalPinSetAt      DateTime?
+  coverImage              String?
+  activities              ActivityLog[]
+  approvedChallenges      AffiliateChallengeProgress[]
+  affiliateLinks          AffiliateLink[]
+  affiliateProfile        AffiliateProfile?
+  assignmentSubmissions   AssignmentSubmission[]
+  bansIssued              BannedUser[]                 @relation("BansIssued")
+  bannedFrom              BannedUser[]
+  createdBrandedTemplates BrandedTemplate[]            @relation("BrandedTemplateCreator")
+  brandedTemplateUsages   BrandedTemplateUsage[]       @relation("BrandedTemplateUsageUser")
+  addedBuyers             Buyer[]
+  buyerLikes              BuyerLike[]
+  buyerViews              BuyerView[]
+  certificates            Certificate[]
+  challengeProgress       ChallengProgress[]
+  chatParticipants        ChatParticipant[]
+  commentReactions        CommentReaction[]
+  createdCoupons          Coupon[]
+  discussionThreads       CourseDiscussion[]           @relation("DiscussionAuthor")
+  courseEnrollments       CourseEnrollment[]
+  courseNotes             CourseNote[]                 @relation("CourseNotes")
+  courseReviews           CourseReview[]               @relation("CourseReviews")
+  reviewHelpfulVotes      CourseReviewHelpful[]        @relation("ReviewHelpful")
+  documentDownloads       DocumentDownloadLog[]        @relation("DocumentDownloader")
+  createdEvents           Event[]                      @relation("EventCreator")
+  eventRSVPs              EventRSVP[]
+  expenses                Expense[]
+  createdDocTemplates     ExportDocument[]
+  followers               Follow[]                     @relation("Followers")
+  following               Follow[]                     @relation("Following")
+  addedForwarders         Forwarder[]
+  forwarderViews          ForwarderView[]
+  generatedDocuments      GeneratedDocument[]
+  ownedGroups             Group[]                      @relation("GroupOwner")
+  groupMemberships        GroupMember[]
+  createdGroupQuizzes     GroupQuiz[]                  @relation("QuizCreator")
+  groupQuizAttempts       GroupQuizAttempt[]           @relation("QuizAttempts")
+  groupResources          GroupResource[]
+  uploadedDocuments       MembershipDocument[]         @relation("DocumentUploader")
+  upgradeHistory          MembershipUpgradeLog[]
+  mentorProfile           MentorProfile?
+  sentMessages            Message[]                    @relation("MessageSender")
+  receivedMessages        Message[]                    @relation("MessageReceiver")
+  notifications           Notification[]
+  pointTransactions       PointTransaction[]
+  posts                   Post[]
+  postComments            PostComment[]
+  postLikes               PostLike[]
+  postReactions           PostReaction[]
+  createdProducts         Product[]                    @relation("ProductCreator")
+  quizAttempts            QuizAttempt[]
+  reminderLogs            ReminderLog[]
+  createdTemplates        ReminderTemplate[]
+  reportsReviewed         Report[]                     @relation("ReportsReviewed")
+  reportsReceived         Report[]                     @relation("ReportsReceived")
+  reportsMade             Report[]                     @relation("ReportsMade")
+  savedPosts              SavedPost[]
+  scheduledPosts          ScheduledPost[]
+  stories                 Story[]
+  storyViews              StoryView[]
+  addedSuppliers          Supplier[]
+  supplierMembership      SupplierMembership?
+  supplierProfile         SupplierProfile?
+  supplierViews           SupplierView[]
+  transactions            Transaction[]
+  referredBy              User?                        @relation("Referrals", fields: [referredById], references: [id])
+  referrals               User[]                       @relation("Referrals")
+  userBadges              UserBadge[]
+  courseProgress          UserCourseProgress[]
+  userMemberships         UserMembership[]
+  permissions             UserPermission[]
+  userPoints              UserPoints[]
+  userProducts            UserProduct[]
+  userRoles               UserRole[]
+  wallet                  Wallet?
+  notificationDeliveryLogs NotificationDeliveryLog[]    @relation("NotificationDeliveryLogs")
+  conversionEvents        ConversionEvent[]            @relation("ConversionEvents")
+  notificationConsent     NotificationConsent?         @relation("NotificationConsents")
+  createdDocumentations   Documentation[]              @relation("DocumentationAuthor")
+  editedDocumentations    Documentation[]              @relation("DocumentationEditor")
+  documentationRevisions  DocumentationRevision[]      @relation("DocumentationRevisionAuthor")
+
+  @@index([email])
+  @@index([username])
+  @@index([role])
+  @@index([province])
+  @@index([city])
+  @@index([district])
+}
+
+model Wallet {
+  id              String              @id @default(cuid())
+  userId          String              @unique
+  balance         Decimal             @default(0)
+  balancePending  Decimal             @default(0)
+  totalEarnings   Decimal             @default(0)
+  totalPayout     Decimal             @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  payouts         Payout[]
+  pendingRevenues PendingRevenue[]
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    WalletTransaction[]
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  amount      Decimal
+  type        String
+  description String
+  reference   String?
+  createdAt   DateTime @default(now())
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([createdAt])
+}
+
+model Payout {
+  id            String       @id @default(cuid())
+  walletId      String
+  amount        Decimal
+  status        PayoutStatus @default(PENDING)
+  bankName      String?
+  accountName   String?
+  accountNumber String?
+  notes         String?
+  approvedBy    String?
+  approvedAt    DateTime?
+  paidAt        DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  wallet        Wallet       @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([status])
+}
+
+model PendingRevenue {
+  id             String      @id @default(cuid())
+  walletId       String
+  transactionId  String
+  amount         Decimal
+  type           String
+  percentage     Decimal
+  status         String      @default("PENDING")
+  adjustedAmount Decimal?
+  adjustmentNote String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  transaction    Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  wallet         Wallet      @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([transactionId])
+  @@index([status])
+}
+
+model AffiliateProfile {
+  id                    String                       @id @default(cuid())
+  userId                String                       @unique
+  affiliateCode         String                       @unique
+  shortLink             String                       @unique
+  shortLinkUsername     String?                      @unique
+  tier                  Int                          @default(1)
+  commissionRate        Decimal                      @default(10)
+  totalClicks           Int                          @default(0)
+  totalConversions      Int                          @default(0)
+  totalEarnings         Decimal                      @default(0)
+  isActive              Boolean                      @default(true)
+  applicationStatus     String                       @default("PENDING")
+  applicationNotes      String?
+  bankName              String?
+  bankAccountName       String?
+  bankAccountNumber     String?
+  whatsapp              String?
+  motivation            String?
+  approvedAt            DateTime?
+  welcomeShown          Boolean                      @default(false)
+  onboardingCompleted   Boolean                      @default(false)
+  onboardingCompletedAt DateTime?
+  trainingCompleted     Boolean                      @default(false)
+  trainingCompletedAt   DateTime?
+  firstLinkCreated      Boolean                      @default(false)
+  firstLinkCreatedAt    DateTime?
+  profileCompleted      Boolean                      @default(false)
+  profileCompletedAt    DateTime?
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
+  automations           AffiliateAutomation[]
+  automationJobs        AffiliateAutomationJob[]
+  automationLogs        AffiliateAutomationLog[]
+  bioPage               AffiliateBioPage?
+  broadcasts            AffiliateBroadcast[]
+  challenges            AffiliateChallengeProgress[]
+  clicks                AffiliateClick[]
+  conversions           AffiliateConversion[]
+  credit                AffiliateCredit?
+  creditTransactions    AffiliateCreditTransaction[]
+  followUpLogs          FollowUpLog[]
+  leads                 AffiliateLead[]
+  links                 AffiliateLink[]
+  optinForms            AffiliateOptinForm[]
+  user                  User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shortLinks            AffiliateShortLink[]
+
+  @@index([affiliateCode])
+  @@index([userId])
+  @@index([shortLinkUsername])
+}
+
+model AffiliateLink {
+  id           String               @id @default(cuid())
+  userId       String?
+  affiliateId  String?
+  productId    String?
+  membershipId String?
+  courseId     String?
+  supplierId   String?
+  code         String               @unique
+  shortCode    String?              @unique
+  fullUrl      String?
+  couponCode   String?
+  linkType     AffiliateLinkType    @default(CHECKOUT)
+  clicks       Int                  @default(0)
+  conversions  Int                  @default(0)
+  isActive     Boolean              @default(true)
+  isArchived   Boolean              @default(false)
+  expiresAt    DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  clickRecords AffiliateClick[]
+  user         User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliate    AffiliateProfile?    @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  supplier     Supplier?            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  product      Product?             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  membership   Membership?          @relation(fields: [membershipId], references: [id])
+  course       Course?              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  shortLinks   AffiliateShortLink[]
+
+  @@index([userId])
+  @@index([affiliateId])
+  @@index([code])
+  @@index([shortCode])
+}
+
+model AffiliateClick {
+  id           String            @id @default(cuid())
+  linkId       String?
+  affiliateId  String?
+  ipAddress    String
+  userAgent    String
+  referrer     String?
+  productId    String?
+  membershipId String?
+  convertedAt  DateTime?
+  createdAt    DateTime          @default(now())
+  affiliate    AffiliateProfile? @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  link         AffiliateLink?    @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([linkId])
+  @@index([affiliateId])
+  @@index([createdAt])
+}
+
+model AffiliateConversion {
+  id               String           @id @default(cuid())
+  affiliateId      String
+  transactionId    String           @unique
+  commissionAmount Decimal
+  commissionRate   Decimal
+  paidOut          Boolean          @default(false)
+  paidOutAt        DateTime?
+  createdAt        DateTime         @default(now())
+  transaction      Transaction      @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  affiliate        AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@index([transactionId])
+}
+
+model AffiliateChallenge {
+  id           String                       @id @default(cuid())
+  title        String
+  description  String
+  targetType   String
+  targetValue  Decimal
+  rewardType   String
+  rewardValue  Decimal
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean                      @default(true)
+  membershipId String?
+  productId    String?
+  courseId     String?
+  createdAt    DateTime                     @default(now())
+  updatedAt    DateTime                     @updatedAt
+  course       Course?                      @relation(fields: [courseId], references: [id])
+  product      Product?                     @relation(fields: [productId], references: [id])
+  membership   Membership?                  @relation(fields: [membershipId], references: [id])
+  progress     AffiliateChallengeProgress[]
+
+  @@index([startDate, endDate])
+  @@index([membershipId])
+  @@index([productId])
+  @@index([courseId])
+}
+
+model AffiliateChallengeProgress {
+  id              String             @id @default(cuid())
+  challengeId     String
+  affiliateId     String
+  currentValue    Decimal            @default(0)
+  completed       Boolean            @default(false)
+  completedAt     DateTime?
+  rewardClaimed   Boolean            @default(false)
+  claimedAt       DateTime?
+  rewardStatus    String             @default("NOT_CLAIMED")
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  approver        User?              @relation(fields: [approvedBy], references: [id])
+  challenge       AffiliateChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  affiliate       AffiliateProfile   @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, affiliateId])
+  @@index([affiliateId])
+  @@index([challengeId])
+  @@index([rewardStatus])
+}
+
+model AffiliateMaterial {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  type          String
+  category      String
+  fileUrl       String?
+  content       String?
+  thumbnailUrl  String?
+  downloadCount Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([type])
+  @@index([category])
+  @@index([isActive])
+}
+
+model MentorProfile {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  expertise      String?
+  bio            String?
+  commissionRate Decimal   @default(30)
+  totalStudents  Int       @default(0)
+  totalCourses   Int       @default(0)
+  totalEarnings  Decimal   @default(0)
+  rating         Decimal   @default(0)
+  isActive       Boolean   @default(true)
+  verifiedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  courses        Course[]
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Membership {
+  id                      String                 @id @default(cuid())
+  name                    String
+  slug                    String?                @unique
+  checkoutSlug            String?                @unique
+  checkoutTemplate        String?                @default("modern")
+  description             String
+  duration                MembershipDuration
+  price                   Decimal
+  originalPrice           Decimal?
+  discount                Int                    @default(0)
+  commissionType          CommissionType         @default(PERCENTAGE)
+  affiliateCommissionRate Decimal                @default(30)
+  features                Json
+  isBestSeller            Boolean                @default(false)
+  isPopular               Boolean                @default(false)
+  isMostPopular           Boolean                @default(false)
+  isActive                Boolean                @default(true)
+  salesPageUrl            String?
+  alternativeUrl          String?
+  reminders               Json?
+  formLogo                String?
+  formBanner              String?
+  formDescription         String?
+  mailketingListId        String?
+  mailketingListName      String?
+  autoAddToList           Boolean                @default(true)
+  autoRemoveOnExpire      Boolean                @default(false)
+  showInGeneralCheckout   Boolean                @default(true)
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  bioCTAs                 AffiliateBioCTA[]
+  affiliateChallenges     AffiliateChallenge[]
+  affiliateLinks          AffiliateLink[]
+  eventMemberships        EventMembership[]
+  membershipCourses       MembershipCourse[]
+  membershipGroups        MembershipGroup[]
+  membershipProducts      MembershipProduct[]
+  membershipReminders     MembershipReminder[]
+  membershipFollowUps     MembershipFollowUp[]
+  membershipFeatures      MembershipFeatureAccess[]
+  upgradeLogs             MembershipUpgradeLog[]
+  userMemberships         UserMembership[]
+
+  @@index([duration])
+  @@index([isActive])
+}
+
+model MembershipGroup {
+  id           String     @id @default(cuid())
+  membershipId String
+  groupId      String
+  createdAt    DateTime   @default(now())
+  group        Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, groupId])
+  @@index([membershipId])
+  @@index([groupId])
+}
+
+model MembershipCourse {
+  id           String     @id @default(cuid())
+  membershipId String
+  courseId     String
+  createdAt    DateTime   @default(now())
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, courseId])
+  @@index([membershipId])
+  @@index([courseId])
+}
+
+model MembershipProduct {
+  id           String     @id @default(cuid())
+  membershipId String
+  productId    String
+  createdAt    DateTime   @default(now())
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, productId])
+  @@index([membershipId])
+  @@index([productId])
+}
+
+// Feature Access per Membership
+// Defines which features each membership provides
+model MembershipFeatureAccess {
+  id           String     @id @default(cuid())
+  membershipId String
+  featureKey   String     // Key from AVAILABLE_FEATURES (e.g., 'database_buyer_access')
+  enabled      Boolean    @default(true)
+  value        Json?      // Feature-specific config (e.g., { monthlyLimit: 50 })
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, featureKey])
+  @@index([membershipId])
+  @@index([featureKey])
+}
+
+model UserMembership {
+  id            String       @id @default(cuid())
+  userId        String
+  membershipId  String
+  startDate     DateTime     @default(now())
+  endDate       DateTime
+  isActive      Boolean      @default(true)
+  autoRenew     Boolean      @default(false)
+  status        String       @default("PENDING")
+  activatedAt   DateTime?
+  price         Decimal?
+  transactionId String?      @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  membership    Membership   @relation(fields: [membershipId], references: [id])
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, membershipId])
+  @@index([userId])
+  @@index([membershipId])
+  @@index([endDate])
+  @@index([status])
+}
+
+model MembershipReminder {
+  id              String          @id @default(cuid())
+  membershipId    String
+  title           String
+  description     String?
+  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
+  delayAmount     Int
+  delayUnit       String          @default("days")
+  specificDate    DateTime?
+  preferredTime   String?
+  timezone        String?         @default("Asia/Jakarta")
+  avoidWeekends   Boolean         @default(false)
+  daysOfWeek      Json?
+  channels        Json
+  emailEnabled    Boolean         @default(true)
+  emailSubject    String?
+  emailBody       String?
+  emailCTA        String?
+  emailCTALink    String?
+  whatsappEnabled Boolean         @default(false)
+  whatsappMessage String?
+  whatsappCTA     String?
+  whatsappCTALink String?
+  pushEnabled     Boolean         @default(false)
+  pushTitle       String?
+  pushBody        String?
+  pushIcon        String?
+  pushClickAction String?
+  inAppEnabled    Boolean         @default(false)
+  inAppTitle      String?
+  inAppBody       String?
+  inAppLink       String?
+  conditions      Json?
+  stopIfCondition Json?
+  sequenceOrder   Int             @default(0)
+  isActive        Boolean         @default(true)
+  stopOnAction    Boolean         @default(false)
+  sentCount       Int             @default(0)
+  deliveredCount  Int             @default(0)
+  openedCount     Int             @default(0)
+  clickedCount    Int             @default(0)
+  failedCount     Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  membership      Membership      @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  logs            ReminderLog[]
+
+  @@unique([membershipId, title])
+  @@index([membershipId])
+  @@index([triggerType])
+  @@index([sequenceOrder])
+  @@index([isActive])
+}
+
+// ================================================
+// MEMBERSHIP FOLLOW UP
+// Template follow up untuk affiliate follow up lead secara manual
+// ================================================
+model MembershipFollowUp {
+  id           String     @id @default(cuid())
+  membershipId String
+  title        String
+  description  String?
+  
+  // Email content
+  emailSubject String
+  emailBody    String     
+  emailCTA     String?
+  emailCTALink String?
+  
+  // WhatsApp content (untuk copy-paste manual)
+  whatsappMessage String? 
+  
+  // Shortcodes info
+  shortcodes   Json?      // List shortcodes yang tersedia
+  
+  // Settings
+  sequenceOrder Int       @default(0)
+  isActive     Boolean    @default(true)
+  
+  // Analytics
+  usageCount   Int        @default(0)
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  logs         FollowUpLog[]
+
+  @@unique([membershipId, title])
+  @@index([membershipId])
+  @@index([sequenceOrder])
+  @@index([isActive])
+}
+
+// Log ketika affiliate kirim follow up ke lead
+model FollowUpLog {
+  id           String             @id @default(cuid())
+  followUpId   String
+  affiliateId  String
+  leadEmail    String
+  leadName     String?
+  leadPhone    String?
+  channel      ReminderChannel    @default(EMAIL)
+  status       ReminderStatus     @default(SENT)
+  sentAt       DateTime           @default(now())
+  transactionId String?           // Link ke transaksi jika ada
+  notes        String?
+  createdAt    DateTime           @default(now())
+  
+  followUp     MembershipFollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
+  affiliate    AffiliateProfile   @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([followUpId])
+  @@index([affiliateId])
+  @@index([leadEmail])
+  @@index([sentAt])
+}
+
+model ReminderLog {
+  id           String             @id @default(cuid())
+  reminderId   String
+  userId       String
+  channel      ReminderChannel
+  status       ReminderStatus     @default(PENDING)
+  scheduledAt  DateTime
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  failedAt     DateTime?
+  subject      String?
+  body         String?
+  ctaLink      String?
+  errorMessage String?
+  ipAddress    String?
+  userAgent    String?
+  deviceInfo   Json?
+  mailketingId String?
+  whatsappId   String?
+  pushId       String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  reminder     MembershipReminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reminderId])
+  @@index([userId])
+  @@index([channel])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([sentAt])
+}
+
+model ReminderTemplate {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  category     String?
+  templateData Json
+  isPublic     Boolean  @default(false)
+  createdBy    String
+  usageCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  creator      User     @relation(fields: [createdBy], references: [id])
+
+  @@index([category])
+  @@index([createdBy])
+}
+
+model ProductReminder {
+  id              String          @id @default(cuid())
+  productId       String
+  title           String
+  description     String?
+  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
+  delayAmount     Int
+  delayUnit       String          @default("days")
+  specificDate    DateTime?
+  preferredTime   String?
+  timezone        String?         @default("Asia/Jakarta")
+  avoidWeekends   Boolean         @default(false)
+  daysOfWeek      Json?
+  channels        Json
+  emailEnabled    Boolean         @default(true)
+  emailSubject    String?
+  emailBody       String?
+  emailCTA        String?
+  emailCTALink    String?
+  whatsappEnabled Boolean         @default(false)
+  whatsappMessage String?
+  whatsappCTA     String?
+  whatsappCTALink String?
+  pushEnabled     Boolean         @default(false)
+  pushTitle       String?
+  pushBody        String?
+  pushIcon        String?
+  pushClickAction String?
+  inAppEnabled    Boolean         @default(false)
+  inAppTitle      String?
+  inAppBody       String?
+  inAppLink       String?
+  conditions      Json?
+  stopIfCondition Json?
+  sequenceOrder   Int             @default(0)
+  isActive        Boolean         @default(true)
+  stopOnAction    Boolean         @default(false)
+  sentCount       Int             @default(0)
+  deliveredCount  Int             @default(0)
+  openedCount     Int             @default(0)
+  clickedCount    Int             @default(0)
+  failedCount     Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, title])
+  @@index([productId])
+  @@index([triggerType])
+  @@index([sequenceOrder])
+  @@index([isActive])
+}
+
+model CourseReminder {
+  id              String          @id @default(cuid())
+  courseId        String
+  title           String
+  description     String?
+  triggerType     ReminderTrigger @default(AFTER_PURCHASE)
+  delayAmount     Int
+  delayUnit       String          @default("days")
+  specificDate    DateTime?
+  preferredTime   String?
+  timezone        String?         @default("Asia/Jakarta")
+  avoidWeekends   Boolean         @default(false)
+  daysOfWeek      Json?
+  channels        Json
+  emailEnabled    Boolean         @default(true)
+  emailSubject    String?
+  emailBody       String?
+  emailCTA        String?
+  emailCTALink    String?
+  whatsappEnabled Boolean         @default(false)
+  whatsappMessage String?
+  whatsappCTA     String?
+  whatsappCTALink String?
+  pushEnabled     Boolean         @default(false)
+  pushTitle       String?
+  pushBody        String?
+  pushIcon        String?
+  pushClickAction String?
+  inAppEnabled    Boolean         @default(false)
+  inAppTitle      String?
+  inAppBody       String?
+  inAppLink       String?
+  conditions      Json?
+  stopIfCondition Json?
+  sequenceOrder   Int             @default(0)
+  isActive        Boolean         @default(true)
+  stopOnAction    Boolean         @default(false)
+  sentCount       Int             @default(0)
+  deliveredCount  Int             @default(0)
+  openedCount     Int             @default(0)
+  clickedCount    Int             @default(0)
+  failedCount     Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  course          Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, title])
+  @@index([courseId])
+  @@index([triggerType])
+  @@index([sequenceOrder])
+  @@index([isActive])
+}
+
+model EventReminder {
+  id              String          @id @default(cuid())
+  eventId         String
+  title           String
+  description     String?
+  triggerType     ReminderTrigger @default(BEFORE_EXPIRY)
+  delayAmount     Int
+  delayUnit       String          @default("days")
+  specificDate    DateTime?
+  preferredTime   String?
+  timezone        String?         @default("Asia/Jakarta")
+  avoidWeekends   Boolean         @default(false)
+  daysOfWeek      Json?
+  channels        Json
+  emailEnabled    Boolean         @default(true)
+  emailSubject    String?
+  emailBody       String?
+  emailCTA        String?
+  emailCTALink    String?
+  whatsappEnabled Boolean         @default(false)
+  whatsappMessage String?
+  whatsappCTA     String?
+  whatsappCTALink String?
+  pushEnabled     Boolean         @default(false)
+  pushTitle       String?
+  pushBody        String?
+  pushIcon        String?
+  pushClickAction String?
+  inAppEnabled    Boolean         @default(false)
+  inAppTitle      String?
+  inAppBody       String?
+  inAppLink       String?
+  conditions      Json?
+  stopIfCondition Json?
+  sequenceOrder   Int             @default(0)
+  isActive        Boolean         @default(true)
+  stopOnAction    Boolean         @default(false)
+  sentCount       Int             @default(0)
+  deliveredCount  Int             @default(0)
+  openedCount     Int             @default(0)
+  clickedCount    Int             @default(0)
+  failedCount     Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  event           Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, title])
+  @@index([eventId])
+  @@index([triggerType])
+  @@index([sequenceOrder])
+  @@index([isActive])
+}
+
+model MembershipUpgradeLog {
+  id               String      @id @default(cuid())
+  userId           String
+  oldMembershipId  String?
+  newMembershipId  String
+  upgradeDate      DateTime    @default(now())
+  paymentMode      String
+  oldPlanRemaining Int?
+  pricePaid        Decimal
+  notes            String?
+  oldMembership    Membership? @relation(fields: [oldMembershipId], references: [id])
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([upgradeDate])
+}
+
+model Product {
+  id                      String               @id @default(cuid())
+  creatorId               String
+  name                    String
+  slug                    String?              @unique
+  checkoutSlug            String?              @unique
+  description             String
+  shortDescription        String?
+  price                   Decimal
+  originalPrice           Decimal?
+  thumbnail               String?
+  images                  Json?
+  salesPageUrl            String?
+  externalSalesUrl        String?
+  reminders               Json?
+  category                String?
+  tags                    Json?
+  productType             ProductType          @default(DIGITAL)
+  productStatus           ProductStatus        @default(DRAFT)
+  accessLevel             AccessLevel          @default(PUBLIC)
+  eventDate               DateTime?
+  eventEndDate            DateTime?
+  eventDuration           Int?
+  eventUrl                String?
+  meetingId               String?
+  meetingPassword         String?
+  eventVisibility         EventVisibility      @default(PUBLIC)
+  eventPassword           String?
+  maxParticipants         Int?
+  reminderSent7Days       Boolean              @default(false)
+  reminderSent3Days       Boolean              @default(false)
+  reminderSent1Day        Boolean              @default(false)
+  reminderSent1Hour       Boolean              @default(false)
+  reminderSent15Min       Boolean              @default(false)
+  enableUpsale            Boolean              @default(true)
+  upsaleTargetMemberships String?
+  upsaleDiscount          Int                  @default(0)
+  upsaleMessage           String?
+  commissionType          CommissionType       @default(PERCENTAGE)
+  affiliateCommissionRate Decimal              @default(30)
+  mentorCommission        Decimal              @default(30)
+  groupId                 String?
+  isActive                Boolean              @default(true)
+  isFeatured              Boolean              @default(false)
+  stock                   Int?
+  soldCount               Int                  @default(0)
+  formLogo                String?
+  formBanner              String?
+  formDescription         String?
+  mailketingListId        String?
+  mailketingListName      String?
+  autoAddToList           Boolean              @default(true)
+  seoMetaTitle            String?
+  seoMetaDescription      String?
+  seoKeywords             String?
+  ctaButtonText           String?
+  faqs                    Json?
+  testimonials            Json?
+  bonuses                 Json?
+  downloadableFiles       Json?
+  trackingPixels          Json?
+  viewCount               Int                  @default(0)
+  clickCount              Int                  @default(0)
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  bioCTAs                 AffiliateBioCTA[]
+  affiliateChallenges     AffiliateChallenge[]
+  affiliateLinks          AffiliateLink[]
+  eventGroups             EventGroup[]
+  eventMemberships        EventMembership[]
+  membershipProducts      MembershipProduct[]
+  creator                 User                 @relation("ProductCreator", fields: [creatorId], references: [id])
+  group                   Group?               @relation(fields: [groupId], references: [id])
+  courses                 ProductCourse[]
+  productReminders        ProductReminder[]
+  transactions            Transaction[]
+  userProducts            UserProduct[]
+
+  @@index([creatorId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model UserProduct {
+  id            String       @id @default(cuid())
+  userId        String
+  productId     String
+  purchaseDate  DateTime     @default(now())
+  expiresAt     DateTime?
+  isActive      Boolean      @default(true)
+  price         Decimal
+  transactionId String?      @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  product       Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@index([isActive])
+}
+
+model EventMembership {
+  id           String     @id @default(cuid())
+  productId    String
+  membershipId String
+  createdAt    DateTime   @default(now())
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, membershipId])
+  @@index([productId])
+  @@index([membershipId])
+}
+
+model EventGroup {
+  id        String   @id @default(cuid())
+  productId String
+  groupId   String
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, groupId])
+  @@index([productId])
+  @@index([groupId])
+}
+
+model ProductCourse {
+  id        String   @id @default(cuid())
+  productId String
+  courseId  String
+  createdAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, courseId])
+  @@index([productId])
+  @@index([courseId])
+}
+
+model Course {
+  id                      String                 @id @default(cuid())
+  mentorId                String
+  title                   String
+  slug                    String?                @unique
+  checkoutSlug            String?                @unique
+  description             String
+  thumbnail               String?
+  price                   Decimal
+  originalPrice           Decimal?
+  mentorCommissionPercent Float                  @default(50)
+  commissionType          CommissionType         @default(PERCENTAGE)
+  affiliateCommissionRate Decimal                @default(30)
+  duration                Int?
+  level                   String?
+  status                  CourseStatus           @default(DRAFT)
+  isPublished             Boolean                @default(false)
+  publishedAt             DateTime?
+  submittedForReviewAt    DateTime?
+  reviewedBy              String?
+  approvedBy              String?
+  approvedAt              DateTime?
+  rejectedAt              DateTime?
+  rejectionReason         String?
+  monetizationType        CourseMonetizationType @default(FREE)
+  groupId                 String?
+  reminders               Json?
+  enrollmentCount         Int                    @default(0)
+  rating                  Decimal                @default(0)
+  formLogo                String?
+  formBanner              String?
+  formDescription         String?
+  certificateTemplateId   String?
+  mailketingListId        String?
+  mailketingListName      String?
+  autoAddToList           Boolean                @default(true)
+  affiliateOnly           Boolean                @default(false)
+  isAffiliateTraining     Boolean                @default(false)
+  isAffiliateMaterial     Boolean                @default(false)
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  bioCTAs                 AffiliateBioCTA[]
+  affiliateChallenges     AffiliateChallenge[]
+  affiliateLinks          AffiliateLink[]
+  assignments             Assignment[]
+  certificates            Certificate[]
+  mentor                  MentorProfile          @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  group                   Group?                 @relation(fields: [groupId], references: [id])
+  certificateTemplate     CertificateTemplate?   @relation(fields: [certificateTemplateId], references: [id])
+  discussions             CourseDiscussion[]
+  enrollments             CourseEnrollment[]
+  modules                 CourseModule[]
+  courseNotes             CourseNote[]           @relation("CourseNotes")
+  courseReminders         CourseReminder[]
+  reviews                 CourseReview[]         @relation("CourseReviews")
+  membershipCourses       MembershipCourse[]
+  notifications           Notification[]
+  productCourses          ProductCourse[]
+  quizzes                 Quiz[]
+  transactions            Transaction[]
+  userProgress            UserCourseProgress[]
+
+  @@index([mentorId])
+  @@index([isPublished])
+  @@index([status])
+  @@index([monetizationType])
+}
+
+model UserCourseProgress {
+  id               String    @id @default(cuid())
+  userId           String
+  courseId         String
+  progress         Int       @default(0)
+  lastAccessedAt   DateTime  @default(now())
+  completedLessons Json?
+  isCompleted      Boolean   @default(false)
+  completedAt      DateTime?
+  hasAccess        Boolean   @default(true)
+  accessGrantedAt  DateTime  @default(now())
+  accessExpiresAt  DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  course           Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@index([hasAccess])
+}
+
+model CourseModule {
+  id          String         @id @default(cuid())
+  courseId    String
+  title       String
+  description String?
+  order       Int
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  lessons     CourseLesson[]
+  course      Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+}
+
+model CourseLesson {
+  id          String       @id @default(cuid())
+  moduleId    String
+  title       String
+  content     String
+  videoUrl    String?
+  duration    Int?
+  order       Int
+  isFree      Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  assignments Assignment[]
+  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  files       LessonFile[]
+  quizzes     Quiz[]
+
+  @@index([moduleId])
+}
+
+model LessonFile {
+  id        String       @id @default(cuid())
+  lessonId  String
+  title     String
+  fileName  String
+  fileUrl   String
+  fileSize  Int?
+  fileType  String?
+  order     Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  lesson    CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+}
+
+model CourseEnrollment {
+  id            String    @id @default(cuid())
+  courseId      String
+  userId        String
+  progress      Int       @default(0)
+  completed     Boolean   @default(false)
+  completedAt   DateTime?
+  transactionId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course        Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId], name: "userId_courseId")
+  @@index([userId])
+  @@index([courseId])
+}
+
+model Group {
+  id                String             @id @default(cuid())
+  name              String
+  description       String
+  avatar            String?
+  coverImage        String?
+  type              GroupType          @default(PUBLIC)
+  ownerId           String
+  bannedWords       Json?
+  requireApproval   Boolean            @default(false)
+  isActive          Boolean            @default(true)
+  postingSettings   Json?
+  allowRichText     Boolean            @default(true)
+  allowMedia        Boolean            @default(true)
+  allowPolls        Boolean            @default(true)
+  allowEvents       Boolean            @default(true)
+  allowScheduling   Boolean            @default(true)
+  allowReactions    Boolean            @default(true)
+  allowMentions     Boolean            @default(true)
+  moderatesPosts    Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  slug              String?            @unique
+  bannedUsers       BannedUser[]
+  chatRooms         ChatRoom[]
+  courses           Course[]
+  events            Event[]
+  eventGroups       EventGroup[]
+  owner             User               @relation("GroupOwner", fields: [ownerId], references: [id])
+  challenges        GroupChallenge[]
+  members           GroupMember[]
+  quizzes           GroupQuiz[]
+  resources         GroupResource[]
+  membershipGroups  MembershipGroup[]
+  notifications     Notification[]
+  pointTransactions PointTransaction[]
+  posts             Post[]
+  products          Product[]
+  reports           Report[]
+  scheduledPosts    ScheduledPost[]
+  stories           Story[]
+  userBadges        UserBadge[]
+  userPoints        UserPoints[]
+
+  @@index([ownerId])
+  @@index([type])
+}
+
+model GroupMember {
+  id       String    @id @default(cuid())
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model Post {
+  id               String         @id @default(cuid())
+  authorId         String
+  groupId          String?
+  type             PostType       @default(POST)
+  content          String
+  contentFormatted Json?
+  images           Json?
+  videos           Json?
+  documents        Json?
+  linkPreview      Json?
+  location         Json?
+  pollData         Json?
+  eventData        Json?
+  quoteStyle       Json?
+  taggedUsers      Json?
+  metadata         Json?
+  isPinned         Boolean        @default(false)
+  isScheduled      Boolean        @default(false)
+  scheduledAt      DateTime?
+  commentsEnabled  Boolean        @default(true)
+  approvalStatus   ApprovalStatus @default(APPROVED)
+  likesCount       Int            @default(0)
+  commentsCount    Int            @default(0)
+  sharesCount      Int            @default(0)
+  reactionsCount   Json?
+  expiresAt        DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  notifications    Notification[]
+  author           User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  group            Group?         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  comments         PostComment[]
+  likes            PostLike[]
+  reactions        PostReaction[]
+  reports          Report[]
+  savedBy          SavedPost[]
+
+  @@index([authorId])
+  @@index([groupId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([isScheduled, scheduledAt])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model PostComment {
+  id               String            @id @default(cuid())
+  postId           String
+  userId           String
+  content          String
+  parentId         String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  contentFormatted Json?
+  images           Json?
+  mentionedUsers   Json?
+  reactionsCount   Json?
+  reactions        CommentReaction[]
+  notifications    Notification[]
+  parent           PostComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies          PostComment[]     @relation("CommentReplies")
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post             Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reports          Report[]
+
+  @@index([postId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+}
+
+model PostReaction {
+  id        String       @id @default(cuid())
+  postId    String
+  userId    String
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now())
+  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId, type])
+  @@index([postId])
+  @@index([userId])
+}
+
+model CommentReaction {
+  id        String       @id @default(cuid())
+  commentId String
+  userId    String
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now())
+  comment   PostComment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, type])
+  @@index([commentId])
+  @@index([userId])
+}
+
+model SavedPost {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@index([postId])
+}
+
+model Event {
+  id              String          @id @default(cuid())
+  creatorId       String
+  groupId         String?
+  title           String
+  description     String
+  thumbnail       String?
+  type            EventType
+  startDate       DateTime
+  endDate         DateTime
+  location        String?
+  meetingUrl      String?
+  meetingId       String?
+  meetingPassword String?
+  recordingUrl    String?
+  maxAttendees    Int?
+  price           Decimal?        @default(0)
+  commissionType  CommissionType?
+  commissionRate  Decimal?
+  isPublished     Boolean         @default(false)
+  isFeatured      Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  group           Group?          @relation(fields: [groupId], references: [id])
+  creator         User            @relation("EventCreator", fields: [creatorId], references: [id])
+  rsvps           EventRSVP[]
+  eventReminders  EventReminder[]
+  transactions    Transaction[]
+  notifications   Notification[]
+
+  @@index([creatorId])
+  @@index([groupId])
+  @@index([startDate])
+}
+
+model EventRSVP {
+  id            String   @id @default(cuid())
+  eventId       String
+  userId        String
+  status        String   @default("GOING")
+  attended      Boolean  @default(false)
+  isPaid        Boolean  @default(false)
+  paidAt        DateTime?
+  transactionId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+model Transaction {
+  id                  String               @id @default(cuid())
+  userId              String
+  type                TransactionType
+  status              TransactionStatus    @default(PENDING)
+  amount              Decimal
+  customerName        String?
+  customerEmail       String?
+  customerPhone       String?
+  customerWhatsapp    String?
+  productId           String?
+  courseId            String?
+  eventId             String?
+  description         String?
+  reference           String?
+  originalAmount      Decimal?
+  notes               String?
+  paymentMethod       String?
+  paymentProvider     String?
+  externalId          String?              @unique
+  paymentUrl          String?
+  founderShare        Decimal?
+  coFounderShare      Decimal?
+  affiliateShare      Decimal?
+  mentorShare         Decimal?
+  companyFee          Decimal?
+  couponId            String?
+  discountAmount      Decimal?
+  affiliateId         String?
+  metadata            Json?
+  paidAt              DateTime?
+  expiredAt           DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  invoiceNumber       String?              @unique
+  affiliateConversion AffiliateConversion?
+  notifications       Notification[]
+  pendingRevenues     PendingRevenue[]
+  coupon              Coupon?              @relation(fields: [couponId], references: [id])
+  course              Course?              @relation(fields: [courseId], references: [id])
+  product             Product?             @relation(fields: [productId], references: [id])
+  event               Event?               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user                User                 @relation(fields: [userId], references: [id])
+  membership          UserMembership?
+  userProduct         UserProduct?
+  eventRsvps          EventRSVP[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([eventId])
+  @@index([createdAt])
+}
+
+model Coupon {
+  id                      String        @id @default(cuid())
+  code                    String        @unique
+  description             String?
+  discountType            String
+  discountValue           Decimal
+  usageLimit              Int?
+  usageCount              Int           @default(0)
+  validUntil              DateTime?
+  expiresAt               DateTime?
+  isActive                Boolean       @default(true)
+  minPurchase             Decimal?
+  validFrom               DateTime?
+  productIds              Json?
+  membershipIds           Json?
+  courseIds               Json?
+  isAffiliateEnabled      Boolean       @default(false)
+  isForRenewal            Boolean       @default(false)  // Kupon untuk perpanjangan membership
+  maxGeneratePerAffiliate Int?
+  maxUsagePerCoupon       Int?
+  basedOnCouponId         String?
+  createdBy               String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  creator                 User?         @relation(fields: [createdBy], references: [id])
+  basedOnCoupon           Coupon?       @relation("CouponTemplate", fields: [basedOnCouponId], references: [id])
+  generatedCoupons        Coupon[]      @relation("CouponTemplate")
+  transactions            Transaction[]
+
+  @@index([code])
+  @@index([isActive])
+  @@index([validUntil])
+  @@index([createdBy])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model ChatRoom {
+  id            String            @id @default(cuid())
+  type          ChatRoomType      @default(DIRECT)
+  name          String?
+  avatar        String?
+  user1Id       String?
+  user2Id       String?
+  groupId       String?
+  lastMessageAt DateTime?
+  lastMessage   String?
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  participants  ChatParticipant[]
+  group         Group?            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  typingUsers   TypingIndicator[]
+
+  @@index([user1Id, user2Id])
+  @@index([groupId])
+  @@index([lastMessageAt])
+}
+
+model ChatParticipant {
+  id          String    @id @default(cuid())
+  roomId      String
+  userId      String
+  lastReadAt  DateTime?
+  unreadCount Int       @default(0)
+  isMuted     Boolean   @default(false)
+  isPinned    Boolean   @default(false)
+  joinedAt    DateTime  @default(now())
+  room        ChatRoom  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([userId])
+  @@index([roomId])
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  roomId         String?
+  senderId       String
+  receiverId     String?
+  content        String
+  type           String    @default("text")
+  attachmentUrl  String?
+  attachmentType String?
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+  isDelivered    Boolean   @default(false)
+  deliveredAt    DateTime?
+  reactions      Json?
+  replyToId      String?
+  isEdited       Boolean   @default(false)
+  isDeleted      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  attachmentName String?
+  attachmentSize Int?
+  room           ChatRoom? @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender         User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver       User?     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  replyTo        Message?  @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies        Message[] @relation("MessageReplies")
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([roomId])
+  @@index([createdAt])
+}
+
+model TypingIndicator {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  isTyping  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([expiresAt])
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  userId        String
+  type          NotificationType
+  title         String
+  message       String
+  sourceType    String?
+  sourceId      String?
+  postId        String?
+  commentId     String?
+  eventId       String?
+  courseId      String?
+  groupId       String?
+  transactionId String?
+  link          String?
+  redirectUrl   String?
+  image         String?
+  icon          String?
+  channels      Json?
+  isRead        Boolean          @default(false)
+  readAt        DateTime?
+  isSent        Boolean          @default(false)
+  sentAt        DateTime?
+  isDelivered   Boolean          @default(false)
+  deliveredAt   DateTime?
+  isClicked     Boolean          @default(false)
+  clickedAt     DateTime?
+  metadata      Json?
+  actorId       String?
+  actorName     String?
+  actorAvatar   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post          Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment       PostComment?     @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  event         Event?           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  course        Course?          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  group         Group?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  transaction   Transaction?     @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([sourceType, sourceId])
+}
+
+model NotificationSubscription {
+  id               String   @id @default(cuid())
+  userId           String
+  subscriptionType String
+  targetId         String
+  enableEmail      Boolean  @default(true)
+  enableWhatsApp   Boolean  @default(false)
+  enablePush       Boolean  @default(true)
+  enableInApp      Boolean  @default(true)
+  isAutoSubscribed Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, subscriptionType, targetId])
+  @@index([userId])
+  @@index([targetId])
+}
+
+model NotificationPreference {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  enableAllEmail           Boolean  @default(true)
+  enableAllWhatsApp        Boolean  @default(false)
+  enableAllPush            Boolean  @default(true)
+  enableAllInApp           Boolean  @default(true)
+  chatNotifications        Boolean  @default(true)
+  commentNotifications     Boolean  @default(true)
+  postNotifications        Boolean  @default(true)
+  courseNotifications      Boolean  @default(true)
+  eventNotifications       Boolean  @default(true)
+  transactionNotifications Boolean  @default(true)
+  followerNotifications    Boolean  @default(true)
+  achievementNotifications Boolean  @default(true)
+  systemNotifications      Boolean  @default(true)
+  affiliateNotifications   Boolean  @default(true)
+  enableQuietHours         Boolean  @default(false)
+  quietHoursStart          String?
+  quietHoursEnd            String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model Integration {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isEnabled Boolean  @default(false)
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model EmailTemplate {
+  id         String   @id @default(cuid())
+  name       String
+  category   String?
+  roleTarget String?
+  subject    String
+  body       String
+  ctaText    String?
+  ctaLink    String?
+  variables  Json?
+  metadata   Json?
+  usageCount Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([category])
+  @@index([roleTarget])
+  @@index([isActive])
+}
+
+model WhatsAppTemplate {
+  id         String   @id @default(cuid())
+  name       String
+  category   String?
+  roleTarget String?
+  message    String
+  ctaText    String?
+  ctaLink    String?
+  maxLength  Int      @default(1024)
+  variables  Json?
+  metadata   Json?
+  usageCount Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([category])
+  @@index([roleTarget])
+  @@index([isActive])
+}
+
+model BrandedTemplate {
+  id             String                 @id @default(cuid())
+  name           String                 @unique
+  slug           String                 @unique
+  description    String?
+  category       String
+  type           String
+  roleTarget     String?
+  subject        String
+  content        String
+  ctaText        String?
+  ctaLink        String?
+  priority       String                 @default("NORMAL")
+  isDefault      Boolean                @default(false)
+  isSystem       Boolean                @default(false)
+  isActive       Boolean                @default(true)
+  customBranding Json?
+  usageCount     Int                    @default(0)
+  lastUsedAt     DateTime?
+  tags           Json?
+  variables      Json?
+  previewData    Json?
+  createdBy      String?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  creator        User?                  @relation("BrandedTemplateCreator", fields: [createdBy], references: [id])
+  usages         BrandedTemplateUsage[]
+
+  @@index([category])
+  @@index([type])
+  @@index([roleTarget])
+  @@index([isActive])
+  @@index([isDefault])
+  @@index([usageCount])
+  @@index([createdAt])
+}
+
+model BrandedTemplateUsage {
+  id         String          @id @default(cuid())
+  templateId String
+  userId     String?
+  userRole   String?
+  context    String?
+  success    Boolean         @default(true)
+  error      String?
+  metadata   Json?
+  createdAt  DateTime        @default(now())
+  user       User?           @relation("BrandedTemplateUsageUser", fields: [userId], references: [id])
+  template   BrandedTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([userId])
+  @@index([userRole])
+  @@index([createdAt])
+}
+
+model BroadcastCampaign {
+  id                      String         @id @default(cuid())
+  name                    String
+  type                    String
+  status                  String         @default("DRAFT")
+  templateId              String?
+  templateType            String?
+  targetType              String
+  targetRoles             Json?
+  targetMembershipIds     Json?
+  targetGroupIds          Json?
+  targetCourseIds         Json?
+  targetEventIds          Json?
+  targetTransactionStatus Json?
+  targetTransactionType   Json?
+  customUserIds           Json?
+  emailSubject            String?
+  emailBody               String?
+  emailCtaText            String?
+  emailCtaLink            String?
+  whatsappMessage         String?
+  whatsappCtaText         String?
+  whatsappCtaLink         String?
+  scheduledAt             DateTime?
+  startedAt               DateTime?
+  completedAt             DateTime?
+  totalRecipients         Int            @default(0)
+  sentCount               Int            @default(0)
+  deliveredCount          Int            @default(0)
+  failedCount             Int            @default(0)
+  openedCount             Int            @default(0)
+  clickedCount            Int            @default(0)
+  createdById             String
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  logs                    BroadcastLog[]
+
+  @@index([status])
+  @@index([type])
+  @@index([targetType])
+  @@index([createdById])
+  @@index([scheduledAt])
+}
+
+model BroadcastLog {
+  id           String            @id @default(cuid())
+  campaignId   String
+  userId       String
+  channel      String
+  status       String            @default("PENDING")
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+  metadata     Json?
+  createdAt    DateTime          @default(now())
+  campaign     BroadcastCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([userId])
+  @@index([status])
+  @@index([channel])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  key         String    @unique
+  permissions Json
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([key])
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  role      Role
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([userId])
+}
+
+model UserPermission {
+  id        String   @id @default(cuid())
+  userId    String
+  feature   String
+  enabled   Boolean  @default(true)
+  value     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, feature])
+  @@index([userId])
+  @@index([feature])
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  adminId     String
+  title       String
+  description String?
+  amount      Decimal
+  category    String
+  paidBy      String?
+  paidAt      DateTime  @default(now())
+  receipt     String?
+  isApproved  Boolean   @default(false)
+  approvedBy  String?
+  approvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  admin       User      @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([category])
+  @@index([paidAt])
+}
+
+model Buyer {
+  id               String      @id @default(cuid())
+  productName      String?
+  productSpecs     String?
+  quantity         String?
+  shippingTerms    String?
+  destinationPort  String?
+  paymentTerms     String?
+  companyName      String
+  country          String
+  city             String?
+  address          String?
+  contactPerson    String?
+  email            String?
+  phone            String?
+  website          String?
+  businessType     String?
+  productsInterest String?
+  annualImport     String?
+  isVerified       Boolean     @default(false)
+  verifiedBy       String?
+  verifiedAt       DateTime?
+  rating           Float?      @default(0)
+  totalDeals       Int         @default(0)
+  tags             String?
+  notes            String?
+  addedBy          String
+  viewCount        Int         @default(0)
+  likeCount        Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  addedByUser      User        @relation(fields: [addedBy], references: [id])
+  likes            BuyerLike[]
+  views            BuyerView[]
+
+  @@index([country])
+  @@index([isVerified])
+  @@index([addedBy])
+  @@index([likeCount])
+  @@index([productName])
+}
+
+model Supplier {
+  id             String          @id @default(cuid())
+  companyName    String
+  province       String
+  city           String
+  address        String?
+  contactPerson  String?
+  email          String?
+  phone          String?
+  whatsapp       String?
+  website        String?
+  businessType   String?
+  products       String
+  capacity       String?
+  certifications String?
+  isVerified     Boolean         @default(false)
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  rating         Float?          @default(0)
+  totalDeals     Int             @default(0)
+  tags           String?
+  notes          String?
+  addedBy        String
+  viewCount      Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  legalityDoc    String?
+  nibDoc         String?
+  affiliateLinks AffiliateLink[]
+  addedByUser    User            @relation(fields: [addedBy], references: [id])
+  views          SupplierView[]
+
+  @@index([province])
+  @@index([city])
+  @@index([isVerified])
+  @@index([addedBy])
+}
+
+model Forwarder {
+  id             String          @id @default(cuid())
+  companyName    String
+  country        String          @default("Indonesia")
+  city           String
+  address        String?
+  contactPerson  String?
+  email          String?
+  phone          String?
+  whatsapp       String?
+  website        String?
+  serviceType    String?
+  routes         String?
+  services       String?
+  priceRange     String?
+  minShipment    String?
+  isVerified     Boolean         @default(false)
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  rating         Float?          @default(0)
+  totalShipments Int             @default(0)
+  tags           String?
+  notes          String?
+  addedBy        String
+  viewCount      Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  addedByUser    User            @relation(fields: [addedBy], references: [id])
+  views          ForwarderView[]
+
+  @@index([country])
+  @@index([city])
+  @@index([isVerified])
+  @@index([addedBy])
+}
+
+model ExportDocument {
+  id             String              @id @default(cuid())
+  name           String
+  slug           String              @unique @default(cuid())
+  type           String
+  description    String?
+  templateHtml   String
+  templateFields Json
+  category       String?             @default("OTHER")
+  paperSize      String              @default("A4")
+  orientation    String              @default("portrait")
+  thumbnail      String?
+  isActive       Boolean             @default(true)
+  isPremium      Boolean             @default(false)
+  isBuiltIn      Boolean             @default(true)
+  usageCount     Int                 @default(0)
+  createdBy      String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  createdByUser  User                @relation(fields: [createdBy], references: [id])
+  generated      GeneratedDocument[]
+
+  @@index([type])
+  @@index([category])
+  @@index([isActive])
+  @@index([isPremium])
+  @@index([slug])
+}
+
+model GeneratedDocument {
+  id           String         @id @default(cuid())
+  userId       String
+  templateId   String
+  documentData Json
+  documentHtml String
+  documentPdf  String?
+  title        String
+  documentNo   String?
+  notes        String?
+  status       String         @default("DRAFT")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  user         User           @relation(fields: [userId], references: [id])
+  template     ExportDocument @relation(fields: [templateId], references: [id])
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model MembershipDocument {
+  id            String                @id @default(cuid())
+  title         String
+  description   String?
+  category      String
+  fileUrl       String
+  fileName      String
+  fileSize      Int
+  fileType      String
+  minimumLevel  String
+  uploaderId    String
+  isActive      Boolean               @default(true)
+  viewCount     Int                   @default(0)
+  downloadCount Int                   @default(0)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  downloadLogs  DocumentDownloadLog[]
+  uploader      User                  @relation("DocumentUploader", fields: [uploaderId], references: [id])
+
+  @@index([category])
+  @@index([minimumLevel])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+model DocumentDownloadLog {
+  id              String             @id @default(cuid())
+  userId          String
+  documentId      String
+  membershipLevel String
+  downloadedAt    DateTime           @default(now())
+  ipAddress       String?
+  userAgent       String?
+  status          DownloadStatus     @default(SUCCESS)
+  adminVerified   Boolean            @default(false)
+  notes           String?
+  document        MembershipDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user            User               @relation("DocumentDownloader", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([documentId])
+  @@index([downloadedAt])
+  @@index([adminVerified])
+}
+
+model BuyerView {
+  id       String   @id @default(cuid())
+  userId   String
+  buyerId  String
+  viewedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buyer    Buyer    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@index([userId, viewedAt])
+  @@index([buyerId])
+}
+
+model BuyerLike {
+  id      String   @id @default(cuid())
+  userId  String
+  buyerId String
+  likedAt DateTime @default(now())
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buyer   Buyer    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, buyerId])
+  @@index([userId])
+  @@index([buyerId])
+}
+
+model SupplierView {
+  id         String   @id @default(cuid())
+  userId     String
+  supplierId String
+  viewedAt   DateTime @default(now())
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, viewedAt])
+  @@index([supplierId])
+}
+
+model ForwarderView {
+  id          String    @id @default(cuid())
+  userId      String
+  forwarderId String
+  viewedAt    DateTime  @default(now())
+  forwarder   Forwarder @relation(fields: [forwarderId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, viewedAt])
+  @@index([forwarderId])
+}
+
+model Settings {
+  id                              Int      @id @default(autoincrement())
+  revenueEnabled                  Boolean  @default(true)
+  affiliateCommissionEnabled      Boolean  @default(true)
+  mentorCommissionEnabled         Boolean  @default(true)
+  paymentExpiryHours              Int      @default(72)
+  followUpEnabled                 Boolean  @default(true)
+  followUp1HourEnabled            Boolean  @default(true)
+  followUp24HourEnabled           Boolean  @default(true)
+  followUp48HourEnabled           Boolean  @default(true)
+  followUpMessage1Hour            String?  @default("Halo {name}, pembayaran Anda sebesar Rp {amount} masih menunggu. Segera selesaikan dalam {timeLeft}. Link: {paymentUrl}")
+  followUpMessage24Hour           String?  @default("Reminder: Pembayaran Anda akan kadaluarsa dalam {timeLeft}. Segera bayar sebelum terlambat!")
+  followUpMessage48Hour           String?  @default("Last chance! Pembayaran Anda akan dibatalkan otomatis jika tidak diselesaikan dalam {timeLeft}.")
+  mailkitingEnabled               Boolean  @default(false)
+  mailkitingApiKey                String?
+  starsenderEnabled               Boolean  @default(false)
+  starsenderApiKey                String?
+  onesignalEnabled                Boolean  @default(false)
+  onesignalAppId                  String?
+  onesignalApiKey                 String?
+  pusherEnabled                   Boolean  @default(false)
+  pusherAppId                     String?
+  pusherKey                       String?
+  pusherSecret                    String?
+  pusherCluster                   String?  @default("ap1")
+  challengeRewardAutoApprove      Boolean  @default(false)
+  challengeRewardAutoApproveLimit Decimal? @default(500000)
+  affiliateAutoApprove            Boolean  @default(false)
+  siteTitle                       String?  @default("Eksporyuk")
+  siteDescription                 String?  @default("Platform Ekspor Indonesia")
+  siteLogo                        String?
+  siteFavicon                     String?
+  primaryColor                    String?  @default("#3B82F6")
+  secondaryColor                  String?  @default("#1F2937")
+  buttonPrimaryBg                 String?  @default("#3B82F6")
+  buttonPrimaryText               String?  @default("#FFFFFF")
+  buttonSecondaryBg               String?  @default("#6B7280")
+  buttonSecondaryText             String?  @default("#FFFFFF")
+  buttonSuccessBg                 String?  @default("#10B981")
+  buttonSuccessText               String?  @default("#FFFFFF")
+  buttonDangerBg                  String?  @default("#EF4444")
+  buttonDangerText                String?  @default("#FFFFFF")
+  buttonBorderRadius              String?  @default("0.5rem")
+  headerText                      String?
+  footerText                      String?
+  contactEmail                    String?
+  contactPhone                    String?
+  whatsappNumber                  String?
+  withdrawalMinAmount             Decimal? @default(50000)
+  withdrawalAdminFee              Decimal? @default(5000)
+  withdrawalPinRequired           Boolean  @default(true)
+  withdrawalPinLength             Int      @default(6)
+  instagramUrl                    String?
+  facebookUrl                     String?
+  linkedinUrl                     String?
+  customCss                       String?
+  customJs                        String?
+  maintenanceMode                 Boolean  @default(false)
+  defaultLanguage                 String?  @default("id")
+  bannerImage                     String?
+  paymentBankAccounts             Json?    @default("[]")
+  paymentXenditChannels           Json?    @default("[]")
+  paymentEnableManual             Boolean  @default(true)
+  paymentEnableXendit             Boolean  @default(true)
+  paymentSandboxMode              Boolean  @default(false)
+  paymentAutoActivation           Boolean  @default(true)
+  paymentMinAmount                Int      @default(10000)
+  paymentMaxAmount                Int      @default(100000000)
+  createdAt                       DateTime @default(now())
+  updatedAt                       DateTime @updatedAt
+  emailFooterAddress              String?
+  emailFooterCompany              String?
+  emailFooterEmail                String?
+  emailFooterPhone                String?
+  emailFooterText                 String?
+  emailFooterCopyrightText        String?
+  emailFooterFacebookUrl          String?
+  emailFooterInstagramUrl         String?
+  emailFooterLinkedinUrl          String?
+  emailFooterWebsiteUrl           String?
+  checkoutAccentColor             String?  @default("#60a5fa")
+  checkoutPrimaryColor            String?  @default("#3b82f6")
+  checkoutSecondaryColor          String?  @default("#1e40af")
+  checkoutSuccessColor            String?  @default("#22c55e")
+  checkoutWarningColor            String?  @default("#eab308")
+  
+  // ===========================
+  // Platform Feature Settings
+  // ===========================
+  
+  // Global Features
+  featureGroupEnabled             Boolean  @default(true)
+  featureFeedEnabled              Boolean  @default(true)
+  featureCommentEnabled           Boolean  @default(true)
+  featureLikeEnabled              Boolean  @default(true)
+  featureShareEnabled             Boolean  @default(true)
+  featureChatEnabled              Boolean  @default(true)
+  featureNotificationEnabled      Boolean  @default(true)
+  
+  // Affiliate Features
+  featureAffiliateEnabled         Boolean  @default(true)
+  featureAffiliateShortLink       Boolean  @default(true)
+  featureAffiliateLeaderboard     Boolean  @default(true)
+  featureAffiliateChallenge       Boolean  @default(true)
+  featureAffiliateTraining        Boolean  @default(true)
+  featureAffiliateReward          Boolean  @default(true)
+  featureAffiliateWithdraw        Boolean  @default(true)
+  featureAffiliateStatistics      Boolean  @default(true)
+  featureAffiliateMarketingKit    Boolean  @default(true)
+  
+  // Course Features
+  featureCourseEnabled            Boolean  @default(true)
+  featureCourseEnrollment         Boolean  @default(true)
+  featureCourseCertificate        Boolean  @default(true)
+  featureCourseProgress           Boolean  @default(true)
+  featureCourseQuiz               Boolean  @default(true)
+  
+  // Supplier Features  
+  featureSupplierEnabled          Boolean  @default(true)
+  featureSupplierCatalog          Boolean  @default(true)
+  featureSupplierSampleRequest    Boolean  @default(true)
+  featureSupplierDirectOrder      Boolean  @default(true)
+  
+  // Transaction Features
+  featureCheckoutEnabled          Boolean  @default(true)
+  featureCouponEnabled            Boolean  @default(true)
+  featureFlashSaleEnabled         Boolean  @default(true)
+  
+  // Member Premium Features
+  featureMemberPremiumClass       Boolean  @default(true)
+  featureMemberPremiumGroup       Boolean  @default(true)
+  featureMemberPremiumSupplier    Boolean  @default(true)
+  featureMemberPremiumDownload    Boolean  @default(true)
+  featureMemberPremiumCertificate Boolean  @default(true)
+  
+  // Member Free Features
+  featureMemberFreeClass          Boolean  @default(true)
+  featureMemberFreeGroup          Boolean  @default(true)
+  featureMemberFreeCatalog        Boolean  @default(true)
+  
+  // Mentor Features
+  featureMentorCreateCourse       Boolean  @default(true)
+  featureMentorCreateMaterial     Boolean  @default(true)
+  featureMentorCreateGroup        Boolean  @default(true)
+  featureMentorEditCourse         Boolean  @default(true)
+  featureMentorAnalytics          Boolean  @default(true)
+  featureMentorManageStudents     Boolean  @default(true)
+  
+  // Notification Channels
+  notificationEmailEnabled        Boolean  @default(true)
+  notificationWhatsappEnabled     Boolean  @default(true)
+  notificationPushEnabled         Boolean  @default(true)
+  notificationInAppEnabled        Boolean  @default(true)
+}
+
+model IntegrationConfig {
+  id           String    @id @default(cuid())
+  service      String    @unique
+  config       Json
+  isActive     Boolean   @default(false)
+  lastTestedAt DateTime?
+  testStatus   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model FollowUpTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  triggerHours  Int
+  message       String
+  channel       String
+  isActive      Boolean  @default(true)
+  createdBy     String
+  ownerId       String?
+  ownerType     String   @default("admin")
+  useMailkiting Boolean  @default(false)
+  useStarsender Boolean  @default(false)
+  useOnesignal  Boolean  @default(false)
+  usePusher     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([ownerType, ownerId])
+  @@index([isActive])
+}
+
+model Quiz {
+  id               String         @id @default(cuid())
+  courseId         String
+  lessonId         String?
+  title            String
+  description      String?
+  passingScore     Int            @default(70)
+  timeLimit        Int?
+  maxAttempts      Int?
+  shuffleQuestions Boolean        @default(false)
+  shuffleAnswers   Boolean        @default(false)
+  showResults      Boolean        @default(true)
+  isActive         Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  lesson           CourseLesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  course           Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  attempts         QuizAttempt[]
+  questions        QuizQuestion[]
+
+  @@index([courseId])
+  @@index([lessonId])
+}
+
+model QuizQuestion {
+  id            String       @id @default(cuid())
+  quizId        String
+  type          QuestionType @default(MULTIPLE_CHOICE)
+  question      String
+  explanation   String?
+  points        Int          @default(1)
+  order         Int
+  options       Json?
+  correctAnswer String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  answers       QuizAnswer[]
+  quiz          Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+model QuizAttempt {
+  id          String       @id @default(cuid())
+  quizId      String
+  userId      String
+  score       Int          @default(0)
+  maxScore    Int
+  earnedScore Int          @default(0)
+  isPassed    Boolean      @default(false)
+  isCompleted Boolean      @default(false)
+  startedAt   DateTime     @default(now())
+  completedAt DateTime?
+  timeSpent   Int?
+  answers     QuizAnswer[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@index([userId])
+  @@index([quizId, userId])
+}
+
+model QuizAnswer {
+  id             String       @id @default(cuid())
+  attemptId      String
+  questionId     String
+  selectedOption String?
+  textAnswer     String?
+  isCorrect      Boolean      @default(false)
+  pointsEarned   Int          @default(0)
+  isGraded       Boolean      @default(false)
+  gradedBy       String?
+  gradedAt       DateTime?
+  feedback       String?
+  createdAt      DateTime     @default(now())
+  question       QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attempt        QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
+  @@index([questionId])
+}
+
+model Assignment {
+  id                  String                 @id @default(cuid())
+  courseId            String
+  lessonId            String?
+  title               String
+  description         String
+  instructions        String?
+  maxScore            Int                    @default(100)
+  dueDate             DateTime?
+  allowLateSubmission Boolean                @default(false)
+  allowedFileTypes    String?
+  maxFileSize         Int?
+  isActive            Boolean                @default(true)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  lesson              CourseLesson?          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  course              Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  submissions         AssignmentSubmission[]
+
+  @@index([courseId])
+  @@index([lessonId])
+}
+
+model AssignmentSubmission {
+  id           String           @id @default(cuid())
+  assignmentId String
+  userId       String
+  content      String?
+  fileUrl      String?
+  fileName     String?
+  status       SubmissionStatus @default(SUBMITTED)
+  score        Int?
+  feedback     String?
+  gradedBy     String?
+  gradedAt     DateTime?
+  submittedAt  DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId])
+  @@index([userId])
+  @@index([assignmentId, userId])
+}
+
+model CourseNote {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  lessonId  String
+  content   String
+  timestamp Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation("CourseNotes", fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation("CourseNotes", fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([lessonId])
+}
+
+model CourseDiscussion {
+  id             String             @id @default(cuid())
+  courseId       String
+  lessonId       String?
+  title          String?
+  content        String
+  userId         String
+  parentId       String?
+  viewCount      Int                @default(0)
+  likesCount     Int                @default(0)
+  isMarkedSolved Boolean            @default(false)
+  solvedBy       String?
+  solvedAt       DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  course         Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user           User               @relation("DiscussionAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  parent         CourseDiscussion?  @relation("DiscussionReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies        CourseDiscussion[] @relation("DiscussionReplies")
+
+  @@index([courseId])
+  @@index([userId])
+  @@index([lessonId])
+  @@index([parentId])
+  @@index([isMarkedSolved])
+}
+
+model CourseReview {
+  id             String                @id @default(cuid())
+  courseId       String
+  userId         String
+  rating         Int
+  review         String
+  isVerified     Boolean               @default(false)
+  isApproved     Boolean               @default(true)
+  moderatedBy    String?
+  moderatedAt    DateTime?
+  moderationNote String?
+  helpfulCount   Int                   @default(0)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  course         Course                @relation("CourseReviews", fields: [courseId], references: [id], onDelete: Cascade)
+  user           User                  @relation("CourseReviews", fields: [userId], references: [id], onDelete: Cascade)
+  helpfulVotes   CourseReviewHelpful[]
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+  @@index([userId])
+  @@index([rating])
+  @@index([isApproved])
+  @@index([createdAt])
+}
+
+model CourseReviewHelpful {
+  id        String       @id @default(cuid())
+  reviewId  String
+  userId    String
+  createdAt DateTime     @default(now())
+  review    CourseReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User         @relation("ReviewHelpful", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+  @@index([userId])
+}
+
+model Certificate {
+  id                    String               @id @default(cuid())
+  userId                String
+  courseId              String
+  certificateNumber     String               @unique
+  completedAt           DateTime
+  issuedAt              DateTime             @default(now())
+  studentName           String
+  courseName            String
+  completionDate        DateTime
+  certificateTemplateId String?
+  pdfUrl                String?
+  isValid               Boolean              @default(true)
+  verificationUrl       String?
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course                Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  certificateTemplate   CertificateTemplate? @relation(fields: [certificateTemplateId], references: [id])
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@index([certificateNumber])
+}
+
+model CertificateTemplate {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  backgroundColor String        @default("#FFFFFF")
+  primaryColor    String        @default("#3B82F6")
+  secondaryColor  String?
+  textColor       String        @default("#1F2937")
+  layout          String        @default("MODERN")
+  logoUrl         String?
+  signatureUrl    String?
+  backgroundImage String?
+  borderStyle     String?
+  fontFamily      String        @default("Inter")
+  titleFontSize   String        @default("3xl")
+  mentorName      String?
+  directorName    String?
+  showLogo        Boolean       @default(true)
+  showSignature   Boolean       @default(true)
+  showQrCode      Boolean       @default(true)
+  showBorder      Boolean       @default(true)
+  isActive        Boolean       @default(true)
+  isDefault       Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  certificates    Certificate[]
+  courses         Course[]
+
+  @@index([isActive])
+  @@index([isDefault])
+}
+
+model ShortLinkDomain {
+  id              String               @id @default(cuid())
+  domain          String               @unique
+  displayName     String
+  isActive        Boolean              @default(true)
+  isDefault       Boolean              @default(false)
+  isVerified      Boolean              @default(false)
+  dnsType         String?
+  dnsTarget       String?
+  dnsInstructions String?
+  totalLinks      Int                  @default(0)
+  totalClicks     Int                  @default(0)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  shortLinks      AffiliateShortLink[]
+
+  @@index([domain])
+  @@index([isActive])
+  @@index([isDefault])
+}
+
+model AffiliateShortLink {
+  id              String           @id @default(cuid())
+  affiliateId     String
+  domainId        String
+  username        String
+  slug            String?
+  targetType      String
+  targetId        String?
+  targetUrl       String?
+  fullShortUrl    String
+  affiliateLinkId String?
+  couponCode      String?
+  clicks          Int              @default(0)
+  conversions     Int              @default(0)
+  isActive        Boolean          @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  affiliateLink   AffiliateLink?   @relation(fields: [affiliateLinkId], references: [id])
+  domain          ShortLinkDomain  @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  affiliate       AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@unique([domainId, username, slug])
+  @@index([affiliateId])
+  @@index([domainId])
+  @@index([username])
+  @@index([isActive])
+}
+
+model AffiliateBioPage {
+  id                String               @id @default(cuid())
+  affiliateId       String               @unique
+  template          String               @default("modern")
+  buttonLayout      String               @default("stack")
+  displayName       String?
+  customHeadline    String?
+  customDescription String?
+  avatarUrl         String?
+  coverImage        String?
+  whatsappGroupLink String?
+  whatsappNumber    String?
+  primaryColor      String               @default("#3B82F6")
+  secondaryColor    String               @default("#10B981")
+  fontFamily        String               @default("inter")
+  showSocialIcons   Boolean              @default(true)
+  socialFacebook    String?
+  socialInstagram   String?
+  socialTwitter     String?
+  socialTiktok      String?
+  socialYoutube     String?
+  isActive          Boolean              @default(true)
+  viewCount         Int                  @default(0)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  ctaButtons        AffiliateBioCTA[]
+  affiliate         AffiliateProfile     @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  optinForms        AffiliateOptinForm[]
+
+  @@index([affiliateId])
+  @@index([isActive])
+}
+
+model AffiliateBioCTA {
+  id               String              @id @default(cuid())
+  bioPageId        String
+  buttonText       String
+  buttonType       String
+  buttonStyle      String              @default("button")
+  targetType       String?
+  targetId         String?
+  targetUrl        String?
+  membershipId     String?
+  productId        String?
+  courseId         String?
+  optinFormId      String?
+  optinDisplayMode String              @default("button")
+  backgroundColor  String              @default("#3B82F6")
+  textColor        String              @default("#FFFFFF")
+  thumbnailUrl     String?
+  price            String?
+  originalPrice    String?
+  subtitle         String?
+  showPrice        Boolean             @default(false)
+  showThumbnail    Boolean             @default(false)
+  titleSize        String              @default("sm")
+  subtitleSize     String              @default("xs")
+  buttonTextSize   String              @default("sm")
+  displayOrder     Int                 @default(0)
+  clicks           Int                 @default(0)
+  isActive         Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  optinForm        AffiliateOptinForm? @relation("CTAToOptinForm", fields: [optinFormId], references: [id])
+  course           Course?             @relation(fields: [courseId], references: [id])
+  product          Product?            @relation(fields: [productId], references: [id])
+  membership       Membership?         @relation(fields: [membershipId], references: [id])
+  bioPage          AffiliateBioPage    @relation(fields: [bioPageId], references: [id], onDelete: Cascade)
+
+  @@index([bioPageId])
+  @@index([displayOrder])
+  @@index([isActive])
+}
+
+model AffiliateOptinForm {
+  id               String            @id @default(cuid())
+  affiliateId      String
+  bioPageId        String?
+  slug             String?           @unique
+  formName         String
+  headline         String
+  description      String?
+  submitButtonText String            @default("Submit")
+  successMessage   String            @default("Terima kasih! Data Anda telah kami terima.")
+  redirectType     String            @default("message")
+  redirectUrl      String?
+  redirectWhatsapp String?
+  collectName      Boolean           @default(true)
+  collectEmail     Boolean           @default(true)
+  collectPhone     Boolean           @default(true)
+  isActive         Boolean           @default(true)
+  submissionCount  Int               @default(0)
+  bannerTitle      String?
+  bannerSubtitle   String?
+  bannerBadgeText  String?           @default("Event Terbatas - Daftar Sekarang!")
+  primaryColor     String?           @default("#2563eb")
+  secondaryColor   String?           @default("#4f46e5")
+  showCountdown    Boolean           @default(false)
+  countdownEndDate DateTime?
+  benefits         Json?             @default("[]")
+  faqs             Json?             @default("[]")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  ctaButtons       AffiliateBioCTA[] @relation("CTAToOptinForm")
+  leads            AffiliateLead[]
+  bioPage          AffiliateBioPage? @relation(fields: [bioPageId], references: [id])
+  affiliate        AffiliateProfile  @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@index([bioPageId])
+  @@index([isActive])
+  @@index([slug])
+}
+
+model AffiliateLead {
+  id              String                   @id @default(cuid())
+  affiliateId     String
+  optinFormId     String?
+  name            String
+  email           String?
+  phone           String?
+  whatsapp        String?
+  status          String                   @default("new")
+  source          String                   @default("optin")
+  notes           String?
+  lastContactedAt DateTime?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  automationJobs  AffiliateAutomationJob[]
+  automationLogs  AffiliateAutomationLog[]
+  broadcastLogs   AffiliateBroadcastLog[]
+  optinForm       AffiliateOptinForm?      @relation(fields: [optinFormId], references: [id])
+  affiliate       AffiliateProfile         @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  tags            AffiliateLeadTag[]
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([source])
+  @@index([createdAt])
+  @@index([email])
+  @@index([phone])
+}
+
+model AffiliateLeadTag {
+  id        String        @id @default(cuid())
+  leadId    String
+  tag       String
+  createdAt DateTime      @default(now())
+  lead      AffiliateLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, tag])
+  @@index([leadId])
+  @@index([tag])
+}
+
+model AffiliateCredit {
+  id           String                       @id @default(cuid())
+  affiliateId  String                       @unique
+  balance      Int                          @default(0)
+  totalTopUp   Int                          @default(0)
+  totalUsed    Int                          @default(0)
+  createdAt    DateTime                     @default(now())
+  updatedAt    DateTime                     @updatedAt
+  affiliate    AffiliateProfile             @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  transactions AffiliateCreditTransaction[]
+
+  @@index([affiliateId])
+}
+
+model AffiliateCreditTransaction {
+  id            String           @id @default(cuid())
+  creditId      String
+  affiliateId   String
+  type          String
+  amount        Int
+  balanceBefore Int
+  balanceAfter  Int
+  description   String?
+  referenceType String?
+  referenceId   String?
+  paymentId     String?
+  status        String           @default("COMPLETED")
+  createdAt     DateTime         @default(now())
+  affiliate     AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  credit        AffiliateCredit  @relation(fields: [creditId], references: [id], onDelete: Cascade)
+
+  @@index([creditId])
+  @@index([affiliateId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model AffiliateBroadcast {
+  id              String                  @id @default(cuid())
+  affiliateId     String
+  name            String
+  subject         String
+  body            String
+  templateId      String?
+  status          String                  @default("DRAFT")
+  targetSegment   Json?
+  totalRecipients Int                     @default(0)
+  sentCount       Int                     @default(0)
+  deliveredCount  Int                     @default(0)
+  openedCount     Int                     @default(0)
+  clickedCount    Int                     @default(0)
+  failedCount     Int                     @default(0)
+  creditUsed      Int                     @default(0)
+  isScheduled     Boolean                 @default(false)
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  recurringConfig Json?
+  template        AffiliateEmailTemplate? @relation(fields: [templateId], references: [id])
+  affiliate       AffiliateProfile        @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  logs            AffiliateBroadcastLog[]
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdAt])
+}
+
+model AffiliateBroadcastLog {
+  id           String             @id @default(cuid())
+  broadcastId  String
+  leadId       String
+  status       String             @default("PENDING")
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+  createdAt    DateTime           @default(now())
+  lead         AffiliateLead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  broadcast    AffiliateBroadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+
+  @@index([broadcastId])
+  @@index([leadId])
+  @@index([status])
+}
+
+model AffiliateEmailTemplate {
+  id           String               @id @default(cuid())
+  name         String
+  slug         String               @unique
+  category     String
+  subject      String
+  body         String
+  previewText  String?
+  description  String?
+  thumbnailUrl String?
+  isDefault    Boolean              @default(false)
+  isActive     Boolean              @default(true)
+  useCount     Int                  @default(0)
+  createdById  String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  broadcasts   AffiliateBroadcast[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([slug])
+  @@index([isDefault])
+}
+
+model AffiliateCTATemplate {
+  id              String   @id @default(cuid())
+  name            String
+  buttonText      String
+  buttonType      String
+  description     String?
+  backgroundColor String   @default("#3B82F6")
+  textColor       String   @default("#FFFFFF")
+  icon            String?
+  isActive        Boolean  @default(true)
+  useCount        Int      @default(0)
+  displayOrder    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([buttonType])
+  @@index([isActive])
+  @@index([displayOrder])
+}
+
+model AffiliateAutomation {
+  id          String                    @id @default(cuid())
+  affiliateId String
+  name        String
+  triggerType String
+  isActive    Boolean                   @default(true)
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  affiliate   AffiliateProfile          @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  jobs        AffiliateAutomationJob[]
+  logs        AffiliateAutomationLog[]
+  steps       AffiliateAutomationStep[]
+
+  @@index([affiliateId])
+  @@index([triggerType])
+  @@index([isActive])
+}
+
+model AffiliateAutomationStep {
+  id           String                   @id @default(cuid())
+  automationId String
+  stepOrder    Int
+  delayHours   Int                      @default(0)
+  emailSubject String
+  emailBody    String
+  isActive     Boolean                  @default(true)
+  sentCount    Int                      @default(0)
+  openedCount  Int                      @default(0)
+  clickedCount Int                      @default(0)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  jobs         AffiliateAutomationJob[]
+  automation   AffiliateAutomation      @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([automationId])
+  @@index([stepOrder])
+}
+
+model AffiliateAutomationJob {
+  id             String                  @id @default(cuid())
+  automationId   String
+  stepId         String
+  leadId         String
+  affiliateId    String
+  status         String                  @default("pending")
+  scheduledAt    DateTime
+  executedAt     DateTime?
+  failedAt       DateTime?
+  errorMessage   String?
+  retryCount     Int                     @default(0)
+  maxRetries     Int                     @default(3)
+  creditDeducted Boolean                 @default(false)
+  creditAmount   Int                     @default(1)
+  emailSent      Boolean                 @default(false)
+  emailId        String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  affiliate      AffiliateProfile        @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  lead           AffiliateLead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  step           AffiliateAutomationStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  automation     AffiliateAutomation     @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([automationId])
+  @@index([stepId])
+  @@index([leadId])
+  @@index([affiliateId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdAt])
+}
+
+model AffiliateAutomationLog {
+  id               String              @id @default(cuid())
+  automationId     String
+  leadId           String
+  affiliateId      String
+  triggerType      String
+  triggerData      String?
+  status           String              @default("active")
+  currentStepOrder Int                 @default(1)
+  totalSteps       Int                 @default(0)
+  completedSteps   Int                 @default(0)
+  failedSteps      Int                 @default(0)
+  startedAt        DateTime            @default(now())
+  pausedAt         DateTime?
+  completedAt      DateTime?
+  lastExecutedAt   DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  affiliate        AffiliateProfile    @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  lead             AffiliateLead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  automation       AffiliateAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@unique([automationId, leadId])
+  @@index([automationId])
+  @@index([leadId])
+  @@index([affiliateId])
+  @@index([status])
+  @@index([triggerType])
+  @@index([createdAt])
+}
+
+model Report {
+  id           String       @id @default(cuid())
+  reporterId   String
+  type         ReportType
+  reason       String
+  description  String?
+  postId       String?
+  commentId    String?
+  userId       String?
+  groupId      String?
+  status       ReportStatus @default(PENDING)
+  reviewedById String?
+  reviewedAt   DateTime?
+  reviewNote   String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  reviewedBy   User?        @relation("ReportsReviewed", fields: [reviewedById], references: [id])
+  group        Group?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  reportedUser User?        @relation("ReportsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  comment      PostComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  post         Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter     User         @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model BannedUser {
+  id         String    @id @default(cuid())
+  userId     String
+  groupId    String?
+  reason     String
+  bannedById String
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  bannedBy   User      @relation("BansIssued", fields: [bannedById], references: [id])
+  group      Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@index([userId])
+  @@index([groupId])
+  @@index([expiresAt])
+}
+
+model Story {
+  id        String      @id @default(cuid())
+  groupId   String
+  userId    String
+  imageUrl  String
+  viewCount Int         @default(0)
+  createdAt DateTime    @default(now())
+  expiresAt DateTime
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  viewers   StoryView[]
+
+  @@index([groupId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+model StoryView {
+  id       String   @id @default(cuid())
+  storyId  String
+  userId   String
+  viewedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+  @@index([storyId])
+  @@index([userId])
+}
+
+model GroupResource {
+  id            String   @id @default(cuid())
+  groupId       String
+  uploaderId    String
+  title         String
+  description   String?
+  fileUrl       String
+  fileName      String
+  fileType      String
+  fileSize      Int
+  downloadCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  uploader      User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([uploaderId])
+  @@index([createdAt])
+}
+
+model EmailVerificationToken {
+  id         String   @id @default(cuid())
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  type       String?  @default("EMAIL_VERIFY")
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  @@index([identifier])
+  @@index([token])
+  @@index([expires])
+  @@index([type])
+}
+
+model SupplierPackage {
+  id                      String               @id @default(cuid())
+  name                    String
+  slug                    String               @unique
+  type                    SupplierPackageType
+  duration                SupplierDuration
+  price                   Decimal
+  originalPrice           Decimal?
+  commissionType          CommissionType       @default(PERCENTAGE)
+  affiliateCommissionRate Decimal              @default(30)
+  features                Json
+  description             String?
+  isActive      Boolean              @default(true)
+  displayOrder  Int                  @default(0)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  subscriptions SupplierMembership[]
+
+  @@index([type])
+  @@index([isActive])
+  @@index([displayOrder])
+}
+
+model SupplierMembership {
+  id            String          @id @default(cuid())
+  userId        String          @unique
+  packageId     String
+  startDate     DateTime
+  endDate       DateTime?
+  isActive      Boolean         @default(true)
+  autoRenew     Boolean         @default(false)
+  price         Decimal
+  paymentId     String?
+  paymentMethod String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  package       SupplierPackage @relation(fields: [packageId], references: [id])
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([packageId])
+  @@index([isActive])
+  @@index([endDate])
+}
+
+model SupplierProfile {
+  id               String            @id @default(cuid())
+  userId           String            @unique
+  companyName      String
+  slug             String            @unique
+  logo             String?
+  banner           String?
+  bio              String?
+  businessCategory String?
+  province         String
+  city             String
+  address          String?
+  contactPerson    String?
+  email            String?
+  phone            String?
+  whatsapp         String?
+  website          String?
+  facebookUrl      String?
+  instagramUrl     String?
+  linkedinUrl      String?
+  twitterUrl       String?
+  legalityDoc      String?
+  nibDoc           String?
+  isVerified       Boolean           @default(false)
+  verifiedAt       DateTime?
+  verifiedBy       String?
+  isSuspended      Boolean           @default(false)
+  suspendedAt      DateTime?
+  suspendedBy      String?
+  suspendReason    String?
+  viewCount        Int               @default(0)
+  totalProducts    Int               @default(0)
+  totalChats       Int               @default(0)
+  rating           Float?            @default(0)
+  totalReviews     Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  products         SupplierProduct[]
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([slug])
+  @@index([isVerified])
+  @@index([isSuspended])
+  @@index([province])
+  @@index([city])
+  @@index([businessCategory])
+}
+
+model SupplierProduct {
+  id           String                @id @default(cuid())
+  supplierId   String
+  title        String
+  slug         String                @unique
+  description  String?
+  images       Json?
+  documents    Json?
+  category     String?
+  tags         String?
+  status       SupplierProductStatus @default(DRAFT)
+  price        String?
+  minOrder     String?
+  viewCount    Int                   @default(0)
+  likeCount    Int                   @default(0)
+  inquiryCount Int                   @default(0)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  supplier     SupplierProfile       @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@index([status])
+  @@index([slug])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model GroupQuiz {
+  id               String              @id @default(cuid())
+  groupId          String
+  creatorId        String
+  title            String
+  description      String?
+  coverImage       String?
+  passingScore     Int                 @default(70)
+  timeLimit        Int?
+  maxAttempts      Int                 @default(1)
+  shuffleQuestions Boolean             @default(true)
+  shuffleOptions   Boolean             @default(true)
+  showResults      Boolean             @default(true)
+  isActive         Boolean             @default(true)
+  startDate        DateTime?
+  endDate          DateTime?
+  rewardPoints     Int                 @default(10)
+  rewardBadgeId    String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  rewardBadge      BadgeDefinition?    @relation(fields: [rewardBadgeId], references: [id])
+  creator          User                @relation("QuizCreator", fields: [creatorId], references: [id])
+  group            Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  attempts         GroupQuizAttempt[]
+  questions        GroupQuizQuestion[]
+
+  @@index([groupId])
+  @@index([creatorId])
+  @@index([isActive])
+  @@index([startDate, endDate])
+}
+
+model GroupQuizQuestion {
+  id           String            @id @default(cuid())
+  quizId       String
+  question     String
+  questionType QuestionType      @default(MULTIPLE_CHOICE)
+  options      Json
+  explanation  String?
+  points       Int               @default(1)
+  order        Int               @default(0)
+  imageUrl     String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  answers      GroupQuizAnswer[]
+  quiz         GroupQuiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+model GroupQuizAttempt {
+  id          String            @id @default(cuid())
+  quizId      String
+  userId      String
+  score       Int               @default(0)
+  maxScore    Int               @default(0)
+  percentage  Float             @default(0)
+  isPassed    Boolean           @default(false)
+  isCompleted Boolean           @default(false)
+  startedAt   DateTime          @default(now())
+  completedAt DateTime?
+  timeSpent   Int?
+  answers     GroupQuizAnswer[]
+  user        User              @relation("QuizAttempts", fields: [userId], references: [id], onDelete: Cascade)
+  quiz        GroupQuiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@index([userId])
+  @@index([isPassed])
+}
+
+model GroupQuizAnswer {
+  id             String            @id @default(cuid())
+  attemptId      String
+  questionId     String
+  selectedOption String?
+  isCorrect      Boolean           @default(false)
+  pointsEarned   Int               @default(0)
+  createdAt      DateTime          @default(now())
+  question       GroupQuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attempt        GroupQuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
+  @@index([questionId])
+}
+
+model BadgeDefinition {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String
+  icon        String
+  color       String        @default("#3B82F6")
+  category    BadgeCategory @default(PARTICIPATION)
+  conditions  Json?
+  points      Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  quizRewards GroupQuiz[]
+  userBadges  UserBadge[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model UserBadge {
+  id        String          @id @default(cuid())
+  userId    String
+  badgeId   String
+  groupId   String?
+  awardedAt DateTime        @default(now())
+  awardedBy String?
+  reason    String?
+  group     Group?          @relation(fields: [groupId], references: [id])
+  badge     BadgeDefinition @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId, groupId])
+  @@index([userId])
+  @@index([badgeId])
+  @@index([groupId])
+}
+
+model UserPoints {
+  id          String   @id @default(cuid())
+  userId      String
+  groupId     String?
+  points      Int      @default(0)
+  totalEarned Int      @default(0)
+  level       Int      @default(1)
+  updatedAt   DateTime @updatedAt
+  group       Group?   @relation(fields: [groupId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@index([userId])
+  @@index([groupId])
+  @@index([points])
+}
+
+model PointTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  groupId     String?
+  points      Int
+  type        String
+  sourceId    String?
+  description String?
+  createdAt   DateTime @default(now())
+  group       Group?   @relation(fields: [groupId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model GroupChallenge {
+  id            String             @id @default(cuid())
+  groupId       String
+  title         String
+  description   String?
+  type          String
+  target        Int?
+  startDate     DateTime
+  endDate       DateTime
+  rewardPoints  Int                @default(50)
+  rewardBadgeId String?
+  isActive      Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  participants  ChallengProgress[]
+  group         Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([isActive])
+  @@index([startDate, endDate])
+}
+
+model ChallengProgress {
+  id          String         @id @default(cuid())
+  challengeId String
+  userId      String
+  progress    Int            @default(0)
+  isCompleted Boolean        @default(false)
+  completedAt DateTime?
+  rank        Int?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   GroupChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, userId])
+  @@index([challengeId])
+  @@index([userId])
+}
+
+model ScheduledPost {
+  id               String   @id @default(cuid())
+  authorId         String
+  groupId          String
+  content          String
+  contentFormatted Json?
+  images           Json?
+  videos           Json?
+  documents        Json?
+  type             PostType @default(POST)
+  scheduledAt      DateTime
+  timezone         String   @default("Asia/Jakarta")
+  status           String   @default("PENDING")
+  publishedPostId  String?
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  group            Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author           User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@index([groupId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model OneSignalTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  title       String
+  message     String
+  url         String?
+  imageUrl    String?
+  targetType  String   @default("all")
+  targetValue String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+model OneSignalAutoNotification {
+  id           String   @id @default(cuid())
+  name         String
+  trigger      String
+  title        String
+  message      String
+  url          String?
+  enabled      Boolean  @default(true)
+  delayMinutes Int      @default(0)
+  targetType   String   @default("user")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([trigger])
+  @@index([enabled])
+}
+
+model Banner {
+  id                String          @id @default(cuid())
+  title             String
+  description       String?
+  imageUrl          String?
+  videoUrl          String?
+  linkUrl           String
+  linkText          String?         @default("Lihat Selengkapnya")
+  targetRoles       Json
+  targetMemberships Json?
+  targetProvinces   Json?
+  placement         BannerPlacement @default(DASHBOARD)
+  displayType       BannerType      @default(CAROUSEL)
+  backgroundColor   String?         @default("#3B82F6")
+  textColor         String?         @default("#FFFFFF")
+  buttonColor       String?         @default("#FFFFFF")
+  buttonTextColor   String?         @default("#3B82F6")
+  priority          Int             @default(0)
+  startDate         DateTime
+  endDate           DateTime
+  isActive          Boolean         @default(true)
+  viewLimit         Int?
+  clickLimit        Int?
+  dailyBudget       Int?
+  createdBy         String
+  isSponsored       Boolean         @default(false)
+  sponsorName       String?
+  sponsorLogo       String?
+  totalViews        Int             @default(0)
+  totalClicks       Int             @default(0)
+  totalBudgetUsed   Decimal         @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  clicks            BannerClick[]
+  views             BannerView[]
+
+  @@index([placement])
+  @@index([isActive])
+  @@index([startDate, endDate])
+  @@index([priority])
+  @@index([createdBy])
+}
+
+model BannerView {
+  id        String   @id @default(cuid())
+  bannerId  String
+  userId    String?
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  viewedAt  DateTime @default(now())
+  banner    Banner   @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+
+  @@index([bannerId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([viewedAt])
+}
+
+model BannerClick {
+  id        String   @id @default(cuid())
+  bannerId  String
+  userId    String?
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  clickedAt DateTime @default(now())
+  banner    Banner   @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+
+  @@index([bannerId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([clickedAt])
+}
+
+enum DownloadStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum Role {
+  ADMIN
+  MENTOR
+  AFFILIATE
+  MEMBER_PREMIUM
+  MEMBER_FREE
+}
+
+enum GroupType {
+  PUBLIC
+  PRIVATE
+  HIDDEN
+}
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum MembershipDuration {
+  ONE_MONTH
+  THREE_MONTHS
+  SIX_MONTHS
+  TWELVE_MONTHS
+  LIFETIME
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum TransactionType {
+  MEMBERSHIP
+  PRODUCT
+  COURSE
+  EVENT
+  COMMISSION
+  PAYOUT
+  SUPPLIER_MEMBERSHIP
+}
+
+enum AffiliateLinkType {
+  SALESPAGE_INTERNAL
+  SALESPAGE_EXTERNAL
+  CHECKOUT
+  CHECKOUT_PRO
+}
+
+enum EventType {
+  WEBINAR
+  WORKSHOP
+  MEETUP
+  CONFERENCE
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum PostType {
+  POST
+  STORY
+  ANNOUNCEMENT
+  POLL
+  EVENT
+  QUOTE
+  SCHEDULED
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  CARE
+  HAHA
+  WOW
+  SAD
+  ANGRY
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+enum CommissionType {
+  PERCENTAGE
+  FLAT
+}
+
+enum NotificationType {
+  CHAT_MESSAGE
+  COMMENT
+  COMMENT_REPLY
+  POST
+  POST_APPROVED
+  POST_REJECTED
+  COURSE_DISCUSSION
+  COURSE_ENROLLED
+  EVENT_REMINDER
+  EVENT_REGISTERED
+  TRANSACTION
+  TRANSACTION_SUCCESS
+  FOLLOWER
+  FOLLOW
+  ACHIEVEMENT
+  SYSTEM
+  AFFILIATE
+  AFFILIATE_APPROVED
+  AFFILIATE_REJECTED
+  AFFILIATE_COMMISSION
+  MEMBERSHIP
+  PRODUCT_REVIEW
+  CONTENT_UPDATE
+  MESSAGE
+  REPORT
+  REPORT_REVIEWED
+  BAN
+}
+
+enum ChatRoomType {
+  DIRECT
+  GROUP
+  MENTOR_STUDENT
+  SUPPORT
+}
+
+enum ProductType {
+  DIGITAL
+  EVENT
+  COURSE_BUNDLE
+  EBOOK
+  TEMPLATE
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  COMING_SOON
+  ARCHIVED
+}
+
+enum AccessLevel {
+  PUBLIC
+  MEMBER_ONLY
+  PREMIUM_ONLY
+  PRIVATE
+}
+
+enum ReminderChannel {
+  EMAIL
+  WHATSAPP
+  PUSH
+  IN_APP
+  SMS
+}
+
+enum ReminderTrigger {
+  AFTER_PURCHASE
+  BEFORE_EXPIRY
+  ON_INACTIVE
+  ON_SPECIFIC_DATE
+  CONDITIONAL
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  FAILED
+  CANCELLED
+}
+
+enum EventVisibility {
+  PUBLIC
+  PRIVATE
+  MEMBERSHIP_ONLY
+  PRODUCT_ONLY
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+  RETURNED
+  LATE
+}
+
+enum CourseStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CourseMonetizationType {
+  FREE
+  PAID
+  SUBSCRIPTION
+  AFFILIATE
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  REJECTED
+}
+
+enum ReportType {
+  POST
+  COMMENT
+  USER
+  GROUP
+}
+
+enum SupplierPackageType {
+  FREE
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SupplierDuration {
+  MONTHLY
+  YEARLY
+  LIFETIME
+}
+
+enum SupplierProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  PENDING_REVIEW
+}
+
+enum BadgeCategory {
+  PARTICIPATION
+  ACHIEVEMENT
+  SPECIAL
+  QUIZ
+  LEADERBOARD
+}
+
+enum BannerPlacement {
+  DASHBOARD
+  FEED
+  GROUP
+  PROFILE
+  SIDEBAR
+  POPUP
+  FLOATING
+}
+
+enum BannerType {
+  CAROUSEL
+  STATIC
+  VIDEO
+  POPUP
+  FLOATING
+  INLINE
+}
+
+enum DocumentCategory {
+  INVOICE
+  PACKING
+  SHIPPING
+  CONTRACT
+  QUOTATION
+  CERTIFICATE
+  LETTER
+  OTHER
+}
+
+enum DocumentationCategory {
+  ROLES
+  FEATURES
+  API
+  ADMIN
+  DATABASE
+  GUIDES
+  FAQ
+  TROUBLESHOOTING
+  GLOSSARY
+  GETTING_STARTED
+}
+
+enum DocumentationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model CourseSettings {
+  id                           String   @id @default(cuid())
+  defaultMentorCommission      Float    @default(50)
+  defaultAffiliateCommission   Float    @default(30)
+  minWithdrawalAmount          Decimal  @default(50000)
+  withdrawalProcessingDays     Int      @default(3)
+  maxWithdrawalPerDay          Decimal  @default(10000000)
+  withdrawalMethods            Json?
+  autoApproveCourses           Boolean  @default(false)
+  autoApproveEnrollments       Boolean  @default(true)
+  defaultCourseVisibility      String   @default("PUBLIC")
+  requireCertificateCompletion Boolean  @default(true)
+  certificateMinScore          Int      @default(80)
+  enableAffiliateProgram       Boolean  @default(true)
+  enableMentorProgram          Boolean  @default(true)
+  // Mentor Permissions
+  mentorCanCreateGroup         Boolean  @default(true)
+  mentorCanCreateCourse        Boolean  @default(true)
+  mentorCanCreateMaterial      Boolean  @default(true)
+  mentorCanEditOwnCourse       Boolean  @default(true)
+  mentorCanDeleteOwnCourse     Boolean  @default(false)
+  mentorCanViewAnalytics       Boolean  @default(true)
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+}
+
+// ===========================
+// OneSignal Webhook Models
+// ===========================
+
+// NotificationDeliveryLog - Log semua delivery, open, click events dari OneSignal webhooks
+// Digunakan untuk tracking notification effectiveness
+model NotificationDeliveryLog {
+  id                    String    @id @default(cuid())
+  notificationId        String    // ID dari OneSignal notification
+  playerId              String    // Player ID yang menerima notifikasi
+  userId                String?   // User ID (jika bisa di-link)
+  status                String    @default("delivered") // delivered, opened, clicked, bounced
+  platform              String?   // web, iOS, Android
+  openedAt              DateTime? // Waktu notifikasi dibuka
+  clickedAt             DateTime? // Waktu notifikasi diklik
+  clickUrl              String?   // URL yang diklik (jika applicable)
+  ipAddress             String?   // IP address untuk audit
+  userAgent             String?   // User agent browser
+  bounceReason          String?   // Alasan bounce (jika bounced)
+  timestamp             DateTime  @default(now()) // Waktu event terjadi
+  
+  // Relations
+  user                  User?     @relation("NotificationDeliveryLogs", fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([notificationId])
+  @@index([playerId])
+  @@index([userId])
+  @@index([status])
+  @@index([timestamp])
+}
+
+// ConversionEvent - Log conversion/action setelah click notifikasi
+// Menghubungkan notification click dengan actual conversion
+model ConversionEvent {
+  id                    String    @id @default(cuid())
+  userId                String
+  notificationId        String?   // ID OneSignal notification yang trigger conversion
+  conversionType        String    // purchase, enrollment, view, signup, etc
+  conversionValue       Decimal?  // Value dari conversion (e.g. harga produk)
+  conversionUrl         String?   // URL yang diakses saat conversion
+  metadata              Json?     // Additional metadata (product_id, course_id, etc)
+  timestamp             DateTime  @default(now())
+  
+  // Relations
+  user                  User      @relation("ConversionEvents", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([notificationId])
+  @@index([conversionType])
+  @@index([timestamp])
+}
+
+// NotificationConsent - GDPR compliance: track consent history
+// Untuk audit trail dan compliance
+model NotificationConsent {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  consentGiven          Boolean   @default(true)
+  channels              Json      // { email: true, push: true, sms: false, inapp: true }
+  purpose               String    @default("marketing") // marketing, transactional, both
+  ipAddress             String?   // IP saat consent diberikan
+  userAgent             String?   // Browser/device info
+  consentTimestamp      DateTime  @default(now())
+  consentExpiry         DateTime  // Kapan consent expire (biasanya 1 tahun)
+  revocationTimestamp   DateTime? // Kapan user revoke consent
+  revocationReason      String?   // Alasan revoke
+  
+  // Relations
+  user                  User      @relation("NotificationConsents", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([consentTimestamp])
+  @@index([consentExpiry])
+}
+
+// OneSignalWebhookLog - Log semua webhook events untuk debugging
+// Jika ada webhook yg gagal, bisa di-retry
+model OneSignalWebhookLog {
+  id                    String    @id @default(cuid())
+  eventType             String    // notification.delivered, notification.opened, etc
+  payload               Json      // Raw webhook payload
+  processingStatus      String    @default("pending") // pending, success, failed
+  errorMessage          String?   // Error message jika failed
+  retryCount            Int       @default(0)
+  lastRetryAt           DateTime?
+  processedAt           DateTime?
+  timestamp             DateTime  @default(now())
+  
+  @@index([eventType])
+  @@index([processingStatus])
+  @@index([timestamp])
+}
+
+// Documentation - Sistem dokumentasi role-based dengan Nextra
+// Admin bisa CRUD, publish/draft, pisahkan per role
+model Documentation {
+  id                    String            @id @default(cuid())
+  slug                  String            @unique // URL slug untuk docs
+  title                 String            // Judul dokumentasi
+  content               String            // MDX content (Markdown + JSX)
+  excerpt               String?           // Ringkasan singkat
+  category              DocumentationCategory // Kategori utama
+  targetRoles           Json              // Array roles: ["ADMIN", "AFFILIATE", "MENTOR"]
+  status                DocumentationStatus @default(DRAFT) // DRAFT, PUBLISHED, ARCHIVED
+  isPublic              Boolean           @default(false) // Akses publik atau hanya login
+  icon                  String?           // Icon untuk sidebar
+  order                 Int               @default(0) // Urutan di sidebar
+  parentId              String?           // Untuk nested docs (parent-child)
+  metaTitle             String?           // SEO title
+  metaDescription       String?           // SEO description
+  keywords              String?           // SEO keywords
+  featuredImage         String?           // Gambar preview
+  publishedAt           DateTime?         // Waktu publish
+  archivedAt            DateTime?         // Waktu archived
+  viewCount             Int               @default(0) // Tracking views
+  authorId              String            // Admin yang buat
+  lastEditedById        String?           // Admin terakhir edit
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  
+  // Relations
+  author                User              @relation("DocumentationAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  lastEditedBy          User?             @relation("DocumentationEditor", fields: [lastEditedById], references: [id], onDelete: SetNull)
+  parent                Documentation?    @relation("DocumentationHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children              Documentation[]   @relation("DocumentationHierarchy")
+  revisions             DocumentationRevision[] @relation("DocumentationRevisions")
+  
+  @@index([slug])
+  @@index([category])
+  @@index([status])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([order])
+  @@index([parentId])
+}
+
+// DocumentationRevision - Version history untuk rollback
+// Setiap edit tersimpan sebagai revision
+model DocumentationRevision {
+  id                    String            @id @default(cuid())
+  documentationId       String
+  content               String            // Snapshot content saat itu
+  title                 String            // Snapshot title
+  excerpt               String?
+  changedById           String            // Admin yang bikin revision ini
+  changeNote            String?           // Catatan perubahan
+  version               Int               // Version number (auto increment)
+  createdAt             DateTime          @default(now())
+  
+  // Relations
+  documentation         Documentation     @relation("DocumentationRevisions", fields: [documentationId], references: [id], onDelete: Cascade)
+  changedBy             User              @relation("DocumentationRevisionAuthor", fields: [changedById], references: [id], onDelete: Restrict)
+  
+  @@index([documentationId])
+  @@index([changedById])
+  @@index([version])
+}
+

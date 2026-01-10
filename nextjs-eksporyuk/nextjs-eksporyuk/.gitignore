@@ -1,49 +1,42 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
+*.log
 .DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
-.env*.local
 .env
+.env.backup
 .env.production
-.env.production.local
-.env.local
-
-# vercel
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db
+node_modules/
+**/node_modules
+*.node
+nextjs-eksporyuk/.next/
+nextjs-eksporyuk/next-build.tar.gz
+*.tar.gz
+nextjs-eksporyuk/.next/
+eksporyuk_backup.sql
+eksporyuk_clean.sql
+*.sql
 .vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# uploaded files (allow some sample files for production)
-/public/uploads/*/
-!public/uploads/image/
-.next/cache/
-.env.vercel
-ecosystem.config.json
-.env.vercel.production
-backup-restore-dec27.json
+.env*.local
+nextjs-eksporyuk/vercel-blob-backup/
+.next/
+*.log
+node_modules/
+.env
+.env.local
