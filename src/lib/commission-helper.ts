@@ -131,8 +131,7 @@ export async function processTransactionCommission(
 
       // Update affiliateProfile statistics for realtime sync
       const affiliateProfile = await prisma.affiliateProfile.findUnique({
-        where: { userId: affiliateUserId },
-        include: { user: true }
+        where: { userId: affiliateUserId }
       })
       
       if (affiliateProfile) {
@@ -381,7 +380,7 @@ export async function approvePendingRevenue(
 ) {
   const pendingRevenue = await prisma.pendingRevenue.findUnique({
     where: { id: pendingRevenueId },
-    include: { wallet: { include: { user: true } } },
+    include: { wallet: true }
   })
   
   if (!pendingRevenue) throw new Error('Pending revenue not found')
@@ -452,7 +451,7 @@ export async function rejectPendingRevenue(
 ) {
   const pendingRevenue = await prisma.pendingRevenue.findUnique({
     where: { id: pendingRevenueId },
-    include: { wallet: { include: { user: true } } },
+    include: { wallet: true }
   })
   
   if (!pendingRevenue) throw new Error('Pending revenue not found')

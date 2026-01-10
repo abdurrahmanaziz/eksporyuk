@@ -1,4 +1,0 @@
-# Force Vercel Redeploy
-Timestamp: $(date)
-Reason: Fix checkout layout display in production
-Commit: Force cache clear and rebuild

@@ -1,6 +1,0 @@
-#!/usr/bin/expect -f
-set timeout 120
-spawn scp aziz@103.125.181.47:/tmp/commissions_fresh.tsv exports/commissions_fresh.tsv
-expect "password:"
-send "Bismillah.2022\r"
-expect eof

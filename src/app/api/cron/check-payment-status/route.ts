@@ -261,11 +261,20 @@ async function activatePurchase(transaction: any) {
     // MEMBERSHIP activation
     if (transaction.type === 'MEMBERSHIP' && transaction.metadata) {
       const metadata = transaction.metadata as any
-      const membershipId = metadata.membershipId
+      const membershipId = transaction.membershipId || metadata.membershipId
 
       if (!membershipId) {
-        console.log('[CRON] No membershipId in metadata, skipping activation')
+        console.log('[CRON] No membershipId in transaction or metadata, skipping activation')
         return
+      }
+
+      // FIX: Update transaction.membershipId if it was null
+      if (!transaction.membershipId && membershipId) {
+        await prisma.transaction.update({
+          where: { id: transaction.id },
+          data: { membershipId }
+        })
+        console.log(`[CRON] Updated transaction.membershipId from metadata: ${membershipId}`)
       }
 
       // Check if already activated

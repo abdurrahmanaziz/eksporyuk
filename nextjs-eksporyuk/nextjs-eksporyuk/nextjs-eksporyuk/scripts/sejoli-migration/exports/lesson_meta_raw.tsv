@@ -1,37 +1,0 @@
-spawn ssh aziz@103.125.181.47
-aziz@103.125.181.47's password: 
-Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-164-generic x86_64)
-
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/pro
-
- System information as of Wed Dec 24 14:12:38 WIB 2025
-
-  System load:  1.69               Processes:             206
-  Usage of /:   25.6% of 87.04GB   Users logged in:       0
-  Memory usage: 20%                IPv4 address for eth0: 103.125.181.47
-  Swap usage:   0%
-
-
-Expanded Security Maintenance for Applications is not enabled.
-
-147 updates can be applied immediately.
-To see these additional updates run: apt list --upgradable
-
-13 additional security updates can be applied with ESM Apps.
-Learn more about enabling ESM Apps service at https://ubuntu.com/esm
-
-New release '24.04.3 LTS' available.
-Run 'do-release-upgrade' to upgrade to it.
-
-
-Last login: Wed Dec 24 14:02:31 2025 from 182.10.99.33
-[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ mysql -u root -p aziz_member.eksporyuk.com -e "SELECT pm.post_id, pm.meta_key, pm.meta_value FROM wp_postmeta pm INNER JOIN wp_posts p ON pm.post_id = p.ID WHERE p.post_type = 'lesson' AND pm.meta_key REGEXP '(video|duration|thumbnail|attachment|file)' ORDER BY pm.post_id;" > /tmp/lesson_meta.tsv
-[?2004lmysql: Deprecated program name. It will be removed in a future release, use '/usr/bin/mariadb' instead
-Enter password: 
-ERROR 1698 (28000): Access denied for user 'root'@'localhost'
-[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ cat /tmp/lesson_meta.tsv
-[?2004l[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ exit
-[?2004llogout
-Connection to 103.125.181.47 closed.

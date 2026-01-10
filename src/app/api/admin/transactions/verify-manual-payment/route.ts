@@ -24,8 +24,7 @@ export async function POST(request: NextRequest) {
 
     // Get the transaction
     const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
-      include: { user: true }
+      where: { id: transactionId }
     })
 
     if (!transaction) {

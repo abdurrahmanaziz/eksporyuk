@@ -1,7 +1,0 @@
-// Add optinDisplayMode to AffiliateBioCTA
-// Run: npx prisma db push
-
-model AffiliateBioCTA {
-  // ... existing fields ...
-  optinDisplayMode String         @default("button") // "button" or "inline"
-}

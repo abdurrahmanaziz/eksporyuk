@@ -223,6 +223,7 @@ export async function POST(request: NextRequest) {
         updatedAt: getCurrentTimestamp(),
         ...(itemTypeLower === 'product' && { productId: itemId }),
         ...(itemTypeLower === 'course' && { courseId: itemId }),
+        ...(itemTypeLower === 'membership' && { membershipId: itemId }),
         ...(validCoupon && { couponId: validCoupon.id }),
       }
     })

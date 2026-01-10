@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80">
-  <rect width="200" height="80" fill="white"/>
-  <g transform="translate(15, 15)">
-    <path d="M20,5 L35,20 L20,35 L5,20 Z" fill="#00704A"/>
-    <text x="50" y="25" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#00704A">PermataBank</text>
-  </g>
-</svg>

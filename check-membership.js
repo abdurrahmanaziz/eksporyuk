@@ -1,35 +1,31 @@
-import { PrismaClient } from './nextjs-eksporyuk/node_modules/@prisma/client/index.js';
-const p = new PrismaClient();
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 async function check() {
-  const user = await p.user.findFirst({ 
-    where: { email: 'abdurrahmanazizsultan@gmail.com' } 
-  });
-  
-  if (!user) {
-    console.log('❌ User tidak ditemukan');
-    await p.$disconnect();
-    return;
-  }
-  
-  console.log('✅ User ID:', user.id);
-  
-  const membership = await p.userMembership.findFirst({
-    where: { 
-      userId: user.id, 
-      status: 'ACTIVE',
-      endDate: { gte: new Date() }
+  try {
+    const membership = await prisma.membership.findUnique({
+      where: { id: 'mem_6bulan_ekspor' }
+    });
+    
+    if (membership) {
+      console.log('✅ Membership found:');
+      console.log({
+        id: membership.id,
+        name: membership.name,
+        price: membership.price,
+        duration: membership.duration,
+        affiliateCommissionRate: membership.affiliateCommissionRate,
+        mailketingListId: membership.mailketingListId,
+        autoAddToList: membership.autoAddToList,
+      });
+    } else {
+      console.log('❌ Membership NOT found: mem_6bulan_ekspor');
     }
-  });
-  
-  if (membership) {
-    console.log('✅ MEMBERSHIP AKTIF DITEMUKAN:', membership);
-  } else {
-    console.log('❌ TIDAK ADA MEMBERSHIP AKTIF - INI MASALAHNYA!');
-    console.log('User belum punya membership, makanya redirect ke checkout');
+  } catch (error) {
+    console.error('Error:', error.message);
+  } finally {
+    await prisma.$disconnect();
   }
-  
-  await p.$disconnect();
 }
 
 check();

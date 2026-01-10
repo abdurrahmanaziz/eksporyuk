@@ -17,10 +17,9 @@ export async function GET(
   try {
     const { transactionId } = await params
 
-    // Find transaction
+    // Find transaction (no need to include user, we have userId)
     const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
-      include: { user: true }
+      where: { id: transactionId }
     })
 
     if (!transaction) {
@@ -108,7 +107,16 @@ export async function GET(
       })
 
       // Process membership if applicable
-      if (transaction.type === 'MEMBERSHIP' && transaction.membershipId) {
+      // FIX: fallback to metadata.membershipId if transaction.membershipId is null
+      const membershipId = transaction.membershipId || (metadata?.membershipId)
+      if (transaction.type === 'MEMBERSHIP' && membershipId) {
+        // Update transaction.membershipId if it was null
+        if (!transaction.membershipId && membershipId) {
+          await prisma.transaction.update({
+            where: { id: transaction.id },
+            data: { membershipId }
+          })
+        }
         await processSuccessfulMembership(transaction)
       }
 

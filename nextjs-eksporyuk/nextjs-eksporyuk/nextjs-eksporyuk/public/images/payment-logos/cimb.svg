@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80">
-  <rect width="200" height="80" fill="white"/>
-  <g transform="translate(15, 15)">
-    <rect x="0" y="5" width="45" height="40" rx="5" fill="#A51E1E"/>
-    <text x="6" y="33" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">CIMB</text>
-    <text x="55" y="33" font-family="Arial, sans-serif" font-size="22" fill="#A51E1E">CIMB Niaga</text>
-  </g>
-</svg>

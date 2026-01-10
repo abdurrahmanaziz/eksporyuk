@@ -1,19 +1,0 @@
-147 updates can be applied immediately.
-To see these additional updates run: apt list --upgradable
-
-13 additional security updates can be applied with ESM Apps.
-Learn more about enabling ESM Apps service at https://ubuntu.com/esm
-
-New release '24.04.3 LTS' available.
-Run 'do-release-upgrade' to upgrade to it.
-
-
-Last login: Wed Dec 24 10:44:21 2025 from 182.10.99.33
-[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ mysql -u root -p aziz_member.eksporyuk.com -N -e "SELECT ID, post_author, post_date, post_content, post_title, post_status, post_name, post_parent, post_type FROM wp_posts WHERE post_type IN ('topics', 'course-topic') ORDER BY ID;" > /tmp/topics.tsv
-[?2004lmysql: Deprecated program name. It will be removed in a future release, use '/usr/bin/mariadb' instead
-Enter password: 
-ERROR 1698 (28000): Access denied for user 'root'@'localhost'
-[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ cat /tmp/topics.tsv
-[?2004l[?2004h]0;aziz@eksporyuk: ~[01;32maziz@eksporyuk[00m:[01;34m~[00m$ exit
-[?2004llogout
-Connection to 103.125.181.47 closed.

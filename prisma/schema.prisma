@@ -1720,6 +1720,7 @@ model Membership {
   updatedAt               DateTime
   affiliateLinks          AffiliateLink[]
   eventMemberships        EventMembership[]
+  userMemberships         UserMembership[]
 
   @@index([affiliateEnabled])
   @@index([duration])
@@ -2928,6 +2929,9 @@ model Transaction {
   updatedAt               DateTime          @updatedAt
   invoiceNumber           String?
   
+  // Relations
+  user                    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   @@index([userId])
   @@index([status])
   @@index([invoiceNumber])
@@ -3010,6 +3014,8 @@ model User {
   userRoles                       UserRole[]
   wallet                          Wallet?
   ewalletAccounts                 EWalletAccount[]
+  transactions                    Transaction[]
+  userMemberships                 UserMembership[]
 
   @@index([city])
   @@index([district])
@@ -3059,6 +3065,10 @@ model UserMembership {
   transactionId String?   @unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membership    Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@unique([userId, membershipId])
   @@index([endDate])
