@@ -125,12 +125,13 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('[API] Start chat error:', error?.message || error)
     console.error('[API] Start chat error stack:', error?.stack)
-    // Return detailed error for debugging
+    console.error('[API] Start chat full error:', JSON.stringify(error, null, 2))
+    // Return actual error for debugging
     return NextResponse.json(
       { 
-        error: 'Tidak dapat memulai chat. Silakan coba lagi.', 
+        error: error?.message || 'Tidak dapat memulai chat. Silakan coba lagi.', 
         success: false,
-        debug: process.env.NODE_ENV === 'development' ? error?.message : undefined
+        details: error?.code || error?.name || 'Unknown error'
       },
       { status: 400 }
     )

@@ -50,9 +50,9 @@ class ChatService {
           ]
         },
         include: {
-          participants: {
+          ChatParticipant: {
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -63,7 +63,7 @@ class ChatService {
               }
             }
           },
-          messages: {
+          Message: {
             orderBy: { createdAt: 'desc' },
             take: 1
           }
@@ -84,7 +84,7 @@ class ChatService {
             user1Id,
             user2Id,
             updatedAt: now,
-            participants: {
+            ChatParticipant: {
               create: [
                 { id: randomUUID(), userId: user1Id },
                 { id: randomUUID(), userId: user2Id }
@@ -92,9 +92,9 @@ class ChatService {
             }
           },
           include: {
-            participants: {
+            ChatParticipant: {
               include: {
-                user: {
+                User: {
                   select: {
                     id: true,
                     name: true,
@@ -105,7 +105,7 @@ class ChatService {
                 }
               }
             },
-            messages: {
+            Message: {
               orderBy: { createdAt: 'desc' },
               take: 1
             }
@@ -116,17 +116,19 @@ class ChatService {
       
       // For DIRECT chat, set name from other user's perspective
       // Find the other user (not user1Id who is starting the chat)
-      const otherParticipant = room.participants.find(p => p.userId !== user1Id)
-      const otherUser = otherParticipant?.user
+      const otherParticipant = room.ChatParticipant.find(p => p.userId !== user1Id)
+      const otherUser = otherParticipant?.User
       
       const result = {
         ...room,
+        participants: room.ChatParticipant, // Map to expected name
+        messages: room.Message, // Map to expected name
         name: otherUser?.name || 'Chat',
         avatar: otherUser?.avatar || null,
         unreadCount: 0,
-        lastMessage: room.messages[0] ? {
-          content: room.messages[0].content,
-          createdAt: room.messages[0].createdAt
+        lastMessage: room.Message[0] ? {
+          content: room.Message[0].content,
+          createdAt: room.Message[0].createdAt
         } : null
       }
       
@@ -151,14 +153,14 @@ class ChatService {
           avatar: data.avatar,
           groupId: data.groupId,
           updatedAt: new Date(),
-          participants: {
+          ChatParticipant: {
             create: data.participantIds?.map(userId => ({ id: randomUUID(), userId })) || []
           }
         },
         include: {
-          participants: {
+          ChatParticipant: {
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -202,7 +204,7 @@ class ChatService {
           updatedAt: now
         },
         include: {
-          sender: {
+          User: {
             select: {
               id: true,
               name: true,
@@ -220,7 +222,7 @@ class ChatService {
           replyToMessage = await prisma.message.findUnique({
             where: { id: data.replyToId },
             include: {
-              sender: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -234,13 +236,14 @@ class ChatService {
         }
       }
 
-      // Add replyTo to message response
+      // Add replyTo to message response and map User to sender for frontend compatibility
       const messageWithReply = {
         ...message,
+        sender: message.User, // Map to expected name
         replyTo: replyToMessage ? {
           id: replyToMessage.id,
           content: replyToMessage.content,
-          sender: replyToMessage.sender
+          sender: replyToMessage.User
         } : null
       }
       
@@ -268,7 +271,7 @@ class ChatService {
       const room = await prisma.chatRoom.findUnique({
         where: { id: data.roomId },
         include: {
-          participants: true
+          ChatParticipant: true
         }
       })
       
@@ -277,12 +280,12 @@ class ChatService {
         // Trigger to room channel for real-time chat update
         await pusherService.trigger(`private-room-${data.roomId}`, 'new-message', messageWithReply)
         
-        for (const participant of room.participants) {
+        for (const participant of room.ChatParticipant) {
           if (participant.userId !== data.senderId) {
             // Send real-time message to user channel for ChatBell icon update
             await pusherService.notifyUser(participant.userId, 'new-message', {
               roomId: data.roomId,
-              senderName: messageWithReply.sender.name,
+              senderName: messageWithReply.sender?.name || 'User',
               content: data.content.substring(0, 50)
             })
             
@@ -291,7 +294,7 @@ class ChatService {
             try {
               await notificationService.sendPushOnly({
                 userId: participant.userId,
-                title: `Pesan dari ${messageWithReply.sender.name}`,
+                title: `Pesan dari ${messageWithReply.sender?.name || 'User'}`,
                 message: data.content.substring(0, 100),
                 link: `/chat?room=${data.roomId}`,
               })
@@ -326,7 +329,7 @@ class ChatService {
         orderBy: { createdAt: 'desc' },
         take: limit,
         include: {
-          sender: {
+          User: {
             select: {
               id: true,
               name: true,
@@ -346,7 +349,7 @@ class ChatService {
               const replyToMessage = await prisma.message.findUnique({
                 where: { id: message.replyToId },
                 include: {
-                  sender: {
+                  User: {
                     select: {
                       id: true,
                       name: true,
@@ -359,7 +362,7 @@ class ChatService {
                 replyTo = {
                   id: replyToMessage.id,
                   content: replyToMessage.content,
-                  sender: replyToMessage.sender
+                  sender: replyToMessage.User
                 }
               }
             } catch (e) {
@@ -369,6 +372,7 @@ class ChatService {
           
           return {
             ...message,
+            sender: message.User, // Map to expected name
             replyTo
           }
         })
@@ -401,12 +405,12 @@ class ChatService {
       const rooms = await prisma.chatRoom.findMany({
         where: { id: { in: roomIds } },
         include: {
-          participants: {
+          ChatParticipant: {
             where: {
               userId: { not: userId }
             },
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -418,11 +422,11 @@ class ChatService {
               }
             }
           },
-          messages: {
+          Message: {
             orderBy: { createdAt: 'desc' },
             take: 1,
             include: {
-              sender: {
+              User: {
                 select: {
                   name: true
                 }
@@ -441,8 +445,8 @@ class ChatService {
         let roomName = room.name
         let roomAvatar = room.avatar
         
-        if (room.type === 'DIRECT' && room.participants.length > 0) {
-          const otherUser = room.participants[0]?.user
+        if (room.type === 'DIRECT' && room.ChatParticipant.length > 0) {
+          const otherUser = room.ChatParticipant[0]?.User
           if (otherUser) {
             roomName = otherUser.name
             roomAvatar = otherUser.avatar
@@ -450,7 +454,7 @@ class ChatService {
         }
         
         // Format lastMessage from messages array
-        const lastMsg = room.messages[0]
+        const lastMsg = room.Message[0]
         const lastMessage = lastMsg ? {
           content: lastMsg.content,
           createdAt: lastMsg.createdAt.toISOString()
@@ -458,6 +462,8 @@ class ChatService {
         
         return {
           ...room,
+          participants: room.ChatParticipant, // Map to expected name
+          messages: room.Message, // Map to expected name
           name: roomName,
           avatar: roomAvatar,
           lastMessage,
