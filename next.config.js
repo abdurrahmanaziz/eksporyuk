@@ -1,12 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    // Disable turbo by default to avoid workspace root issues
-    turbo: {
-      root: __dirname,
-    },
-  },
-  // Use src directory for app
+  // Disable experimental features that cause issues
   typescript: {
     ignoreBuildErrors: false,
   },
