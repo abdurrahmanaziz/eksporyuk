@@ -50,7 +50,7 @@ export default function RootLayout({
         {/* Critical Tailwind CSS - pre-built locally to ensure all utilities are included */}
         <link rel="stylesheet" href="/critical-tailwind.css" />
       </head>
-      <body className="h-screen bg-background font-sans text-foreground antialiased">
+      <body className={`${poppins.className} ${plusJakarta.className} font-sans antialiased bg-white text-gray-900 transition-colors duration-200`}>
         <ReactQueryProvider>
           <AuthProvider>
             <OneSignalProvider />
