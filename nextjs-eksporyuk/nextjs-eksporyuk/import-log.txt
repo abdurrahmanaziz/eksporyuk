@@ -1,0 +1,261 @@
+🚀 QUICK IMPORT FROM SEJOLI - FRESH DATA
+==================================================
+Started: 26/12/2025, 18.20.52
+
+📂 Reading FRESH export files...
+   Users: 18753
+   Orders: 12903
+   Commissions: 16989
+
+👤 Creating system user...
+
+❌ IMPORT FAILED: 
+Invalid `prisma.user.upsert()` invocation in
+/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/quick-import.js:43:37
+
+  40 // 2. Create system/admin user first
+  41 console.log('👤 Creating system user...')
+  42 const adminPassword = await bcrypt.hash('Admin123!', 10)
+→ 43 const admin = await prisma.user.upsert({
+       where: {
+         email: 'admin@eksporyuk.com'
+       },
+       create: {
+         email: 'admin@eksporyuk.com',
+         username: 'admin',
+         name: 'Administrator',
+         password: '$2a$10$JUjXGj9dxBjd3grFIWnUyO3nSHElC9437p72YorGFshArN.kZ.f3y',
+         role: 'ADMIN',
+         emailVerified: true,
+         isActive: true,
+     +   id: String,
+     +   updatedAt: DateTime,
+     ?   memberCode?: String | null,
+     ?   avatar?: String | null,
+     ?   bio?: String | null,
+     ?   phone?: String | null,
+     ?   whatsapp?: String | null,
+     ?   province?: String | null,
+     ?   city?: String | null,
+     ?   district?: String | null,
+     ?   address?: String | null,
+     ?   postalCode?: String | null,
+     ?   latitude?: Float | null,
+     ?   longitude?: Float | null,
+     ?   locationVerified?: Boolean,
+     ?   profileCompleted?: Boolean,
+     ?   isOnline?: Boolean,
+     ?   lastSeenAt?: DateTime | null,
+     ?   lastActiveAt?: DateTime | null,
+     ?   isSuspended?: Boolean,
+     ?   suspendReason?: String | null,
+     ?   suspendedAt?: DateTime | null,
+     ?   suspendedBy?: String | null,
+     ?   isFounder?: Boolean,
+     ?   isCoFounder?: Boolean,
+     ?   affiliateMenuEnabled?: Boolean,
+     ?   revenueSharePercent?: Float | null,
+     ?   emailNotifications?: Boolean,
+     ?   whatsappNotifications?: Boolean,
+     ?   oneSignalPlayerId?: String | null,
+     ?   oneSignalSubscribedAt?: DateTime | null,
+     ?   oneSignalTags?: NullableJsonNullValueInput | Json,
+     ?   createdAt?: DateTime,
+     ?   referredById?: String | null,
+     ?   mailketingLists?: NullableJsonNullValueInput | Json,
+     ?   mailketingSubscriberId?: String | null,
+     ?   withdrawalPin?: String | null,
+     ?   withdrawalPinSetAt?: DateTime | null,
+     ?   coverImage?: String | null,
+     ?   CommentReaction?: {
+     ?     create?: CommentReactionCreateWithoutUserInput | CommentReactionCreateWithoutUserInput | CommentReactionUncheckedCreateWithoutUserInput | CommentReactionUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: CommentReactionCreateOrConnectWithoutUserInput | CommentReactionCreateOrConnectWithoutUserInput,
+     ?     createMany?: CommentReactionCreateManyUserInputEnvelope,
+     ?     connect?: CommentReactionWhereUniqueInput | CommentReactionWhereUniqueInput
+     ?   },
+     ?   Follow_Follow_followerIdToUser?: {
+     ?     create?: FollowCreateWithoutUser_Follow_followerIdToUserInput | FollowCreateWithoutUser_Follow_followerIdToUserInput | FollowUncheckedCreateWithoutUser_Follow_followerIdToUserInput | FollowUncheckedCreateWithoutUser_Follow_followerIdToUserInput,
+     ?     connectOrCreate?: FollowCreateOrConnectWithoutUser_Follow_followerIdToUserInput | FollowCreateOrConnectWithoutUser_Follow_followerIdToUserInput,
+     ?     createMany?: FollowCreateManyUser_Follow_followerIdToUserInputEnvelope,
+     ?     connect?: FollowWhereUniqueInput | FollowWhereUniqueInput
+     ?   },
+     ?   Follow_Follow_followingIdToUser?: {
+     ?     create?: FollowCreateWithoutUser_Follow_followingIdToUserInput | FollowCreateWithoutUser_Follow_followingIdToUserInput | FollowUncheckedCreateWithoutUser_Follow_followingIdToUserInput | FollowUncheckedCreateWithoutUser_Follow_followingIdToUserInput,
+     ?     connectOrCreate?: FollowCreateOrConnectWithoutUser_Follow_followingIdToUserInput | FollowCreateOrConnectWithoutUser_Follow_followingIdToUserInput,
+     ?     createMany?: FollowCreateManyUser_Follow_followingIdToUserInputEnvelope,
+     ?     connect?: FollowWhereUniqueInput | FollowWhereUniqueInput
+     ?   },
+     ?   Post?: {
+     ?     create?: PostCreateWithoutUserInput | PostCreateWithoutUserInput | PostUncheckedCreateWithoutUserInput | PostUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: PostCreateOrConnectWithoutUserInput | PostCreateOrConnectWithoutUserInput,
+     ?     createMany?: PostCreateManyUserInputEnvelope,
+     ?     connect?: PostWhereUniqueInput | PostWhereUniqueInput
+     ?   },
+     ?   PostComment?: {
+     ?     create?: PostCommentCreateWithoutUserInput | PostCommentCreateWithoutUserInput | PostCommentUncheckedCreateWithoutUserInput | PostCommentUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: PostCommentCreateOrConnectWithoutUserInput | PostCommentCreateOrConnectWithoutUserInput,
+     ?     createMany?: PostCommentCreateManyUserInputEnvelope,
+     ?     connect?: PostCommentWhereUniqueInput | PostCommentWhereUniqueInput
+     ?   },
+     ?   PostReaction?: {
+     ?     create?: PostReactionCreateWithoutUserInput | PostReactionCreateWithoutUserInput | PostReactionUncheckedCreateWithoutUserInput | PostReactionUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: PostReactionCreateOrConnectWithoutUserInput | PostReactionCreateOrConnectWithoutUserInput,
+     ?     createMany?: PostReactionCreateManyUserInputEnvelope,
+     ?     connect?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput
+     ?   },
+     ?   Product?: {
+     ?     create?: ProductCreateWithoutUserInput | ProductCreateWithoutUserInput | ProductUncheckedCreateWithoutUserInput | ProductUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: ProductCreateOrConnectWithoutUserInput | ProductCreateOrConnectWithoutUserInput,
+     ?     createMany?: ProductCreateManyUserInputEnvelope,
+     ?     connect?: ProductWhereUniqueInput | ProductWhereUniqueInput
+     ?   },
+     ?   SavedPost?: {
+     ?     create?: SavedPostCreateWithoutUserInput | SavedPostCreateWithoutUserInput | SavedPostUncheckedCreateWithoutUserInput | SavedPostUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: SavedPostCreateOrConnectWithoutUserInput | SavedPostCreateOrConnectWithoutUserInput,
+     ?     createMany?: SavedPostCreateManyUserInputEnvelope,
+     ?     connect?: SavedPostWhereUniqueInput | SavedPostWhereUniqueInput
+     ?   },
+     ?   UserProduct?: {
+     ?     create?: UserProductCreateWithoutUserInput | UserProductCreateWithoutUserInput | UserProductUncheckedCreateWithoutUserInput | UserProductUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: UserProductCreateOrConnectWithoutUserInput | UserProductCreateOrConnectWithoutUserInput,
+     ?     createMany?: UserProductCreateManyUserInputEnvelope,
+     ?     connect?: UserProductWhereUniqueInput | UserProductWhereUniqueInput
+     ?   }
+       },
+       update: {}
+     })
+
+Argument id for create.id is missing.
+Argument updatedAt for create.updatedAt is missing.
+
+Note: Lines with + are required, lines with ? are optional.
+
+PrismaClientValidationError: 
+Invalid `prisma.user.upsert()` invocation in
+/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/quick-import.js:43:37
+
+  40 // 2. Create system/admin user first
+  41 console.log('👤 Creating system user...')
+  42 const adminPassword = await bcrypt.hash('Admin123!', 10)
+→ 43 const admin = await prisma.user.upsert({
+       where: {
+         email: 'admin@eksporyuk.com'
+       },
+       create: {
+         email: 'admin@eksporyuk.com',
+         username: 'admin',
+         name: 'Administrator',
+         password: '$2a$10$JUjXGj9dxBjd3grFIWnUyO3nSHElC9437p72YorGFshArN.kZ.f3y',
+         role: 'ADMIN',
+         emailVerified: true,
+         isActive: true,
+     +   id: String,
+     +   updatedAt: DateTime,
+     ?   memberCode?: String | null,
+     ?   avatar?: String | null,
+     ?   bio?: String | null,
+     ?   phone?: String | null,
+     ?   whatsapp?: String | null,
+     ?   province?: String | null,
+     ?   city?: String | null,
+     ?   district?: String | null,
+     ?   address?: String | null,
+     ?   postalCode?: String | null,
+     ?   latitude?: Float | null,
+     ?   longitude?: Float | null,
+     ?   locationVerified?: Boolean,
+     ?   profileCompleted?: Boolean,
+     ?   isOnline?: Boolean,
+     ?   lastSeenAt?: DateTime | null,
+     ?   lastActiveAt?: DateTime | null,
+     ?   isSuspended?: Boolean,
+     ?   suspendReason?: String | null,
+     ?   suspendedAt?: DateTime | null,
+     ?   suspendedBy?: String | null,
+     ?   isFounder?: Boolean,
+     ?   isCoFounder?: Boolean,
+     ?   affiliateMenuEnabled?: Boolean,
+     ?   revenueSharePercent?: Float | null,
+     ?   emailNotifications?: Boolean,
+     ?   whatsappNotifications?: Boolean,
+     ?   oneSignalPlayerId?: String | null,
+     ?   oneSignalSubscribedAt?: DateTime | null,
+     ?   oneSignalTags?: NullableJsonNullValueInput | Json,
+     ?   createdAt?: DateTime,
+     ?   referredById?: String | null,
+     ?   mailketingLists?: NullableJsonNullValueInput | Json,
+     ?   mailketingSubscriberId?: String | null,
+     ?   withdrawalPin?: String | null,
+     ?   withdrawalPinSetAt?: DateTime | null,
+     ?   coverImage?: String | null,
+     ?   CommentReaction?: {
+     ?     create?: CommentReactionCreateWithoutUserInput | CommentReactionCreateWithoutUserInput | CommentReactionUncheckedCreateWithoutUserInput | CommentReactionUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: CommentReactionCreateOrConnectWithoutUserInput | CommentReactionCreateOrConnectWithoutUserInput,
+     ?     createMany?: CommentReactionCreateManyUserInputEnvelope,
+     ?     connect?: CommentReactionWhereUniqueInput | CommentReactionWhereUniqueInput
+     ?   },
+     ?   Follow_Follow_followerIdToUser?: {
+     ?     create?: FollowCreateWithoutUser_Follow_followerIdToUserInput | FollowCreateWithoutUser_Follow_followerIdToUserInput | FollowUncheckedCreateWithoutUser_Follow_followerIdToUserInput | FollowUncheckedCreateWithoutUser_Follow_followerIdToUserInput,
+     ?     connectOrCreate?: FollowCreateOrConnectWithoutUser_Follow_followerIdToUserInput | FollowCreateOrConnectWithoutUser_Follow_followerIdToUserInput,
+     ?     createMany?: FollowCreateManyUser_Follow_followerIdToUserInputEnvelope,
+     ?     connect?: FollowWhereUniqueInput | FollowWhereUniqueInput
+     ?   },
+     ?   Follow_Follow_followingIdToUser?: {
+     ?     create?: FollowCreateWithoutUser_Follow_followingIdToUserInput | FollowCreateWithoutUser_Follow_followingIdToUserInput | FollowUncheckedCreateWithoutUser_Follow_followingIdToUserInput | FollowUncheckedCreateWithoutUser_Follow_followingIdToUserInput,
+     ?     connectOrCreate?: FollowCreateOrConnectWithoutUser_Follow_followingIdToUserInput | FollowCreateOrConnectWithoutUser_Follow_followingIdToUserInput,
+     ?     createMany?: FollowCreateManyUser_Follow_followingIdToUserInputEnvelope,
+     ?     connect?: FollowWhereUniqueInput | FollowWhereUniqueInput
+     ?   },
+     ?   Post?: {
+     ?     create?: PostCreateWithoutUserInput | PostCreateWithoutUserInput | PostUncheckedCreateWithoutUserInput | PostUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: PostCreateOrConnectWithoutUserInput | PostCreateOrConnectWithoutUserInput,
+     ?     createMany?: PostCreateManyUserInputEnvelope,
+     ?     connect?: PostWhereUniqueInput | PostWhereUniqueInput
+     ?   },
+     ?   PostComment?: {
+     ?     create?: PostCommentCreateWithoutUserInput | PostCommentCreateWithoutUserInput | PostCommentUncheckedCreateWithoutUserInput | PostCommentUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: PostCommentCreateOrConnectWithoutUserInput | PostCommentCreateOrConnectWithoutUserInput,
+     ?     createMany?: PostCommentCreateManyUserInputEnvelope,
+     ?     connect?: PostCommentWhereUniqueInput | PostCommentWhereUniqueInput
+     ?   },
+     ?   PostReaction?: {
+     ?     create?: PostReactionCreateWithoutUserInput | PostReactionCreateWithoutUserInput | PostReactionUncheckedCreateWithoutUserInput | PostReactionUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: PostReactionCreateOrConnectWithoutUserInput | PostReactionCreateOrConnectWithoutUserInput,
+     ?     createMany?: PostReactionCreateManyUserInputEnvelope,
+     ?     connect?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput
+     ?   },
+     ?   Product?: {
+     ?     create?: ProductCreateWithoutUserInput | ProductCreateWithoutUserInput | ProductUncheckedCreateWithoutUserInput | ProductUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: ProductCreateOrConnectWithoutUserInput | ProductCreateOrConnectWithoutUserInput,
+     ?     createMany?: ProductCreateManyUserInputEnvelope,
+     ?     connect?: ProductWhereUniqueInput | ProductWhereUniqueInput
+     ?   },
+     ?   SavedPost?: {
+     ?     create?: SavedPostCreateWithoutUserInput | SavedPostCreateWithoutUserInput | SavedPostUncheckedCreateWithoutUserInput | SavedPostUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: SavedPostCreateOrConnectWithoutUserInput | SavedPostCreateOrConnectWithoutUserInput,
+     ?     createMany?: SavedPostCreateManyUserInputEnvelope,
+     ?     connect?: SavedPostWhereUniqueInput | SavedPostWhereUniqueInput
+     ?   },
+     ?   UserProduct?: {
+     ?     create?: UserProductCreateWithoutUserInput | UserProductCreateWithoutUserInput | UserProductUncheckedCreateWithoutUserInput | UserProductUncheckedCreateWithoutUserInput,
+     ?     connectOrCreate?: UserProductCreateOrConnectWithoutUserInput | UserProductCreateOrConnectWithoutUserInput,
+     ?     createMany?: UserProductCreateManyUserInputEnvelope,
+     ?     connect?: UserProductWhereUniqueInput | UserProductWhereUniqueInput
+     ?   }
+       },
+       update: {}
+     })
+
+Argument id for create.id is missing.
+Argument updatedAt for create.updatedAt is missing.
+
+Note: Lines with + are required, lines with ? are optional.
+
+    at Ui.validate (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:148:73)
+    at gn.createMessage (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:164:1298)
+    at /Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:177:11600
+    at Object.runInChildSpan (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:174:1394)
+    at t._executeRequest (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/node_modules/@prisma/client/runtime/library.js:177:11577)
+    at async quickImport (/Users/abdurrahmanaziz/Herd/eksporyuk/nextjs-eksporyuk/quick-import.js:43:19) {
+  clientVersion: '4.16.2'
+}
